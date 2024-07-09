@@ -1,0 +1,51 @@
+version: '3.4'
+
+services:
+
+ rabbitmq:
+    container_name: "rabbitmq"
+    image: rabbitmq:management
+    ports:
+        - "5672:5672"
+        - "15672:15672"
+    environment:
+        RABBITMQ_DEFAULT_USER: "user1"
+        RABBITMQ_DEFAULT_PASS: "12345"
+    healthcheck:
+        test: rabbitmq-diagnostics -q ping
+        interval: 35s
+        timeout: 35s
+        retries: 35
+        start_period: 35s
+    networks:
+        - backend-net
+ db:
+    container_name: serverpulse-db
+    image: postgres
+    restart: always
+    ports:
+        - "54303:5432"
+    environment:
+        POSTGRES_DB: "serverpulse-db"
+        POSTGRES_USER: "user1"
+        POSTGRES_PASSWORD: "12345"
+    networks:
+        - backend-net
+    volumes:
+        - serverpulse-db:/var/lib/postgresql/data
+ authenticationapi:
+    container_name: authentication-api
+    image: ${DOCKER_REGISTRY-}authenticationapi
+    build:
+        context: .
+        dockerfile: AuthenticationApi/Dockerfile
+    networks:
+    - backend-net
+    depends_on:
+    - db
+    - rabbitmq
+networks:
+  backend-net:
+
+volumes:
+  serverpulse-db:
