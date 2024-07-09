@@ -1,0 +1,37 @@
+@use 'colors' as colors;
+
+.form-full-width {
+    width: 100%;
+
+    mat-form-field {
+        width: 100%;
+    }
+}
+
+.close-button {
+    position: absolute;
+    right: 10px;
+    z-index: 1;
+}
+
+.bottom-buttons-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+
+    button {
+        width: 100%;
+    }
+
+    #send-button {
+        background-color: colors.$global-green;
+    }
+
+    #logout-button {
+        margin: 0;
+    }
+
+    .primary-color {
+        color: colors.$link-light-blue;
+    }
+}

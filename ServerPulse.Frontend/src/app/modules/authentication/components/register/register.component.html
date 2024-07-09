@@ -1,0 +1,49 @@
+<button mat-icon-button mat-dialog-close class="close-button">
+    <span class="material-icons">close</span>
+</button>
+<h2 mat-dialog-title>Create Account</h2>
+
+<mat-dialog-content>
+    <form id="registrationForm" class="form-full-width" [formGroup]="formGroup" (ngSubmit)="registerUser()">
+        <mat-form-field>
+            <mat-label>Email</mat-label>
+            <input type="email" matInput formControlName="email" placeholder="example@example.com">
+            @if (emailInput.hasError('email') && !emailInput.hasError('required')) {
+            <mat-error>Please enter a valid email address</mat-error>
+            }
+            @if (emailInput.hasError('required')) {
+            <mat-error>Email is <strong>required</strong></mat-error>
+            }
+        </mat-form-field>
+        <mat-form-field>
+            <mat-label>Password</mat-label>
+            <input [type]="hidePassword ? 'password' : 'text'" matInput formControlName="password">
+            <span class="material-icons me-2" matSuffix (click)="hidePassword = !hidePassword">
+                {{hidePassword
+                ? 'visibility_off'
+                : 'visibility'
+                }}
+            </span>
+            @if (passwordInput.hasError('required')) {
+            <mat-error>Password is <strong>required</strong></mat-error>
+            }
+            @if (passwordInput.hasError('minlength')) {
+            <mat-error>Password must be <strong>at least 8</strong> characters</mat-error>
+            }
+        </mat-form-field>
+        <mat-form-field>
+            <mat-label>Confirm Password</mat-label>
+            <input [type]="hidePassword ? 'password' : 'text'" matInput formControlName="passwordConfirm">
+            @if (passwordConfirmInput.hasError('required')) {
+            <mat-error><strong>Confirm password.</strong></mat-error>
+            }
+            @if (passwordConfirmInput.hasError('passwordNoMatch')) {
+            <mat-error><strong>Passwords don't match.</strong></mat-error>
+            }
+        </mat-form-field>
+        <mat-error *ngFor="let error of registerErrors">{{error}}</mat-error>
+    </form>
+</mat-dialog-content>
+<mat-dialog-actions class="send-button-container">
+    <button mat-flat-button id="send-button" form="registrationForm" type="submit" color="primary">Create</button>
+</mat-dialog-actions>

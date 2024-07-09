@@ -15,15 +15,6 @@ namespace AuthenticationApi.Services
             this.userManager = userManager;
         }
 
-        public async Task<ServerSlot> CreateServerSlotAsync(ServerSlot serverSlot, CancellationToken cancellationToken)
-        {
-            using (var dbContext = await CreateDbContextAsync(cancellationToken))
-            {
-                await dbContext.ServerSlots.AddAsync(serverSlot, cancellationToken);
-                await dbContext.SaveChangesAsync(cancellationToken);
-            }
-            return serverSlot;
-        }
         public async Task<ServerSlot?> GetServerSlotAsync(string email, string password, string serverSlotId, CancellationToken cancellationToken)
         {
             var user = await userManager.FindByEmailAsync(email);
@@ -46,6 +37,15 @@ namespace AuthenticationApi.Services
                 serverSlots.AddRange(slots);
             }
             return serverSlots;
+        }
+        public async Task<ServerSlot> CreateServerSlotAsync(ServerSlot serverSlot, CancellationToken cancellationToken)
+        {
+            using (var dbContext = await CreateDbContextAsync(cancellationToken))
+            {
+                await dbContext.ServerSlots.AddAsync(serverSlot, cancellationToken);
+                await dbContext.SaveChangesAsync(cancellationToken);
+            }
+            return serverSlot;
         }
     }
 }

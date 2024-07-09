@@ -1,0 +1,16 @@
+<div class="root">
+    <header class="header">
+        <mat-toolbar class="toolbar" color="primary">
+            <a href="">Server Pulse</a>
+            <div class="toolbar-right-buttons">
+                <button mat-icon-button (click)="openLoginMenu()">
+                    <span class="material-icons">person</span>
+                </button>
+            </div>
+        </mat-toolbar>
+    </header>
+
+    <body class="wrapper">
+        <router-outlet></router-outlet>
+    </body>
+</div>

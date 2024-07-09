@@ -2,7 +2,7 @@ version: '3.4'
 
 services:
 
- rabbitmq:
+  rabbitmq:
     container_name: "rabbitmq"
     image: rabbitmq:management
     ports:
@@ -19,7 +19,7 @@ services:
         start_period: 35s
     networks:
         - backend-net
- db:
+  db:
     container_name: serverpulse-db
     image: postgres
     restart: always
@@ -33,7 +33,7 @@ services:
         - backend-net
     volumes:
         - serverpulse-db:/var/lib/postgresql/data
- authenticationapi:
+  authenticationapi:
     container_name: authentication-api
     image: ${DOCKER_REGISTRY-}authenticationapi
     build:
@@ -44,6 +44,19 @@ services:
     depends_on:
     - db
     - rabbitmq
+  apigateway:
+    container_name: apigateway
+    image: ${DOCKER_REGISTRY-}apigateway
+    build:
+      context: .
+      dockerfile: ApiGateway/Dockerfile
+    ports: 
+      - 7129:8081
+    networks:
+      - backend-net
+    depends_on:
+    - authenticationapi
+
 networks:
   backend-net:
 

@@ -1,0 +1,26 @@
+@use 'colors' as colors;
+
+.form-full-width {
+    width: 100%;
+
+    mat-form-field {
+        width: 100%;
+    }
+}
+
+.close-button {
+    position: absolute;
+    right: 10px;
+    z-index: 1;
+}
+
+.send-button-container {
+    #send-button {
+        width: 100%;
+    }
+
+    #to-register-link {
+        color: colors.$link-light-blue;
+        cursor: pointer;
+    }
+}

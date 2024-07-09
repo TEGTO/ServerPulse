@@ -21,7 +21,7 @@ namespace Shared
                     {
                         logger.LogInformation("Applying database migrations...");
                         var context = services.GetRequiredService<TContext>();
-                        context.Database.EnsureCreated();
+                        context.Database.Migrate();
                         logger.LogInformation("Database migrations applied successfully.");
                     }
                 }

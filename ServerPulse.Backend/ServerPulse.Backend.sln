@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.34928.147
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestServer", "TestServer\TestServer.csproj", "{FE829492-D65E-48A0-BE20-8564CCA56FCB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestServer", "TestServer\TestServer.csproj", "{FE829492-D65E-48A0-BE20-8564CCA56FCB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Microservices", "Microservices", "{C260E3F5-9C36-4648-99F6-6714CF242134}"
 EndProject
@@ -11,11 +11,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastru
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Authentication", "Authentication\Authentication.csproj", "{F9C12789-CC5E-4A77-B686-7ABA033FE2C9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthenticationApi", "AuthenticationApi\AuthenticationApi.csproj", "{5B1E72B7-1E72-4DDD-9496-00C7DA2C29A2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthenticationApi", "AuthenticationApi\AuthenticationApi.csproj", "{5B1E72B7-1E72-4DDD-9496-00C7DA2C29A2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared", "Shared\Shared.csproj", "{EE43F286-EF99-4331-BB28-EA0E85053F0D}"
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{8EAB7DC0-86B8-457A-B1A3-C62559D3DF19}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ApiGateway", "ApiGateway", "{69154AD3-EEF4-4521-A794-CCD368681851}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiGateway", "ApiGateway\ApiGateway.csproj", "{BF11E821-30F9-4A09-978F-E19B14DC81DD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,6 +47,10 @@ Global
 		{8EAB7DC0-86B8-457A-B1A3-C62559D3DF19}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8EAB7DC0-86B8-457A-B1A3-C62559D3DF19}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8EAB7DC0-86B8-457A-B1A3-C62559D3DF19}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF11E821-30F9-4A09-978F-E19B14DC81DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF11E821-30F9-4A09-978F-E19B14DC81DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF11E821-30F9-4A09-978F-E19B14DC81DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF11E821-30F9-4A09-978F-E19B14DC81DD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -51,6 +59,7 @@ Global
 		{F9C12789-CC5E-4A77-B686-7ABA033FE2C9} = {055C1BB6-678D-4258-80AC-4816688B1AF6}
 		{5B1E72B7-1E72-4DDD-9496-00C7DA2C29A2} = {C260E3F5-9C36-4648-99F6-6714CF242134}
 		{EE43F286-EF99-4331-BB28-EA0E85053F0D} = {055C1BB6-678D-4258-80AC-4816688B1AF6}
+		{BF11E821-30F9-4A09-978F-E19B14DC81DD} = {69154AD3-EEF4-4521-A794-CCD368681851}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {89B7B374-29A5-4E5B-A21F-6FC2B0DE9918}

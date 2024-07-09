@@ -1,0 +1,42 @@
+<button mat-icon-button mat-dialog-close class="close-button">
+    <span class="material-icons">close</span>
+</button>
+<h2 mat-dialog-title>Login</h2>
+
+<mat-dialog-content>
+    <form id="loginForm" class="form-full-width" [formGroup]="formGroup" (ngSubmit)="signInUser()">
+        <mat-form-field>
+            <mat-label>Email</mat-label>
+            <input type="email" matInput formControlName="email" placeholder="example@example.com">
+            @if (emailInput.hasError('email') && !emailInput.hasError('required')) {
+            <mat-error>Please enter a valid email address</mat-error>
+            }
+            @if (emailInput.hasError('required')) {
+            <mat-error>Email is <strong>required</strong></mat-error>
+            }
+        </mat-form-field>
+        <mat-form-field>
+            <mat-label>Password</mat-label>
+            <input [type]="hidePassword ? 'password' : 'text'" matInput formControlName="password">
+            <span class="material-icons me-2" matSuffix (click)="hidePassword = !hidePassword">
+                {{hidePassword
+                ? 'visibility_off'
+                : 'visibility'
+                }}
+            </span>
+            @if (passwordInput.hasError('required')) {
+            <mat-error>Password is <strong>required</strong></mat-error>
+            }
+            @if (passwordInput.hasError('minlength')) {
+            <mat-error>Password must be <strong>at least 8</strong> characters</mat-error>
+            }
+        </mat-form-field>
+        <mat-error *ngIf="isLoginFailed">Email or password is invalid.</mat-error>
+    </form>
+</mat-dialog-content>
+<mat-dialog-actions class="send-button-container">
+    <button mat-flat-button id="send-button" form="loginForm" type="submit" color="primary">Login</button>
+    <a id="to-register-link" (click)="openRegisterMenu()" mat-dialog-close>
+        Don't have an account? Create a new one.
+    </a>
+</mat-dialog-actions>

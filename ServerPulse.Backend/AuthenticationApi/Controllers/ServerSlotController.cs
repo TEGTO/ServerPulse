@@ -21,25 +21,11 @@ namespace AuthenticationApi.Controllers
             this.serverSlotService = serverAuthService;
         }
 
-        [Authorize]
-        [HttpPost]
-        public async Task<ActionResult<ServerSlotDto>> CreateServerSlot([FromBody] CreateServerSlotRequest request,
-            CancellationToken cancellationToken)
-        {
-            if (request == null)
-            {
-                return BadRequest("Invalid request");
-            }
-            var serverSlot = mapper.Map<ServerSlot>(request);
-            var result = await serverSlotService.CreateServerSlotAsync(serverSlot, cancellationToken);
-            var response = mapper.Map<ServerSlotDto>(result);
-            return Created(string.Empty, response);
-        }
         [HttpGet]
         public async Task<ActionResult<ServerSlotDto>> GetServerSlot([FromQuery] string email,
-             [FromQuery] string password,
-             [FromQuery] string serverSlotId,
-             CancellationToken cancellationToken)
+         [FromQuery] string password,
+         [FromQuery] string serverSlotId,
+         CancellationToken cancellationToken)
         {
             var serverSlot = await serverSlotService.GetServerSlotAsync(email, password, serverSlotId, cancellationToken);
             if (serverSlot == null)
@@ -55,6 +41,20 @@ namespace AuthenticationApi.Controllers
         {
             var serverSlots = await serverSlotService.GetServerSlotsByEmailAsync(email, cancellationToken);
             return Ok(serverSlots.Select(mapper.Map<ServerSlotDto>));
+        }
+        [Authorize]
+        [HttpPost]
+        public async Task<ActionResult<ServerSlotDto>> CreateServerSlot([FromBody] CreateServerSlotRequest request,
+            CancellationToken cancellationToken)
+        {
+            if (request == null)
+            {
+                return BadRequest("Invalid request");
+            }
+            var serverSlot = mapper.Map<ServerSlot>(request);
+            var result = await serverSlotService.CreateServerSlotAsync(serverSlot, cancellationToken);
+            var response = mapper.Map<ServerSlotDto>(result);
+            return Created(string.Empty, response);
         }
     }
 }

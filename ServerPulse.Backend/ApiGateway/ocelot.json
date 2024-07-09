@@ -1,0 +1,98 @@
+{
+  "Routes": [
+    // Authentication API - Login
+    {
+      "UpstreamPathTemplate": "/auth/login",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authenticationapi",
+          "Port": 8080
+        }
+      ],
+      "DownstreamPathTemplate": "/auth/login"
+    },
+    // Authentication API - Register
+    {
+      "UpstreamPathTemplate": "/auth/register",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authenticationapi",
+          "Port": 8080
+        }
+      ],
+      "DownstreamPathTemplate": "/auth/register"
+    },
+    // Authentication API - Update
+    {
+      "UpstreamPathTemplate": "/auth/update",
+      "UpstreamHttpMethod": [ "PUT" ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authenticationapi",
+          "Port": 8080
+        }
+      ],
+      "DownstreamPathTemplate": "/auth/update"
+    },
+    // Authentication API - Refresh
+    {
+      "UpstreamPathTemplate": "/auth/refresh",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authenticationapi",
+          "Port": 8080
+        }
+      ],
+      "DownstreamPathTemplate": "/auth/refresh"
+    },
+    // Authentication API - GetServerSlot
+    {
+      "UpstreamPathTemplate": "/serverslot?email={email}&password={password}&serverSlotId={serverSlotId}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authenticationapi",
+          "Port": 8080
+        }
+      ],
+      "DownstreamPathTemplate": "/serverslot?email={email}&password={password}&serverSlotId={serverSlotId}"
+    },
+    // Authentication API - GetServerSlotsByEmail
+    {
+      "UpstreamPathTemplate": "/serverslot/{email}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authenticationapi",
+          "Port": 8080
+        }
+      ],
+      "DownstreamPathTemplate": "/serverslot/{email}"
+    },
+    // Authentication API - CreateServerSlot
+    {
+      "UpstreamPathTemplate": "/serverslot",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authenticationapi",
+          "Port": 8080
+        }
+      ],
+      "DownstreamPathTemplate": "/serverslot"
+    }
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "https://localhost:7129"
+  }
+}
