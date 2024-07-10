@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
-import { UserAuthenticationRequest } from '../../../shared';
+import { SnackbarManager, UserAuthenticationRequest } from '../../../shared';
 import { AuthenticationDialogManager, AuthenticationService, RegisterComponent } from '../../index';
 
 @Component({
-  selector: 'app-login',
+  selector: 'auth-login',
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
@@ -16,13 +16,14 @@ export class LoginComponent {
       password: new FormControl('', [Validators.required, Validators.minLength(8), Validators.maxLength(256)]),
     });
   hidePassword: boolean = true;
-  isLoginFailed: boolean = false;
 
   get emailInput() { return this.formGroup.get('email')!; }
   get passwordInput() { return this.formGroup.get('password')!; }
 
   constructor(private authDialogManager: AuthenticationDialogManager,
-    private authService: AuthenticationService, private dialogRef: MatDialogRef<RegisterComponent>) { }
+    private authService: AuthenticationService,
+    private dialogRef: MatDialogRef<RegisterComponent>,
+    private snackbarManager: SnackbarManager) { }
 
   openRegisterMenu() {
     const dialogRef = this.authDialogManager.openRegisterMenu();
@@ -38,7 +39,11 @@ export class LoginComponent {
         if (authData.isAuthenticated) {
           this.dialogRef.close();
         }
-        this.isLoginFailed = !authData.isAuthenticated;
+        this.authService.getAuthErrors().subscribe(
+          errors => {
+            if (errors)
+              this.snackbarManager.openErrorSnackbar(errors.split("\n"));
+          });
       });
     }
   }

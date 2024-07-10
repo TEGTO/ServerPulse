@@ -1,6 +1,7 @@
 export * from "./components/authenticated/authenticated.component";
 export * from "./components/login/login.component";
 export * from "./components/register/register.component";
+export * from "./components/unauthenticated/unauthenticated.component";
 export * from "./interceptors/auth-interceptor/auth-interceptor.service";
 export * from "./services/authentication-dialog-manager/authentication-dialog-manager";
 export * from "./services/authentication-dialog-manager/authentication-dialog-manager.service";

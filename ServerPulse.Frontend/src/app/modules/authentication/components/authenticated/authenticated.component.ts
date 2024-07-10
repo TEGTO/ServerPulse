@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
 import { AuthenticationService } from '../..';
-import { UserUpdateDataRequest } from '../../../shared';
+import { SnackbarManager, UserUpdateDataRequest } from '../../../shared';
 
 @Component({
   selector: 'app-authenticated',
@@ -13,14 +12,15 @@ export class AuthenticatedComponent implements OnInit {
   hideNewPassword: boolean = true;
   userEmail: string = "";
   formGroup: FormGroup = null!;
-  updateErrors: string[] = [];
   isUpdateSuccessful: boolean = false;
 
+  get nameInput() { return this.formGroup.get('userName')!; }
   get emailInput() { return this.formGroup.get('email')!; }
   get oldPassword() { return this.formGroup.get('oldPassword')!; }
   get newPassword() { return this.formGroup.get('newPassword')!; }
 
-  constructor(private authService: AuthenticationService, private dialog: MatDialog) {
+  constructor(private authService: AuthenticationService,
+    private snackbarManager: SnackbarManager) {
   }
 
   ngOnInit(): void {
@@ -28,8 +28,8 @@ export class AuthenticatedComponent implements OnInit {
       this.userEmail = data.email;
       this.formGroup = new FormGroup(
         {
-          userName: new FormControl('', [Validators.required, Validators.maxLength(256)]),
-          email: new FormControl(this.userEmail, [Validators.email, Validators.required, Validators.maxLength(256)]),
+          userName: new FormControl(data.userName, [Validators.required, Validators.maxLength(256)]),
+          email: new FormControl(data.email, [Validators.email, Validators.required, Validators.maxLength(256)]),
           oldPassword: new FormControl('', [Validators.required, Validators.maxLength(256)]),
           newPassword: new FormControl('', [Validators.minLength(8), Validators.maxLength(256)])
         });
@@ -53,7 +53,7 @@ export class AuthenticatedComponent implements OnInit {
         this.authService.getAuthErrors().subscribe(
           errors => {
             if (errors)
-              this.updateErrors = errors.split("\n");
+              this.snackbarManager.openErrorSnackbar(errors.split("\n"));
           });
       });
     }

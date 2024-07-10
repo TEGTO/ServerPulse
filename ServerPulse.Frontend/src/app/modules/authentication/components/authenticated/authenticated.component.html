@@ -4,15 +4,15 @@
 <h2 mat-dialog-title>Edit Account</h2>
 
 <mat-dialog-content>
-    <form id="updateForm" [formGroup]="formGroup" class="form-full-width">
+    <form id="updateForm" [formGroup]="formGroup" class="content__form space-y-1">
         <mat-form-field>
-            <mat-form-field>
-                <mat-label>Name</mat-label>
-                <input type="text" matInput formControlName="userName" placeholder="John" maxlength="256">
-                @if (emailInput.hasError('required')) {
-                <mat-error>Name is <strong>required</strong></mat-error>
-                }
-            </mat-form-field>
+            <mat-label>Name</mat-label>
+            <input type="text" matInput formControlName="userName" placeholder="John" maxlength="256">
+            @if (nameInput.hasError('required')) {
+            <mat-error>Name is <strong>required</strong></mat-error>
+            }
+        </mat-form-field>
+        <mat-form-field>
             <mat-label>Email</mat-label>
             <input type="email" matInput formControlName="email" placeholder="example@example.com" maxlength="256">
             @if (emailInput.hasError('email') && !emailInput.hasError('required')) {
@@ -22,32 +22,33 @@
             <mat-error>Email is <strong>required</strong></mat-error>
             }
         </mat-form-field>
-        <mat-form-field>
-            <mat-label>Old Password</mat-label>
-            <input [type]="'password'" matInput formControlName="oldPassword" maxlength="256">
-            @if (oldPassword.hasError('required')) {
-            <mat-error>Old Password is <strong>required</strong></mat-error>
-            }
-        </mat-form-field>
-        <mat-form-field>
-            <mat-label>New Password</mat-label>
-            <input [type]="hideNewPassword ? 'password' : 'text'" matInput formControlName="newPassword"
-                maxlength="256">
-            <span class="material-icons me-2" matSuffix (click)="hideNewPassword = !hideNewPassword">
-                {{hideNewPassword
-                ? 'visibility_off'
-                : 'visibility'
-                }}
-            </span>
-            @if (newPassword.hasError('minlength')) {
-            <mat-error>Password must be <strong>at least 8</strong> characters</mat-error>
-            }
-        </mat-form-field>
+        <div class="flex gap-2">
+            <mat-form-field>
+                <mat-label>Old Password</mat-label>
+                <input [type]="'password'" matInput formControlName="oldPassword" maxlength="256">
+                @if (oldPassword.hasError('required')) {
+                <mat-error>Old Password is <strong>required</strong></mat-error>
+                }
+            </mat-form-field>
+            <mat-form-field>
+                <mat-label>New Password</mat-label>
+                <input [type]="hideNewPassword ? 'password' : 'text'" matInput formControlName="newPassword"
+                    maxlength="256">
+                <span class="material-icons me-2" matSuffix (click)="hideNewPassword = !hideNewPassword">
+                    {{hideNewPassword
+                    ? 'visibility_off'
+                    : 'visibility'
+                    }}
+                </span>
+                @if (newPassword.hasError('minlength')) {
+                <mat-error>Password must be <strong>at least 8</strong> characters</mat-error>
+                }
+            </mat-form-field>
+        </div>
     </form>
-    <div class="success-message text-teal-700" *ngIf="isUpdateSuccessful">Update successful!</div>
-    <mat-error *ngFor="let error of updateErrors">{{error}}</mat-error>
+    <div class="text-teal-700" *ngIf="isUpdateSuccessful">Update successful!</div>
 </mat-dialog-content>
-<mat-dialog-actions class="bottom-buttons-container">
+<mat-dialog-actions class="actions__bottom-container">
     <button mat-flat-button id="send-button" type="submit" form="updateForm" color="primary"
         (click)="updateUser()">Save</button>
     <button mat-flat-button mat-dialog-close id="logout-button" color="warn" (click)="logOutUser()">Log Out</button>

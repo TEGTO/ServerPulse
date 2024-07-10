@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { AuthenticationService, confirmPasswordValidator } from '../..';
-import { UserRegistrationRequest } from '../../../shared';
+import { SnackbarManager, UserRegistrationRequest } from '../../../shared';
 
 @Component({
   selector: 'app-register',
@@ -18,13 +18,14 @@ export class RegisterComponent {
       passwordConfirm: new FormControl('', [Validators.required, confirmPasswordValidator, Validators.maxLength(256)])
     });
   hidePassword: boolean = true;
-  registerErrors: string[] = [];
 
   get emailInput() { return this.formGroup.get('email')!; }
   get passwordInput() { return this.formGroup.get('password')!; }
   get passwordConfirmInput() { return this.formGroup.get('passwordConfirm')!; }
 
-  constructor(private authService: AuthenticationService, private dialogRef: MatDialogRef<RegisterComponent>) { }
+  constructor(private authService: AuthenticationService,
+    private dialogRef: MatDialogRef<RegisterComponent>,
+    private snackbarManager: SnackbarManager) { }
 
   registerUser() {
     if (this.formGroup.valid) {
@@ -39,12 +40,10 @@ export class RegisterComponent {
         if (isSuccess) {
           this.dialogRef.close();
         }
-        else {
-          this.authService.registerUserGetErrors().subscribe(errors => {
-            if (errors)
-              this.registerErrors = errors.split("\n");
-          })
-        }
+        this.authService.getRegistrationErrors().subscribe(errors => {
+          if (errors)
+            this.snackbarManager.openErrorSnackbar(errors.split("\n"));
+        })
       });
     }
   }

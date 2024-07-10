@@ -4,7 +4,7 @@
 <h2 mat-dialog-title>Create Account</h2>
 
 <mat-dialog-content>
-    <form id="registrationForm" class="form-full-width" [formGroup]="formGroup" (ngSubmit)="registerUser()">
+    <form id="registrationForm" class="content__form space-y-1" [formGroup]="formGroup" (ngSubmit)="registerUser()">
         <mat-form-field>
             <mat-label>Name</mat-label>
             <input type="text" matInput formControlName="userName" placeholder="John" maxlength="256">
@@ -49,9 +49,8 @@
             <mat-error><strong>Passwords don't match.</strong></mat-error>
             }
         </mat-form-field>
-        <mat-error *ngFor="let error of registerErrors">{{error}}</mat-error>
     </form>
 </mat-dialog-content>
-<mat-dialog-actions class="send-button-container">
+<mat-dialog-actions class="actions__bottom-container flex-col">
     <button mat-flat-button id="send-button" form="registrationForm" type="submit" color="primary">Create</button>
 </mat-dialog-actions>

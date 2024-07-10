@@ -37,7 +37,7 @@ $button-icon-light: mat.define-theme((color: (theme-type: dark,
 }
 
 :root {
-    // @include mat.all-component-themes($theme);
+    @include mat.all-component-themes($theme);
     @include square-elements;
     // @include toolbar-theme($theme);
 }
@@ -69,7 +69,7 @@ html {
 }
 
 .mat-mdc-dialog-container .mdc-dialog__surface {
-    padding: 10px !important;
+    padding: 5px !important;
 }
 
 .mat-mdc-dialog-container .mat-mdc-dialog-title+.mat-mdc-dialog-content {

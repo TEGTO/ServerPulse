@@ -9,7 +9,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthInterceptor } from '../authentication';
 import { AuthenticationModule } from '../authentication/authentication.module';
-import { CustomErrorHandler, ErrorHandlerService, RedirectorContollerService, RedirectorService, URLDefiner, URLDefinerService } from '../shared';
+import { CustomErrorHandler, ErrorHandlerService, RedirectorContollerService, RedirectorService, SnackbarManager, SnackbarManagerService, URLDefiner, URLDefinerService } from '../shared';
 import { AppComponent, MainViewComponent } from './index';
 
 const routes: Routes = [
@@ -34,12 +34,14 @@ const routes: Routes = [
     MatButtonModule,
     MatDialogModule,
     AuthenticationModule,
+    MatDialogModule,
     HttpClientModule,
   ],
   providers: [
     { provide: URLDefiner, useClass: URLDefinerService },
     { provide: CustomErrorHandler, useClass: ErrorHandlerService },
     { provide: RedirectorService, useClass: RedirectorContollerService },
+    { provide: SnackbarManager, useClass: SnackbarManagerService },
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
   ],
   bootstrap: [AppComponent]

@@ -16,7 +16,7 @@ export class AuthenticationControllerService implements AuthenticationService {
     this.store.dispatch(registerUser({ userRegistrationData: userRegistrationData }));
     return this.store.select(selectIsRegistrationSuccess);
   }
-  registerUserGetErrors(): Observable<any> {
+  getRegistrationErrors(): Observable<any> {
     return this.store.select(selectRegistrationErrors);
   }
   singInUser(userAuthData: UserAuthenticationRequest): Observable<AuthData> {
@@ -26,6 +26,9 @@ export class AuthenticationControllerService implements AuthenticationService {
   getAuthData(): Observable<AuthData> {
     this.store.dispatch(getAuthData());
     return this.store.select(selectAuthData);
+  }
+  getAuthErrors(): Observable<any> {
+    return this.store.select(selectAuthErrors);
   }
   getUserData(): Observable<UserData> {
     this.store.dispatch(getAuthData());
@@ -42,8 +45,5 @@ export class AuthenticationControllerService implements AuthenticationService {
   updateUser(updateData: UserUpdateDataRequest): Observable<boolean> {
     this.store.dispatch(updateUserData({ userUpdateData: updateData }));
     return this.store.select(selectUpdateIsSuccessful);
-  }
-  getAuthErrors(): Observable<any> {
-    return this.store.select(selectAuthErrors);
   }
 }

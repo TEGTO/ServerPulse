@@ -9,9 +9,10 @@ import { MatInputModule } from '@angular/material/input';
 import { provideEffects } from '@ngrx/effects';
 import { provideState, provideStore } from '@ngrx/store';
 import { AuthInterceptor, AuthenticatedComponent, AuthenticationControllerService, AuthenticationDialogManager, AuthenticationDialogManagerService, AuthenticationService, LoginComponent, RegisterComponent, RegistrationEffects, SignInEffects, authReducer, registrationReducer, userDataReducer } from '.';
+import { UnauthenticatedComponent } from './components/unauthenticated/unauthenticated.component';
 
 @NgModule({
-  declarations: [LoginComponent, RegisterComponent, AuthenticatedComponent],
+  declarations: [LoginComponent, RegisterComponent, AuthenticatedComponent, UnauthenticatedComponent],
   imports: [
     CommonModule,
     MatDialogModule,
@@ -33,6 +34,6 @@ import { AuthInterceptor, AuthenticatedComponent, AuthenticationControllerServic
     provideEffects(RegistrationEffects),
     provideEffects(SignInEffects),
   ],
-  exports: [LoginComponent],
+  exports: [LoginComponent, UnauthenticatedComponent],
 })
 export class AuthenticationModule { }

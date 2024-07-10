@@ -1,0 +1,6 @@
+<div matSnackBarLabel *ngFor="let message of data.messages">
+    {{ message }}
+</div>
+<span matSnackBarActions class="flex justify-end">
+    <button mat-button matSnackBarAction (click)="snackBarRef.dismissWithAction()">Dismiss</button>
+</span>
