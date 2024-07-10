@@ -17,7 +17,7 @@ export class MainViewComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.authService.getAuthUserData().subscribe(data => {
+    this.authService.getAuthData().subscribe(data => {
       this.isAuthenticated = data.isAuthenticated;
     })
   }

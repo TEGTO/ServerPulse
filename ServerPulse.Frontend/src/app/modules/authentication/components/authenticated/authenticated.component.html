@@ -6,8 +6,15 @@
 <mat-dialog-content>
     <form id="updateForm" [formGroup]="formGroup" class="form-full-width">
         <mat-form-field>
+            <mat-form-field>
+                <mat-label>Name</mat-label>
+                <input type="text" matInput formControlName="userName" placeholder="John" maxlength="256">
+                @if (emailInput.hasError('required')) {
+                <mat-error>Name is <strong>required</strong></mat-error>
+                }
+            </mat-form-field>
             <mat-label>Email</mat-label>
-            <input type="email" matInput formControlName="email" placeholder="example@example.com">
+            <input type="email" matInput formControlName="email" placeholder="example@example.com" maxlength="256">
             @if (emailInput.hasError('email') && !emailInput.hasError('required')) {
             <mat-error>Please enter a valid email address</mat-error>
             }
@@ -17,14 +24,15 @@
         </mat-form-field>
         <mat-form-field>
             <mat-label>Old Password</mat-label>
-            <input [type]="'password'" matInput formControlName="oldPassword">
+            <input [type]="'password'" matInput formControlName="oldPassword" maxlength="256">
             @if (oldPassword.hasError('required')) {
             <mat-error>Old Password is <strong>required</strong></mat-error>
             }
         </mat-form-field>
         <mat-form-field>
             <mat-label>New Password</mat-label>
-            <input [type]="hideNewPassword ? 'password' : 'text'" matInput formControlName="newPassword">
+            <input [type]="hideNewPassword ? 'password' : 'text'" matInput formControlName="newPassword"
+                maxlength="256">
             <span class="material-icons me-2" matSuffix (click)="hideNewPassword = !hideNewPassword">
                 {{hideNewPassword
                 ? 'visibility_off'

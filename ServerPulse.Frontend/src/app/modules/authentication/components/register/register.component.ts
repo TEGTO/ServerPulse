@@ -12,9 +12,10 @@ import { UserRegistrationRequest } from '../../../shared';
 export class RegisterComponent {
   formGroup: FormGroup = new FormGroup(
     {
-      email: new FormControl('', [Validators.email, Validators.required]),
-      password: new FormControl('', [Validators.required, Validators.minLength(8)]),
-      passwordConfirm: new FormControl('', [Validators.required, confirmPasswordValidator])
+      userName: new FormControl('', [Validators.required, Validators.maxLength(256)]),
+      email: new FormControl('', [Validators.email, Validators.required, Validators.maxLength(256)]),
+      password: new FormControl('', [Validators.required, Validators.minLength(8), Validators.maxLength(256)]),
+      passwordConfirm: new FormControl('', [Validators.required, confirmPasswordValidator, Validators.maxLength(256)])
     });
   hidePassword: boolean = true;
   registerErrors: string[] = [];
@@ -29,6 +30,7 @@ export class RegisterComponent {
     if (this.formGroup.valid) {
       const formValues = { ...this.formGroup.value };
       const userData: UserRegistrationRequest = {
+        userName: formValues.userName,
         email: formValues.email,
         password: formValues.password,
         confirmPassword: formValues.passwordConfirm

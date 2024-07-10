@@ -11,6 +11,10 @@ $theme: mat.define-theme((color: (theme-type: light,
                 bold-weight: 900),
             density: (scale: 0)));
 
+$button-icon-light: mat.define-theme((color: (theme-type: dark,
+                primary: mat.$violet-palette,
+            ),
+        ));
 
 @include mat.core();
 @include mat.color-variants-backwards-compatibility($theme);
@@ -21,8 +25,20 @@ $theme: mat.define-theme((color: (theme-type: light,
     }
 }
 
+@mixin square-elements {
+
+    .mat-mdc-dialog-surface,
+    .mdc-button,
+    .mdc-raised-button,
+    .mdc-flat-button,
+    .mdc-stroked-button {
+        border-radius: 5px !important;
+    }
+}
+
 :root {
-    @include mat.all-component-themes($theme);
+    // @include mat.all-component-themes($theme);
+    @include square-elements;
     // @include toolbar-theme($theme);
 }
 

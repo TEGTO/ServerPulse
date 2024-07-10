@@ -24,13 +24,14 @@ export class AuthenticatedComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.authService.getAuthUserData().subscribe(data => {
-      this.userEmail = data.userEmail;
+    this.authService.getUserData().subscribe(data => {
+      this.userEmail = data.email;
       this.formGroup = new FormGroup(
         {
-          email: new FormControl(this.userEmail, [Validators.email, Validators.required]),
-          oldPassword: new FormControl('', [Validators.required]),
-          newPassword: new FormControl('', [Validators.minLength(8)])
+          userName: new FormControl('', [Validators.required, Validators.maxLength(256)]),
+          email: new FormControl(this.userEmail, [Validators.email, Validators.required, Validators.maxLength(256)]),
+          oldPassword: new FormControl('', [Validators.required, Validators.maxLength(256)]),
+          newPassword: new FormControl('', [Validators.minLength(8), Validators.maxLength(256)])
         });
     })
   }
@@ -41,6 +42,7 @@ export class AuthenticatedComponent implements OnInit {
     if (this.formGroup.valid) {
       const formValues = { ...this.formGroup.value };
       const userData: UserUpdateDataRequest = {
+        userName: formValues.userName,
         oldEmail: this.userEmail,
         newEmail: formValues.email,
         oldPassword: formValues.oldPassword,
@@ -48,7 +50,7 @@ export class AuthenticatedComponent implements OnInit {
       };
       this.authService.updateUser(userData).subscribe(isSuccess => {
         this.isUpdateSuccessful = isSuccess;
-        this.authService.getAuthUserErrors().subscribe(
+        this.authService.getAuthErrors().subscribe(
           errors => {
             if (errors)
               this.updateErrors = errors.split("\n");

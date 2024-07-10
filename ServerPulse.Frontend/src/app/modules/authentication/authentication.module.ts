@@ -8,7 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { provideEffects } from '@ngrx/effects';
 import { provideState, provideStore } from '@ngrx/store';
-import { AuthInterceptor, AuthenticatedComponent, AuthenticationControllerService, AuthenticationDialogManager, AuthenticationDialogManagerService, AuthenticationService, LoginComponent, RegisterComponent, RegistrationEffects, SignInEffects, authReducer, registrationReducer } from '.';
+import { AuthInterceptor, AuthenticatedComponent, AuthenticationControllerService, AuthenticationDialogManager, AuthenticationDialogManagerService, AuthenticationService, LoginComponent, RegisterComponent, RegistrationEffects, SignInEffects, authReducer, registrationReducer, userDataReducer } from '.';
 
 @NgModule({
   declarations: [LoginComponent, RegisterComponent, AuthenticatedComponent],
@@ -29,6 +29,7 @@ import { AuthInterceptor, AuthenticatedComponent, AuthenticationControllerServic
     provideStore(),
     provideState({ name: "registration", reducer: registrationReducer }),
     provideState({ name: "authentication", reducer: authReducer }),
+    provideState({ name: "userdata", reducer: userDataReducer }),
     provideEffects(RegistrationEffects),
     provideEffects(SignInEffects),
   ],

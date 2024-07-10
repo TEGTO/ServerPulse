@@ -10,7 +10,7 @@ export class AuthenticationDialogManagerService implements AuthenticationDialogM
   isAuthenticated: boolean = false;
 
   constructor(private authService: AuthenticationService, private dialog: MatDialog) {
-    this.authService.getAuthUserData().subscribe(data => {
+    this.authService.getAuthData().subscribe(data => {
       this.isAuthenticated = data.isAuthenticated;
     })
   }

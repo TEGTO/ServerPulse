@@ -6,8 +6,15 @@
 <mat-dialog-content>
     <form id="registrationForm" class="form-full-width" [formGroup]="formGroup" (ngSubmit)="registerUser()">
         <mat-form-field>
+            <mat-label>Name</mat-label>
+            <input type="text" matInput formControlName="userName" placeholder="John" maxlength="256">
+            @if (emailInput.hasError('required')) {
+            <mat-error>Name is <strong>required</strong></mat-error>
+            }
+        </mat-form-field>
+        <mat-form-field>
             <mat-label>Email</mat-label>
-            <input type="email" matInput formControlName="email" placeholder="example@example.com">
+            <input type="email" matInput formControlName="email" placeholder="example@example.com" maxlength="256">
             @if (emailInput.hasError('email') && !emailInput.hasError('required')) {
             <mat-error>Please enter a valid email address</mat-error>
             }
@@ -17,7 +24,7 @@
         </mat-form-field>
         <mat-form-field>
             <mat-label>Password</mat-label>
-            <input [type]="hidePassword ? 'password' : 'text'" matInput formControlName="password">
+            <input [type]="hidePassword ? 'password' : 'text'" matInput formControlName="password" maxlength="256">
             <span class="material-icons me-2" matSuffix (click)="hidePassword = !hidePassword">
                 {{hidePassword
                 ? 'visibility_off'
@@ -33,7 +40,8 @@
         </mat-form-field>
         <mat-form-field>
             <mat-label>Confirm Password</mat-label>
-            <input [type]="hidePassword ? 'password' : 'text'" matInput formControlName="passwordConfirm">
+            <input [type]="hidePassword ? 'password' : 'text'" matInput formControlName="passwordConfirm"
+                maxlength="256">
             @if (passwordConfirmInput.hasError('required')) {
             <mat-error><strong>Confirm password.</strong></mat-error>
             }

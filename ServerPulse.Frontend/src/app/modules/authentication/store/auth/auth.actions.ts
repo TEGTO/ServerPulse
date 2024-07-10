@@ -1,5 +1,5 @@
 import { createAction, props } from "@ngrx/store";
-import { AccessTokenDto, UserAuthData, UserAuthenticationRequest, UserRegistrationRequest, UserUpdateDataRequest } from "../../../shared";
+import { AuthData, AuthToken, UserAuthenticationRequest, UserData, UserRegistrationRequest, UserUpdateDataRequest } from "../../../shared";
 
 //Registration
 export const registerUser = createAction(
@@ -16,23 +16,23 @@ export const registerFailure = createAction(
 //Auth
 export const signInUser = createAction(
     '[Auth] Sing In By User Data',
-    props<{ userAuthData: UserAuthenticationRequest }>()
+    props<{ authData: UserAuthenticationRequest }>()
 );
 export const signInUserSuccess = createAction(
     '[Auth] Sing In By User Data Success',
-    props<{ userAuthData: UserAuthData }>()
+    props<{ authData: AuthData, userData: UserData }>()
 );
 export const signInUserFailure = createAction(
     '[Auth] Sing In By User Data Failure',
     props<{ error: any }>()
 );
 
-export const getAuthUserData = createAction(
-    '[Auth] Get Authenticated User Data'
+export const getAuthData = createAction(
+    '[Auth] Get Authenticated Data'
 );
-export const getAuthUserDataSuccess = createAction(
-    '[Auth] Get Authenticated User Data Success',
-    props<{ userAuthData: UserAuthData }>()
+export const getAuthDataSuccess = createAction(
+    '[Auth] Get Authenticated Data Success',
+    props<{ authData: AuthData, userData: UserData }>()
 );
 
 export const logOutUser = createAction(
@@ -44,11 +44,11 @@ export const logOutUserSuccess = createAction(
 
 export const refreshAccessToken = createAction(
     '[Auth] Refresh Access Token',
-    props<{ accessToken: AccessTokenDto }>()
+    props<{ accessToken: AuthToken }>()
 );
 export const refreshAccessTokenSuccess = createAction(
     '[Auth] Refresh Access Token Success',
-    props<{ accessToken: AccessTokenDto }>()
+    props<{ accessToken: AuthToken }>()
 );
 export const refreshAccessTokenFailure = createAction(
     '[Auth] Refresh Access Token  Failure',
@@ -61,7 +61,9 @@ export const updateUserData = createAction(
 );
 export const updateUserDataSuccess = createAction(
     '[Auth] Update Authenticated User Success',
-    props<{ userUpdateData: UserUpdateDataRequest }>()
+    props<{
+        userData: UserData
+    }>()
 );
 export const updateUserDataFailure = createAction(
     '[Auth] Update Authenticated User Failure',

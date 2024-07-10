@@ -50,11 +50,18 @@ namespace AuthenticationApi.Controllers
             return Created($"/users/{user.Id}", null);
         }
         [HttpPost("login")]
-        public async Task<ActionResult<AccessTokenDto>> Login([FromBody] UserAuthenticationRequest authRequest)
+        public async Task<ActionResult<UserAuthenticationResponse>> Login([FromBody] UserAuthenticationRequest authRequest)
         {
             int expiryInDays = int.Parse(configuration["AuthSettings:RefreshExpiryInDays"]);
             var token = await authService.LoginUserAsync(authRequest.Email, authRequest.Password, expiryInDays);
-            var tokenDto = mapper.Map<AccessTokenDto>(token);
+            var tokenDto = mapper.Map<AuthToken>(token);
+            var user = await authService.GetUserByEmailAsync(authRequest.Email);
+            var response = new UserAuthenticationResponse()
+            {
+                AuthToken = tokenDto,
+                UserName = user.UserName,
+                Email = user.Email
+            };
             tokenDto.RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(expiryInDays);
             return Ok(tokenDto);
         }
@@ -72,11 +79,11 @@ namespace AuthenticationApi.Controllers
             return Ok();
         }
         [HttpPost("refresh")]
-        public async Task<ActionResult<AccessTokenDto>> Refresh([FromBody] AccessTokenDto accessTokenDto)
+        public async Task<ActionResult<AuthToken>> Refresh([FromBody] AuthToken accessTokenDto)
         {
             AccessTokenData accessToken = mapper.Map<AccessTokenData>(accessTokenDto);
             var newToken = await authService.RefreshToken(accessToken);
-            return Ok(mapper.Map<AccessTokenDto>(newToken));
+            return Ok(mapper.Map<AuthToken>(newToken));
         }
     }
 }

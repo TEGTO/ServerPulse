@@ -1,6 +1,6 @@
 ﻿namespace AuthenticationApi.Domain.Dtos
 {
-    public class AccessTokenDto
+    public class AuthToken
     {
         public string? AccessToken { get; set; }
         public string? RefreshToken { get; set; }

@@ -1,5 +1,5 @@
 import { createReducer, on } from "@ngrx/store";
-import { getAuthUserDataSuccess, logOutUserSuccess, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerFailure, registerSuccess, signInUser, signInUserFailure, signInUserSuccess, updateUserDataFailure, updateUserDataSuccess } from "../..";
+import { getAuthDataSuccess, logOutUserSuccess, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerFailure, registerSuccess, signInUser, signInUserFailure, signInUserSuccess, updateUserDataFailure, updateUserDataSuccess } from "../..";
 
 //Registration
 export interface RegistrationState {
@@ -29,14 +29,12 @@ export interface AuthState {
     authToken: string,
     refreshToken: string,
     refreshTokenExpiryDate: Date,
-    userEmail: string,
     error: any
 }
 const initialAuthState: AuthState = {
     isAuthenticated: false,
     authToken: "",
     refreshToken: "",
-    userEmail: "",
     refreshTokenExpiryDate: new Date(),
     error: null
 };
@@ -47,13 +45,12 @@ export const authReducer = createReducer(
         ...initialAuthState,
         isAuthenticated: false
     })),
-    on(signInUserSuccess, (state, { userAuthData: userAuthData }) => ({
+    on(signInUserSuccess, (state, { authData: authData }) => ({
         ...state,
         isAuthenticated: true,
-        authToken: userAuthData.authToken,
-        refreshToken: userAuthData.refreshToken,
-        refreshTokenExpiryDate: userAuthData.refreshTokenExpiryDate,
-        userEmail: userAuthData.userEmail,
+        authToken: authData.authToken,
+        refreshToken: authData.refreshToken,
+        refreshTokenExpiryDate: authData.refreshTokenExpiryDate,
         error: null
     })),
     on(signInUserFailure, (state, { error: error }) => ({
@@ -61,13 +58,12 @@ export const authReducer = createReducer(
         error: error
     })),
 
-    on(getAuthUserDataSuccess, (state, { userAuthData: userAuthData }) => ({
+    on(getAuthDataSuccess, (state, { authData: authData }) => ({
         ...state,
-        isAuthenticated: userAuthData.isAuthenticated,
-        authToken: userAuthData.authToken,
-        refreshToken: userAuthData.refreshToken,
-        refreshTokenExpiryDate: userAuthData.refreshTokenExpiryDate,
-        userEmail: userAuthData.userEmail,
+        isAuthenticated: authData.isAuthenticated,
+        authToken: authData.authToken,
+        refreshToken: authData.refreshToken,
+        refreshTokenExpiryDate: authData.refreshTokenExpiryDate,
         error: null
     })),
 
@@ -88,9 +84,56 @@ export const authReducer = createReducer(
         error: error
     })),
 
-    on(updateUserDataSuccess, (state, { userUpdateData: userUpdateData }) => ({
+    on(updateUserDataSuccess, (state, { userData: userData }) => ({
         ...state,
-        userEmail: userUpdateData.newEmail ? userUpdateData.newEmail : userUpdateData.oldEmail,
+        userEmail: userData.email,
+        error: null
+    })),
+    on(updateUserDataFailure, (state, { error: error }) => ({
+        ...state,
+        error: error
+    })),
+);
+//UserData
+export interface UserDataState {
+    userName: string,
+    email: string,
+    error: any
+}
+const initialUserState: UserDataState = {
+    userName: "",
+    email: "",
+    error: null
+};
+
+export const userDataReducer = createReducer(
+    initialUserState,
+    on(signInUserSuccess, (state, { userData: userData }) => ({
+        ...state,
+        userName: userData.userName,
+        email: userData.email,
+        error: null
+    })),
+    on(signInUserFailure, (state, { error: error }) => ({
+        ...initialUserState,
+        error: error
+    })),
+
+    on(getAuthDataSuccess, (state, { userData: userData }) => ({
+        ...state,
+        userName: userData.userName,
+        email: userData.email,
+        error: null
+    })),
+
+    on(logOutUserSuccess, (state) => ({
+        ...initialUserState,
+    })),
+
+    on(updateUserDataSuccess, (state, { userData: userData }) => ({
+        ...state,
+        userName: userData.userName,
+        email: userData.email,
         error: null
     })),
     on(updateUserDataFailure, (state, { error: error }) => ({

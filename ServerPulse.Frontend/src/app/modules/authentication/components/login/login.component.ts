@@ -12,8 +12,8 @@ import { AuthenticationDialogManager, AuthenticationService, RegisterComponent }
 export class LoginComponent {
   formGroup: FormGroup = new FormGroup(
     {
-      email: new FormControl('', [Validators.email, Validators.required]),
-      password: new FormControl('', [Validators.required, Validators.minLength(8)]),
+      email: new FormControl('', [Validators.email, Validators.required, Validators.maxLength(256)]),
+      password: new FormControl('', [Validators.required, Validators.minLength(8), Validators.maxLength(256)]),
     });
   hidePassword: boolean = true;
   isLoginFailed: boolean = false;

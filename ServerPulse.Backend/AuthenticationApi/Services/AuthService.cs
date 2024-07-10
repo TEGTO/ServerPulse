@@ -34,6 +34,11 @@ namespace AuthenticationApi.Services
             await userManager.UpdateAsync(user);
             return token;
         }
+        public async Task<User?> GetUserByEmailAsync(string email)
+        {
+            var user = await userManager.FindByEmailAsync(email);
+            return user;
+        }
         public async Task<List<IdentityError>> UpdateUser(UserUpdateData updateData)
         {
             var user = await userManager.FindByEmailAsync(updateData.OldEmail);

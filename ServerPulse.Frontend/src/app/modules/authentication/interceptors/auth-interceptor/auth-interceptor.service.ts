@@ -3,17 +3,17 @@ import { Injectable } from '@angular/core';
 import { jwtDecode } from 'jwt-decode';
 import { Observable, switchMap, throwError } from 'rxjs';
 import { AuthenticationService } from '../..';
-import { AccessTokenDto } from '../../../shared';
+import { AuthToken } from '../../../shared';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthInterceptor implements HttpInterceptor {
 
-  tokenData!: AccessTokenDto;
+  tokenData!: AuthToken;
 
   constructor(private authService: AuthenticationService) {
-    authService.getAuthUserData().subscribe(
+    authService.getAuthData().subscribe(
       data => {
         this.tokenData = {
           accessToken: data.authToken,

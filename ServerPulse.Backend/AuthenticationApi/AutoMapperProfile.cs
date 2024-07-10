@@ -13,8 +13,8 @@ namespace AuthenticationApi
         {
             CreateMap<User, UserRegistrationRequest>();
             CreateMap<UserRegistrationRequest, User>();
-            CreateMap<AccessTokenData, AccessTokenDto>();
-            CreateMap<AccessTokenDto, AccessTokenData>();
+            CreateMap<AccessTokenData, AuthToken>();
+            CreateMap<AuthToken, AccessTokenData>();
             CreateMap<UserUpdateDataRequest, UserUpdateData>();
             CreateMap<ServerSlot, ServerSlotDto>();
             CreateMap<CreateServerSlotRequest, ServerSlot>();
