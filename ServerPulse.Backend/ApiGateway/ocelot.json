@@ -52,35 +52,9 @@
       ],
       "DownstreamPathTemplate": "/auth/refresh"
     },
-    // Authentication API - GetServerSlot
+    // Authentication API - Check
     {
-      "UpstreamPathTemplate": "/serverslot?email={email}&password={password}&serverSlotId={serverSlotId}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "authenticationapi",
-          "Port": 8080
-        }
-      ],
-      "DownstreamPathTemplate": "/serverslot?email={email}&password={password}&serverSlotId={serverSlotId}"
-    },
-    // Authentication API - GetServerSlotsByEmail
-    {
-      "UpstreamPathTemplate": "/serverslot/{email}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "authenticationapi",
-          "Port": 8080
-        }
-      ],
-      "DownstreamPathTemplate": "/serverslot/{email}"
-    },
-    // Authentication API - CreateServerSlot
-    {
-      "UpstreamPathTemplate": "/serverslot",
+      "UpstreamPathTemplate": "/auth/check",
       "UpstreamHttpMethod": [ "POST" ],
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -89,7 +63,72 @@
           "Port": 8080
         }
       ],
+      "DownstreamPathTemplate": "/auth/check"
+    },
+    // Server Data API - GetServerSlot
+    {
+      "UpstreamPathTemplate": "/serverslot/get",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "serverapi",
+          "Port": 8080
+        }
+      ],
+      "DownstreamPathTemplate": "/serverslot/get"
+    },
+    // Server Data API - GetServerSlotsByEmail
+    {
+      "UpstreamPathTemplate": "/serverslot",
+      "UpstreamHttpMethod": [ "GET" ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "serverapi",
+          "Port": 8080
+        }
+      ],
       "DownstreamPathTemplate": "/serverslot"
+    },
+    // Server Data API - GerServerSlotsContainingString
+    {
+      "UpstreamPathTemplate": "/serverslot/{str}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "serverapi",
+          "Port": 8080
+        }
+      ],
+      "DownstreamPathTemplate": "/serverslot/{str}"
+    },
+    // Server Data API - CreateServerSlot
+    {
+      "UpstreamPathTemplate": "/serverslot",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "serverapi",
+          "Port": 8080
+        }
+      ],
+      "DownstreamPathTemplate": "/serverslot"
+    },
+    // Server Data API - DeleteServerSlot
+    {
+      "UpstreamPathTemplate": "/serverslot/{id}",
+      "UpstreamHttpMethod": [ "DELETE" ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "serverapi",
+          "Port": 8080
+        }
+      ],
+      "DownstreamPathTemplate": "/serverslot/{id}"
     }
   ],
   "GlobalConfiguration": {

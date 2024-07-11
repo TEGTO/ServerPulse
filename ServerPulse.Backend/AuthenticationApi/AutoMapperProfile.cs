@@ -1,9 +1,8 @@
 ﻿using Authentication.Models;
+using AutoMapper;
 using AuthenticationApi.Domain.Dtos;
 using AuthenticationApi.Domain.Entities;
 using AuthenticationApi.Domain.Models;
-using AutoMapper;
-using Shared.Dtos;
 
 namespace AuthenticationApi
 {
@@ -16,8 +15,6 @@ namespace AuthenticationApi
             CreateMap<AccessTokenData, AuthToken>();
             CreateMap<AuthToken, AccessTokenData>();
             CreateMap<UserUpdateDataRequest, UserUpdateData>();
-            CreateMap<ServerSlot, ServerSlotDto>();
-            CreateMap<CreateServerSlotRequest, ServerSlot>();
         }
     }
 }

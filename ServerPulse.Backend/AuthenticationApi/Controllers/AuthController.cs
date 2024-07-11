@@ -70,7 +70,7 @@ namespace AuthenticationApi.Controllers
         public async Task<IActionResult> Update([FromBody] UserUpdateDataRequest updateRequest)
         {
             UserUpdateData serviceUpdateRequest = mapper.Map<UserUpdateData>(updateRequest);
-            var identityErrors = await authService.UpdateUser(serviceUpdateRequest);
+            var identityErrors = await authService.UpdateUserAsync(serviceUpdateRequest);
             if (identityErrors.Count > 0)
             {
                 var errors = identityErrors.Where(e => !e.Description.Contains("Username")).Select(e => e.Description).ToArray();
@@ -82,8 +82,18 @@ namespace AuthenticationApi.Controllers
         public async Task<ActionResult<AuthToken>> Refresh([FromBody] AuthToken accessTokenDto)
         {
             AccessTokenData accessToken = mapper.Map<AccessTokenData>(accessTokenDto);
-            var newToken = await authService.RefreshToken(accessToken);
+            var newToken = await authService.RefreshTokenAsync(accessToken);
             return Ok(mapper.Map<AuthToken>(newToken));
+        }
+        [HttpPost("check")]
+        public async Task<ActionResult<CheckAuthDataResponse>> CheckAuthData([FromBody] CheckAuthDataRequest request)
+        {
+            var isCorrect = await authService.CheckAuthDataAsync(request.Email, request.Password);
+            var checkAuthDataResponse = new CheckAuthDataResponse
+            {
+                IsCorrect = isCorrect
+            };
+            return Ok(checkAuthDataResponse);
         }
     }
 }

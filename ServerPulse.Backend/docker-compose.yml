@@ -43,7 +43,18 @@ services:
     - backend-net
     depends_on:
     - db
+  serverapi:
+    container_name: serverdata-api
+    image: ${DOCKER_REGISTRY-}serverapi
+    build:
+      context: .
+      dockerfile: ServerApi/Dockerfile
+    networks:
+    - backend-net
+    depends_on:
+    - db
     - rabbitmq
+
   apigateway:
     container_name: apigateway
     image: ${DOCKER_REGISTRY-}apigateway
@@ -56,6 +67,7 @@ services:
       - backend-net
     depends_on:
     - authenticationapi
+    - serverapi
 
 networks:
   backend-net:
