@@ -17,7 +17,7 @@ export class AuthenticationDialogManagerService implements AuthenticationDialogM
 
   openLoginMenu(): MatDialogRef<any, any> {
     var dialogRef: MatDialogRef<any, any>;
-    if (!this.isAuthenticated) {
+    if (this.isAuthenticated) {
       dialogRef = this.dialog.open(AuthenticatedComponent, {
         height: '455px',
         width: '450px',

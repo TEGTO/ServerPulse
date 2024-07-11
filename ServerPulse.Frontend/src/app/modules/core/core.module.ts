@@ -9,6 +9,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthInterceptor } from '../authentication';
 import { AuthenticationModule } from '../authentication/authentication.module';
+import { SlotBoardComponent } from '../server-slots';
+import { ServerSlotsModule } from '../server-slots/server-slots.module';
 import { CustomErrorHandler, ErrorHandlerService, RedirectorContollerService, RedirectorService, SnackbarManager, SnackbarManagerService, URLDefiner, URLDefinerService } from '../shared';
 import { AppComponent, MainViewComponent } from './index';
 
@@ -16,7 +18,7 @@ const routes: Routes = [
   {
     path: "", component: MainViewComponent,
     children: [
-      // { path: "", component: ApartmentBoardComponent },
+      { path: "", component: SlotBoardComponent },
     ]
   }
 ];
@@ -35,6 +37,7 @@ const routes: Routes = [
     MatDialogModule,
     AuthenticationModule,
     MatDialogModule,
+    ServerSlotsModule,
     HttpClientModule,
   ],
   providers: [

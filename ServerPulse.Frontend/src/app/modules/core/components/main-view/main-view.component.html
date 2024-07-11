@@ -1,8 +1,7 @@
-@if(isAuthenticated){
+@if(!isAuthenticated){
 <div class="root">
     <header class="root__header">
-        <nav
-            class="bg-white dark:bg-gray-900 fixed w-full z-20 top-0 start-0 border-b border-gray-200 dark:border-gray-600">
+        <nav class="bg-white dark:bg-gray-900 w-full border-b border-gray-200 dark:border-gray-600">
             <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
                 <a href="" class="flex items-center space-x-3 rtl:space-x-reverse">
                     <svg xmlns="http://www.w3.org/2000/svg" height="40px" viewBox="0 -960 960 960" width="40px"
@@ -22,7 +21,7 @@
         </nav>
     </header>
 
-    <body class="root__body-wrapper">
+    <body class="root__body-wrapper m-5">
         <router-outlet></router-outlet>
     </body>
 </div>

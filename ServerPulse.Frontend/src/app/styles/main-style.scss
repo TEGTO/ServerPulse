@@ -77,19 +77,19 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.185);
+    background: rgba(0, 0, 0, 0.105);
     border-radius: 20px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #07070731;
+    background: rgba(0, 0, 0, 0.105);
     border-radius: 20px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgb(0 0 0 / 32%);
+    background: rgb(0 0 0 / 18%);
 }
 
 ::-webkit-scrollbar {
-    width: 20px;
+    width: 15px;
 }

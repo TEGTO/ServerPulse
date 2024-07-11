@@ -1,0 +1,35 @@
+@use 'colors' as colors;
+
+.server-slot {
+    padding: 2rem;
+    gap: 10px;
+    box-shadow: 2px 2px 7px 1px colors.$task-box-shadow;
+    display: flex;
+    flex-direction: column;
+
+    .server-slot__header {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+        margin-bottom: 10px;
+
+        .header__name {
+            font-size: 30px;
+            font-weight: 900;
+            max-width: 400px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-wrap: nowrap;
+        }
+    }
+
+    .server-slot__body {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+        align-items: center;
+        padding: 10px;
+    }
+}
