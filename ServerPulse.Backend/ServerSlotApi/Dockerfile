@@ -9,19 +9,19 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["ServerApi/ServerApi.csproj", "ServerApi/"]
+COPY ["ServerSlotApi/ServerSlotApi.csproj", "ServerSlotApi/"]
 COPY ["Authentication/Authentication.csproj", "Authentication/"]
 COPY ["Shared/Shared.csproj", "Shared/"]
-RUN dotnet restore "./ServerApi/ServerApi.csproj"
+RUN dotnet restore "./ServerSlotApi/ServerSlotApi.csproj"
 COPY . .
-WORKDIR "/src/ServerApi"
-RUN dotnet build "./ServerApi.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/ServerSlotApi"
+RUN dotnet build "./ServerSlotApi.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./ServerApi.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./ServerSlotApi.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "ServerApi.dll"]
+ENTRYPOINT ["dotnet", "ServerSlotApi.dll"]

@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
-using ServerApi.Domain.Dtos;
-using ServerApi.Domain.Entities;
+using ServerSlotApi.Domain.Dtos;
+using ServerSlotApi.Domain.Entities;
 using Shared.Dtos;
 
-namespace ServerApi
+namespace ServerSlotApi
 {
     public class AutoMapperProfile : Profile
     {

@@ -18,12 +18,14 @@ namespace AuthenticationApi.Controllers
         private readonly IMapper mapper;
         private readonly IAuthService authService;
         private readonly IConfiguration configuration;
+        private readonly int expiryInDays;
 
         public AuthController(IMapper mapper, IAuthService authService, IConfiguration configuration)
         {
             this.mapper = mapper;
             this.authService = authService;
             this.configuration = configuration;
+            this.expiryInDays = int.Parse(configuration["AuthSettings:RefreshExpiryInDays"]);
         }
 
         [HttpPost("register")]
@@ -52,9 +54,9 @@ namespace AuthenticationApi.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<UserAuthenticationResponse>> Login([FromBody] UserAuthenticationRequest authRequest)
         {
-            int expiryInDays = int.Parse(configuration["AuthSettings:RefreshExpiryInDays"]);
             var token = await authService.LoginUserAsync(authRequest.Email, authRequest.Password, expiryInDays);
             var tokenDto = mapper.Map<AuthToken>(token);
+            tokenDto.RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(expiryInDays);
             var user = await authService.GetUserByEmailAsync(authRequest.Email);
             var response = new UserAuthenticationResponse()
             {
@@ -62,8 +64,7 @@ namespace AuthenticationApi.Controllers
                 UserName = user.UserName,
                 Email = user.Email
             };
-            tokenDto.RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(expiryInDays);
-            return Ok(tokenDto);
+            return Ok(response);
         }
         [HttpPut("update")]
         [Authorize]
@@ -83,7 +84,9 @@ namespace AuthenticationApi.Controllers
         {
             AccessTokenData accessToken = mapper.Map<AccessTokenData>(accessTokenDto);
             var newToken = await authService.RefreshTokenAsync(accessToken);
-            return Ok(mapper.Map<AuthToken>(newToken));
+            var tokenDto = mapper.Map<AuthToken>(newToken);
+            tokenDto.RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(expiryInDays);
+            return Ok(tokenDto);
         }
         [HttpPost("check")]
         public async Task<ActionResult<CheckAuthDataResponse>> CheckAuthData([FromBody] CheckAuthDataRequest request)

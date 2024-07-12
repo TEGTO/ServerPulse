@@ -4,15 +4,15 @@ using Authentication.Services;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using ServerApi.Data;
-using ServerApi.Services;
+using ServerSlotApi.Data;
+using ServerSlotApi.Services;
 using Shared;
 using Shared.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<ServerDataDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("ServerDataConnection")));
+builder.Services.AddDbContextFactory<ServerDataDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("ServerSlotDataConnection")));
 
 var jwtSettings = new JwtSettings()
 {
@@ -26,6 +26,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<JwtHandler>();
 builder.Services.AddCustomJwtAuthentication(jwtSettings);
 
+builder.Services.AddHttpClient();
 builder.Services.AddScoped<IServerSlotService, ServerSlotService>();
 builder.Services.AddScoped<IAuthChecker, AuthChecker>();
 

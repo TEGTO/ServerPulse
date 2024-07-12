@@ -1,13 +1,13 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ServerApi.Domain.Dtos;
-using ServerApi.Domain.Entities;
-using ServerApi.Services;
+using ServerSlotApi.Domain.Dtos;
+using ServerSlotApi.Domain.Entities;
+using ServerSlotApi.Services;
 using Shared.Dtos;
 using System.Security.Claims;
 
-namespace ServerApi.Controllers
+namespace ServerSlotApi.Controllers
 {
     [Route("serverslot")]
     [ApiController]

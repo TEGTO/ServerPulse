@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using ServerApi.Domain.Entities;
+using ServerSlotApi.Domain.Entities;
 
-namespace ServerApi.Data
+namespace ServerSlotApi.Data
 {
     public class ServerDataDbContext : DbContext
     {

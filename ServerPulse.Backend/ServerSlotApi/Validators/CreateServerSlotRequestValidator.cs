@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
-using ServerApi.Domain.Dtos;
+using ServerSlotApi.Domain.Dtos;
 
-namespace ServerApi.Validators
+namespace ServerSlotApi.Validators
 {
     public class CreateServerSlotRequestValidator : AbstractValidator<CreateServerSlotRequest>
     {

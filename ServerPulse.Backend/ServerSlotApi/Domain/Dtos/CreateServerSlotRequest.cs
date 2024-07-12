@@ -1,4 +1,4 @@
-﻿namespace ServerApi.Domain.Dtos
+﻿namespace ServerSlotApi.Domain.Dtos
 {
     public class CreateServerSlotRequest
     {

@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using ServerApi.Data;
-using ServerApi.Domain.Entities;
+using ServerSlotApi.Data;
+using ServerSlotApi.Domain.Entities;
 using Shared.Services;
 
-namespace ServerApi.Services
+namespace ServerSlotApi.Services
 {
     public class ServerSlotService : ServiceDbBase<ServerDataDbContext>, IServerSlotService
     {

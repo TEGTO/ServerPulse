@@ -1,4 +1,4 @@
-﻿namespace ServerApi.Services
+﻿namespace ServerSlotApi.Services
 {
     public interface IAuthChecker
     {

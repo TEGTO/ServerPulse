@@ -1,6 +1,6 @@
-﻿using ServerApi.Domain.Entities;
+﻿using ServerSlotApi.Domain.Entities;
 
-namespace ServerApi.Services
+namespace ServerSlotApi.Services
 {
     public interface IServerSlotService
     {

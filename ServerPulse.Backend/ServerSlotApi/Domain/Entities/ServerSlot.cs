@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ServerApi.Domain.Entities
+namespace ServerSlotApi.Domain.Entities
 {
     public class ServerSlot
     {

@@ -2,7 +2,7 @@
 using System.Text;
 using System.Text.Json;
 
-namespace ServerApi.Services
+namespace ServerSlotApi.Services
 {
     public class AuthChecker : IAuthChecker
     {

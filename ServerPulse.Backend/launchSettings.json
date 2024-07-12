@@ -5,7 +5,7 @@
       "commandVersion": "1.0",
       "serviceActions": {
         "authenticationapi": "StartDebugging",
-        "serverapi": "StartDebugging"
+        "serverslotapi": "StartDebugging"
       }
     }
   }
