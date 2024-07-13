@@ -7,7 +7,8 @@
     <form id="loginForm" class="content__form space-y-1" [formGroup]="formGroup" (ngSubmit)="signInUser()">
         <mat-form-field>
             <mat-label>Email</mat-label>
-            <input type="email" matInput formControlName="email" placeholder="example@example.com" maxlength="256">
+            <input type="email" autocomplete="section-login user-email" matInput formControlName="email"
+                placeholder="example@example.com" maxlength="256">
             @if (emailInput.hasError('email') && !emailInput.hasError('required')) {
             <mat-error>Please enter a valid email address</mat-error>
             }
@@ -17,7 +18,8 @@
         </mat-form-field>
         <mat-form-field>
             <mat-label>Password</mat-label>
-            <input [type]="hidePassword ? 'password' : 'text'" matInput formControlName="password" maxlength="256">
+            <input [type]="hidePassword ? 'password' : 'text'" autocomplete="section-login user-password" matInput
+                formControlName="password" maxlength="256">
             <span class="material-icons me-2" matSuffix (click)="hidePassword = !hidePassword">
                 {{hidePassword
                 ? 'visibility_off'

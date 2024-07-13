@@ -1,0 +1,20 @@
+<button mat-icon-button mat-dialog-close class="close-button">
+    <span class="material-icons">close</span>
+</button>
+<h2 mat-dialog-title>Edit</h2>
+
+<mat-dialog-content>
+    <form id="updateForm" [formGroup]="formGroup" class="content__form space-y-1">
+        <mat-form-field>
+            <mat-label>Name</mat-label>
+            <input type="text" matInput formControlName="name" maxlength="256">
+            @if (nameInput.hasError('required')) {
+            <mat-error>Name is <strong>required</strong></mat-error>
+            }
+        </mat-form-field>
+    </form>
+    <div class="text-teal-700" *ngIf="isUpdateSuccessful">Update successful!</div>
+</mat-dialog-content>
+<mat-dialog-actions class="actions__bottom-container">
+    <button mat-flat-button id="send-button" type="submit" form="updateForm" (click)="updateSlot()">Save</button>
+</mat-dialog-actions>

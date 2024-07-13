@@ -72,6 +72,10 @@ html {
     padding: 5px !important;
 }
 
+.mat-mdc-dialog-actions {
+    padding-top: 0 !important;
+}
+
 .mat-mdc-dialog-container .mat-mdc-dialog-title+.mat-mdc-dialog-content {
     overflow-y: hidden !important;
 }
