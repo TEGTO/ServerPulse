@@ -1,6 +1,6 @@
-﻿using AuthenticationApi.Domain.Entities;
+﻿using ServerSlotApi.Domain.Entities;
 
-namespace AuthenticationApi.Services
+namespace ServerSlotApi.Services
 {
     public interface IServerSlotService
     {
@@ -8,5 +8,7 @@ namespace AuthenticationApi.Services
             string serverSlotId, CancellationToken cancellationToken);
         public Task<IEnumerable<ServerSlot>> GetServerSlotsByEmailAsync(string email, CancellationToken cancellationToken);
         public Task<ServerSlot> CreateServerSlotAsync(ServerSlot serverSlot, CancellationToken cancellationToken);
+        public Task<IEnumerable<ServerSlot>> GerServerSlotsContainingStringAsync(string email, string str, CancellationToken cancellationToken);
+        public Task DeleteServerSlotByIdAsync(string id, CancellationToken cancellationToken);
     }
 }

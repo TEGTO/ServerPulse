@@ -32,7 +32,8 @@ services:
     networks:
         - backend-net
     volumes:
-        - serverpulse-db:/var/lib/postgresql/data
+        - ./init_history.sql:/docker-entrypoint-initdb.d/init_history.sql
+        # - serverpulse-db:/var/lib/postgresql/data
   authenticationapi:
     container_name: authentication-api
     image: ${DOCKER_REGISTRY-}authenticationapi
@@ -43,7 +44,18 @@ services:
     - backend-net
     depends_on:
     - db
+  serverslotapi:
+    container_name:   serverslotapi-api
+    image: ${DOCKER_REGISTRY-}serverslotapi
+    build:
+      context: .
+      dockerfile: ServerSlotApi/Dockerfile
+    networks:
+    - backend-net
+    depends_on:
+    - db
     - rabbitmq
+
   apigateway:
     container_name: apigateway
     image: ${DOCKER_REGISTRY-}apigateway
@@ -56,6 +68,7 @@ services:
       - backend-net
     depends_on:
     - authenticationapi
+    - serverslotapi
 
 networks:
   backend-net:

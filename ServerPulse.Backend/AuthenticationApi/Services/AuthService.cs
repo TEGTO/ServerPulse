@@ -39,7 +39,7 @@ namespace AuthenticationApi.Services
             var user = await userManager.FindByEmailAsync(email);
             return user;
         }
-        public async Task<List<IdentityError>> UpdateUser(UserUpdateData updateData)
+        public async Task<List<IdentityError>> UpdateUserAsync(UserUpdateData updateData)
         {
             var user = await userManager.FindByEmailAsync(updateData.OldEmail);
             List<IdentityError> identityErrors = new List<IdentityError>();
@@ -61,7 +61,7 @@ namespace AuthenticationApi.Services
             }
             return identityErrors;
         }
-        public async Task<AccessTokenData> RefreshToken(AccessTokenData accessTokenData)
+        public async Task<AccessTokenData> RefreshTokenAsync(AccessTokenData accessTokenData)
         {
             var principal = jwtHandler.GetPrincipalFromExpiredToken(accessTokenData.AccessToken);
             var user = await userManager.FindByNameAsync(principal.Identity.Name);
@@ -71,6 +71,15 @@ namespace AuthenticationApi.Services
                 throw new InvalidDataException("Refresh token is not valid!");
             }
             return jwtHandler.CreateToken(user);
+        }
+        public async Task<bool> CheckAuthDataAsync(string email, string password)
+        {
+            var user = await userManager.FindByEmailAsync(email);
+            if (user == null || !await userManager.CheckPasswordAsync(user, password))
+            {
+                return false;
+            }
+            return true;
         }
     }
 }
