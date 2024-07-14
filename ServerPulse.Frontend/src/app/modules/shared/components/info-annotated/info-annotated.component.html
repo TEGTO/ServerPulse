@@ -1,5 +1,5 @@
-<div *ngFor="let message of data.messages" class="text-base p-2">
-    ❌: {{ message }}
+<div class="text-base p-2">
+    {{data.message}}
 </div>
 <span class="flex justify-end">
     <button mat-button matSnackBarAction (click)="snackBarRef.dismissWithAction()">Dismiss</button>

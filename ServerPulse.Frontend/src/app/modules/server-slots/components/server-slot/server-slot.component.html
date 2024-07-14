@@ -1,25 +1,65 @@
 <div
     class="server-slot w-full bg-white border border-gray-200 rounded-lg shadow md:flex-row dark:border-gray-700 dark:bg-gray-800">
 
-    <header class="server-slot__header bg-white dark:bg-gray-900 w-full border-b border-gray-200 dark:border-gray-600">
-        <div class="header__server-status">
-            <span class="header__status-indicator grey"></span>
-        </div>
-        <div class="header__name-container">
-            <div class="header__name">
+    <header
+        class="server-slot__header bg-white dark:bg-gray-900 w-full border-b border-gray-200 dark:border-gray-600 pb-1.5">
+
+        <button mat-icon-button [matMenuTriggerFor]="serverSlotMoreOptions">
+            <span class="material-icons">more_vert</span>
+        </button>
+        <mat-menu #serverSlotMoreOptions="matMenu" id="serverSlotMoreOptions">
+            <button mat-menu-item>
+                <div class="flex gap-2 items-center justify-between">
+                    <span class="text-base">Info</span>
+                    <span class="material-icons ">info</span>
+                </div>
+            </button>
+            <button mat-menu-item (click)="openEdit()">
+                <div class="flex gap-2 items-center justify-between">
+                    <span class="text-base">Rename</span>
+                    <span class="material-icons ">edit</span>
+                </div>
+            </button>
+            <button mat-menu-item>
+                <div class="flex gap-2 items-center justify-between">
+                    <span class="text-base text-red-600">Delete</span>
+                    <span class="material-icons text-red-600">delete</span>
+                </div>
+            </button>
+        </mat-menu>
+
+        <div class="header__center-group">
+            <div class="center-group__server-status">
+                <span class="server-status__indicator grey"></span>
+            </div>
+            <div class="center-group__name">
                 <span>Name</span>
             </div>
-            <button mat-icon-button class="header__edit-button" (click)="openEdit()">
-                <span class="material-icons">edit</span>
-            </button>
         </div>
-        <button mat-button class="header__to-info" color="primary" (click)="redirectToInfo()">
+        <button mat-button color="primary" (click)="redirectToInfo()">
             <span class="material-icons">bar_chart</span>
         </button>
     </header>
-    <div class="server-slot__body bg-white dark:bg-gray-900 w-full">
-        <img class="object-fill w-full h-full"
+    <div class="server-slot__body bg-white dark:bg-gray-900">
+        <img class="object-fill w-full h-5/6"
             src="https://publitas.com/wp-content/uploads/2023/01/us-ecommerce-penetration.png">
+        <div class="body__bottom w-full flex justify-between items-end">
+            <button mat-raised-button (click)="showKey()">
+                <span class="material-icons">key</span>
+            </button>
+            <div class="bottom__update-rate relative inline-block text-left justify-self-end">
+                <label for="updateRate" class="block mb-1 text-sm font-medium text-gray-900 dark:text-white">
+                    Update Rate (s):
+                </label>
+                <select id="updateRate" matNativeControl [formControl]="updateRateFormControl"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                    <option value="5" selected>5</option>
+                    <option value="15">15</option>
+                    <option value="30">30</option>
+                    <option value="60">60</option>
+                    <option value="DontUpdate">Don't update</option>
+                </select>
+            </div>
+        </div>
     </div>
-
 </div>

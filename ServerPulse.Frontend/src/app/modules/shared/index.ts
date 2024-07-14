@@ -1,4 +1,5 @@
 export * from "./components/error-annotated/error-annotated.component"
+export * from "./components/info-annotated/info-annotated.component"
 export * from "./domain/dtos/authToken"
 export * from "./domain/dtos/userAuthenticationRequest"
 export * from "./domain/dtos/userAuthenticationResponse"

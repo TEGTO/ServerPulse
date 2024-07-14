@@ -5,6 +5,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatSelectModule } from '@angular/material/select';
 import { RouterModule, Routes } from '@angular/router';
 import { ServerSlotDialogManager, ServerSlotDialogManagerService } from '.';
 import { ServerSlotEditComponent } from './components/server-slot-edit/server-slot-edit.component';
@@ -34,6 +36,8 @@ const routes: Routes = [
     FormsModule,
     MatFormFieldModule,
     ReactiveFormsModule,
+    MatSelectModule,
+    MatMenuModule,
   ],
   providers: [
     { provide: ServerSlotDialogManager, useClass: ServerSlotDialogManagerService },
