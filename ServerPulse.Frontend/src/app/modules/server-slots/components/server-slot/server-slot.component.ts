@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Input, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { ServerSlotDialogManager, ServerSlotService } from '../..';
 import { RedirectorService, ServerSlot, SnackbarManager, UpdateServerSlotRequest } from '../../../shared';
@@ -8,11 +8,11 @@ import { RedirectorService, ServerSlot, SnackbarManager, UpdateServerSlotRequest
   templateUrl: './server-slot.component.html',
   styleUrl: './server-slot.component.scss'
 })
-export class ServerSlotComponent implements AfterViewInit {
+export class ServerSlotComponent implements AfterViewInit, OnInit {
   @Input({ required: true }) serverSlot!: ServerSlot;
   updateRateFormControl = new FormControl('5', [Validators.required]);
   hideKey: boolean = true;
-  inputValue: string = this.serverSlot.name;
+  inputValue: string = "";
   inputWidth: number = 120;
   inputIsEditable: boolean = false;
   @ViewChild('textSizer', { static: false }) textSizer!: ElementRef;
@@ -26,19 +26,21 @@ export class ServerSlotComponent implements AfterViewInit {
     private readonly snackBarManager: SnackbarManager
   ) { }
 
+  ngOnInit(): void {
+    this.inputValue = this.serverSlot.name;
+  }
+  ngAfterViewInit() {
+    this.adjustInputWidth();
+    this.cdr.detectChanges();
+  }
   redirectToInfo() {
     this.redirector.redirectTo(`serverslot/${this.serverSlot.id}`);
   }
   showKey() {
     this.snackBarManager.openInfoSnackbar(`🔑: ${this.serverSlot.slotKey}`, 10);
   }
-  ngAfterViewInit() {
-    this.adjustInputWidth();
-    this.cdr.detectChanges();
-  }
   onInputChange() {
     this.adjustInputWidth();
-    this.updateServerSlotName();
   }
   onBlur() {
     this.checkEmptyInput();
@@ -68,7 +70,7 @@ export class ServerSlotComponent implements AfterViewInit {
   }
   openConfirmDeletion() {
     this.dialogManager.openDeleteSlotConfirmMenu().afterClosed().subscribe(result => {
-      if (result === 'true') {
+      if (result === true) {
         this.serverSlotService.deleteServerSlot(this.serverSlot.id);
       }
     });

@@ -40,11 +40,13 @@ export class RegisterComponent {
       };
       this.authService.registerUser(userData).subscribe(isSuccess => {
         if (isSuccess) {
+          this.snackbarManager.openInfoSnackbar("✔️ The registration is successful!", 5)
           this.dialogRef.close();
         }
         this.authService.getRegistrationErrors().subscribe(errors => {
-          if (errors)
+          if (errors) {
             this.snackbarManager.openErrorSnackbar(errors.split("\n"));
+          }
         })
       });
     }

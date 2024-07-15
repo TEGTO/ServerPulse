@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
-import { CustomErrorHandler } from './custom-error-handler';
 
 @Injectable({
   providedIn: 'root'
 })
-export class ErrorHandlerService implements CustomErrorHandler {
+export class CustomErrorHandler {
 
   handleError(error: any): string {
     let errorMessage = 'An unknown error occurred!';

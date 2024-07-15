@@ -11,7 +11,6 @@ import { AuthInterceptor } from '../authentication';
 import { AuthenticationModule } from '../authentication/authentication.module';
 import { SlotBoardComponent } from '../server-slots';
 import { ServerSlotsModule } from '../server-slots/server-slots.module';
-import { CustomErrorHandler, ErrorHandlerService, RedirectorContollerService, RedirectorService, SnackbarManager, SnackbarManagerService, URLDefiner, URLDefinerService } from '../shared';
 import { AppComponent, MainViewComponent } from './index';
 
 const routes: Routes = [
@@ -41,10 +40,6 @@ const routes: Routes = [
     HttpClientModule,
   ],
   providers: [
-    { provide: URLDefiner, useClass: URLDefinerService },
-    { provide: CustomErrorHandler, useClass: ErrorHandlerService },
-    { provide: RedirectorService, useClass: RedirectorContollerService },
-    { provide: SnackbarManager, useClass: SnackbarManagerService },
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
   ],
   bootstrap: [AppComponent]

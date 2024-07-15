@@ -7,15 +7,15 @@
     <form id="updateForm" [formGroup]="formGroup" class="content__form space-y-1">
         <mat-form-field>
             <mat-label>Name</mat-label>
-            <input type="text" autocomplete="section-edit user-name" matInput formControlName="userName"
-                placeholder="John" maxlength="256">
+            <input type="text" autocomplete="user-name" matInput formControlName="userName" placeholder="John"
+                maxlength="256">
             @if (nameInput.hasError('required')) {
             <mat-error>Name is <strong>required</strong></mat-error>
             }
         </mat-form-field>
         <mat-form-field>
             <mat-label>Email</mat-label>
-            <input type="email" autocomplete="section-edit user-email" matInput formControlName="email"
+            <input type="email" autocomplete="user-email" matInput formControlName="email"
                 placeholder="example@example.com" maxlength="256">
             @if (emailInput.hasError('email') && !emailInput.hasError('required')) {
             <mat-error>Please enter a valid email address</mat-error>
@@ -27,16 +27,15 @@
         <div class="flex gap-2">
             <mat-form-field>
                 <mat-label>Old Password</mat-label>
-                <input [type]="'password'" autocomplete="section-edit user-oldpassword" matInput
-                    formControlName="oldPassword" maxlength="256">
+                <input [type]="'password'" autocomplete="off" matInput formControlName="oldPassword" maxlength="256">
                 @if (oldPassword.hasError('required')) {
                 <mat-error>Old Password is <strong>required</strong></mat-error>
                 }
             </mat-form-field>
             <mat-form-field>
                 <mat-label>New Password</mat-label>
-                <input [type]="hideNewPassword ? 'password' : 'text'" autocomplete="section-edit user-newpassword"
-                    matInput formControlName="newPassword" maxlength="256">
+                <input [type]="hideNewPassword ? 'password' : 'text'" autocomplete="off" matInput
+                    formControlName="newPassword" maxlength="256">
                 <span class="material-icons me-2" matSuffix (click)="hideNewPassword = !hideNewPassword">
                     {{hideNewPassword
                     ? 'visibility_off'
@@ -49,7 +48,6 @@
             </mat-form-field>
         </div>
     </form>
-    <div class="text-teal-700" *ngIf="isUpdateSuccessful">Update successful!</div>
 </mat-dialog-content>
 <mat-dialog-actions class="actions__bottom-container">
     <button mat-flat-button id="send-button" type="submit" form="updateForm" color="primary"

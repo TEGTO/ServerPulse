@@ -54,6 +54,7 @@ export class SignInEffects {
                             email: response.email,
                         }
                         this.localStorage.setItem(this.storageAuthDataKey, JSON.stringify(authData));
+                        this.localStorage.setItem(this.storageUserDataKey, JSON.stringify(userData));
                         return signInUserSuccess({ authData: authData, userData: userData });
                     }),
                     catchError(error => of(signInUserFailure({ error: error.message })))
@@ -68,8 +69,8 @@ export class SignInEffects {
                 const jsonAuthData = this.localStorage.getItem(this.storageAuthDataKey);
                 const jsonUserData = this.localStorage.getItem(this.storageUserDataKey);
                 if (jsonAuthData !== null && jsonUserData !== null) {
-                    const authData = JSON.parse(jsonAuthData) as AuthData;
-                    const userData = JSON.parse(jsonUserData) as UserData;
+                    const authData: AuthData = JSON.parse(jsonAuthData);
+                    const userData: UserData = JSON.parse(jsonUserData);
                     return of(getAuthDataSuccess({ authData: authData, userData: userData }));
                 }
                 else {
@@ -129,7 +130,7 @@ export class SignInEffects {
                                 ? action.userUpdateData.newEmail
                                 : action.userUpdateData.oldEmail
                         };
-                        this.localStorage.setItem(this.storageAuthDataKey, JSON.stringify(userData));
+                        this.localStorage.setItem(this.storageUserDataKey, JSON.stringify(userData));
                         return updateUserDataSuccess({ userData: userData });
                     }),
                     catchError(error => of(updateUserDataFailure({ error: error.message })))

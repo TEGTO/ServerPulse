@@ -8,16 +8,23 @@ namespace ServerSlotApi.Domain.Entities
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; } = default!;
+        [Required]
+        [MaxLength(256)]
         public string UserEmail { get; set; } = default!;
+        [Required]
         [MaxLength(256)]
         public string Name { get; set; } = default!;
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Required]
         public string SlotKey { get; set; } = default!;
         public DateTime CreationDate { get; set; } = DateTime.UtcNow;
 
+        public ServerSlot()
+        {
+            SlotKey = Guid.NewGuid().ToString();
+        }
+
         public void Copy(ServerSlot other)
         {
-            this.UserEmail = other.UserEmail;
             this.Name = other.Name;
         }
     }

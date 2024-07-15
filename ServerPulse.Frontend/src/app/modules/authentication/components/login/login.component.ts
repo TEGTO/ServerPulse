@@ -43,8 +43,9 @@ export class LoginComponent {
         }
         this.authService.getAuthErrors().subscribe(
           errors => {
-            if (errors)
+            if (errors) {
               this.snackbarManager.openErrorSnackbar(errors.split("\n"));
+            }
           });
       });
     }

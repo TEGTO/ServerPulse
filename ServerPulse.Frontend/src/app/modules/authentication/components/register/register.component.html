@@ -7,15 +7,15 @@
     <form id="registrationForm" class="content__form space-y-1" [formGroup]="formGroup" (ngSubmit)="registerUser()">
         <mat-form-field>
             <mat-label>Name</mat-label>
-            <input type="text" autocomplete="section-register user-name" matInput formControlName="userName"
-                placeholder="John Doe" maxlength="256">
+            <input type="text" autocomplete="user-name" matInput formControlName="userName" placeholder="John Doe"
+                maxlength="256">
             @if (emailInput.hasError('required')) {
             <mat-error>Name is <strong>required</strong></mat-error>
             }
         </mat-form-field>
         <mat-form-field>
             <mat-label>Email</mat-label>
-            <input type="email" autocomplete="section-register user-email" matInput formControlName="email"
+            <input type="email" autocomplete="user-email" matInput formControlName="email"
                 placeholder="example@example.com" maxlength="256">
             @if (emailInput.hasError('email') && !emailInput.hasError('required')) {
             <mat-error>Please enter a valid email address</mat-error>
@@ -26,7 +26,7 @@
         </mat-form-field>
         <mat-form-field>
             <mat-label>Password</mat-label>
-            <input [type]="hidePassword ? 'password' : 'text'" autocomplete="section-register user-password" matInput
+            <input [type]="hidePassword ? 'password' : 'text'" autocomplete="user-password" matInput
                 formControlName="password" maxlength="256">
             <span class="material-icons me-2" matSuffix (click)="hidePassword = !hidePassword">
                 {{hidePassword
@@ -43,7 +43,7 @@
         </mat-form-field>
         <mat-form-field>
             <mat-label>Confirm Password</mat-label>
-            <input [type]="hidePassword ? 'password' : 'text'" autocomplete="section-register user-email" matInput
+            <input [type]="hidePassword ? 'password' : 'text'" autocomplete="user-confirm-password" matInput
                 formControlName="passwordConfirm" maxlength="256">
             @if (passwordConfirmInput.hasError('required')) {
             <mat-error><strong>Confirm password.</strong></mat-error>

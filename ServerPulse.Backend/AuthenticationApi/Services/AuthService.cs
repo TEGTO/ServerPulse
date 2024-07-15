@@ -48,7 +48,7 @@ namespace AuthenticationApi.Services
                 var result = await userManager.SetUserNameAsync(user, updateData.UserName);
                 identityErrors.AddRange(result.Errors);
             }
-            if (!string.IsNullOrEmpty(updateData.NewEmail))
+            if (!string.IsNullOrEmpty(updateData.NewEmail) && !updateData.NewEmail.Equals(updateData.OldEmail))
             {
                 var token = await userManager.GenerateChangeEmailTokenAsync(user, updateData.NewEmail);
                 var result = await userManager.ChangeEmailAsync(user, updateData.NewEmail, token);

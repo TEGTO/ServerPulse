@@ -1,15 +1,27 @@
 import { Injectable } from '@angular/core';
+import { Encryptor } from '../..';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LocalStorageService {
 
-  setItem(key: string, value: string): void {
+  constructor(
+    private readonly encryptor: Encryptor
+  ) { }
+
+  setItem(key: string, value: string, ecryptValue: boolean = true): void {
+    if (ecryptValue) {
+      value = this.encryptor.encryptString(value);
+    }
     localStorage.setItem(key, value);
   }
-  getItem(key: string): string | null {
-    return localStorage.getItem(key);
+  getItem(key: string, decryptValue: boolean = true): string | null {
+    let value = localStorage.getItem(key);
+    if (decryptValue && value) {
+      value = this.encryptor.decryptString(value);
+    }
+    return value;
   }
   removeItem(key: string): void {
     localStorage.removeItem(key);

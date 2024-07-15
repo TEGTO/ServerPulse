@@ -12,7 +12,6 @@ export class AuthenticatedComponent implements OnInit {
   hideNewPassword: boolean = true;
   userEmail: string = "";
   formGroup: FormGroup = null!;
-  isUpdateSuccessful: boolean = false;
 
   get nameInput() { return this.formGroup.get('userName')!; }
   get emailInput() { return this.formGroup.get('email')!; }
@@ -50,7 +49,9 @@ export class AuthenticatedComponent implements OnInit {
         newPassword: formValues.newPassword,
       };
       this.authService.updateUser(userData).subscribe(isSuccess => {
-        this.isUpdateSuccessful = isSuccess;
+        if (isSuccess) {
+          this.snackbarManager.openInfoSnackbar("✔️ The update is successful!", 5)
+        }
         this.authService.getAuthErrors().subscribe(
           errors => {
             if (errors)

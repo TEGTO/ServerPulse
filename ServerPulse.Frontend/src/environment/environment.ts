@@ -2,5 +2,6 @@ export const environment =
 {
   production: false,
   api: 'https://localhost:7129',
-  maxAmountOfSlotsPerUser: 5
+  maxAmountOfSlotsPerUser: 5,
+  ecryptionSecretKey: "encryption-secret-key"
 };

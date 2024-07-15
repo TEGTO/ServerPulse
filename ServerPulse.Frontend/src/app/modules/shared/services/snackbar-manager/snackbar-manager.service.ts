@@ -1,14 +1,11 @@
 import { Injectable } from '@angular/core';
-import {
-  MatSnackBar
-} from '@angular/material/snack-bar';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ErrorAnnotatedComponent, InfoAnnotatedComponent } from '../..';
-import { SnackbarManager } from './snackbar-manager';
 
 @Injectable({
   providedIn: 'root'
 })
-export class SnackbarManagerService implements SnackbarManager {
+export class SnackbarManager {
   errorDurationInSeconds = 5;
 
   constructor(

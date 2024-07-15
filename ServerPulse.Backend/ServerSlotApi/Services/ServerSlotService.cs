@@ -45,6 +45,7 @@ namespace ServerSlotApi.Services
                 {
                     throw new InvalidOperationException("Too many slots per user!");
                 }
+
                 await dbContext.ServerSlots.AddAsync(serverSlot, cancellationToken);
                 await dbContext.SaveChangesAsync(cancellationToken);
             }

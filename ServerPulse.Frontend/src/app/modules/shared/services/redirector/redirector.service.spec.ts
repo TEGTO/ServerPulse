@@ -1,10 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
-import { RedirectorContollerService } from './redirector-controller.service';
+import { RedirectorService } from './redirector.service';
 
 describe('RedirectorContollerService', () => {
   var mockRouter: jasmine.SpyObj<Router>;
-  var service: RedirectorContollerService;
+  var service: RedirectorService;
 
   beforeEach(() => {
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
@@ -16,12 +16,12 @@ describe('RedirectorContollerService', () => {
 
     TestBed.configureTestingModule({
       providers: [
-        RedirectorContollerService,
+        RedirectorService,
         { provide: Router, useValue: mockRouter },
         { provide: ActivatedRoute, useValue: activatedRouteMock }
       ]
     });
-    service = TestBed.inject(RedirectorContollerService);
+    service = TestBed.inject(RedirectorService);
   });
 
   it('should be created', () => {

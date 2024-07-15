@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { CustomErrorHandler } from '../../error-handler/custom-error-handler';
-import { URLDefiner } from '../../url-definer/url-definer';
+import { CustomErrorHandler } from '../../error-handler/custom-error-handler.service';
+import { URLDefiner } from '../../url-definer/url-definer.service';
 import { BaseApiService } from './base-api.service';
 
 describe('BaseApiService', () => {
