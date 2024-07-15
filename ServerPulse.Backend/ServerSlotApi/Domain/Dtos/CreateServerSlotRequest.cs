@@ -2,6 +2,6 @@
 {
     public class CreateServerSlotRequest
     {
-        public string ServerSlotName { get; set; }
+        public string Name { get; set; }
     }
 }

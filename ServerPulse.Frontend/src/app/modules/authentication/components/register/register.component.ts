@@ -23,9 +23,11 @@ export class RegisterComponent {
   get passwordInput() { return this.formGroup.get('password')!; }
   get passwordConfirmInput() { return this.formGroup.get('passwordConfirm')!; }
 
-  constructor(private authService: AuthenticationService,
-    private dialogRef: MatDialogRef<RegisterComponent>,
-    private snackbarManager: SnackbarManager) { }
+  constructor(
+    private readonly authService: AuthenticationService,
+    private readonly dialogRef: MatDialogRef<RegisterComponent>,
+    private readonly snackbarManager: SnackbarManager
+  ) { }
 
   registerUser() {
     if (this.formGroup.valid) {

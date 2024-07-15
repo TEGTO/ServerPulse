@@ -3,7 +3,7 @@ using FluentValidation.AspNetCore;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.DependencyInjection;
-using Shared.Validators;
+using Shared.Middlewares;
 
 namespace Shared
 {
@@ -28,7 +28,7 @@ namespace Shared
         {
             services.AddFluentValidationAutoValidation();
             services.AddFluentValidationClientsideAdapters();
-            services.AddValidatorsFromAssemblyContaining<ServerSlotDtoValidator>();
+            services.AddValidatorsFromAssemblyContaining<ExceptionMiddleware>();
             return services;
         }
     }

@@ -13,5 +13,10 @@ import { MAT_SNACK_BAR_DATA, MatSnackBarAction, MatSnackBarActions, MatSnackBarL
 export class ErrorAnnotatedComponent {
   snackBarRef = inject(MatSnackBarRef);
 
-  constructor(@Inject(MAT_SNACK_BAR_DATA) public data: any) { }
+  get messages() { return this.data.messages; }
+
+  constructor(
+    @Inject(MAT_SNACK_BAR_DATA) private data: any
+  ) { }
+
 }

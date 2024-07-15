@@ -7,7 +7,7 @@ namespace ServerSlotApi.Validators
     {
         public CreateServerSlotRequestValidator()
         {
-            RuleFor(x => x.ServerSlotName).NotNull().NotEmpty().MaximumLength(256);
+            RuleFor(x => x.Name).NotNull().NotEmpty().MaximumLength(256);
         }
     }
 }

@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ServerSlotApi.Domain.Dtos;
 using ServerSlotApi.Domain.Entities;
+using ServerSlotApi.Dtos;
 using ServerSlotApi.Services;
-using Shared.Dtos;
 using System.Security.Claims;
 
 namespace ServerSlotApi.Controllers
@@ -22,37 +22,25 @@ namespace ServerSlotApi.Controllers
             this.serverSlotService = serverAuthService;
         }
 
-        [HttpPost("get")]
-        public async Task<ActionResult<ServerSlotDto>> GetServerSlot([FromBody] GetServerSlotRequest request, CancellationToken cancellationToken)
-        {
-            var serverSlot = await serverSlotService.GetServerSlotAsync(request.Email, request.Password,
-                request.ServerSlotId, cancellationToken);
-            if (serverSlot == null)
-            {
-                return NotFound();
-            }
-            var response = mapper.Map<ServerSlotDto>(serverSlot);
-            return Ok(response);
-        }
         [Authorize]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ServerSlotDto>>> GetServerSlotsByEmail(CancellationToken cancellationToken)
+        public async Task<ActionResult<IEnumerable<ServerSlotResponse>>> GetServerSlotsByEmail(CancellationToken cancellationToken)
         {
             var email = User.FindFirstValue(ClaimTypes.Email);
             var serverSlots = await serverSlotService.GetServerSlotsByEmailAsync(email, cancellationToken);
-            return Ok(serverSlots.Select(mapper.Map<ServerSlotDto>));
+            return Ok(serverSlots.Select(mapper.Map<ServerSlotResponse>));
         }
         [Authorize]
         [HttpGet("{str}")]
-        public async Task<ActionResult<IEnumerable<ServerSlotDto>>> GerServerSlotsContainingString(string str, CancellationToken cancellationToken)
+        public async Task<ActionResult<IEnumerable<ServerSlotResponse>>> GerServerSlotsContainingString(string str, CancellationToken cancellationToken)
         {
             var email = User.FindFirstValue(ClaimTypes.Email);
             var serverSlots = await serverSlotService.GerServerSlotsContainingStringAsync(email, str, cancellationToken);
-            return Ok(serverSlots.Select(mapper.Map<ServerSlotDto>));
+            return Ok(serverSlots.Select(mapper.Map<ServerSlotResponse>));
         }
         [Authorize]
         [HttpPost]
-        public async Task<ActionResult<ServerSlotDto>> CreateServerSlot([FromBody] CreateServerSlotRequest request,
+        public async Task<ActionResult<ServerSlotResponse>> CreateServerSlot([FromBody] CreateServerSlotRequest request,
             CancellationToken cancellationToken)
         {
             if (request == null)
@@ -63,11 +51,19 @@ namespace ServerSlotApi.Controllers
             var serverSlot = new ServerSlot()
             {
                 UserEmail = email,
-                Name = request.ServerSlotName
+                Name = request.Name
             };
             var result = await serverSlotService.CreateServerSlotAsync(serverSlot, cancellationToken);
-            var response = mapper.Map<ServerSlotDto>(result);
+            var response = mapper.Map<ServerSlotResponse>(result);
             return Created(string.Empty, response);
+        }
+        [Authorize]
+        [HttpPut]
+        public async Task<IActionResult> UpdateServerSlot([FromBody] UpdateServerSlotRequest request, CancellationToken cancellationToken)
+        {
+            var serverSlot = mapper.Map<ServerSlot>(request);
+            await serverSlotService.UpdateServerSlotAsync(serverSlot, cancellationToken);
+            return Ok();
         }
         [Authorize]
         [HttpDelete("{id}")]

@@ -23,6 +23,7 @@ services:
       - ASPNETCORE_HTTP_PORTS=8080
       - ConnectionStrings__ServerSlotDataConnection=${ConnectionStrings__ServerSlotDataConnection}
       - AuthApi=${AuthApi}
+      - SlotsPerUser=${SlotsPerUser}
       - EFCreateDatabase=${EFCreateDatabase}
       - AuthSettings__Key=${AuthSettings__Key}
       - AuthSettings__Issuer=${AuthSettings__Issuer}

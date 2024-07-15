@@ -5,5 +5,5 @@ import { MatDialogRef } from "@angular/material/dialog";
     providedIn: 'root'
 })
 export abstract class ServerSlotDialogManager {
-    abstract openEditServerSlotMenu(): MatDialogRef<any>;
+    abstract openDeleteSlotConfirmMenu(): MatDialogRef<any>;
 }

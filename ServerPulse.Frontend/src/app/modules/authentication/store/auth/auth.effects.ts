@@ -7,8 +7,10 @@ import { AuthData, AuthenticationApiService, LocalStorageService, UserData } fro
 //Registration
 @Injectable()
 export class RegistrationEffects {
-    constructor(private actions$: Actions,
-        private apiService: AuthenticationApiService) { }
+    constructor(
+        private readonly actions$: Actions,
+        private readonly apiService: AuthenticationApiService
+    ) { }
 
     registerUser$ = createEffect(() =>
         this.actions$.pipe(
@@ -28,8 +30,11 @@ export class SignInEffects {
     readonly storageAuthDataKey: string = "authData";
     readonly storageUserDataKey: string = "userData";
 
-    constructor(private actions$: Actions,
-        private apiService: AuthenticationApiService, private localStorage: LocalStorageService) { }
+    constructor(
+        private readonly actions$: Actions,
+        private readonly apiService: AuthenticationApiService,
+        private readonly localStorage: LocalStorageService
+    ) { }
 
     singInUser$ = createEffect(() =>
         this.actions$.pipe(

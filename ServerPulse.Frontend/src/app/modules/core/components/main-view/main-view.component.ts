@@ -9,8 +9,10 @@ import { AuthenticationDialogManager, AuthenticationService } from '../../../aut
 export class MainViewComponent implements OnInit {
   isAuthenticated: boolean = false;
 
-  constructor(private authService: AuthenticationService,
-    private authDialogManager: AuthenticationDialogManager) { }
+  constructor(
+    private readonly authService: AuthenticationService,
+    private readonly authDialogManager: AuthenticationDialogManager
+  ) { }
 
   openLoginMenu() {
     const dialogRef = this.authDialogManager.openLoginMenu();

@@ -1,5 +1,6 @@
 export const environment =
 {
   production: true,
-  api: 'https://localhost:7129'
+  api: 'https://localhost:7129',
+  maxAmountOfSlotsPerUser: 5
 };

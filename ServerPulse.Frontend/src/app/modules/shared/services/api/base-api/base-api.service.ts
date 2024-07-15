@@ -11,7 +11,11 @@ export class BaseApiService {
   protected get httpClient(): HttpClient { return this._httpClient }
   protected get urlDefiner(): URLDefiner { return this._urlDefiner }
 
-  constructor(private _httpClient: HttpClient, private errorHandler: CustomErrorHandler, private _urlDefiner: URLDefiner) { }
+  constructor(
+    private readonly _httpClient: HttpClient,
+    private readonly errorHandler: CustomErrorHandler,
+    private readonly _urlDefiner: URLDefiner
+  ) { }
 
   protected handleError(error: any) {
     let message = this.errorHandler.handleError(error);

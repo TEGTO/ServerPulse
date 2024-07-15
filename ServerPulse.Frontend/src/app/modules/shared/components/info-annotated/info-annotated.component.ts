@@ -13,5 +13,9 @@ import { MAT_SNACK_BAR_DATA, MatSnackBarAction, MatSnackBarActions, MatSnackBarL
 export class InfoAnnotatedComponent {
   snackBarRef = inject(MatSnackBarRef);
 
-  constructor(@Inject(MAT_SNACK_BAR_DATA) public data: any) { }
+  get message() { return this.data.message; }
+
+  constructor(
+    @Inject(MAT_SNACK_BAR_DATA) private data: any
+  ) { }
 }

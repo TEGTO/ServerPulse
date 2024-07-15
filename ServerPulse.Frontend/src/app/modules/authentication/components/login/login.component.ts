@@ -20,10 +20,12 @@ export class LoginComponent {
   get emailInput() { return this.formGroup.get('email')!; }
   get passwordInput() { return this.formGroup.get('password')!; }
 
-  constructor(private authDialogManager: AuthenticationDialogManager,
-    private authService: AuthenticationService,
-    private dialogRef: MatDialogRef<RegisterComponent>,
-    private snackbarManager: SnackbarManager) { }
+  constructor(
+    private readonly authDialogManager: AuthenticationDialogManager,
+    private readonly authService: AuthenticationService,
+    private readonly dialogRef: MatDialogRef<RegisterComponent>,
+    private readonly snackbarManager: SnackbarManager
+  ) { }
 
   openRegisterMenu() {
     const dialogRef = this.authDialogManager.openRegisterMenu();

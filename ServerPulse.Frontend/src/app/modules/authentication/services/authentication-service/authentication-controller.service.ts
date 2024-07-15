@@ -10,7 +10,9 @@ import { AuthenticationService } from './authentication-service';
 })
 export class AuthenticationControllerService implements AuthenticationService {
 
-  constructor(private store: Store) { }
+  constructor(
+    private readonly store: Store
+  ) { }
 
   registerUser(userRegistrationData: UserRegistrationRequest): Observable<boolean> {
     this.store.dispatch(registerUser({ userRegistrationData: userRegistrationData }));

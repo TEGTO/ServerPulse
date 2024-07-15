@@ -19,9 +19,10 @@ export class AuthenticatedComponent implements OnInit {
   get oldPassword() { return this.formGroup.get('oldPassword')!; }
   get newPassword() { return this.formGroup.get('newPassword')!; }
 
-  constructor(private authService: AuthenticationService,
-    private snackbarManager: SnackbarManager) {
-  }
+  constructor(
+    private readonly authService: AuthenticationService,
+    private readonly snackbarManager: SnackbarManager
+  ) { }
 
   ngOnInit(): void {
     this.authService.getUserData().subscribe(data => {

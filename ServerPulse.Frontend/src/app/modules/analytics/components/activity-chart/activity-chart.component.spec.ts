@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ServerSlotEditComponent } from './server-slot-edit.component';
+import { ActivityChartComponent } from './activity-chart.component';
 
-describe('ServerSlotEditComponent', () => {
-  let component: ServerSlotEditComponent;
-  let fixture: ComponentFixture<ServerSlotEditComponent>;
+describe('ActivityChartComponent', () => {
+  let component: ActivityChartComponent;
+  let fixture: ComponentFixture<ActivityChartComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ServerSlotEditComponent]
+      declarations: [ActivityChartComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(ServerSlotEditComponent);
+    fixture = TestBed.createComponent(ActivityChartComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

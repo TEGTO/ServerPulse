@@ -11,7 +11,9 @@ import { SnackbarManager } from './snackbar-manager';
 export class SnackbarManagerService implements SnackbarManager {
   errorDurationInSeconds = 5;
 
-  constructor(private snackBar: MatSnackBar) { }
+  constructor(
+    private readonly snackBar: MatSnackBar
+  ) { }
 
   openInfoSnackbar(message: string, durationInSeconds: number): void {
     this.snackBar.openFromComponent(InfoAnnotatedComponent, {

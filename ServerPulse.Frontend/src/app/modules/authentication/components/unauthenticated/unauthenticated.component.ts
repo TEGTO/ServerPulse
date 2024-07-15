@@ -8,7 +8,9 @@ import { AuthenticationDialogManager } from '../..';
 })
 export class UnauthenticatedComponent {
 
-  constructor(private authDialogManager: AuthenticationDialogManager) { }
+  constructor(
+    private readonly authDialogManager: AuthenticationDialogManager
+  ) { }
 
   openLoginMenu() {
     const dialogRef = this.authDialogManager.openLoginMenu();

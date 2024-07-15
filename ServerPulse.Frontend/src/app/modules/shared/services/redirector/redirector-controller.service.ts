@@ -1,13 +1,15 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { RedirectorService } from './redirector.service';
+import { RedirectorService } from './redirector-service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class RedirectorContollerService implements RedirectorService {
 
-    constructor(private router: Router) { }
+    constructor(
+        private readonly router: Router
+    ) { }
 
     redirectToHome(): void {
         this.router.navigate(['']);

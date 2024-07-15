@@ -7,35 +7,31 @@ namespace ServerSlotApi.Services
 {
     public class ServerSlotService : ServiceDbBase<ServerDataDbContext>, IServerSlotService
     {
-        private readonly IAuthChecker authChecker;
+        private readonly IConfiguration configuration;
 
-        public ServerSlotService(IDbContextFactory<ServerDataDbContext> contextFactory, IAuthChecker authChecker) : base(contextFactory)
+        public ServerSlotService(IDbContextFactory<ServerDataDbContext> contextFactory, IConfiguration configuration) : base(contextFactory)
         {
-            this.authChecker = authChecker;
+            this.configuration = configuration;
         }
 
-        public async Task<ServerSlot?> GetServerSlotAsync(string email, string password, string serverSlotId, CancellationToken cancellationToken)
-        {
-            var isCorrect = await authChecker.CheckAuthDataAsync(email, password, cancellationToken);
-            if (isCorrect)
-            {
-                using (var dbContext = await CreateDbContextAsync(cancellationToken))
-                {
-                    var result = await dbContext.ServerSlots.FirstOrDefaultAsync(x => x.Id == serverSlotId, cancellationToken);
-                    return result;
-                }
-            }
-            else
-            {
-                throw new UnauthorizedAccessException("Invalid Authentication");
-            }
-        }
         public async Task<IEnumerable<ServerSlot>> GetServerSlotsByEmailAsync(string email, CancellationToken cancellationToken)
         {
             List<ServerSlot> serverSlots = new List<ServerSlot>();
             using (var dbContext = await CreateDbContextAsync(cancellationToken))
             {
-                var slots = dbContext.ServerSlots.Where(x => x.UserEmail == email).AsNoTracking();
+                var slots = dbContext.ServerSlots.Where(x => x.UserEmail == email)
+                    .OrderByDescending(x => x.CreationDate).AsNoTracking();
+                serverSlots.AddRange(slots);
+            }
+            return serverSlots;
+        }
+        public async Task<IEnumerable<ServerSlot>> GerServerSlotsContainingStringAsync(string email, string str, CancellationToken cancellationToken)
+        {
+            List<ServerSlot> serverSlots = new List<ServerSlot>();
+            using (var dbContext = await CreateDbContextAsync(cancellationToken))
+            {
+                var slots = dbContext.ServerSlots.Where(x => x.UserEmail == email && x.Name.Contains(str))
+                    .OrderByDescending(x => x.CreationDate).AsNoTracking();
                 serverSlots.AddRange(slots);
             }
             return serverSlots;
@@ -44,20 +40,25 @@ namespace ServerSlotApi.Services
         {
             using (var dbContext = await CreateDbContextAsync(cancellationToken))
             {
+                var slotsPerUser = int.Parse(configuration["SlotsPerUser"]);
+                if (await dbContext.ServerSlots.CountAsync(x => x.UserEmail == serverSlot.UserEmail) > slotsPerUser)
+                {
+                    throw new InvalidOperationException("Too many slots per user!");
+                }
                 await dbContext.ServerSlots.AddAsync(serverSlot, cancellationToken);
                 await dbContext.SaveChangesAsync(cancellationToken);
             }
             return serverSlot;
         }
-        public async Task<IEnumerable<ServerSlot>> GerServerSlotsContainingStringAsync(string email, string str, CancellationToken cancellationToken)
+        public async Task UpdateServerSlotAsync(ServerSlot serverSlot, CancellationToken cancellationToken)
         {
-            List<ServerSlot> serverSlots = new List<ServerSlot>();
             using (var dbContext = await CreateDbContextAsync(cancellationToken))
             {
-                var slots = dbContext.ServerSlots.Where(x => x.UserEmail == email && x.Name.Contains(str)).AsNoTracking();
-                serverSlots.AddRange(slots);
+                var serverSlotInDb = await dbContext.ServerSlots.FirstAsync(x => x.Id == serverSlot.Id, cancellationToken);
+                serverSlotInDb.Copy(serverSlot);
+                dbContext.ServerSlots.Update(serverSlotInDb);
+                await dbContext.SaveChangesAsync(cancellationToken);
             }
-            return serverSlots;
         }
         public async Task DeleteServerSlotByIdAsync(string id, CancellationToken cancellationToken)
         {

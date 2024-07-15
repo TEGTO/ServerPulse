@@ -8,19 +8,19 @@
             <span class="material-icons">more_vert</span>
         </button>
         <mat-menu #serverSlotMoreOptions="matMenu" id="serverSlotMoreOptions">
-            <button mat-menu-item>
+            <button mat-menu-item (click)="redirectToInfo()">
                 <div class="flex gap-2 items-center justify-between">
                     <span class="text-base">Info</span>
                     <span class="material-icons ">info</span>
                 </div>
             </button>
-            <button mat-menu-item (click)="openEdit()">
+            <button mat-menu-item (click)="makeInputEditable()">
                 <div class="flex gap-2 items-center justify-between">
                     <span class="text-base">Rename</span>
                     <span class="material-icons ">edit</span>
                 </div>
             </button>
-            <button mat-menu-item>
+            <button mat-menu-item (click)="openConfirmDeletion()">
                 <div class="flex gap-2 items-center justify-between">
                     <span class="text-base text-red-600">Delete</span>
                     <span class="material-icons text-red-600">delete</span>
@@ -33,7 +33,11 @@
                 <span class="server-status__indicator grey"></span>
             </div>
             <div class="center-group__name">
-                <span>Name</span>
+                <input #nameInput [ngStyle]="{'width': inputWidth + 'px'}" [(ngModel)]="inputValue" class="name__input"
+                    [ngClass]="{'editable': inputIsEditable, 'non-editable': !inputIsEditable}"
+                    (input)="onInputChange()" (blur)="onBlur();" [readonly]="!inputIsEditable"
+                    placeholder="Enter slot name" />
+                <span #textSizer class="name__input-sizer">{{ inputValue }}</span>
             </div>
         </div>
         <button mat-button color="primary" (click)="redirectToInfo()">
@@ -41,8 +45,9 @@
         </button>
     </header>
     <div class="server-slot__body bg-white dark:bg-gray-900">
-        <img class="object-fill w-full h-5/6"
-            src="https://publitas.com/wp-content/uploads/2023/01/us-ecommerce-penetration.png">
+        <div class="body__activity-chart w-full h-5/6">
+            <activity-chart></activity-chart>
+        </div>
         <div class="body__bottom w-full flex justify-between items-end">
             <button mat-raised-button (click)="showKey()">
                 <span class="material-icons">key</span>

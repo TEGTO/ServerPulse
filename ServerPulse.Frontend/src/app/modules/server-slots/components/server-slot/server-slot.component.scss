@@ -70,6 +70,28 @@
                 overflow: hidden;
                 text-overflow: ellipsis;
                 text-wrap: nowrap;
+
+                .name__input {
+                    min-width: 120px;
+                    font-size: inherit;
+                    font-weight: inherit;
+                    border: none;
+                    outline: none;
+                }
+
+                .name__input.editable {
+                    border: 2px solid colors.$primary;
+                    cursor: text;
+                }
+
+                .name__input-sizer {
+                    position: absolute;
+                    visibility: hidden;
+                    height: 0;
+                    white-space: nowrap;
+                    font-size: inherit;
+                    font-weight: inherit;
+                }
             }
         }
     }

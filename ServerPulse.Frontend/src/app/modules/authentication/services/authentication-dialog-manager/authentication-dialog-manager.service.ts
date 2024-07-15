@@ -9,7 +9,10 @@ import { AuthenticationDialogManager } from './authentication-dialog-manager';
 export class AuthenticationDialogManagerService implements AuthenticationDialogManager {
   isAuthenticated: boolean = false;
 
-  constructor(private authService: AuthenticationService, private dialog: MatDialog) {
+  constructor(
+    private readonly authService: AuthenticationService,
+    private readonly dialog: MatDialog
+  ) {
     this.authService.getAuthData().subscribe(data => {
       this.isAuthenticated = data.isAuthenticated;
     })

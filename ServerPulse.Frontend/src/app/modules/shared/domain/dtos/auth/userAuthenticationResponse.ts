@@ -1,4 +1,4 @@
-import { AuthToken } from "../..";
+import { AuthToken } from "../../..";
 
 export interface UserAuthenticationResponse {
     authToken: AuthToken;

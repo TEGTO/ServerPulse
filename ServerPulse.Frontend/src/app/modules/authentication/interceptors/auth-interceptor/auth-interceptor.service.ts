@@ -12,7 +12,9 @@ export class AuthInterceptor implements HttpInterceptor {
 
   tokenData!: AuthToken;
 
-  constructor(private authService: AuthenticationService) {
+  constructor(
+    private readonly authService: AuthenticationService
+  ) {
     authService.getAuthData().subscribe(
       data => {
         this.tokenData = {

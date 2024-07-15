@@ -8,11 +8,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSelectModule } from '@angular/material/select';
 import { RouterModule, Routes } from '@angular/router';
-import { ServerSlotDialogManager, ServerSlotDialogManagerService } from '.';
-import { ServerSlotEditComponent } from './components/server-slot-edit/server-slot-edit.component';
-import { ServerSlotInfoComponent } from './components/server-slot-info/server-slot-info.component';
-import { ServerSlotComponent } from './components/server-slot/server-slot.component';
-import { SlotBoardComponent } from './components/slot-board/slot-board.component';
+import { provideEffects } from '@ngrx/effects';
+import { provideState, provideStore } from '@ngrx/store';
+import { ServerSlotComponent, ServerSlotControllerService, ServerSlotDeleteConfirmComponent, ServerSlotDialogManager, ServerSlotDialogManagerService, ServerSlotEffects, ServerSlotInfoComponent, serverSlotReducer, ServerSlotService, SlotBoardComponent } from '.';
+import { AnalyticsModule } from '../analytics/analytics.module';
 
 const routes: Routes = [
   {
@@ -21,14 +20,18 @@ const routes: Routes = [
 ];
 
 @NgModule({
+  exports: [
+    SlotBoardComponent
+  ],
   declarations: [
     SlotBoardComponent,
     ServerSlotComponent,
-    ServerSlotEditComponent,
-    ServerSlotInfoComponent
+    ServerSlotInfoComponent,
+    ServerSlotDeleteConfirmComponent
   ],
   imports: [
     CommonModule,
+    AnalyticsModule,
     RouterModule.forRoot(routes),
     MatButtonModule,
     MatDialogModule,
@@ -41,9 +44,10 @@ const routes: Routes = [
   ],
   providers: [
     { provide: ServerSlotDialogManager, useClass: ServerSlotDialogManagerService },
-  ],
-  exports: [
-    SlotBoardComponent
+    { provide: ServerSlotService, useClass: ServerSlotControllerService },
+    provideStore(),
+    provideState({ name: "serverslot", reducer: serverSlotReducer }),
+    provideEffects(ServerSlotEffects),
   ],
 })
 export class ServerSlotsModule { }
