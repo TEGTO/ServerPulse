@@ -1,5 +1,5 @@
 import { createReducer, on } from "@ngrx/store";
-import { getAuthDataSuccess, logOutUserSuccess, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerFailure, registerSuccess, registerUser, signInUser, signInUserFailure, signInUserSuccess, updateUserDataFailure, updateUserDataSuccess } from "../..";
+import { getAuthDataFailure, getAuthDataSuccess, logOutUserSuccess, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerFailure, registerSuccess, registerUser, signInUser, signInUserFailure, signInUserSuccess, updateUserData, updateUserDataFailure, updateUserDataSuccess } from "../..";
 
 //Registration
 export interface RegistrationState {
@@ -13,8 +13,7 @@ const initialRegistrationState: RegistrationState = {
 export const registrationReducer = createReducer(
     initialRegistrationState,
     on(registerUser, (state) => ({
-        ...state,
-        initialRegistrationState
+        ...initialRegistrationState,
     })),
     on(registerSuccess, (state) => ({
         ...state,
@@ -46,8 +45,7 @@ const initialAuthState: AuthState = {
 export const authReducer = createReducer(
     initialAuthState,
     on(signInUser, (state) => ({
-        ...initialAuthState,
-        isAuthenticated: false
+        ...initialAuthState
     })),
     on(signInUserSuccess, (state, { authData: authData }) => ({
         ...state,
@@ -70,6 +68,9 @@ export const authReducer = createReducer(
         refreshTokenExpiryDate: authData.refreshTokenExpiryDate,
         error: null
     })),
+    on(getAuthDataFailure, (state) => ({
+        ...initialAuthState
+    })),
 
     on(logOutUserSuccess, (state) => ({
         ...initialAuthState,
@@ -87,40 +88,34 @@ export const authReducer = createReducer(
         ...initialAuthState,
         error: error
     })),
-
-    on(updateUserDataSuccess, (state, { userData: userData }) => ({
-        ...state,
-        userEmail: userData.email,
-        error: null
-    })),
-    on(updateUserDataFailure, (state, { error: error }) => ({
-        ...state,
-        error: error
-    })),
 );
 //UserData
 export interface UserDataState {
     userName: string,
     email: string,
+    isUpdateSuccess: boolean,
     error: any
 }
 const initialUserState: UserDataState = {
     userName: "",
     email: "",
+    isUpdateSuccess: false,
     error: null
 };
 
 export const userDataReducer = createReducer(
     initialUserState,
+    on(signInUser, (state) => ({
+        ...initialUserState
+    })),
     on(signInUserSuccess, (state, { userData: userData }) => ({
         ...state,
         userName: userData.userName,
         email: userData.email,
         error: null
     })),
-    on(signInUserFailure, (state, { error: error }) => ({
-        ...initialUserState,
-        error: error
+    on(signInUserFailure, (state) => ({
+        ...initialUserState
     })),
 
     on(getAuthDataSuccess, (state, { userData: userData }) => ({
@@ -129,19 +124,32 @@ export const userDataReducer = createReducer(
         email: userData.email,
         error: null
     })),
+    on(getAuthDataFailure, (state) => ({
+        ...initialUserState
+    })),
 
     on(logOutUserSuccess, (state) => ({
         ...initialUserState,
     })),
 
+    on(updateUserData, (state) => ({
+        ...state,
+        isUpdateSuccess: false,
+        error: null
+    })),
     on(updateUserDataSuccess, (state, { userData: userData }) => ({
         ...state,
         userName: userData.userName,
         email: userData.email,
+        isUpdateSuccess: true,
         error: null
     })),
     on(updateUserDataFailure, (state, { error: error }) => ({
         ...state,
+        isUpdateSuccess: false,
         error: error
+    })),
+    on(refreshAccessTokenFailure, (state) => ({
+        ...initialUserState
     })),
 );

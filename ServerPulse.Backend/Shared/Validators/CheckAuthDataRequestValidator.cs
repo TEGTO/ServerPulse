@@ -7,7 +7,7 @@ namespace Shared.Validators
     {
         public CheckAuthDataRequestValidator()
         {
-            RuleFor(x => x.Email).NotNull().NotEmpty().EmailAddress();
+            RuleFor(x => x.Login).NotNull().NotEmpty().MaximumLength(256);
             RuleFor(x => x.Password).NotNull().NotEmpty().MaximumLength(256);
         }
     }

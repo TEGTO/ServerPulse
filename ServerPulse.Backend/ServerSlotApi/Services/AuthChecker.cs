@@ -15,15 +15,15 @@ namespace ServerSlotApi.Services
             this.httpClientFactory = httpClientFactory;
         }
 
-        public async Task<bool> CheckAuthDataAsync(string email, string password, CancellationToken cancellationToken)
+        public async Task<bool> CheckAuthDataAsync(string login, string password, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+            if (string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password))
             {
                 throw new ArgumentException("Email and password must be provided");
             }
             var checkAuthDataRequest = new CheckAuthDataRequest()
             {
-                Email = email,
+                Login = login,
                 Password = password
             };
             var authApi = configuration["AuthApi"];

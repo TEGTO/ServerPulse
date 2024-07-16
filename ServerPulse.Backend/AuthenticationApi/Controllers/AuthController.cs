@@ -39,10 +39,7 @@ namespace AuthenticationApi.Controllers
             var result = await authService.RegisterUserAsync(user, registrationRequest.Password);
             if (!result.Succeeded)
             {
-                var errors = result.Errors
-                    .Where(e => !e.Description.Contains("Username"))
-                    .Select(e => e.Description)
-                    .ToArray();
+                var errors = result.Errors.Select(e => e.Description).ToArray();
                 return BadRequest(new ResponseError
                 {
                     StatusCode = ((int)HttpStatusCode.BadRequest).ToString(),
@@ -54,10 +51,10 @@ namespace AuthenticationApi.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<UserAuthenticationResponse>> Login([FromBody] UserAuthenticationRequest authRequest)
         {
-            var token = await authService.LoginUserAsync(authRequest.Email, authRequest.Password, expiryInDays);
+            var token = await authService.LoginUserAsync(authRequest.Login, authRequest.Password, expiryInDays);
             var tokenDto = mapper.Map<AuthToken>(token);
             tokenDto.RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(expiryInDays);
-            var user = await authService.GetUserByEmailAsync(authRequest.Email);
+            var user = await authService.GetUserByLoginAsync(authRequest.Login);
             var response = new UserAuthenticationResponse()
             {
                 AuthToken = tokenDto,
@@ -74,7 +71,7 @@ namespace AuthenticationApi.Controllers
             var identityErrors = await authService.UpdateUserAsync(serviceUpdateRequest);
             if (identityErrors.Count > 0)
             {
-                var errors = identityErrors.Where(e => !e.Description.Contains("Username")).Select(e => e.Description).ToArray();
+                var errors = identityErrors.Select(e => e.Description).ToArray();
                 return BadRequest(new ResponseError { StatusCode = $"{(int)HttpStatusCode.BadRequest}", Messages = errors.ToArray() });
             }
             return Ok();
@@ -91,7 +88,7 @@ namespace AuthenticationApi.Controllers
         [HttpPost("check")]
         public async Task<ActionResult<CheckAuthDataResponse>> CheckAuthData([FromBody] CheckAuthDataRequest request)
         {
-            var isCorrect = await authService.CheckAuthDataAsync(request.Email, request.Password);
+            var isCorrect = await authService.CheckAuthDataAsync(request.Login, request.Password);
             var checkAuthDataResponse = new CheckAuthDataResponse
             {
                 IsCorrect = isCorrect

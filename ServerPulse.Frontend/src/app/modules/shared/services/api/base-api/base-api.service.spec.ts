@@ -49,6 +49,6 @@ describe('BaseApiService', () => {
       error: (err) => {
       }
     });
-    expect(mockErrorHandler.handleError).toHaveBeenCalledWith(error);
+    expect(mockErrorHandler.handleApiError).toHaveBeenCalledWith(error);
   });
 });

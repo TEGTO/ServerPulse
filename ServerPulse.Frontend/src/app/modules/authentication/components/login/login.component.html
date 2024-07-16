@@ -6,14 +6,11 @@
 <mat-dialog-content>
     <form id="loginForm" class="content__form space-y-1" [formGroup]="formGroup" (ngSubmit)="signInUser()">
         <mat-form-field>
-            <mat-label>Email</mat-label>
-            <input type="email" autocomplete="user-email" matInput formControlName="email"
+            <mat-label>Name or email</mat-label>
+            <input type="text" autocomplete="user-login" matInput formControlName="login"
                 placeholder="example@example.com" maxlength="256">
-            @if (emailInput.hasError('email') && !emailInput.hasError('required')) {
-            <mat-error>Please enter a valid email address</mat-error>
-            }
-            @if (emailInput.hasError('required')) {
-            <mat-error>Email is <strong>required</strong></mat-error>
+            @if (loginInput.hasError('required')) {
+            <mat-error>Field is <strong>required</strong></mat-error>
             }
         </mat-form-field>
         <mat-form-field>

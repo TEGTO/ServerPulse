@@ -21,12 +21,12 @@ namespace AuthenticationApi.Services
         {
             return await userManager.CreateAsync(user, password);
         }
-        public async Task<AccessTokenData> LoginUserAsync(string email, string password, int refreshTokeExpiryInDays)
+        public async Task<AccessTokenData> LoginUserAsync(string login, string password, int refreshTokeExpiryInDays)
         {
-            var user = await userManager.FindByEmailAsync(email);
+            var user = await GetUserByLoginAsync(login);
             if (user == null || !await userManager.CheckPasswordAsync(user, password))
             {
-                throw new UnauthorizedAccessException("Invalid Authentication");
+                throw new UnauthorizedAccessException("Invalid authentication. Login or email address is not correct.");
             }
             var token = jwtHandler.CreateToken(user);
             user.RefreshToken = token.RefreshToken;
@@ -34,9 +34,10 @@ namespace AuthenticationApi.Services
             await userManager.UpdateAsync(user);
             return token;
         }
-        public async Task<User?> GetUserByEmailAsync(string email)
+        public async Task<User?> GetUserByLoginAsync(string login)
         {
-            var user = await userManager.FindByEmailAsync(email);
+            var user = await userManager.FindByEmailAsync(login);
+            user = user == null ? await userManager.FindByNameAsync(login) : user;
             return user;
         }
         public async Task<List<IdentityError>> UpdateUserAsync(UserUpdateData updateData)
@@ -59,7 +60,7 @@ namespace AuthenticationApi.Services
                 var result = await userManager.ChangePasswordAsync(user, updateData.OldPassword, updateData.NewPassword);
                 identityErrors.AddRange(result.Errors);
             }
-            return identityErrors;
+            return RemoveDuplicates(identityErrors);
         }
         public async Task<AccessTokenData> RefreshTokenAsync(AccessTokenData accessTokenData)
         {
@@ -72,14 +73,22 @@ namespace AuthenticationApi.Services
             }
             return jwtHandler.CreateToken(user);
         }
-        public async Task<bool> CheckAuthDataAsync(string email, string password)
+        public async Task<bool> CheckAuthDataAsync(string login, string password)
         {
-            var user = await userManager.FindByEmailAsync(email);
+            var user = await GetUserByLoginAsync(login);
             if (user == null || !await userManager.CheckPasswordAsync(user, password))
             {
                 return false;
             }
             return true;
+        }
+        private List<IdentityError> RemoveDuplicates(List<IdentityError> identityErrors)
+        {
+            identityErrors = identityErrors
+            .GroupBy(e => e.Description)
+            .Select(g => g.First())
+            .ToList();
+            return identityErrors;
         }
     }
 }

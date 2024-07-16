@@ -1,4 +1,4 @@
 export interface UserAuthenticationRequest {
-    email: string;
+    login: string;
     password: string;
 }

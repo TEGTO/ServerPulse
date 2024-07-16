@@ -6,13 +6,17 @@ import { AuthData, AuthToken, UserAuthenticationRequest, UserData, UserRegistrat
     providedIn: 'root'
 })
 export abstract class AuthenticationService {
+    //Registration
     abstract registerUser(userRegistrationData: UserRegistrationRequest): Observable<boolean>;
     abstract getRegistrationErrors(): Observable<any>;
+    //Auth
     abstract singInUser(userAuthData: UserAuthenticationRequest): Observable<AuthData>;
     abstract getAuthData(): Observable<AuthData>;
     abstract getAuthErrors(): Observable<any>;
-    abstract getUserData(): Observable<UserData>;
     abstract logOutUser(): Observable<AuthData>;
     abstract refreshToken(accessToken: AuthToken): Observable<AuthData>;
+    //User
+    abstract getUserData(): Observable<UserData>;
     abstract updateUser(updateUserData: UserUpdateDataRequest): Observable<boolean>;
+    abstract getUserErrors(): Observable<any>;
 }

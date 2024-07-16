@@ -52,10 +52,11 @@ export class AuthenticatedComponent implements OnInit {
         if (isSuccess) {
           this.snackbarManager.openInfoSnackbar("✔️ The update is successful!", 5)
         }
-        this.authService.getAuthErrors().subscribe(
+        this.authService.getUserErrors().subscribe(
           errors => {
-            if (errors)
+            if (errors) {
               this.snackbarManager.openErrorSnackbar(errors.split("\n"));
+            }
           });
       });
     }

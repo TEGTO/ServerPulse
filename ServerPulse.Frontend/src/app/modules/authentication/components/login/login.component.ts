@@ -12,12 +12,12 @@ import { AuthenticationDialogManager, AuthenticationService, RegisterComponent }
 export class LoginComponent {
   formGroup: FormGroup = new FormGroup(
     {
-      email: new FormControl('', [Validators.email, Validators.required, Validators.maxLength(256)]),
+      login: new FormControl('', [Validators.required, Validators.maxLength(256)]),
       password: new FormControl('', [Validators.required, Validators.minLength(8), Validators.maxLength(256)]),
     });
   hidePassword: boolean = true;
 
-  get emailInput() { return this.formGroup.get('email')!; }
+  get loginInput() { return this.formGroup.get('login')!; }
   get passwordInput() { return this.formGroup.get('password')!; }
 
   constructor(
@@ -34,7 +34,7 @@ export class LoginComponent {
     if (this.formGroup.valid) {
       const formValues = { ...this.formGroup.value };
       const userData: UserAuthenticationRequest = {
-        email: formValues.email,
+        login: formValues.login,
         password: formValues.password,
       };
       this.authService.singInUser(userData).subscribe(authData => {

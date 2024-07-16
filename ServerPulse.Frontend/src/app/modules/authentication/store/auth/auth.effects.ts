@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
 import { catchError, map, mergeMap, of } from "rxjs";
-import { getAuthData, getAuthDataSuccess, logOutUser, logOutUserSuccess, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerFailure, registerSuccess, registerUser, signInUser, signInUserFailure, signInUserSuccess, updateUserData, updateUserDataFailure, updateUserDataSuccess } from "../..";
+import { getAuthData, getAuthDataFailure, getAuthDataSuccess, logOutUser, logOutUserSuccess, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerFailure, registerSuccess, registerUser, signInUser, signInUserFailure, signInUserSuccess, updateUserData, updateUserDataFailure, updateUserDataSuccess } from "../..";
 import { AuthData, AuthenticationApiService, LocalStorageService, UserData } from "../../../shared";
 
 //Registration
@@ -16,7 +16,7 @@ export class RegistrationEffects {
         this.actions$.pipe(
             ofType(registerUser),
             mergeMap((action) =>
-                this.apiService.registerUser(action.userRegistrationData).pipe(
+                this.apiService.registerUser(action.registrationRequest).pipe(
                     map(() => registerSuccess()),
                     catchError(error => of(registerFailure({ error: error.message })))
                 )
@@ -40,7 +40,7 @@ export class SignInEffects {
         this.actions$.pipe(
             ofType(signInUser),
             mergeMap((action) =>
-                this.apiService.loginUser(action.authData).pipe(
+                this.apiService.loginUser(action.authRequest).pipe(
                     map((response) => {
                         let authData: AuthData = {
                             isAuthenticated: true,
@@ -74,7 +74,7 @@ export class SignInEffects {
                     return of(getAuthDataSuccess({ authData: authData, userData: userData }));
                 }
                 else {
-                    return of();
+                    return of(getAuthDataFailure());
                 }
             })
         )
@@ -121,14 +121,14 @@ export class SignInEffects {
         this.actions$.pipe(
             ofType(updateUserData),
             mergeMap((action) =>
-                this.apiService.updateUser(action.userUpdateData).pipe(
+                this.apiService.updateUser(action.updateRequest).pipe(
                     map(() => {
                         let userData: UserData =
                         {
-                            userName: action.userUpdateData.userName,
-                            email: action.userUpdateData.newEmail
-                                ? action.userUpdateData.newEmail
-                                : action.userUpdateData.oldEmail
+                            userName: action.updateRequest.userName,
+                            email: action.updateRequest.newEmail
+                                ? action.updateRequest.newEmail
+                                : action.updateRequest.oldEmail
                         };
                         this.localStorage.setItem(this.storageUserDataKey, JSON.stringify(userData));
                         return updateUserDataSuccess({ userData: userData });

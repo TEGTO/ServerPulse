@@ -27,10 +27,6 @@ export const selectAuthErrors = createSelector(
     selectAuthState,
     (state: AuthState) => state.error
 );
-export const selectUpdateIsSuccessful = createSelector(
-    selectAuthState,
-    (state: AuthState) => state.error == null
-);
 //User Data
 export const selectUserDataState = createFeatureSelector<UserDataState>('userdata');
 export const selectUserData: MemoizedSelector<object, UserData> = createSelector(
@@ -39,4 +35,12 @@ export const selectUserData: MemoizedSelector<object, UserData> = createSelector
         userName: state.userName,
         email: state.email
     })
+);
+export const selectUpdateIsSuccessful = createSelector(
+    selectUserDataState,
+    (state: UserDataState) => state.isUpdateSuccess
+);
+export const selectUserErrors = createSelector(
+    selectUserDataState,
+    (state: UserDataState) => state.error
 );

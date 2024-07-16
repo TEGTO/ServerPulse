@@ -4,7 +4,7 @@ import { AuthData, AuthToken, UserAuthenticationRequest, UserData, UserRegistrat
 //Registration
 export const registerUser = createAction(
     '[Registration] Register New User',
-    props<{ userRegistrationData: UserRegistrationRequest }>()
+    props<{ registrationRequest: UserRegistrationRequest }>()
 );
 export const registerSuccess = createAction(
     '[Registration] Register New User Success'
@@ -16,7 +16,7 @@ export const registerFailure = createAction(
 //Auth
 export const signInUser = createAction(
     '[Auth] Sing In By User Data',
-    props<{ authData: UserAuthenticationRequest }>()
+    props<{ authRequest: UserAuthenticationRequest }>()
 );
 export const signInUserSuccess = createAction(
     '[Auth] Sing In By User Data Success',
@@ -33,6 +33,9 @@ export const getAuthData = createAction(
 export const getAuthDataSuccess = createAction(
     '[Auth] Get Authenticated Data Success',
     props<{ authData: AuthData, userData: UserData }>()
+);
+export const getAuthDataFailure = createAction(
+    '[Auth] Get Authenticated Data Failure'
 );
 
 export const logOutUser = createAction(
@@ -57,7 +60,7 @@ export const refreshAccessTokenFailure = createAction(
 
 export const updateUserData = createAction(
     '[Auth] Update Authenticated User',
-    props<{ userUpdateData: UserUpdateDataRequest }>()
+    props<{ updateRequest: UserUpdateDataRequest }>()
 );
 export const updateUserDataSuccess = createAction(
     '[Auth] Update Authenticated User Success',

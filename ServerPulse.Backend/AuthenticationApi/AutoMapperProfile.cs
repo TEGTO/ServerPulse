@@ -1,8 +1,8 @@
 ﻿using Authentication.Models;
-using AutoMapper;
 using AuthenticationApi.Domain.Dtos;
 using AuthenticationApi.Domain.Entities;
 using AuthenticationApi.Domain.Models;
+using AutoMapper;
 
 namespace AuthenticationApi
 {
