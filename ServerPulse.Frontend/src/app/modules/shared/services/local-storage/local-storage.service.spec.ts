@@ -19,13 +19,24 @@ describe('LocalStorageService', () => {
   });
 
   it('should set item in localStorage', () => {
-    service.setItem('testKey', 'testValue');
+    service.setItem('testKey', 'testValue', false);
     expect(localStorage.getItem('testKey')).toEqual('testValue');
+  });
+
+  it('should set item in localStorage decrypted', () => {
+    service.setItem('testKey', 'testValue', true);
+    expect(localStorage.getItem('testKey')).not.toEqual('testValue');
   });
 
   it('should get item from localStorage', () => {
     localStorage.setItem('testKey', 'testValue');
-    const item = service.getItem('testKey');
+    const item = service.getItem('testKey', false);
+    expect(item).toEqual('testValue');
+  });
+
+  it('should get item from localStorage decrypted', () => {
+    service.setItem('testKey', 'testValue', true);
+    const item = service.getItem('testKey', true);
     expect(item).toEqual('testValue');
   });
 

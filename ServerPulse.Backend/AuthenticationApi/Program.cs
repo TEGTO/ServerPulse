@@ -46,7 +46,6 @@ builder.Services.AddScoped<IDatabaseRepository<AuthIdentityDbContext>, DatabaseR
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
-builder.Services.AddSharedFluentValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 ValidatorOptions.Global.LanguageManager.Enabled = false;
 

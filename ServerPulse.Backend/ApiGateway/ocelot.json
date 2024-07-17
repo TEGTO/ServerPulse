@@ -1,9 +1,11 @@
 {
   "Routes": [
-    // Authentication API - Login
     {
+      //Authentication API
+      "Key": "Authentication_Login",
       "UpstreamPathTemplate": "/auth/login",
       "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamPathTemplate": "/auth/login",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -11,12 +13,14 @@
           "Port": 8080
         }
       ],
-      "DownstreamPathTemplate": "/auth/login"
+      "RequestIdKey": "OcelotRequestId",
+      "Timeout": 5000
     },
-    // Authentication API - Register
     {
+      "Key": "Authentication_Register",
       "UpstreamPathTemplate": "/auth/register",
       "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamPathTemplate": "/auth/register",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -24,12 +28,14 @@
           "Port": 8080
         }
       ],
-      "DownstreamPathTemplate": "/auth/register"
+      "RequestIdKey": "OcelotRequestId",
+      "Timeout": 5000
     },
-    // Authentication API - Update
     {
+      "Key": "Authentication_Update",
       "UpstreamPathTemplate": "/auth/update",
       "UpstreamHttpMethod": [ "PUT" ],
+      "DownstreamPathTemplate": "/auth/update",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -37,12 +43,20 @@
           "Port": 8080
         }
       ],
-      "DownstreamPathTemplate": "/auth/update"
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToRequest": {
+        "Authorization": "Bearer {token}"
+      },
+      "RequestIdKey": "OcelotRequestId",
+      "Timeout": 5000
     },
-    // Authentication API - Refresh
     {
+      "Key": "Authentication_Refresh",
       "UpstreamPathTemplate": "/auth/refresh",
       "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamPathTemplate": "/auth/refresh",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -50,12 +64,14 @@
           "Port": 8080
         }
       ],
-      "DownstreamPathTemplate": "/auth/refresh"
+      "RequestIdKey": "OcelotRequestId",
+      "Timeout": 5000
     },
-    // Authentication API - Check
     {
+      "Key": "Authentication_Check",
       "UpstreamPathTemplate": "/auth/check",
       "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamPathTemplate": "/auth/check",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -63,12 +79,15 @@
           "Port": 8080
         }
       ],
-      "DownstreamPathTemplate": "/auth/check"
+      "RequestIdKey": "OcelotRequestId",
+      "Timeout": 5000
     },
-    // Server Data API - GetServerSlotsByEmail
+    //Server Slot API
     {
+      "Key": "ServerSlot_GetAll",
       "UpstreamPathTemplate": "/serverslot",
-      "UpstreamHttpMethod": [ "GET" ],
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT" ],
+      "DownstreamPathTemplate": "/serverslot",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -76,51 +95,20 @@
           "Port": 8080
         }
       ],
-      "DownstreamPathTemplate": "/serverslot"
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToRequest": {
+        "Authorization": "Bearer {token}"
+      },
+      "RequestIdKey": "OcelotRequestId",
+      "Timeout": 5000
     },
-    // Server Data API - GerServerSlotsWithString
     {
-      "UpstreamPathTemplate": "/serverslot/{str}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "serverslotapi",
-          "Port": 8080
-        }
-      ],
-      "DownstreamPathTemplate": "/serverslot/{str}"
-    },
-    // Server Data API - CreateServerSlot
-    {
-      "UpstreamPathTemplate": "/serverslot",
-      "UpstreamHttpMethod": [ "POST" ],
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "serverslotapi",
-          "Port": 8080
-        }
-      ],
-      "DownstreamPathTemplate": "/serverslot"
-    },
-    // Server Data API - UpdateServerSlot
-    {
-      "UpstreamPathTemplate": "/serverslot",
-      "UpstreamHttpMethod": [ "PUT" ],
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "serverslotapi",
-          "Port": 8080
-        }
-      ],
-      "DownstreamPathTemplate": "/serverslot"
-    },
-    // Server Data API - DeleteServerSlot
-    {
+      "Key": "ServerSlot_Delete",
       "UpstreamPathTemplate": "/serverslot/{id}",
       "UpstreamHttpMethod": [ "DELETE" ],
+      "DownstreamPathTemplate": "/serverslot/{id}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -128,7 +116,35 @@
           "Port": 8080
         }
       ],
-      "DownstreamPathTemplate": "/serverslot/{id}"
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToRequest": {
+        "Authorization": "Bearer {token}"
+      },
+      "RequestIdKey": "OcelotRequestId",
+      "Timeout": 5000
+    },
+    {
+      "Key": "ServerSlot_GetWithString",
+      "UpstreamPathTemplate": "/serverslot/{str}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "DownstreamPathTemplate": "/serverslot/{str}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "serverslotapi",
+          "Port": 8080
+        }
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToRequest": {
+        "Authorization": "Bearer {token}"
+      },
+      "RequestIdKey": "OcelotRequestId",
+      "Timeout": 5000
     }
   ],
   "GlobalConfiguration": {

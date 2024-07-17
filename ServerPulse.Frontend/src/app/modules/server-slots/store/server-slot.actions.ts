@@ -5,17 +5,17 @@ import { ServerSlot } from "../../shared/domain/models/server-slot/serverSlot";
 
 //Get Server Slots
 export const getServerSlots = createAction(
-    '[Server Slot] Get Server Slots of The User',
+    '[Server Slot] Get Server Slots Of The User',
 );
 export const getServerSlotsSuccess = createAction(
-    '[Server Slot] Get Server Slots of The User Success',
+    '[Server Slot] Get Server Slots Of The User Success',
     props<{ serverSlots: ServerSlot[] }>()
 );
 export const getServerSlotsFailure = createAction(
-    '[Server Slot] Get Server Slots of The User Failure',
+    '[Server Slot] Get Server Slots Of The User Failure',
     props<{ error: any }>()
 );
-//Get Server Slots with string 
+//Get Server Slots With String 
 export const getServerSlotsWithString = createAction(
     '[Server Slot] Get Server Slots That Contain The String',
     props<{ str: string }>()
@@ -28,7 +28,7 @@ export const getServerSlotsWithStringFailure = createAction(
     '[Server Slot] Get Server Slots That Contain The String Failure',
     props<{ error: any }>()
 );
-//Create a New Server Slot
+//Create A New Server Slot
 export const createServerSlot = createAction(
     '[Server Slot] Create A New Server Slot',
     props<{ createRequest: CreateServerSlotRequest }>()
@@ -41,7 +41,7 @@ export const createServerSlotFailure = createAction(
     '[Server Slot] Create A New Server Slot Failure',
     props<{ error: any }>()
 );
-//Update a Server Slot
+//Update A Server Slot
 export const updateServerSlot = createAction(
     '[Server Slot] Update A Server Slot',
     props<{ updateRequest: UpdateServerSlotRequest }>()
@@ -54,7 +54,7 @@ export const updateServerSlotFailure = createAction(
     '[Server Slot] Update A Server Slot Failure',
     props<{ error: any }>()
 );
-//Delete a Server Slot
+//Delete A Server Slot
 export const deleteServerSlot = createAction(
     '[Server Slot] Delete A Server Slot',
     props<{ id: string }>()

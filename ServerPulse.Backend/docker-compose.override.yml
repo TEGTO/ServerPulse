@@ -22,7 +22,6 @@ services:
       - ASPNETCORE_URLS=http://+:8080;
       - ASPNETCORE_HTTP_PORTS=8080
       - ConnectionStrings__ServerSlotDataConnection=${ConnectionStrings__ServerSlotDataConnection}
-      - AuthApi=${AuthApi}
       - SlotsPerUser=${SlotsPerUser}
       - EFCreateDatabase=${EFCreateDatabase}
       - AuthSettings__Key=${AuthSettings__Key}
@@ -40,6 +39,10 @@ services:
       - ASPNETCORE_Kestrel__Certificates__Default__Password=12345
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/app/certificates/aspnetapp.pfx
       - AllowedCORSOrigins=*
+      - AuthSettings__Key=${AuthSettings__Key}
+      - AuthSettings__Issuer=${AuthSettings__Issuer}
+      - AuthSettings__ExpiryInMinutes=${AuthSettings__ExpiryInMinutes}
+      - AuthSettings__Audience=${AuthSettings__Audience}
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro

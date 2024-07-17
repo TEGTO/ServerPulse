@@ -3,8 +3,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { RedirectorService } from './redirector.service';
 
 describe('RedirectorContollerService', () => {
-  var mockRouter: jasmine.SpyObj<Router>;
-  var service: RedirectorService;
+  let mockRouter: jasmine.SpyObj<Router>;
+  let service: RedirectorService;
 
   beforeEach(() => {
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);

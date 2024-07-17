@@ -1,6 +1,5 @@
 using Authentication;
 using Authentication.Configuration;
-using Authentication.Services;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -15,6 +14,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContextFactory<ServerDataDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("ServerSlotDataConnection")));
 
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<IServerSlotService, ServerSlotService>();
+builder.Services.AddScoped<IDatabaseRepository<ServerDataDbContext>, DatabaseRepository<ServerDataDbContext>>();
+
 var jwtSettings = new JwtSettings()
 {
     Key = builder.Configuration["AuthSettings:Key"],
@@ -22,18 +25,11 @@ var jwtSettings = new JwtSettings()
     Issuer = builder.Configuration["AuthSettings:Issuer"],
     ExpiryInMinutes = Convert.ToDouble(builder.Configuration["AuthSettings:ExpiryInMinutes"]),
 };
-builder.Services.AddSingleton(jwtSettings);
 builder.Services.AddAuthorization();
-builder.Services.AddScoped<JwtHandler>();
 builder.Services.AddCustomJwtAuthentication(jwtSettings);
-
-builder.Services.AddHttpClient();
-builder.Services.AddScoped<IServerSlotService, ServerSlotService>();
-builder.Services.AddScoped<IDatabaseRepository<ServerDataDbContext>, DatabaseRepository<ServerDataDbContext>>();
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
-builder.Services.AddSharedFluentValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 ValidatorOptions.Global.LanguageManager.Enabled = false;
 

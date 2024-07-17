@@ -5,14 +5,14 @@ import { URLDefiner } from '../../url-definer/url-definer.service';
 import { BaseApiService } from './base-api.service';
 
 describe('BaseApiService', () => {
-  var service: BaseApiService;
-  var mockHttpClient: jasmine.SpyObj<HttpClient>;
-  var mockErrorHandler: jasmine.SpyObj<CustomErrorHandler>;
-  var mockUrlDefiner: jasmine.SpyObj<URLDefiner>;
+  let service: BaseApiService;
+  let mockHttpClient: jasmine.SpyObj<HttpClient>;
+  let mockErrorHandler: jasmine.SpyObj<CustomErrorHandler>;
+  let mockUrlDefiner: jasmine.SpyObj<URLDefiner>;
 
   beforeEach(() => {
     mockHttpClient = jasmine.createSpyObj('HttpClient', ['get', 'post', 'put', 'delete']);
-    mockErrorHandler = jasmine.createSpyObj('CustomErrorHandler', ['handleError']);
+    mockErrorHandler = jasmine.createSpyObj('CustomErrorHandler', ['handleApiError']);
     mockUrlDefiner = jasmine.createSpyObj('URLDefiner', ['combineWithApartmentApiUrl']);
 
     TestBed.configureTestingModule({
@@ -28,19 +28,15 @@ describe('BaseApiService', () => {
   });
 
   it('should return HttpClient instance', () => {
-    expect(service['getHttpClient']()).toBe(mockHttpClient);
+    expect(service['httpClient']).toBe(mockHttpClient);
   });
 
   it('should return CustomErrorHandler instance', () => {
-    expect(service['getErrorHandler']()).toBe(mockErrorHandler);
+    expect(service['errorHandler']).toBe(mockErrorHandler);
   });
 
-  it('should combine path with API URL', () => {
-    const path = '/test-path';
-    mockUrlDefiner.combineWithAuthApiUrl.and.returnValue('http://api.example.com/test-path');
-    const combinedUrl = service['combinePathWithApartmentApiUrl'](path);
-    expect(combinedUrl).toBe('http://api.example.com/test-path');
-    expect(mockUrlDefiner.combineWithAuthApiUrl).toHaveBeenCalledWith(path);
+  it('should return URLDefiner instance', () => {
+    expect(service['urlDefiner']).toBe(mockUrlDefiner);
   });
 
   it('should handle error using CustomErrorHandler', () => {

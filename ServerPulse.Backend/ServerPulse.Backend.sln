@@ -31,7 +31,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharedTests", "Tests\Shared
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthenticationApiTests", "Tests\AuthenticationApiTests\AuthenticationApiTests.csproj", "{FCDFB399-D5A0-44B3-9ACD-145090D09DD6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerSlotApiTests", "Tests\ServerSlotApiTests\ServerSlotApiTests.csproj", "{3FF6544B-1B8B-48F9-9D66-1AFB19685920}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerSlotApiTests", "Tests\ServerSlotApiTests\ServerSlotApiTests.csproj", "{3FF6544B-1B8B-48F9-9D66-1AFB19685920}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

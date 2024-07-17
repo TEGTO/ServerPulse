@@ -1,3 +1,5 @@
+using Authentication;
+using Authentication.Configuration;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 
@@ -20,6 +22,15 @@ builder.Services.AddCors(options =>
     });
 });
 
+var jwtSettings = new JwtSettings()
+{
+    Key = builder.Configuration["AuthSettings:Key"],
+    Audience = builder.Configuration["AuthSettings:Audience"],
+    Issuer = builder.Configuration["AuthSettings:Issuer"],
+    ExpiryInMinutes = Convert.ToDouble(builder.Configuration["AuthSettings:ExpiryInMinutes"]),
+};
+builder.Services.AddCustomJwtAuthentication(jwtSettings);
+
 builder.Configuration.SetBasePath(builder.Environment.ContentRootPath)
     .AddJsonFile("ocelot.json", optional: false, reloadOnChange: true)
     .AddEnvironmentVariables();
@@ -28,5 +39,9 @@ builder.Services.AddOcelot(builder.Configuration);
 var app = builder.Build();
 
 app.UseCors(MyAllowSpecificOrigins);
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 await app.UseOcelot();
 app.Run();

@@ -17,9 +17,9 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have the 'EApartmentManagerFrontend' title`, () => {
+  it(`should have the 'ServerPulse' title`, () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    expect(app.title).toEqual('EApartmentManagerFrontend');
+    expect(app.title).toEqual('ServerPulse');
   });
 });

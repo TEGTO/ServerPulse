@@ -63,8 +63,8 @@ namespace AuthenticationApi.Controllers
             };
             return Ok(response);
         }
-        [HttpPut("update")]
         [Authorize]
+        [HttpPut("update")]
         public async Task<IActionResult> Update([FromBody] UserUpdateDataRequest updateRequest)
         {
             UserUpdateData serviceUpdateRequest = mapper.Map<UserUpdateData>(updateRequest);
