@@ -1,19 +1,20 @@
 using Authentication;
 using Authentication.Configuration;
 using Authentication.Services;
+using AuthenticationApi.Data;
+using AuthenticationApi.Domain.Entities;
+using AuthenticationApi.Services;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using AuthenticationApi.Data;
-using AuthenticationApi.Domain.Entities;
-using AuthenticationApi.Services;
 using Shared;
 using Shared.Middlewares;
+using Shared.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<AuthIdentityDbContext>(options =>
+builder.Services.AddDbContextFactory<AuthIdentityDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("AuthenticationConnection")));
 
 builder.Services.AddIdentity<User, IdentityRole>(options =>
@@ -41,6 +42,7 @@ builder.Services.AddScoped<JwtHandler>();
 builder.Services.AddCustomJwtAuthentication(jwtSettings);
 
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IDatabaseRepository<AuthIdentityDbContext>, DatabaseRepository<AuthIdentityDbContext>>();
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
@@ -48,7 +50,7 @@ builder.Services.AddSharedFluentValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 ValidatorOptions.Global.LanguageManager.Enabled = false;
 
-builder.Services.ConfigureCustomInvalidModelStateResponseContollers();
+builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(opt =>
@@ -87,7 +89,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.ConfigureDatabase<AuthIdentityDbContext>();
+await app.ConfigureDatabaseAsync<AuthIdentityDbContext>(CancellationToken.None);
 
 app.UseHttpsRedirection();
 app.UseExceptionMiddleware();

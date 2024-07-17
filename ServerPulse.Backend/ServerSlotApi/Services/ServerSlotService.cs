@@ -1,17 +1,19 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ServerSlotApi.Data;
 using ServerSlotApi.Domain.Entities;
-using Shared.Services;
+using Shared.Repositories;
 
 namespace ServerSlotApi.Services
 {
-    public class ServerSlotService : ServiceDbBase<ServerDataDbContext>, IServerSlotService
+    public class ServerSlotService : IServerSlotService
     {
         private readonly IConfiguration configuration;
+        private readonly IDatabaseRepository<ServerDataDbContext> repository;
 
-        public ServerSlotService(IDbContextFactory<ServerDataDbContext> contextFactory, IConfiguration configuration) : base(contextFactory)
+        public ServerSlotService(IConfiguration configuration, IDatabaseRepository<ServerDataDbContext> repository)
         {
             this.configuration = configuration;
+            this.repository = repository;
         }
 
         public async Task<IEnumerable<ServerSlot>> GetServerSlotsByEmailAsync(string email, CancellationToken cancellationToken)
@@ -69,6 +71,10 @@ namespace ServerSlotApi.Services
                 dbContext.ServerSlots.Remove(serverSlot);
                 await dbContext.SaveChangesAsync(cancellationToken);
             }
+        }
+        private async Task<ServerDataDbContext> CreateDbContextAsync(CancellationToken cancellationToken)
+        {
+            return await repository.CreateDbContextAsync(cancellationToken);
         }
     }
 }

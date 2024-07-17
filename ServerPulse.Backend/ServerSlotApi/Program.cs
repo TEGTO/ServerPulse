@@ -8,6 +8,7 @@ using ServerSlotApi.Data;
 using ServerSlotApi.Services;
 using Shared;
 using Shared.Middlewares;
+using Shared.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,7 +29,7 @@ builder.Services.AddCustomJwtAuthentication(jwtSettings);
 
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IServerSlotService, ServerSlotService>();
-builder.Services.AddScoped<IAuthChecker, AuthChecker>();
+builder.Services.AddScoped<IDatabaseRepository<ServerDataDbContext>, DatabaseRepository<ServerDataDbContext>>();
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
@@ -36,7 +37,7 @@ builder.Services.AddSharedFluentValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 ValidatorOptions.Global.LanguageManager.Enabled = false;
 
-builder.Services.ConfigureCustomInvalidModelStateResponseContollers();
+builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(opt =>
@@ -75,7 +76,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.ConfigureDatabase<ServerDataDbContext>();
+await app.ConfigureDatabaseAsync<ServerDataDbContext>(CancellationToken.None);
 
 app.UseHttpsRedirection();
 app.UseExceptionMiddleware();

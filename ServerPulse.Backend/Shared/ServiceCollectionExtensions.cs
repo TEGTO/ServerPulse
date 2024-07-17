@@ -9,7 +9,7 @@ namespace Shared
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection ConfigureCustomInvalidModelStateResponseContollers(this IServiceCollection services)
+        public static IServiceCollection ConfigureCustomInvalidModelStateResponseControllers(this IServiceCollection services)
         {
             services.AddControllers().ConfigureApiBehaviorOptions(options =>
             {

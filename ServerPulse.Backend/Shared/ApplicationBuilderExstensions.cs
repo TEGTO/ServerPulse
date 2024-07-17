@@ -3,25 +3,26 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Shared.Repositories;
 
 namespace Shared
 {
     public static class ApplicationBuilderExstensions
     {
-        public static IApplicationBuilder ConfigureDatabase<TContext>(this IApplicationBuilder builder) where TContext : DbContext
+        public static async Task<IApplicationBuilder> ConfigureDatabaseAsync<TContext>(this IApplicationBuilder builder, CancellationToken cancellationToken) where TContext : DbContext
         {
             using (var scope = builder.ApplicationServices.CreateScope())
             {
                 var services = scope.ServiceProvider;
                 var configuration = services.GetRequiredService<IConfiguration>();
                 var logger = services.GetRequiredService<ILogger<IApplicationBuilder>>();
+                var repository = services.GetRequiredService<IDatabaseRepository<TContext>>();
                 try
                 {
                     if (configuration["EFCreateDatabase"] == "true")
                     {
                         logger.LogInformation("Applying database migrations...");
-                        var context = services.GetRequiredService<TContext>();
-                        context.Database.Migrate();
+                        await repository.MigrateDatabaseAsync(cancellationToken);
                         logger.LogInformation("Database migrations applied successfully.");
                     }
                 }
