@@ -19,6 +19,7 @@ export class RegisterComponent {
     });
   hidePassword: boolean = true;
 
+  get nameInput() { return this.formGroup.get('userName')!; }
   get emailInput() { return this.formGroup.get('email')!; }
   get passwordInput() { return this.formGroup.get('password')!; }
   get passwordConfirmInput() { return this.formGroup.get('passwordConfirm')!; }

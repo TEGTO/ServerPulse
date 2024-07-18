@@ -11,5 +11,5 @@ export * from "./store/auth/auth.actions";
 export * from "./store/auth/auth.effects";
 export * from "./store/auth/auth.reducer";
 export * from "./store/auth/auth.selector";
-export * from "./validators/password-confirmation.validator";
+export * from "./validators/password-confirmation-validator";
 

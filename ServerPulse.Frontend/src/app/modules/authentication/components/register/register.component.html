@@ -9,7 +9,7 @@
             <mat-label>Name</mat-label>
             <input type="text" autocomplete="user-name" matInput formControlName="userName" placeholder="John Doe"
                 maxlength="256">
-            @if (emailInput.hasError('required')) {
+            @if (nameInput.hasError('required')) {
             <mat-error>Name is <strong>required</strong></mat-error>
             }
         </mat-form-field>
