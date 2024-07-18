@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { SnackbarManager, UserAuthenticationRequest } from '../../../shared';
-import { AuthenticationDialogManager, AuthenticationService, RegisterComponent } from '../../index';
+import { AuthenticationDialogManager, AuthenticationService } from '../../index';
 
 @Component({
   selector: 'auth-login',
@@ -23,7 +23,7 @@ export class LoginComponent {
   constructor(
     private readonly authDialogManager: AuthenticationDialogManager,
     private readonly authService: AuthenticationService,
-    private readonly dialogRef: MatDialogRef<RegisterComponent>,
+    private readonly dialogRef: MatDialogRef<LoginComponent>,
     private readonly snackbarManager: SnackbarManager
   ) { }
 
