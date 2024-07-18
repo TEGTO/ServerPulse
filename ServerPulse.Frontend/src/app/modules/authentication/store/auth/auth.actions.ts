@@ -47,14 +47,14 @@ export const logOutUserSuccess = createAction(
 
 export const refreshAccessToken = createAction(
     '[Auth] Refresh Access Token',
-    props<{ accessToken: AuthToken }>()
+    props<{ authToken: AuthToken }>()
 );
 export const refreshAccessTokenSuccess = createAction(
     '[Auth] Refresh Access Token Success',
-    props<{ accessToken: AuthToken }>()
+    props<{ authToken: AuthToken }>()
 );
 export const refreshAccessTokenFailure = createAction(
-    '[Auth] Refresh Access Token  Failure',
+    '[Auth] Refresh Access Token Failure',
     props<{ error: any }>()
 );
 

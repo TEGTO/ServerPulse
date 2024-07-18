@@ -1,75 +1,87 @@
 import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { jwtDecode } from 'jwt-decode';
-import { Observable, switchMap, throwError } from 'rxjs';
+import { jwtDecode, JwtPayload } from 'jwt-decode';
+import { catchError, Observable, switchMap, throwError } from 'rxjs';
 import { AuthenticationService } from '../..';
-import { AuthToken } from '../../../shared';
+import { AuthData, AuthToken } from '../../../shared';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthInterceptor implements HttpInterceptor {
 
-  tokenData!: AuthToken;
+  authToken!: AuthToken;
+  decodedToken: JwtPayload | null = null;
 
   constructor(
     private readonly authService: AuthenticationService
   ) {
     authService.getAuthData().subscribe(
       data => {
-        this.tokenData = {
-          accessToken: data.authToken,
-          refreshToken: data.refreshToken,
-          refreshTokenExpiryDate: data.refreshTokenExpiryDate
-        }
+        this.processAuthData(data);
       }
     )
   }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    if (req.headers.has('X-Skip-Interceptor') || !this.tokenData.accessToken) {
+    if (req.headers.has('X-Skip-Interceptor') || !this.decodedToken) {
       return next.handle(req);
     }
-    if (this.tokenData.refreshTokenExpiryDate < new Date()) {
-      this.authService.logOutUser();
-      return throwError(() => new Error('Refresh token expired'));
+    else {
+      return this.interceptWithToken(req, next);
     }
-    if (this.isTokenExpired(this.tokenData.accessToken)) {
-      return this.authService.refreshToken(this.tokenData).pipe(
+  }
+  private interceptWithToken(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    if (this.authToken.refreshTokenExpiryDate < new Date()) {
+      return this.logOutUserWithError('Refresh token expired')
+    }
+    if (this.isTokenExpired()) {
+      return this.authService.refreshToken(this.authToken).pipe(
         switchMap(data => {
-          this.tokenData = {
-            accessToken: data.authToken,
-            refreshToken: data.refreshToken,
-            refreshTokenExpiryDate: new Date(data.refreshTokenExpiryDate)
-          };
-          return this.sendRequest(req, next);
+          this.processAuthData(data);
+          return this.sendRequestWithToken(req, next);
+        }),
+        catchError(error => {
+          return this.logOutUserWithError(error.message)
         })
       );
     }
     else {
-      return this.sendRequest(req, next);
+      return this.sendRequestWithToken(req, next);
     }
   }
-  private sendRequest(req: HttpRequest<any>, next: HttpHandler) {
-    if (!this.tokenData.accessToken) {
-      return next.handle(req);
-    }
+  private sendRequestWithToken(req: HttpRequest<any>, next: HttpHandler) {
     const req1 = req.clone({
-      headers: req.headers.set('Authorization', `Bearer ${this.tokenData.accessToken}`),
+      headers: req.headers.set('Authorization', `Bearer ${this.authToken.accessToken}`),
     });
     return next.handle(req1);
   }
-  private isTokenExpired(token: string): boolean {
+  private logOutUserWithError(errorMessage: string) {
+    this.authService.logOutUser();
+    return throwError(() => new Error(errorMessage));
+  }
+  private isTokenExpired(): boolean {
+    const decoded: any = this.decodedToken;
+    if (decoded.exp) {
+      const expirationDate = new Date(0);
+      expirationDate.setUTCSeconds(decoded.exp);
+      return expirationDate < new Date();
+    }
+    return false;
+  }
+  private tryDecodeToken(token: string) {
+    return jwtDecode(token)
+  }
+  private processAuthData(data: AuthData) {
+    this.authToken = {
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken,
+      refreshTokenExpiryDate: new Date(data.refreshTokenExpiryDate)
+    };
     try {
-      const decoded: any = jwtDecode(token);
-      if (decoded.exp) {
-        const expirationDate = new Date(0);
-        expirationDate.setUTCSeconds(decoded.exp);
-        return expirationDate < new Date();
-      }
-      return false;
-    } catch (e) {
-      return false;
+      this.decodedToken = this.tryDecodeToken(this.authToken.accessToken);
+    } catch (error) {
+      this.decodedToken = null;
     }
   }
 }

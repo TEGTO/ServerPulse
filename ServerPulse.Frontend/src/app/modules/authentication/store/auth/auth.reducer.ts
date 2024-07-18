@@ -29,14 +29,14 @@ export const registrationReducer = createReducer(
 //Auth
 export interface AuthState {
     isAuthenticated: boolean,
-    authToken: string,
+    accessToken: string,
     refreshToken: string,
     refreshTokenExpiryDate: Date,
     error: any
 }
 const initialAuthState: AuthState = {
     isAuthenticated: false,
-    authToken: "",
+    accessToken: "",
     refreshToken: "",
     refreshTokenExpiryDate: new Date(),
     error: null
@@ -50,7 +50,7 @@ export const authReducer = createReducer(
     on(signInUserSuccess, (state, { authData: authData }) => ({
         ...state,
         isAuthenticated: true,
-        authToken: authData.authToken,
+        accessToken: authData.accessToken,
         refreshToken: authData.refreshToken,
         refreshTokenExpiryDate: authData.refreshTokenExpiryDate,
         error: null
@@ -63,7 +63,7 @@ export const authReducer = createReducer(
     on(getAuthDataSuccess, (state, { authData: authData }) => ({
         ...state,
         isAuthenticated: authData.isAuthenticated,
-        authToken: authData.authToken,
+        accessToken: authData.accessToken,
         refreshToken: authData.refreshToken,
         refreshTokenExpiryDate: authData.refreshTokenExpiryDate,
         error: null
@@ -76,10 +76,10 @@ export const authReducer = createReducer(
         ...initialAuthState,
     })),
 
-    on(refreshAccessTokenSuccess, (state, { accessToken: accessToken }) => ({
+    on(refreshAccessTokenSuccess, (state, { authToken: accessToken }) => ({
         ...state,
         isAuthenticated: true,
-        authToken: accessToken.accessToken,
+        accessToken: accessToken.accessToken,
         refreshToken: accessToken.refreshToken,
         refreshTokenExpiryDate: accessToken.refreshTokenExpiryDate,
         error: null

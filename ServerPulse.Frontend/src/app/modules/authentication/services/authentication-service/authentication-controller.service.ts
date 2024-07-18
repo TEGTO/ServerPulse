@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-import { getAuthData, logOutUser, refreshAccessToken, registerUser, selectAuthData, selectAuthErrors, selectIsRegistrationSuccess, selectRegistrationErrors, selectUpdateIsSuccessful, selectUserData, selectUserErrors, signInUser, updateUserData } from '../..';
+import { getAuthData, logOutUser, refreshAccessToken, registerUser, selectAuthData, selectAuthErrors, selectIsRegistrationSuccess, selectIsUpdateSuccessful, selectRegistrationErrors, selectUserData, selectUserErrors, signInUser, updateUserData } from '../..';
 import { AuthData, AuthToken, UserAuthenticationRequest, UserData, UserRegistrationRequest, UserUpdateDataRequest } from '../../../shared';
 import { AuthenticationService } from './authentication-service';
 
@@ -23,8 +23,8 @@ export class AuthenticationControllerService implements AuthenticationService {
     return this.store.select(selectRegistrationErrors);
   }
   //Auth
-  singInUser(userAuthData: UserAuthenticationRequest): Observable<AuthData> {
-    this.store.dispatch(signInUser({ authRequest: userAuthData }));
+  singInUser(authRequest: UserAuthenticationRequest): Observable<AuthData> {
+    this.store.dispatch(signInUser({ authRequest: authRequest }));
     return this.store.select(selectAuthData);
   }
   getAuthData(): Observable<AuthData> {
@@ -38,8 +38,8 @@ export class AuthenticationControllerService implements AuthenticationService {
     this.store.dispatch(logOutUser());
     return this.store.select(selectAuthData);
   }
-  refreshToken(accessToken: AuthToken): Observable<AuthData> {
-    this.store.dispatch(refreshAccessToken({ accessToken: accessToken }));
+  refreshToken(authToken: AuthToken): Observable<AuthData> {
+    this.store.dispatch(refreshAccessToken({ authToken: authToken }));
     return this.store.select(selectAuthData);
   }
   //User 
@@ -49,7 +49,7 @@ export class AuthenticationControllerService implements AuthenticationService {
   }
   updateUser(updateData: UserUpdateDataRequest): Observable<boolean> {
     this.store.dispatch(updateUserData({ updateRequest: updateData }));
-    return this.store.select(selectUpdateIsSuccessful);
+    return this.store.select(selectIsUpdateSuccessful);
   }
   getUserErrors(): Observable<any> {
     return this.store.select(selectUserErrors);

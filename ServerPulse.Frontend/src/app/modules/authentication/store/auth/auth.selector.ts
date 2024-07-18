@@ -18,7 +18,7 @@ export const selectAuthData: MemoizedSelector<object, AuthData> = createSelector
     selectAuthState,
     (state: AuthState) => ({
         isAuthenticated: state.isAuthenticated,
-        authToken: state.authToken,
+        accessToken: state.accessToken,
         refreshToken: state.refreshToken,
         refreshTokenExpiryDate: state.refreshTokenExpiryDate
     })
@@ -36,7 +36,7 @@ export const selectUserData: MemoizedSelector<object, UserData> = createSelector
         email: state.email
     })
 );
-export const selectUpdateIsSuccessful = createSelector(
+export const selectIsUpdateSuccessful = createSelector(
     selectUserDataState,
     (state: UserDataState) => state.isUpdateSuccess
 );

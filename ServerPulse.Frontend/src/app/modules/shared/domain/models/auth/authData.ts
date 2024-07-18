@@ -1,6 +1,6 @@
 export interface AuthData {
     isAuthenticated: boolean;
-    authToken: string;
+    accessToken: string;
     refreshToken: string;
     refreshTokenExpiryDate: Date;
 }

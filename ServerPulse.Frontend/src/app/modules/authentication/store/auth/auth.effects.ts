@@ -44,7 +44,7 @@ export class SignInEffects {
                     map((response) => {
                         let authData: AuthData = {
                             isAuthenticated: true,
-                            authToken: response.authToken.accessToken,
+                            accessToken: response.authToken.accessToken,
                             refreshToken: response.authToken.refreshToken,
                             refreshTokenExpiryDate: response.authToken.refreshTokenExpiryDate
                         };
@@ -99,15 +99,15 @@ export class SignInEffects {
         this.actions$.pipe(
             ofType(refreshAccessToken),
             mergeMap((action) =>
-                this.apiService.refreshToken(action.accessToken).pipe(
+                this.apiService.refreshToken(action.authToken).pipe(
                     map((response) => {
                         let json = this.localStorage.getItem(this.storageAuthDataKey);
                         if (json !== null) {
                             let authData = JSON.parse(json) as AuthData;
-                            authData.authToken = response.accessToken;
+                            authData.accessToken = response.accessToken;
                             this.localStorage.setItem(this.storageAuthDataKey, JSON.stringify(authData));
                         }
-                        return refreshAccessTokenSuccess({ accessToken: response });
+                        return refreshAccessTokenSuccess({ authToken: response });
                     }),
                     catchError(error => {
                         this.localStorage.removeItem(this.storageAuthDataKey);
