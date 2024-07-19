@@ -33,6 +33,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthenticationApiTests", "T
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerSlotApiTests", "Tests\ServerSlotApiTests\ServerSlotApiTests.csproj", "{3FF6544B-1B8B-48F9-9D66-1AFB19685920}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerInteractionApi", "ServerInteractionApi\ServerInteractionApi.csproj", "{F475F1DB-EDE3-4F7C-8672-9942103C5CEF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,10 @@ Global
 		{3FF6544B-1B8B-48F9-9D66-1AFB19685920}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3FF6544B-1B8B-48F9-9D66-1AFB19685920}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3FF6544B-1B8B-48F9-9D66-1AFB19685920}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F475F1DB-EDE3-4F7C-8672-9942103C5CEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F475F1DB-EDE3-4F7C-8672-9942103C5CEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F475F1DB-EDE3-4F7C-8672-9942103C5CEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F475F1DB-EDE3-4F7C-8672-9942103C5CEF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -97,6 +103,7 @@ Global
 		{50C45355-3A4A-4878-BDED-0893958CD0C9} = {D3E9CCD5-217F-4FF9-B373-D275F856C29B}
 		{FCDFB399-D5A0-44B3-9ACD-145090D09DD6} = {D3E9CCD5-217F-4FF9-B373-D275F856C29B}
 		{3FF6544B-1B8B-48F9-9D66-1AFB19685920} = {D3E9CCD5-217F-4FF9-B373-D275F856C29B}
+		{F475F1DB-EDE3-4F7C-8672-9942103C5CEF} = {C260E3F5-9C36-4648-99F6-6714CF242134}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {89B7B374-29A5-4E5B-A21F-6FC2B0DE9918}

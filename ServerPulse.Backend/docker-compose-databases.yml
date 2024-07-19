@@ -1,0 +1,20 @@
+version: '3.4'
+
+services:
+  serverpulse-db:
+    container_name: serverpulse-db
+    image: postgres
+    restart: always
+    ports:
+        - "54303:5432"
+    networks:
+        - backend-net
+    volumes:
+        - ./init_history.sql:/docker-entrypoint-initdb.d/init_history.sql
+        # - serverpulse-db:/var/lib/postgresql/data
+
+volumes:
+  serverpulse-db:
+
+networks:
+  backend-net:

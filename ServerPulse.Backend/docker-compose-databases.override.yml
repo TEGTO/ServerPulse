@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  serverpulse-db:
+    environment:
+        - POSTGRES_DB=${POSTGRES_SERVER_PULSE_DB}
+        - POSTGRES_USER=${POSTGRES_SERVER_PULSE_USER}
+        - POSTGRES_PASSWORD=${POSTGRES_SERVER_PULSE_PASSWORD}
