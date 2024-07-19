@@ -13,7 +13,7 @@ namespace AuthenticationApiTests.Services
     internal class AuthServiceTests
     {
         private Mock<UserManager<User>> userManagerMock;
-        private Mock<JwtHandler> jwtHandlerMock;
+        private Mock<ITokenHandler> tokenHandlerMock;
         private AuthService authService;
 
         [SetUp]
@@ -21,8 +21,8 @@ namespace AuthenticationApiTests.Services
         {
             var userStoreMock = new Mock<IUserStore<User>>();
             userManagerMock = new Mock<UserManager<User>>(userStoreMock.Object, null, null, null, null, null, null, null, null);
-            jwtHandlerMock = new Mock<JwtHandler>(null);
-            authService = new AuthService(userManagerMock.Object, jwtHandlerMock.Object);
+            tokenHandlerMock = new Mock<ITokenHandler>(null);
+            authService = new AuthService(userManagerMock.Object, tokenHandlerMock.Object);
         }
 
         [Test]
@@ -49,7 +49,7 @@ namespace AuthenticationApiTests.Services
             userManagerMock.Setup(x => x.FindByEmailAsync(login)).ReturnsAsync((User)null);
             userManagerMock.Setup(x => x.FindByNameAsync(login)).ReturnsAsync(user);
             userManagerMock.Setup(x => x.CheckPasswordAsync(user, password)).ReturnsAsync(true);
-            jwtHandlerMock.Setup(x => x.CreateToken(user)).Returns(tokenData);
+            tokenHandlerMock.Setup(x => x.CreateToken(user)).Returns(tokenData);
             userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
             //Act
             var result = await authService.LoginUserAsync(login, password, 7);
@@ -102,9 +102,9 @@ namespace AuthenticationApiTests.Services
             var identity = new Mock<ClaimsIdentity>();
             principal.Setup(x => x.Identity).Returns(identity.Object);
             identity.Setup(x => x.Name).Returns(user.UserName);
-            jwtHandlerMock.Setup(x => x.GetPrincipalFromExpiredToken(accessTokenData.AccessToken)).Returns(principal.Object);
+            tokenHandlerMock.Setup(x => x.GetPrincipalFromExpiredToken(accessTokenData.AccessToken)).Returns(principal.Object);
             userManagerMock.Setup(x => x.FindByNameAsync(user.UserName)).ReturnsAsync(user);
-            jwtHandlerMock.Setup(x => x.CreateToken(user)).Returns(accessTokenData);
+            tokenHandlerMock.Setup(x => x.CreateToken(user)).Returns(accessTokenData);
             //Act
             var result = await authService.RefreshTokenAsync(accessTokenData);
             //Assert

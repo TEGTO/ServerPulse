@@ -38,7 +38,7 @@ var jwtSettings = new JwtSettings()
 };
 builder.Services.AddSingleton(jwtSettings);
 builder.Services.AddAuthorization();
-builder.Services.AddScoped<JwtHandler>();
+builder.Services.AddScoped<ITokenHandler, JwtHandler>();
 builder.Services.AddCustomJwtAuthentication(jwtSettings);
 
 builder.Services.AddScoped<IAuthService, AuthService>();

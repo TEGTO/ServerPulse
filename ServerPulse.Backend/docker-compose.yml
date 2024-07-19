@@ -2,7 +2,7 @@ version: '3.4'
 
 services:
   authenticationapi:
-    container_name: authentication-api
+    container_name: serverpulse-authentication-api
     image: ${DOCKER_REGISTRY-}authenticationapi
     build:
         context: .
@@ -11,7 +11,7 @@ services:
     - backend-net
 
   serverslotapi:
-    container_name:   serverslotapi-api
+    container_name: serverpulse-serverslotapi-api
     image: ${DOCKER_REGISTRY-}serverslotapi
     build:
       context: .
@@ -20,7 +20,7 @@ services:
     - backend-net
 
   apigateway:
-    container_name: apigateway
+    container_name: serverpulse-apigateway
     image: ${DOCKER_REGISTRY-}apigateway
     build:
       context: .

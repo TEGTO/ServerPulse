@@ -9,12 +9,12 @@ namespace AuthenticationApi.Services
     public class AuthService : IAuthService
     {
         private readonly UserManager<User> userManager;
-        private readonly JwtHandler jwtHandler;
+        private readonly ITokenHandler tokenHandler;
 
-        public AuthService(UserManager<User> userManager, JwtHandler jwtHandler)
+        public AuthService(UserManager<User> userManager, ITokenHandler tokenHandler)
         {
             this.userManager = userManager;
-            this.jwtHandler = jwtHandler;
+            this.tokenHandler = tokenHandler;
         }
 
         public async Task<IdentityResult> RegisterUserAsync(User user, string password)
@@ -28,7 +28,7 @@ namespace AuthenticationApi.Services
             {
                 throw new UnauthorizedAccessException("Invalid authentication. Login or email address is not correct.");
             }
-            var token = jwtHandler.CreateToken(user);
+            var token = tokenHandler.CreateToken(user);
             user.RefreshToken = token.RefreshToken;
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(refreshTokeExpiryInDays);
             await userManager.UpdateAsync(user);
@@ -64,14 +64,14 @@ namespace AuthenticationApi.Services
         }
         public async Task<AccessTokenData> RefreshTokenAsync(AccessTokenData accessTokenData)
         {
-            var principal = jwtHandler.GetPrincipalFromExpiredToken(accessTokenData.AccessToken);
+            var principal = tokenHandler.GetPrincipalFromExpiredToken(accessTokenData.AccessToken);
             var user = await userManager.FindByNameAsync(principal.Identity.Name);
             if (user == null || user.RefreshToken != accessTokenData.RefreshToken
                 || user.RefreshTokenExpiryTime < DateTime.UtcNow)
             {
                 throw new InvalidDataException("Refresh token is not valid!");
             }
-            return jwtHandler.CreateToken(user);
+            return tokenHandler.CreateToken(user);
         }
         public async Task<bool> CheckAuthDataAsync(string login, string password)
         {

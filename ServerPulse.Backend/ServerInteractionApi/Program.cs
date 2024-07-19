@@ -1,12 +1,25 @@
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var producerConfig = new ProducerConfig
+{
+    BootstrapServers = builder.Configuration["Kafka:BootstrapServers"],
+    ClientId = builder.Configuration["Kafka:ClientId"],
+    EnableIdempotence = true,
+
+};
+builder.Services.AddSingleton<IProducerService>(new ProducerService(producerConfig));
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.UseHttpsRedirection();
 

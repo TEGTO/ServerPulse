@@ -1,33 +1,34 @@
 version: '3.4'
 
 services:
-  kafka:
-    container_name: kafka
-    image: confluentinc/cp-kafka:latest
-    ports:
-      - 9092:9092
+  controller-1:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: controller-1
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_NODE_ID: 1
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
-      KAFKA_LISTENERS: PLAINTEXT://kafka:9092,CONTROLLER://kafka:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_LOG_DIRS: /var/lib/kafka/data
-      KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
-      KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE: 'false'
-      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: kafka:9092
-      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
-      KAFKA_CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
-    volumes:
-      - kafka_data:/var/lib/kafka/data
+      KAFKA_PROCESS_ROLES: "controller"
+      KAFKA_LISTENERS: "CONTROLLER://controller-1:9093"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@controller-1:9093"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      CLUSTER_ID: "GLZOVd8vSKuXdgAApudsAg"
     networks:
       - backend-net
 
-volumes:
-  kafka_data:
+  broker-1:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: broker-1
+    environment:
+      KAFKA_NODE_ID: 4
+      KAFKA_PROCESS_ROLES: "broker"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://broker-1:9092"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@controller-1:9093"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_LISTENERS: "PLAINTEXT://broker-1:9092"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+      CLUSTER_ID: "GLZOVd8vSKuXdgAApudsAg"
+    networks:
+      - backend-net
 
 networks:
   backend-net:

@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Authentication.Services
 {
-    public class JwtHandler
+    public class JwtHandler : ITokenHandler
     {
         private readonly JwtSettings jwtSettings;
 
@@ -18,7 +18,7 @@ namespace Authentication.Services
             this.jwtSettings = jwtSettings;
         }
 
-        public virtual AccessTokenData CreateToken(IdentityUser user)
+        public AccessTokenData CreateToken(IdentityUser user)
         {
             var signingCredentials = GetSigningCredentials();
             var claims = GetClaims(user);
@@ -27,13 +27,13 @@ namespace Authentication.Services
             var refreshToken = GenerateRefreshToken();
             return new AccessTokenData { AccessToken = token, RefreshToken = refreshToken };
         }
-        public virtual SigningCredentials GetSigningCredentials()
+        public SigningCredentials GetSigningCredentials()
         {
             var key = Encoding.UTF8.GetBytes(jwtSettings.Key);
             var secretKey = new SymmetricSecurityKey(key);
             return new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
         }
-        public virtual List<Claim> GetClaims(IdentityUser user)
+        public List<Claim> GetClaims(IdentityUser user)
         {
             var claims = new List<Claim>
             {
@@ -42,7 +42,7 @@ namespace Authentication.Services
             };
             return claims;
         }
-        public virtual JwtSecurityToken GenerateTokenOptions(SigningCredentials signingCredentials, List<Claim> claims)
+        public JwtSecurityToken GenerateTokenOptions(SigningCredentials signingCredentials, List<Claim> claims)
         {
             var tokenOptions = new JwtSecurityToken(
                 issuer: jwtSettings.Issuer,
@@ -61,7 +61,7 @@ namespace Authentication.Services
                 return Convert.ToBase64String(randomNumber);
             }
         }
-        public virtual ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
+        public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
         {
             var tokenValidationParameters = new TokenValidationParameters
             {
@@ -83,7 +83,7 @@ namespace Authentication.Services
             }
             return principal;
         }
-        public virtual AccessTokenData RefreshToken(IdentityUser user, AccessTokenData token)
+        public AccessTokenData RefreshToken(IdentityUser user, AccessTokenData token)
         {
             var principal = GetPrincipalFromExpiredToken(token.AccessToken);
             return CreateToken(user);

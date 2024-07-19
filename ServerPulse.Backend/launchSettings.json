@@ -6,7 +6,10 @@
       "serviceActions": {
         "authenticationapi": "StartDebugging",
         "serverslotapi": "StartDebugging",
-        "apigateway": "StartDebugging"
+        "apigateway": "StartDebugging",
+        "broker-1": "StartWithoutDebugging",
+        "controller-1": "StartWithoutDebugging",
+        "serverpulse-db": "StartWithoutDebugging"
       }
     }
   }
