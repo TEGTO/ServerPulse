@@ -1,0 +1,19 @@
+version: '3.4'
+
+services:
+  broker-1:
+    ports:
+      - 9092:9092
+      - 29092:29092
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://broker-1:9092,OUTSIDE://localhost:29092"
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop:latest
+    container_name: kafdrop
+    ports:
+      - "9000:9000"
+    environment:
+      KAFKA_BROKERCONNECT: "broker-1:9092"
+    networks:
+      - backend-net

@@ -6,7 +6,9 @@ using AuthenticationApi.Services;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Shared;
 using Shared.Dtos;
+using Shared.Dtos.Auth;
 using System.Net;
 
 namespace AuthenticationApi.Controllers
@@ -25,7 +27,7 @@ namespace AuthenticationApi.Controllers
             this.mapper = mapper;
             this.authService = authService;
             this.configuration = configuration;
-            this.expiryInDays = int.Parse(configuration["AuthSettings:RefreshExpiryInDays"]);
+            this.expiryInDays = int.Parse(configuration[Configuration.AUTH_REFRESH_TOKEN_EXPIRY_IN_DAYS]);
         }
 
         [HttpPost("register")]

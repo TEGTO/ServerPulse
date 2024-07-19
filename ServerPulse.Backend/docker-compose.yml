@@ -11,7 +11,7 @@ services:
     - backend-net
 
   serverslotapi:
-    container_name: serverpulse-serverslotapi-api
+    container_name: serverpulse-serverslot-api
     image: ${DOCKER_REGISTRY-}serverslotapi
     build:
       context: .
@@ -19,6 +19,15 @@ services:
     networks:
     - backend-net
 
+  serverinteractionapi:
+    container_name: serverpulse-serverinteraction-api
+    image: ${DOCKER_REGISTRY-}serverinteractionapi
+    build:
+      context: .
+      dockerfile: ServerInteractionApi/Dockerfile
+    networks:
+    - backend-net
+  
   apigateway:
     container_name: serverpulse-apigateway
     image: ${DOCKER_REGISTRY-}apigateway
@@ -32,6 +41,7 @@ services:
     depends_on:
     - authenticationapi
     - serverslotapi
+    - serverinteractionapi
 
 networks:
   backend-net:

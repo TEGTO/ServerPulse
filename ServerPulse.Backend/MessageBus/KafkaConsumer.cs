@@ -1,10 +1,9 @@
 ﻿using Confluent.Kafka;
-using Kafka.Dtos;
 using System.Text.Json;
 
 namespace TestKafka.Consumer.Services
 {
-    public class KafkaConsumer<T> : IMessageConsumer<T> where T : BaseEvent
+    public class KafkaConsumer<T> : IMessageConsumer<T>
     {
         private readonly IAdminClient adminClient;
         private readonly ConsumerConfig consumerConfig;
@@ -24,7 +23,7 @@ namespace TestKafka.Consumer.Services
             var val = await Task.Run(() => ReadLastTopicMessage(topicName, timeoutInMilliseconds, cancellationToken));
             return val;
         }
-        private T? ReadLastTopicMessage(string topicName, int timeoutInMilliseconds, CancellationToken cancellationToken)
+        public T? ReadLastTopicMessage(string topicName, int timeoutInMilliseconds, CancellationToken cancellationToken)
         {
             using (var consumer = GetConsumer())
             {
@@ -32,34 +31,45 @@ namespace TestKafka.Consumer.Services
                 var topicMetadata = adminClient.GetMetadata(topicName, TimeSpan.FromMilliseconds(timeoutInMilliseconds));
                 var partitionMetadatas = topicMetadata.Topics.First(x => x.Topic == topicName).Partitions;
                 var topicPartitions = partitionMetadatas.Select(p => new TopicPartition(topicName, p.PartitionId)).ToList();
-                ConsumeResult<string, string> prevCosnumeResult = null!;
-                T message = null!;
+
+                ConsumeResult<string, string>? latestConsumeResult = null;
+
                 foreach (var partition in topicPartitions)
                 {
-                    consumer.Seek(new TopicPartitionOffset(partition, Offset.End));
+                    var watermarkOffsets = consumer.QueryWatermarkOffsets(partition, TimeSpan.FromMilliseconds(timeoutInMilliseconds));
+                    var lastOffset = watermarkOffsets.High - 1;
+
+                    if (lastOffset < 0)
+                        continue; // Skip empty partitions
+
+                    consumer.Assign(new List<TopicPartitionOffset> { new TopicPartitionOffset(partition, lastOffset) });
+                    consumer.Seek(new TopicPartitionOffset(partition, lastOffset));
+
+                    var consumeResult = consumer.Consume(TimeSpan.FromMilliseconds(timeoutInMilliseconds));
+                    if (consumeResult == null || string.IsNullOrEmpty(consumeResult.Message.Value))
+                        continue;
+
+                    if (latestConsumeResult == null || consumeResult.Message.Timestamp.UtcDateTime > latestConsumeResult.Message.Timestamp.UtcDateTime)
+                    {
+                        latestConsumeResult = consumeResult;
+                    }
+
+                }
+
+                if (latestConsumeResult != null)
+                {
                     try
                     {
-                        var consumeResult = consumer.Consume(timeoutInMilliseconds);
-                        if (consumeResult == null || string.IsNullOrEmpty(consumeResult.Message.Value))
-                            continue;
-                        if (prevCosnumeResult != null)
-                        {
-                            if (consumeResult.Message.Timestamp.UtcDateTime < prevCosnumeResult.Message.Timestamp.UtcDateTime)
-                            {
-                                continue;
-                            }
-                        }
-                        prevCosnumeResult = consumeResult;
-                        message = JsonSerializer.Deserialize<T>(consumeResult.Message.Value);
+                        var deserializedObject = JsonSerializer.Deserialize<T>(latestConsumeResult.Message.Value);
+                        return deserializedObject;
                     }
                     catch (JsonException ex)
                     {
                         OnJsonConvertException?.Invoke(this, ex);
                     }
-
                 }
-                //consumer.Seek(new TopicPartitionOffset("foo", new Partition(1), Offset.End));
-                return message;
+
+                return default;
             }
         }
         public async Task<List<T>> ReadMessagesInDateRangeAsync(string topicName, DateTime startDate, DateTime endDate, int timeoutInMilliseconds = 2000, CancellationToken cancellationToken = default!)

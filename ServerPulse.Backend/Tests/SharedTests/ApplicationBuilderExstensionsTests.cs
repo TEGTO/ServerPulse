@@ -48,22 +48,10 @@ namespace SharedTests
         [Test]
         public async Task ConfigureDatabaseAsyncShouldApplyMigrationsWhenEFCreateDatabaseIsTrue()
         {
-            // Arrange
-            configurationMock.Setup(config => config["EFCreateDatabase"]).Returns("true");
             // Act
             await appBuilderMock.Object.ConfigureDatabaseAsync<DbContext>(cancellationToken);
             // Assert
             repositoryMock.Verify(repo => repo.MigrateDatabaseAsync(cancellationToken), Times.Once);
-        }
-        [Test]
-        public async Task ConfigureDatabaseAsyncShouldNotApplyMigrationsWhenEFCreateDatabaseIsFalse()
-        {
-            // Arrange
-            configurationMock.Setup(config => config["EFCreateDatabase"]).Returns("false");
-            // Act
-            await appBuilderMock.Object.ConfigureDatabaseAsync<DbContext>(cancellationToken);
-            // Assert
-            repositoryMock.Verify(repo => repo.MigrateDatabaseAsync(cancellationToken), Times.Never);
         }
     }
 }

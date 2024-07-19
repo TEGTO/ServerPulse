@@ -5,9 +5,10 @@
     <ProjectGuid>8eab7dc0-86b8-457a-b1a3-c62559d3df19</ProjectGuid>
     <DockerServiceName>serverpulse</DockerServiceName>
     <DockerComposeProjectName>serverpulse-backend</DockerComposeProjectName>
+    <DockerServiceUrl>{Scheme}://localhost:{ServicePort}/weatherforecast</DockerServiceUrl>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <AdditionalComposeFilePaths>docker-compose-databases.yml;docker-compose-databases.override.yml;docker-compose-kafka.yml;</AdditionalComposeFilePaths>
+    <AdditionalComposeFilePaths>docker-compose-databases.yml;docker-compose-databases.override.yml;docker-compose-kafka.yml;docker-compose-kafka.dev.yml;</AdditionalComposeFilePaths>
     <DockerTargetOS>Linux</DockerTargetOS>
     <DockerPublishLocally>False</DockerPublishLocally>
     <DockerLaunchAction>None</DockerLaunchAction>
@@ -19,7 +20,11 @@
       <DependentUpon>docker-compose-databases.yml</DependentUpon>
     </None>
     <None Include="docker-compose-databases.yml" />
+    <None Include="docker-compose-kafka.dev.yml" />
     <None Include="docker-compose-kafka.yml" />
+    <None Include="docker-compose-kafka.dev.yml">
+      <DependentUpon>docker-compose-kafka.yml</DependentUpon>
+    </None>
     <None Include="docker-compose.override.yml">
       <DependentUpon>docker-compose.yml</DependentUpon>
     </None>

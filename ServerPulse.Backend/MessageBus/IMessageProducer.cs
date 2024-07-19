@@ -1,8 +1,8 @@
 ﻿
-namespace Kafka
+namespace MessageBus
 {
     public interface IMessageProducer
     {
-        public Task ProduceAsync(string topic, string message, int partitionAmount);
+        public Task ProduceAsync(string topic, object objectToMessage, int partitionAmount);
     }
 }

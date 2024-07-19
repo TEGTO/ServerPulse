@@ -3,6 +3,7 @@ using Authentication.Configuration;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using ServerSlotApi;
 using ServerSlotApi.Data;
 using ServerSlotApi.Services;
 using Shared;
@@ -12,7 +13,7 @@ using Shared.Repositories;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContextFactory<ServerDataDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("ServerSlotDataConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString(Configuration.SERVER_SLOTS_PER_USER)));
 
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IServerSlotService, ServerSlotService>();
@@ -20,10 +21,10 @@ builder.Services.AddScoped<IDatabaseRepository<ServerDataDbContext>, DatabaseRep
 
 var jwtSettings = new JwtSettings()
 {
-    Key = builder.Configuration["AuthSettings:Key"],
-    Audience = builder.Configuration["AuthSettings:Audience"],
-    Issuer = builder.Configuration["AuthSettings:Issuer"],
-    ExpiryInMinutes = Convert.ToDouble(builder.Configuration["AuthSettings:ExpiryInMinutes"]),
+    Key = builder.Configuration[Configuration.JWT_SETTINGS_KEY],
+    Audience = builder.Configuration[Configuration.JWT_SETTINGS_AUDIENCE],
+    Issuer = builder.Configuration[Configuration.JWT_SETTINGS_ISSUER],
+    ExpiryInMinutes = Convert.ToDouble(builder.Configuration[Configuration.JWT_SETTINGS_EXPIRY_IN_MINUTES]),
 };
 builder.Services.AddAuthorization();
 builder.Services.AddCustomJwtAuthentication(jwtSettings);
@@ -72,7 +73,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-await app.ConfigureDatabaseAsync<ServerDataDbContext>(CancellationToken.None);
+
+if (app.Configuration[Configuration.EF_CREATE_DATABASE] == "true")
+{
+    await app.ConfigureDatabaseAsync<ServerDataDbContext>(CancellationToken.None);
+}
 
 app.UseHttpsRedirection();
 app.UseExceptionMiddleware();

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ServerSlotApi.Data;
 using ServerSlotApi.Domain.Entities;
+using Shared;
 using Shared.Repositories;
 
 namespace ServerSlotApi.Services
@@ -42,7 +43,7 @@ namespace ServerSlotApi.Services
         {
             using (var dbContext = await CreateDbContextAsync(cancellationToken))
             {
-                var slotsPerUser = int.Parse(configuration["SlotsPerUser"]);
+                var slotsPerUser = int.Parse(configuration[Configuration.SERVER_SLOTS_PER_USER]);
                 if (await dbContext.ServerSlots.CountAsync(x => x.UserEmail == serverSlot.UserEmail) > slotsPerUser)
                 {
                     throw new InvalidOperationException("Too many slots per user!");

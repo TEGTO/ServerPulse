@@ -1,6 +1,7 @@
 using Authentication;
 using Authentication.Configuration;
 using Authentication.Services;
+using AuthenticationApi;
 using AuthenticationApi.Data;
 using AuthenticationApi.Domain.Entities;
 using AuthenticationApi.Services;
@@ -15,7 +16,7 @@ using Shared.Repositories;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContextFactory<AuthIdentityDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("AuthenticationConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString(Configuration.AUTH_DATABASE_CONNECTION_STRING)));
 
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
@@ -31,10 +32,10 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 
 var jwtSettings = new JwtSettings()
 {
-    Key = builder.Configuration["AuthSettings:Key"],
-    Audience = builder.Configuration["AuthSettings:Audience"],
-    Issuer = builder.Configuration["AuthSettings:Issuer"],
-    ExpiryInMinutes = Convert.ToDouble(builder.Configuration["AuthSettings:ExpiryInMinutes"]),
+    Key = builder.Configuration[Configuration.JWT_SETTINGS_KEY],
+    Audience = builder.Configuration[Configuration.JWT_SETTINGS_AUDIENCE],
+    Issuer = builder.Configuration[Configuration.JWT_SETTINGS_ISSUER],
+    ExpiryInMinutes = Convert.ToDouble(builder.Configuration[Configuration.JWT_SETTINGS_EXPIRY_IN_MINUTES]),
 };
 builder.Services.AddSingleton(jwtSettings);
 builder.Services.AddAuthorization();
@@ -88,7 +89,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-await app.ConfigureDatabaseAsync<AuthIdentityDbContext>(CancellationToken.None);
+if (app.Configuration[Configuration.EF_CREATE_DATABASE] == "true")
+{
+    await app.ConfigureDatabaseAsync<AuthIdentityDbContext>(CancellationToken.None);
+}
 
 app.UseHttpsRedirection();
 app.UseExceptionMiddleware();

@@ -145,6 +145,22 @@
       },
       "RequestIdKey": "OcelotRequestId",
       "Timeout": 5000
+    },
+    //Server Interaction API
+    {
+      "Key": "ServerInteraction_SendAlive",
+      "UpstreamPathTemplate": "/serverinteraction/alive/{id}",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamPathTemplate": "/serverinteraction/alive/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "serverinteractionapi",
+          "Port": 8080
+        }
+      ],
+      "RequestIdKey": "OcelotRequestId",
+      "Timeout": 5000
     }
   ],
   "GlobalConfiguration": {

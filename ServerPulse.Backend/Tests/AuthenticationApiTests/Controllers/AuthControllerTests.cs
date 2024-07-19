@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Shared.Dtos;
+using Shared.Dtos.Auth;
 using System.Net;
 
 namespace AuthenticationApiTests.Controllers

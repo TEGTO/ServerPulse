@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Shared.Repositories;
@@ -14,17 +13,13 @@ namespace Shared
             using (var scope = builder.ApplicationServices.CreateScope())
             {
                 var services = scope.ServiceProvider;
-                var configuration = services.GetRequiredService<IConfiguration>();
                 var logger = services.GetRequiredService<ILogger<IApplicationBuilder>>();
                 var repository = services.GetRequiredService<IDatabaseRepository<TContext>>();
                 try
                 {
-                    if (configuration["EFCreateDatabase"] == "true")
-                    {
-                        logger.LogInformation("Applying database migrations...");
-                        await repository.MigrateDatabaseAsync(cancellationToken);
-                        logger.LogInformation("Database migrations applied successfully.");
-                    }
+                    logger.LogInformation("Applying database migrations...");
+                    await repository.MigrateDatabaseAsync(cancellationToken);
+                    logger.LogInformation("Database migrations applied successfully.");
                 }
                 catch (Exception ex)
                 {
