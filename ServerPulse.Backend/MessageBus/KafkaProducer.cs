@@ -1,5 +1,4 @@
 ﻿using Confluent.Kafka;
-using System.Text.Json;
 
 namespace MessageBus
 {
@@ -14,11 +13,10 @@ namespace MessageBus
             producerBuilder = new ProducerBuilder<string, string>(producerConfig);
         }
 
-        public async Task ProduceAsync(string topic, object objectToMessage, int partitionAmount)
+        public async Task ProduceAsync(string topic, string message, int partitionAmount)
         {
             using (var producer = CreateProducer())
             {
-                var message = JsonSerializer.Serialize(objectToMessage);
                 var kafkaMessage = new Message<string, string>
                 {
                     Value = message

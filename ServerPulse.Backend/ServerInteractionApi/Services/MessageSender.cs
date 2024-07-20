@@ -1,5 +1,6 @@
 ﻿using MessageBus;
 using Shared.Dtos.ServerEvent;
+using System.Text.Json;
 
 namespace ServerInteractionApi.Services
 {
@@ -22,7 +23,8 @@ namespace ServerInteractionApi.Services
         {
             string topic = $"{ALIVE_TOPIC}-{slotId}";
             AliveEvent aliveEvent = new AliveEvent(slotId, true);
-            await producer.ProduceAsync(topic, aliveEvent, partitionsAmount);
+            var message = JsonSerializer.Serialize(aliveEvent);
+            await producer.ProduceAsync(topic, message, partitionsAmount);
         }
     }
 }

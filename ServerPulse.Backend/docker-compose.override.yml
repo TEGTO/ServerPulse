@@ -39,6 +39,7 @@ services:
       - Kafka__ClientId=${Kafka__ClientId}
       - Kafka__PartitionsAmount=${Kafka__PartitionsAmount}
       - ServerSlotApi=${ServerSlotApi}
+      - ConnectionStrings__ServerInteractionRedis=${ConnectionStrings__ServerInteractionRedis}
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro

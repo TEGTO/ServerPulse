@@ -6,15 +6,25 @@ services:
     image: postgres
     restart: always
     ports:
-        - "54303:5432"
+    - "54303:5432"
     networks:
-        - backend-net
+    - backend-net
     volumes:
-        - ./init_history.sql:/docker-entrypoint-initdb.d/init_history.sql
-        # - serverpulse-db:/var/lib/postgresql/data
+    - ./init_history.sql:/docker-entrypoint-initdb.d/init_history.sql
+    - serverpulse-db:/var/lib/postgresql/data
+  serverpulse-redis:
+    container_name: serverpulse-redis
+    image: redis:latest
+    ports:
+    - "6380:6379"
+    networks:
+    - backend-net
+    volumes:
+    - serverpulse-redis:/data
 
 volumes:
   serverpulse-db:
+  serverpulse-redis:
 
 networks:
   backend-net:

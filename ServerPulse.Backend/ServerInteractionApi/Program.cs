@@ -5,10 +5,12 @@ using ServerInteractionApi;
 using ServerInteractionApi.Services;
 using Shared;
 using Shared.Middlewares;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect("localhost"));
+builder.Services.AddSingleton<IConnectionMultiplexer>(
+    ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString(Configuration.REDIS_CONNECTION_STRING)));
 builder.Services.AddHttpClient();
 
 var producerConfig = new ProducerConfig
@@ -20,6 +22,8 @@ var producerConfig = new ProducerConfig
 };
 builder.Services.AddSingleton<IMessageProducer>(new KafkaProducer(producerConfig));
 builder.Services.AddSingleton<IMessageSender, MessageSender>();
+
+builder.Services.AddSingleton<IRedisService, RedisService>();
 
 builder.Services.AddSingleton<IServerSlotChecker, ServerSlotChecker>();
 
