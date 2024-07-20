@@ -4,6 +4,7 @@ using MessageBus;
 using ServerInteractionApi;
 using ServerInteractionApi.Services;
 using Shared;
+using Shared.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +43,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseExceptionMiddleware();
 
 app.UseAuthorization();
 

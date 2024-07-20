@@ -34,17 +34,11 @@ namespace ServerInteractionApi.Services
                 "application/json"
             );
             var checkUrl = serverSlotApi + "/check";
-            try
-            {
-                var httpResponseMessage = await httpClient.PostAsync(checkUrl, jsonContent, cancellationToken);
-                using var contentStream = await httpResponseMessage.Content.ReadAsStreamAsync();
-                var response = await JsonSerializer.DeserializeAsync<CheckServerSlotResponse>(contentStream, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                return response.IsExisting;
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
+
+            var httpResponseMessage = await httpClient.PostAsync(checkUrl, jsonContent, cancellationToken);
+            using var contentStream = await httpResponseMessage.Content.ReadAsStreamAsync();
+            var response = await JsonSerializer.DeserializeAsync<CheckServerSlotResponse>(contentStream, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            return response.IsExisting;
         }
     }
 }
