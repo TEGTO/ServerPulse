@@ -38,11 +38,11 @@ namespace ServerSlotApi.Services
             }
             return serverSlots;
         }
-        public async Task<bool> CheckIfServerSlotExistsAsync(string slotId, CancellationToken cancellationToken)
+        public async Task<bool> CheckIfKeyValidAsync(string key, CancellationToken cancellationToken)
         {
             using (var dbContext = await CreateDbContextAsync(cancellationToken))
             {
-                return await dbContext.ServerSlots.AnyAsync(x => x.Id == slotId, cancellationToken);
+                return await dbContext.ServerSlots.AnyAsync(x => x.SlotKey == key, cancellationToken);
             }
         }
         public async Task<ServerSlot> CreateServerSlotAsync(ServerSlot serverSlot, CancellationToken cancellationToken)

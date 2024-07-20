@@ -7,7 +7,7 @@ namespace Shared.Validators
     {
         public CheckServerSlotRequestValidator()
         {
-            RuleFor(x => x.SlotId).NotNull().NotEmpty().MaximumLength(256);
+            RuleFor(x => x.SlotKey).NotNull().NotEmpty().MaximumLength(256);
         }
     }
 }

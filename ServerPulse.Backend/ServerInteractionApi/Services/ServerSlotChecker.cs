@@ -20,12 +20,12 @@ namespace ServerInteractionApi.Services
             serverSlotApi = configuration[Configuration.SERVER_SLOT_API];
         }
 
-        public async Task<bool> CheckServerSlotAsync(string id, CancellationToken cancellationToken)
+        public async Task<bool> CheckServerSlotAsync(string slotKey, CancellationToken cancellationToken)
         {
             var httpClient = httpClientFactory.CreateClient();
             var checkServerSlotRequest = new CheckServerSlotRequest()
             {
-                SlotId = id,
+                SlotKey = slotKey,
             };
             var jsonContent = new StringContent
             (
@@ -34,11 +34,17 @@ namespace ServerInteractionApi.Services
                 "application/json"
             );
             var checkUrl = serverSlotApi + "/check";
-            Console.WriteLine(jsonContent);
-            var httpResponseMessage = await httpClient.PostAsync(checkUrl, jsonContent, cancellationToken);
-            using var contentStream = await httpResponseMessage.Content.ReadAsStreamAsync();
-            var response = await JsonSerializer.DeserializeAsync<CheckServerSlotResponse>(contentStream, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            return response.IsExisting;
+            try
+            {
+                var httpResponseMessage = await httpClient.PostAsync(checkUrl, jsonContent, cancellationToken);
+                using var contentStream = await httpResponseMessage.Content.ReadAsStreamAsync();
+                var response = await JsonSerializer.DeserializeAsync<CheckServerSlotResponse>(contentStream, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                return response.IsExisting;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
         }
     }
 }

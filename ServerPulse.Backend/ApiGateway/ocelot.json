@@ -164,9 +164,9 @@
     //Server Interaction API
     {
       "Key": "ServerInteraction_SendAlive",
-      "UpstreamPathTemplate": "/serverinteraction/alive/{id}",
+      "UpstreamPathTemplate": "/serverinteraction/alive/{key}",
       "UpstreamHttpMethod": [ "POST" ],
-      "DownstreamPathTemplate": "/serverinteraction/alive/{id}",
+      "DownstreamPathTemplate": "/serverinteraction/alive/{key}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {

@@ -16,20 +16,20 @@ namespace ServerInteractionApi.Controllers
             this.serverSlotChecker = serverSlotChecker;
         }
 
-        [HttpPost("alive/{id}")]
-        public async Task<IActionResult> SendAlive(string id, CancellationToken cancellationToken)
+        [HttpPost("alive/{key}")]
+        public async Task<IActionResult> SendAlive(string key, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(id))
+            if (string.IsNullOrEmpty(key))
             {
-                throw new ArgumentException("Id must be provided");
+                throw new ArgumentException("Key must be provided");
             }
 
-            if (await serverSlotChecker.CheckServerSlotAsync(id, cancellationToken))
+            if (await serverSlotChecker.CheckServerSlotAsync(key, cancellationToken))
             {
-                await messageSender.SendAliveEventAsync(id);
+                await messageSender.SendAliveEventAsync(key);
                 return Ok();
             }
-            return NotFound($"Server slot with {id} id is not found!");
+            return NotFound($"Server slot with key '{key}' is not found!");
         }
     }
 }

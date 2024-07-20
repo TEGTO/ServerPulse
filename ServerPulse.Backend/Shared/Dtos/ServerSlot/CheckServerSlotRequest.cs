@@ -2,6 +2,6 @@
 {
     public class CheckServerSlotRequest
     {
-        public string SlotId { get; set; }
+        public string SlotKey { get; set; }
     }
 }

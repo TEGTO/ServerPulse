@@ -3,6 +3,6 @@ namespace ServerInteractionApi.Services
 {
     public interface IMessageSender
     {
-        public Task SendAliveEventAsync(string slotId);
+        public Task SendAliveEventAsync(string slotKey);
     }
 }

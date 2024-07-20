@@ -47,10 +47,10 @@ namespace ServerSlotApi.Controllers
             {
                 return BadRequest("Invalid request");
             }
-            var result = await serverSlotService.CheckIfServerSlotExistsAsync(request.SlotId, cancellationToken);
+            var result = await serverSlotService.CheckIfKeyValidAsync(request.SlotKey, cancellationToken);
             var response = new CheckServerSlotResponse()
             {
-                SlotId = request.SlotId,
+                SlotKey = request.SlotKey,
                 IsExisting = result
             };
             return Ok(response);
