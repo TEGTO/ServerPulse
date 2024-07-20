@@ -1,9 +1,14 @@
 using Confluent.Kafka;
+using FluentValidation;
 using MessageBus;
 using ServerInteractionApi;
 using ServerInteractionApi.Services;
+using Shared;
 
 var builder = WebApplication.CreateBuilder(args);
+
+//builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect("localhost"));
+builder.Services.AddHttpClient();
 
 var producerConfig = new ProducerConfig
 {
@@ -13,11 +18,18 @@ var producerConfig = new ProducerConfig
 
 };
 builder.Services.AddSingleton<IMessageProducer>(new KafkaProducer(producerConfig));
-
 builder.Services.AddSingleton<IMessageSender, MessageSender>();
 
-builder.Services.AddControllers();
+builder.Services.AddSingleton<IServerSlotChecker, ServerSlotChecker>();
+
+builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+ValidatorOptions.Global.LanguageManager.Enabled = false;
+
 
 builder.Services.AddSwaggerGen();
 

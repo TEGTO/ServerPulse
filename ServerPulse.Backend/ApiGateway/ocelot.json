@@ -105,6 +105,21 @@
       "Timeout": 5000
     },
     {
+      "Key": "ServerSlot_CheckIfExists",
+      "UpstreamPathTemplate": "/serverslot/check",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamPathTemplate": "/check",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "serverslotapi",
+          "Port": 8080
+        }
+      ],
+      "RequestIdKey": "OcelotRequestId",
+      "Timeout": 5000
+    },
+    {
       "Key": "ServerSlot_Delete",
       "UpstreamPathTemplate": "/serverslot/{id}",
       "UpstreamHttpMethod": [ "DELETE" ],

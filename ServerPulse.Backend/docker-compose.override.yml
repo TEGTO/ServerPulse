@@ -38,14 +38,16 @@ services:
       - Kafka__BootstrapServers=${Kafka__BootstrapServers}
       - Kafka__ClientId=${Kafka__ClientId}
       - Kafka__PartitionsAmount=${Kafka__PartitionsAmount}
+      - ServerSlotApi=${ServerSlotApi}
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
   apigateway:
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
-      - ASPNETCORE_URLS=https://+:8081;
+      - ASPNETCORE_URLS=http://+:8080;https://+:8081;
       - ASPNETCORE_HTTPS_PORTS=8081
+      - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_Kestrel__Certificates__Default__Password=12345
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/app/certificates/aspnetapp.pfx
       - AllowedCORSOrigins=*

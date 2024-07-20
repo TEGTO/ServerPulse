@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ServerSlotApi.Data;
 using ServerSlotApi.Domain.Entities;
-using Shared;
 using Shared.Repositories;
 
 namespace ServerSlotApi.Services
@@ -39,6 +38,13 @@ namespace ServerSlotApi.Services
             }
             return serverSlots;
         }
+        public async Task<bool> CheckIfServerSlotExistsAsync(string slotId, CancellationToken cancellationToken)
+        {
+            using (var dbContext = await CreateDbContextAsync(cancellationToken))
+            {
+                return await dbContext.ServerSlots.AnyAsync(x => x.Id == slotId, cancellationToken);
+            }
+        }
         public async Task<ServerSlot> CreateServerSlotAsync(ServerSlot serverSlot, CancellationToken cancellationToken)
         {
             using (var dbContext = await CreateDbContextAsync(cancellationToken))
@@ -64,11 +70,11 @@ namespace ServerSlotApi.Services
                 await dbContext.SaveChangesAsync(cancellationToken);
             }
         }
-        public async Task DeleteServerSlotByIdAsync(string id, CancellationToken cancellationToken)
+        public async Task DeleteServerSlotByIdAsync(string email, string id, CancellationToken cancellationToken)
         {
             using (var dbContext = await CreateDbContextAsync(cancellationToken))
             {
-                var serverSlot = await dbContext.ServerSlots.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+                var serverSlot = await dbContext.ServerSlots.FirstOrDefaultAsync(x => x.Id == id && x.UserEmail == email, cancellationToken);
                 dbContext.ServerSlots.Remove(serverSlot);
                 await dbContext.SaveChangesAsync(cancellationToken);
             }

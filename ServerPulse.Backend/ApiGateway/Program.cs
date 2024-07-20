@@ -2,6 +2,7 @@ using Authentication;
 using Authentication.Configuration;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
+using Shared.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +40,7 @@ builder.Services.AddOcelot(builder.Configuration);
 var app = builder.Build();
 
 app.UseCors(MyAllowSpecificOrigins);
+app.UseExceptionMiddleware();
 
 app.UseAuthentication();
 app.UseAuthorization();

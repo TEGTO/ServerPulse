@@ -13,7 +13,7 @@ using Shared.Repositories;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContextFactory<ServerDataDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString(Configuration.SERVER_SLOTS_PER_USER)));
+    options.UseNpgsql(builder.Configuration.GetConnectionString(Configuration.SERVER_SLOT_DATABASE_CONNECTION_STRING)));
 
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IServerSlotService, ServerSlotService>();
@@ -35,8 +35,8 @@ builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 ValidatorOptions.Global.LanguageManager.Enabled = false;
 
 builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
-
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(opt =>
 {
     opt.SwaggerDoc("v1", new OpenApiInfo { Title = "MyAPI", Version = "v1" });
