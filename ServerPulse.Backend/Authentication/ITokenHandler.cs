@@ -8,11 +8,11 @@ namespace Authentication.Services
 {
     public interface ITokenHandler
     {
-        AccessTokenData CreateToken(IdentityUser user);
-        JwtSecurityToken GenerateTokenOptions(SigningCredentials signingCredentials, List<Claim> claims);
-        List<Claim> GetClaims(IdentityUser user);
-        ClaimsPrincipal GetPrincipalFromExpiredToken(string token);
-        SigningCredentials GetSigningCredentials();
-        AccessTokenData RefreshToken(IdentityUser user, AccessTokenData token);
+        public AccessTokenData CreateToken(IdentityUser user);
+        public JwtSecurityToken GenerateTokenOptions(SigningCredentials signingCredentials, List<Claim> claims);
+        public List<Claim> GetClaims(IdentityUser user);
+        public ClaimsPrincipal GetPrincipalFromExpiredToken(string token);
+        public SigningCredentials GetSigningCredentials();
+        public AccessTokenData RefreshToken(IdentityUser user, AccessTokenData token);
     }
 }

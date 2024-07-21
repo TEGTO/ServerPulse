@@ -25,7 +25,7 @@ builder.Services.AddSingleton<IMessageSender, MessageSender>();
 
 builder.Services.AddSingleton<IRedisService, RedisService>();
 
-builder.Services.AddSingleton<IServerSlotChecker, ServerSlotChecker>();
+builder.Services.AddSingleton<ISlotKeyChecker, SlotKeyChecker>();
 
 builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
 builder.Services.AddEndpointsApiExplorer();

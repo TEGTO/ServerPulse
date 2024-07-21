@@ -22,6 +22,7 @@ namespace ServerSlotApi.Controllers
             this.mapper = mapper;
             this.serverSlotService = serverAuthService;
         }
+
         [Authorize]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ServerSlotResponse>>> GetServerSlotsByEmail(CancellationToken cancellationToken)
@@ -40,15 +41,15 @@ namespace ServerSlotApi.Controllers
         }
         [Route("/check")]
         [HttpPost]
-        public async Task<ActionResult<CheckServerSlotResponse>> CheckServerSlot([FromBody] CheckServerSlotRequest request,
-      CancellationToken cancellationToken)
+        public async Task<ActionResult<CheckSlotKeyResponse>> CheckServerSlot([FromBody] CheckSlotKeyRequest request,
+            CancellationToken cancellationToken)
         {
             if (request == null)
             {
                 return BadRequest("Invalid request");
             }
             var result = await serverSlotService.CheckIfKeyValidAsync(request.SlotKey, cancellationToken);
-            var response = new CheckServerSlotResponse()
+            var response = new CheckSlotKeyResponse()
             {
                 SlotKey = request.SlotKey,
                 IsExisting = result

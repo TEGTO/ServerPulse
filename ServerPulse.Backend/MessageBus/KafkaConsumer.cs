@@ -1,4 +1,5 @@
 ﻿using Confluent.Kafka;
+using System.Runtime.CompilerServices;
 
 namespace TestKafka.Consumer.Services
 {
@@ -15,51 +16,72 @@ namespace TestKafka.Consumer.Services
             consumerBuilder = new ConsumerBuilder<string, string>(consumerConfig);
         }
 
-        private async Task<string?> ReadLastTopicMessageAsync(string topicName, int timeoutInMilliseconds = 2000, CancellationToken cancellationToken = default!)
+        public async IAsyncEnumerable<string> ConsumeAsync(string topic, int timeoutInMilliseconds, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            using (var consumer = consumerBuilder.Build())
+            {
+                consumer.Subscribe(topic);
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    var consumeResult = consumer.Consume(TimeSpan.FromMilliseconds(timeoutInMilliseconds));
+                    if (consumeResult != null && !string.IsNullOrEmpty(consumeResult.Message.Value))
+                    {
+                        yield return consumeResult.Message.Value;
+                    }
+                    await Task.Yield();
+                }
+            }
+        }
+        public async Task<string?> ReadLastTopicMessageAsync(string topicName, int timeoutInMilliseconds = 2000, CancellationToken cancellationToken = default!)
         {
             var val = await Task.Run(() => ReadLastTopicMessage(topicName, timeoutInMilliseconds, cancellationToken));
             return val;
         }
-        public string? ReadLastTopicMessage(string topicName, int timeoutInMilliseconds, CancellationToken cancellationToken)
+        private string? ReadLastTopicMessage(string topicName, int timeoutInMilliseconds, CancellationToken cancellationToken)
         {
-            using (var consumer = GetConsumer())
+            using (var consumer = consumerBuilder.Build())
             {
                 consumer.Subscribe(topicName);
                 var topicMetadata = adminClient.GetMetadata(topicName, TimeSpan.FromMilliseconds(timeoutInMilliseconds));
-                var partitionMetadatas = topicMetadata.Topics.First(x => x.Topic == topicName).Partitions;
-                var topicPartitions = partitionMetadatas.Select(p => new TopicPartition(topicName, p.PartitionId)).ToList();
+                var partitionMetadatas = topicMetadata.Topics.FirstOrDefault(x => x.Topic == topicName)?.Partitions;
 
-                ConsumeResult<string, string>? latestConsumeResult = null;
-
-                foreach (var partition in topicPartitions)
+                if (partitionMetadatas == null)
                 {
-                    var watermarkOffsets = consumer.QueryWatermarkOffsets(partition, TimeSpan.FromMilliseconds(timeoutInMilliseconds));
-                    var lastOffset = watermarkOffsets.High - 1;
-
-                    if (lastOffset < 0)
-                        continue; // Skip empty partitions
-
-                    consumer.Assign(new List<TopicPartitionOffset> { new TopicPartitionOffset(partition, lastOffset) });
-                    consumer.Seek(new TopicPartitionOffset(partition, lastOffset));
-
-                    var consumeResult = consumer.Consume(TimeSpan.FromMilliseconds(timeoutInMilliseconds));
-                    if (consumeResult == null || string.IsNullOrEmpty(consumeResult.Message.Value))
-                        continue;
-
-                    if (latestConsumeResult == null || consumeResult.Message.Timestamp.UtcDateTime > latestConsumeResult.Message.Timestamp.UtcDateTime)
-                    {
-                        latestConsumeResult = consumeResult;
-                    }
-
+                    return null;
                 }
 
-                if (latestConsumeResult != null)
-                {
-                    return latestConsumeResult.Message.Value;
-                }
+                var tasks = partitionMetadatas.Select(partition => Task.Run(() =>
+                    ReadPartitionLatestMessage(consumer, topicName, partition.PartitionId, timeoutInMilliseconds, cancellationToken)
+                )).ToList();
 
-                return default;
+                Task.WaitAll(tasks.ToArray(), cancellationToken);
+
+                var latestMessage = tasks
+                    .Select(task => task.Result)
+                    .Where(result => result != null)
+                    .OrderByDescending(result => result.Message.Timestamp.UtcDateTime)
+                    .FirstOrDefault();
+
+                return latestMessage?.Message.Value;
             }
+        }
+        private ConsumeResult<string, string>? ReadPartitionLatestMessage(IConsumer<string, string> consumer, string topicName, int partitionId, int timeoutInMilliseconds, CancellationToken cancellationToken)
+        {
+            var partition = new TopicPartition(topicName, partitionId);
+            var watermarkOffsets = consumer.QueryWatermarkOffsets(partition, TimeSpan.FromMilliseconds(timeoutInMilliseconds));
+            var lastOffset = watermarkOffsets.High - 1;
+
+            if (lastOffset < 0)
+                return null; // Skip empty partitions
+
+            consumer.Assign(new List<TopicPartitionOffset> { new TopicPartitionOffset(partition, lastOffset) });
+            consumer.Seek(new TopicPartitionOffset(partition, lastOffset));
+
+            var consumeResult = consumer.Consume(TimeSpan.FromMilliseconds(timeoutInMilliseconds));
+            if (consumeResult == null || string.IsNullOrEmpty(consumeResult.Message.Value))
+                return null;
+
+            return consumeResult;
         }
         public async Task<List<string>> ReadMessagesInDateRangeAsync(string topicName, DateTime startDate, DateTime endDate, int timeoutInMilliseconds = 2000, CancellationToken cancellationToken = default!)
         {

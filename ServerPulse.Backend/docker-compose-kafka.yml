@@ -3,7 +3,7 @@ version: '3.4'
 services:
   controller-1:
     image: confluentinc/cp-kafka:7.5.0
-    container_name: controller-1
+    container_name: serverpulse-controller-1
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: "controller"
@@ -16,7 +16,7 @@ services:
 
   broker-1:
     image: confluentinc/cp-kafka:7.5.0
-    container_name: broker-1
+    container_name: serverpulse-broker-1
     environment:
       KAFKA_NODE_ID: 4
       KAFKA_PROCESS_ROLES: "broker"

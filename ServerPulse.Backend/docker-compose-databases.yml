@@ -12,19 +12,19 @@ services:
     volumes:
     - ./init_history.sql:/docker-entrypoint-initdb.d/init_history.sql
     - serverpulse-db:/var/lib/postgresql/data
-  serverpulse-redis:
-    container_name: serverpulse-redis
+  serverslotcheck-redis:
+    container_name: serverpulse-serverslotcheck-redis
     image: redis:latest
     ports:
     - "6380:6379"
     networks:
     - backend-net
     volumes:
-    - serverpulse-redis:/data
+    - serverpulse-serverslotcheck-redis:/data
 
 volumes:
   serverpulse-db:
-  serverpulse-redis:
+  serverpulse-serverslotcheck-redis:
 
 networks:
   backend-net:

@@ -8,28 +8,28 @@ namespace ServerInteractionApi.Controllers
     public class ServerInteractionController : ControllerBase
     {
         private readonly IMessageSender messageSender;
-        private readonly IServerSlotChecker serverSlotChecker;
+        private readonly ISlotKeyChecker serverSlotChecker;
 
-        public ServerInteractionController(IMessageSender messageSender, IServerSlotChecker serverSlotChecker)
+        public ServerInteractionController(IMessageSender messageSender, ISlotKeyChecker serverSlotChecker)
         {
             this.messageSender = messageSender;
             this.serverSlotChecker = serverSlotChecker;
         }
 
-        [HttpPost("alive/{key}")]
-        public async Task<IActionResult> SendAlive(string key, CancellationToken cancellationToken)
+        [HttpPost("alive/{slotKey}")]
+        public async Task<IActionResult> SendAlive(string slotKey, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(key))
+            if (string.IsNullOrEmpty(slotKey))
             {
                 throw new ArgumentException("Key must be provided");
             }
 
-            if (await serverSlotChecker.CheckServerSlotAsync(key, cancellationToken))
+            if (await serverSlotChecker.CheckSlotKeyAsync(slotKey, cancellationToken))
             {
-                await messageSender.SendAliveEventAsync(key);
+                await messageSender.SendAliveEventAsync(slotKey);
                 return Ok();
             }
-            return NotFound($"Server slot with key '{key}' is not found!");
+            return NotFound($"Server slot with key '{slotKey}' is not found!");
         }
     }
 }

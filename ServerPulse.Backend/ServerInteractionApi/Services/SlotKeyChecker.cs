@@ -4,14 +4,14 @@ using System.Text.Json;
 
 namespace ServerInteractionApi.Services
 {
-    public class ServerSlotChecker : IServerSlotChecker
+    public class SlotKeyChecker : ISlotKeyChecker
     {
         private readonly IHttpClientFactory httpClientFactory;
         private readonly IRedisService redisService;
         private readonly IConfiguration configuration;
         private readonly string serverSlotApi;
 
-        public ServerSlotChecker(IHttpClientFactory httpClientFactory, IRedisService redisService, IConfiguration configuration)
+        public SlotKeyChecker(IHttpClientFactory httpClientFactory, IRedisService redisService, IConfiguration configuration)
         {
             this.httpClientFactory = httpClientFactory;
             this.redisService = redisService;
@@ -19,15 +19,15 @@ namespace ServerInteractionApi.Services
             serverSlotApi = configuration[Configuration.SERVER_SLOT_API]!;
         }
 
-        public async Task<bool> CheckServerSlotAsync(string slotKey, CancellationToken cancellationToken)
+        public async Task<bool> CheckSlotKeyAsync(string slotKey, CancellationToken cancellationToken)
         {
-            if (await CheckSlotInRedisAsync(slotKey))
+            if (await CheckSlotKeyInRedisAsync(slotKey))
             {
                 return true;
             }
 
             var httpClient = httpClientFactory.CreateClient();
-            var checkServerSlotRequest = new CheckServerSlotRequest()
+            var checkServerSlotRequest = new CheckSlotKeyRequest()
             {
                 SlotKey = slotKey,
             };
@@ -39,9 +39,9 @@ namespace ServerInteractionApi.Services
             );
             var checkUrl = serverSlotApi + "/check";
 
-            var httpResponseMessage = await httpClient.PostAsJsonAsync(checkUrl, jsonContent, cancellationToken);
+            var httpResponseMessage = await httpClient.PostAsync(checkUrl, jsonContent, cancellationToken);
             using var contentStream = await httpResponseMessage.Content.ReadAsStreamAsync();
-            var response = await JsonSerializer.DeserializeAsync<CheckServerSlotResponse>(contentStream, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var response = await JsonSerializer.DeserializeAsync<CheckSlotKeyResponse>(contentStream, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             if (response != null && response.IsExisting)
             {
@@ -52,14 +52,14 @@ namespace ServerInteractionApi.Services
             return false;
         }
 
-        private async Task<bool> CheckSlotInRedisAsync(string slotKey)
+        private async Task<bool> CheckSlotKeyInRedisAsync(string slotKey)
         {
             var json = await redisService.GetValueAsync(slotKey);
             if (string.IsNullOrEmpty(json))
             {
                 return false;
             }
-            var response = JsonSerializer.Deserialize<CheckServerSlotResponse>(json);
+            var response = JsonSerializer.Deserialize<CheckSlotKeyResponse>(json);
             return response.IsExisting;
         }
     }

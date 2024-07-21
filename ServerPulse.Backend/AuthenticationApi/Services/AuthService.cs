@@ -28,11 +28,9 @@ namespace AuthenticationApi.Services
             {
                 throw new UnauthorizedAccessException("Invalid authentication. Login or email address is not correct.");
             }
-            var token = tokenHandler.CreateToken(user);
-            user.RefreshToken = token.RefreshToken;
-            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(refreshTokeExpiryInDays);
-            await userManager.UpdateAsync(user);
-            return token;
+            var tokenData = CreateNewTokenData(user, refreshTokeExpiryInDays);
+            await SetRefreshToken(user, tokenData);
+            return tokenData;
         }
         public async Task<User?> GetUserByLoginAsync(string login)
         {
@@ -44,34 +42,46 @@ namespace AuthenticationApi.Services
         {
             var user = await userManager.FindByEmailAsync(updateData.OldEmail);
             List<IdentityError> identityErrors = new List<IdentityError>();
+
             if (!string.IsNullOrEmpty(updateData.UserName))
             {
                 var result = await userManager.SetUserNameAsync(user, updateData.UserName);
                 identityErrors.AddRange(result.Errors);
             }
+
             if (!string.IsNullOrEmpty(updateData.NewEmail) && !updateData.NewEmail.Equals(updateData.OldEmail))
             {
                 var token = await userManager.GenerateChangeEmailTokenAsync(user, updateData.NewEmail);
                 var result = await userManager.ChangeEmailAsync(user, updateData.NewEmail, token);
                 identityErrors.AddRange(result.Errors);
             }
+
             if (!string.IsNullOrEmpty(updateData.NewPassword))
             {
                 var result = await userManager.ChangePasswordAsync(user, updateData.OldPassword, updateData.NewPassword);
                 identityErrors.AddRange(result.Errors);
             }
+
             return RemoveDuplicates(identityErrors);
         }
-        public async Task<AccessTokenData> RefreshTokenAsync(AccessTokenData accessTokenData)
+        public async Task<AccessTokenData> RefreshTokenAsync(AccessTokenData accessTokenData, int refreshTokeExpiryInDays)
         {
             var principal = tokenHandler.GetPrincipalFromExpiredToken(accessTokenData.AccessToken);
             var user = await userManager.FindByNameAsync(principal.Identity.Name);
-            if (user == null || user.RefreshToken != accessTokenData.RefreshToken
-                || user.RefreshTokenExpiryTime < DateTime.UtcNow)
+
+            if (user == null)
+            {
+                throw new UnauthorizedAccessException("Invalid authentication. AccessToken is not valid.");
+            }
+
+            if (user.RefreshToken != accessTokenData.RefreshToken || user.RefreshTokenExpiryTime < DateTime.UtcNow)
             {
                 throw new InvalidDataException("Refresh token is not valid!");
             }
-            return tokenHandler.CreateToken(user);
+
+            var tokenData = CreateNewTokenData(user, refreshTokeExpiryInDays);
+            await SetRefreshToken(user, tokenData);
+            return tokenData;
         }
         public async Task<bool> CheckAuthDataAsync(string login, string password)
         {
@@ -81,6 +91,19 @@ namespace AuthenticationApi.Services
                 return false;
             }
             return true;
+        }
+
+        private AccessTokenData CreateNewTokenData(User user, int refreshTokeExpiryInDays)
+        {
+            var tokenData = tokenHandler.CreateToken(user);
+            tokenData.RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(refreshTokeExpiryInDays);
+            return tokenData;
+        }
+        private async Task SetRefreshToken(User user, AccessTokenData accessTokenData)
+        {
+            user.RefreshToken = accessTokenData.RefreshToken;
+            user.RefreshTokenExpiryTime = accessTokenData.RefreshTokenExpiryDate;
+            await userManager.UpdateAsync(user);
         }
         private List<IdentityError> RemoveDuplicates(List<IdentityError> identityErrors)
         {

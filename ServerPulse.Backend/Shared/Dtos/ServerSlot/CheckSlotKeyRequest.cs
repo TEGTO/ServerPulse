@@ -1,8 +1,7 @@
 ﻿namespace Shared.Dtos.ServerSlot
 {
-    public class CheckServerSlotResponse
+    public class CheckSlotKeyRequest
     {
         public string SlotKey { get; set; }
-        public bool IsExisting { get; set; }
     }
 }

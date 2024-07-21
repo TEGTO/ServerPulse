@@ -9,7 +9,7 @@ namespace AuthenticationApi.Services
     {
         public Task<AccessTokenData> LoginUserAsync(string login, string password, int refreshTokeExpiryInDays);
         public Task<User?> GetUserByLoginAsync(string login);
-        public Task<AccessTokenData> RefreshTokenAsync(AccessTokenData accessTokenData);
+        public Task<AccessTokenData> RefreshTokenAsync(AccessTokenData accessTokenData, int refreshTokeExpiryInDays);
         public Task<IdentityResult> RegisterUserAsync(User user, string password);
         public Task<List<IdentityError>> UpdateUserAsync(UserUpdateData updateData);
         public Task<bool> CheckAuthDataAsync(string login, string password);
