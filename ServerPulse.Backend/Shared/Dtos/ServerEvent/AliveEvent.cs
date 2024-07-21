@@ -2,5 +2,5 @@
 
 namespace Shared.Dtos.ServerEvent
 {
-    public record AliveEvent(string SlotKey, bool IsAlive) : BaseEvent(SlotKey);
+    public record AliveEvent(string SlotKey, bool IsAlive) : BaseEvent();
 }

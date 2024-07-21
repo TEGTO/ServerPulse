@@ -1,6 +1,6 @@
 ﻿namespace MessageBus.Dtos
 {
-    public record BaseEvent(string SeverSlotId)
+    public record BaseEvent()
     {
         public DateTime CreationDate { get; } = DateTime.UtcNow;
     }

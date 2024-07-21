@@ -7,15 +7,24 @@ namespace ServerSlotApi.Services
 {
     public class ServerSlotService : IServerSlotService
     {
-        private readonly IConfiguration configuration;
         private readonly IDatabaseRepository<ServerDataDbContext> repository;
+        private readonly int slotsPerUser;
 
-        public ServerSlotService(IConfiguration configuration, IDatabaseRepository<ServerDataDbContext> repository)
+        public ServerSlotService(IDatabaseRepository<ServerDataDbContext> repository, IConfiguration configuration)
         {
-            this.configuration = configuration;
             this.repository = repository;
+            slotsPerUser = int.Parse(configuration[Configuration.SERVER_SLOTS_PER_USER]!);
         }
 
+        public async Task<ServerSlot?> GetServerSlotIdAsync(string id, CancellationToken cancellationToken)
+        {
+            ServerSlot? serverSlot = null;
+            using (var dbContext = await CreateDbContextAsync(cancellationToken))
+            {
+                serverSlot = await dbContext.ServerSlots.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+            }
+            return serverSlot;
+        }
         public async Task<IEnumerable<ServerSlot>> GetServerSlotsByEmailAsync(string email, CancellationToken cancellationToken)
         {
             List<ServerSlot> serverSlots = new List<ServerSlot>();
@@ -49,7 +58,6 @@ namespace ServerSlotApi.Services
         {
             using (var dbContext = await CreateDbContextAsync(cancellationToken))
             {
-                var slotsPerUser = int.Parse(configuration[Configuration.SERVER_SLOTS_PER_USER]);
                 if (await dbContext.ServerSlots.CountAsync(x => x.UserEmail == serverSlot.UserEmail) > slotsPerUser)
                 {
                     throw new InvalidOperationException("Too many slots per user!");

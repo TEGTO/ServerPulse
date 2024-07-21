@@ -19,12 +19,12 @@ namespace ServerInteractionApi.Services
             partitionsAmount = int.Parse(configuration[Configuration.KAFKA_PARTITIONS_AMOUNT]!);
         }
 
-        public async Task SendAliveEventAsync(string slotId)
+        public async Task SendAliveEventAsync(string slotId, CancellationToken cancellationToken)
         {
             string topic = $"{aliveTopic}-{slotId}";
             AliveEvent aliveEvent = new AliveEvent(slotId, true);
             var message = JsonSerializer.Serialize(aliveEvent);
-            await producer.ProduceAsync(topic, message, partitionsAmount);
+            await producer.ProduceAsync(topic, message, partitionsAmount, cancellationToken);
         }
     }
 }

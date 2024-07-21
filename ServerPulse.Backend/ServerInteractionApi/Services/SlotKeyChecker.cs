@@ -10,6 +10,7 @@ namespace ServerInteractionApi.Services
         private readonly IRedisService redisService;
         private readonly IConfiguration configuration;
         private readonly string serverSlotApi;
+        private readonly int partitionsAmount;
 
         public SlotKeyChecker(IHttpClientFactory httpClientFactory, IRedisService redisService, IConfiguration configuration)
         {

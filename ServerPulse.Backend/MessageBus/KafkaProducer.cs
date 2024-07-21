@@ -13,7 +13,7 @@ namespace MessageBus
             producerBuilder = new ProducerBuilder<string, string>(producerConfig);
         }
 
-        public async Task ProduceAsync(string topic, string message, int partitionAmount)
+        public async Task ProduceAsync(string topic, string message, int partitionAmount, CancellationToken cancellationToken)
         {
             using (var producer = CreateProducer())
             {
@@ -24,7 +24,7 @@ namespace MessageBus
 
                 var topicPart = new TopicPartition(topic, new Partition(partitionAmount));
 
-                await producer.ProduceAsync(topic, kafkaMessage);
+                await producer.ProduceAsync(topic, kafkaMessage, cancellationToken);
             }
         }
         private IProducer<string, string> CreateProducer()

@@ -38,6 +38,8 @@ ValidatorOptions.Global.LanguageManager.Enabled = false;
 
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddHostedService<SlotKeyRedisDelete>();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

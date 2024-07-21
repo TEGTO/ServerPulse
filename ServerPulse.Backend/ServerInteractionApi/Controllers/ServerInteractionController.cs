@@ -26,7 +26,7 @@ namespace ServerInteractionApi.Controllers
 
             if (await serverSlotChecker.CheckSlotKeyAsync(slotKey, cancellationToken))
             {
-                await messageSender.SendAliveEventAsync(slotKey);
+                await messageSender.SendAliveEventAsync(slotKey, cancellationToken);
                 return Ok();
             }
             return NotFound($"Server slot with key '{slotKey}' is not found!");

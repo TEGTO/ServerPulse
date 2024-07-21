@@ -16,11 +16,13 @@ namespace ServerSlotApi.Controllers
     {
         private readonly IMapper mapper;
         private readonly IServerSlotService serverSlotService;
+        private readonly ISlotKeyDeletionSender slotKeyDeletionSender;
 
-        public ServerSlotController(IMapper mapper, IServerSlotService serverAuthService)
+        public ServerSlotController(IMapper mapper, IServerSlotService serverAuthService, ISlotKeyDeletionSender slotKeyDeletionSender)
         {
             this.mapper = mapper;
             this.serverSlotService = serverAuthService;
+            this.slotKeyDeletionSender = slotKeyDeletionSender;
         }
 
         [Authorize]
@@ -89,6 +91,13 @@ namespace ServerSlotApi.Controllers
         {
             var email = User.FindFirstValue(ClaimTypes.Email);
             await serverSlotService.DeleteServerSlotByIdAsync(email, id, cancellationToken);
+
+            var serverSlot = await serverSlotService.GetServerSlotIdAsync(email, cancellationToken);
+            if (serverSlot != null)
+            {
+                await slotKeyDeletionSender.SendDeleteSlotKeyEventAsync(serverSlot.SlotKey, cancellationToken);
+            }
+
             return Ok();
         }
     }

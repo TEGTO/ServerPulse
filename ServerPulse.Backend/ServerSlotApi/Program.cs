@@ -1,6 +1,8 @@
 using Authentication;
 using Authentication.Configuration;
+using Confluent.Kafka;
 using FluentValidation;
+using MessageBus;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using ServerSlotApi;
@@ -30,6 +32,16 @@ builder.Services.AddAuthorization();
 builder.Services.AddCustomJwtAuthentication(jwtSettings);
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
+var producerConfig = new ProducerConfig
+{
+    BootstrapServers = builder.Configuration[Configuration.KAFKA_BOOTSTRAP_SERVERS],
+    ClientId = builder.Configuration[Configuration.KAFKA_CLIENT_ID],
+    EnableIdempotence = true,
+
+};
+builder.Services.AddSingleton<IMessageProducer>(new KafkaProducer(producerConfig));
+builder.Services.AddSingleton<ISlotKeyDeletionSender, SlotKeyDeletionSender>();
 
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 ValidatorOptions.Global.LanguageManager.Enabled = false;

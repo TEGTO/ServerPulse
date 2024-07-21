@@ -25,6 +25,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Authentication\Authentication.csproj" />
+	  <ProjectReference Include="..\MessageBus\MessageBus.csproj" />
 	  <ProjectReference Include="..\Shared\Shared.csproj" />
 	</ItemGroup>
 
