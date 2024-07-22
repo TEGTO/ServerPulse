@@ -11,10 +11,10 @@ namespace ServerInteractionApi.Services
             this.connectionMultiplexer = connectionMultiplexer;
         }
 
-        public async Task SetValueAsync(string key, string value)
+        public async Task SetValueAsync(string key, string value, double expiryInMinutes)
         {
             var db = GetDatabase();
-            await db.StringSetAsync(key, value);
+            await db.StringSetAsync(key, value, TimeSpan.FromMinutes(expiryInMinutes));
         }
         public async Task<string> GetValueAsync(string key)
         {

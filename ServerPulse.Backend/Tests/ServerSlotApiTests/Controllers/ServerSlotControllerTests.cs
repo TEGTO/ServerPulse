@@ -7,6 +7,7 @@ using ServerSlotApi.Domain.Dtos;
 using ServerSlotApi.Domain.Entities;
 using ServerSlotApi.Dtos;
 using ServerSlotApi.Services;
+using Shared.Dtos.ServerSlot;
 using System.Security.Claims;
 
 namespace ServerSlotApiTests.Controllers
@@ -53,10 +54,10 @@ namespace ServerSlotApiTests.Controllers
                 new ServerSlotResponse { Name = "Slot1" },
                 new ServerSlotResponse { Name = "Slot2" }
             };
-            serverSlotServiceMock.Setup(s => s.GetServerSlotsByEmailAsync(email, cancellationToken)).ReturnsAsync(serverSlots);
+            serverSlotServiceMock.Setup(s => s.GetSlotsByEmailAsync(email, cancellationToken)).ReturnsAsync(serverSlots);
             mapperMock.Setup(m => m.Map<ServerSlotResponse>(It.IsAny<ServerSlot>())).Returns((ServerSlot src) => new ServerSlotResponse { Name = src.Name });
             // Act
-            var result = await serverSlotController.GetServerSlotsByEmail(cancellationToken);
+            var result = await serverSlotController.GetSlotsByEmail(cancellationToken);
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(result.Result);
             var okResult = result.Result as OkObjectResult;
@@ -75,10 +76,10 @@ namespace ServerSlotApiTests.Controllers
                 new ServerSlot { UserEmail = email, Name = "Slot1" },
                 new ServerSlot { UserEmail = email, Name = "Slot2" }
             };
-            serverSlotServiceMock.Setup(s => s.GerServerSlotsContainingStringAsync(email, searchString, cancellationToken)).ReturnsAsync(serverSlots);
+            serverSlotServiceMock.Setup(s => s.GerSlotsContainingStringAsync(email, searchString, cancellationToken)).ReturnsAsync(serverSlots);
             mapperMock.Setup(m => m.Map<ServerSlotResponse>(It.IsAny<ServerSlot>())).Returns((ServerSlot src) => new ServerSlotResponse { Name = src.Name });
             // Act
-            var result = await serverSlotController.GerServerSlotsContainingString(searchString, cancellationToken);
+            var result = await serverSlotController.GerSlotsContainingString(searchString, cancellationToken);
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(result.Result);
             var okResult = result.Result as OkObjectResult;
@@ -87,16 +88,58 @@ namespace ServerSlotApiTests.Controllers
             Assert.IsTrue(response.All(x => x.Name.Contains(searchString)));
         }
         [Test]
+        public async Task CheckSlotKey_ValidRequest_ReturnsCorrectResponse()
+        {
+            // Arrange
+            var request = new CheckSlotKeyRequest { SlotKey = "valid-key" };
+            serverSlotServiceMock.Setup(s => s.CheckIfKeyValidAsync(request.SlotKey, cancellationToken)).ReturnsAsync(true);
+            // Act
+            var result = await serverSlotController.CheckSlotKey(request, cancellationToken);
+            // Assert
+            Assert.IsInstanceOf<OkObjectResult>(result.Result);
+            var okResult = result.Result as OkObjectResult;
+            var response = okResult.Value as CheckSlotKeyResponse;
+            Assert.NotNull(response);
+            Assert.That(response.SlotKey, Is.EqualTo(request.SlotKey));
+            Assert.IsTrue(response.IsExisting);
+        }
+        [Test]
+        public async Task CheckSlotKey_NullRequest_ReturnsBadRequest()
+        {
+            // Act
+            var result = await serverSlotController.CheckSlotKey(null, cancellationToken);
+            // Assert
+            Assert.IsInstanceOf<BadRequestObjectResult>(result.Result);
+            var badRequestResult = result.Result as BadRequestObjectResult;
+            Assert.That(badRequestResult.Value, Is.EqualTo("Invalid request"));
+        }
+        [Test]
+        public async Task CheckSlotKey_InvalidKey_ReturnsCorrectResponse()
+        {
+            // Arrange
+            var request = new CheckSlotKeyRequest { SlotKey = "invalid-key" };
+            serverSlotServiceMock.Setup(s => s.CheckIfKeyValidAsync(request.SlotKey, cancellationToken)).ReturnsAsync(false);
+            // Act
+            var result = await serverSlotController.CheckSlotKey(request, cancellationToken);
+            // Assert
+            Assert.IsInstanceOf<OkObjectResult>(result.Result);
+            var okResult = result.Result as OkObjectResult;
+            var response = okResult.Value as CheckSlotKeyResponse;
+            Assert.NotNull(response);
+            Assert.That(response.SlotKey, Is.EqualTo(request.SlotKey));
+            Assert.IsFalse(response.IsExisting);
+        }
+        [Test]
         public async Task CreateServerSlot_ValidRequest_ReturnsCreated()
         {
             // Arrange
             var request = new CreateServerSlotRequest { Name = "NewSlot" };
             var serverSlot = new ServerSlot { UserEmail = "test@example.com", Name = "NewSlot" };
             var serverSlotResponse = new ServerSlotResponse { Name = "NewSlot" };
-            serverSlotServiceMock.Setup(s => s.CreateServerSlotAsync(It.IsAny<ServerSlot>(), cancellationToken)).ReturnsAsync(serverSlot);
+            serverSlotServiceMock.Setup(s => s.CreateSlotAsync(It.IsAny<ServerSlot>(), cancellationToken)).ReturnsAsync(serverSlot);
             mapperMock.Setup(m => m.Map<ServerSlotResponse>(serverSlot)).Returns(serverSlotResponse);
             // Act
-            var result = await serverSlotController.CreateServerSlot(request, cancellationToken);
+            var result = await serverSlotController.CreateSlot(request, cancellationToken);
             // Assert
             Assert.IsInstanceOf<CreatedResult>(result.Result);
             var createdResult = result.Result as CreatedResult;
@@ -110,9 +153,9 @@ namespace ServerSlotApiTests.Controllers
             var request = new UpdateServerSlotRequest { Id = "1", Name = "UpdatedSlot" };
             var serverSlot = new ServerSlot { Id = "1", UserEmail = "test@example.com", Name = "UpdatedSlot" };
             mapperMock.Setup(m => m.Map<ServerSlot>(request)).Returns(serverSlot);
-            serverSlotServiceMock.Setup(s => s.UpdateServerSlotAsync(serverSlot, cancellationToken)).Returns(Task.CompletedTask);
+            serverSlotServiceMock.Setup(s => s.UpdateSlotAsync(serverSlot, cancellationToken)).Returns(Task.CompletedTask);
             // Act
-            var result = await serverSlotController.UpdateServerSlot(request, cancellationToken);
+            var result = await serverSlotController.UpdateSlot(request, cancellationToken);
             // Assert
             Assert.IsInstanceOf<OkResult>(result);
         }
@@ -121,9 +164,10 @@ namespace ServerSlotApiTests.Controllers
         {
             // Arrange
             var id = "1";
-            serverSlotServiceMock.Setup(s => s.DeleteServerSlotByIdAsync(id, cancellationToken)).Returns(Task.CompletedTask);
+            var email = "test@example.com";
+            serverSlotServiceMock.Setup(s => s.DeleteSlotByIdAsync(email, id, cancellationToken)).Returns(Task.CompletedTask);
             // Act
-            var result = await serverSlotController.DeleteServerSlot(id, cancellationToken);
+            var result = await serverSlotController.DeleteSlot(id, cancellationToken);
             // Assert
             Assert.IsInstanceOf<OkResult>(result);
         }

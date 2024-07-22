@@ -28,11 +28,6 @@ services:
       - AuthSettings__Issuer=${AuthSettings__Issuer}
       - AuthSettings__ExpiryInMinutes=${AuthSettings__ExpiryInMinutes}
       - AuthSettings__Audience=${AuthSettings__Audience}
-      - Kafka__DeleteTopic=${Kafka__DeleteTopic}
-      - Kafka__TimeoutInMilliseconds=${Kafka__TimeoutInMilliseconds}
-      - Kafka__PartitionsAmount=${Kafka__PartitionsAmount}
-      - Kafka__BootstrapServers=${Kafka__BootstrapServers}
-      - Kafka__ClientId=${Kafka__ClientId__ServerSlot}
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
@@ -44,10 +39,9 @@ services:
       - Kafka__ClientId=${Kafka__ClientId__InteractionServer}
       - Kafka__PartitionsAmount=${Kafka__PartitionsAmount}
       - Kafka__AliveTopic=${Kafka__AliveTopic}
-      - Kafka__DeleteTopic=${Kafka__DeleteTopic}
-      - Kafka__TimeoutInMilliseconds=${Kafka__TimeoutInMilliseconds}
       - ServerSlotApi=${ServerSlotApi}
       - ConnectionStrings__ServerInteractionRedis=${ConnectionStrings__ServerInteractionRedis}
+      - Redis__ServerSlotExpiryInMinutes=${Redis__ServerSlotExpiryInMinutes}
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro

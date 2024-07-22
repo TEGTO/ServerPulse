@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using MockQueryable.Moq;
 using Moq;
+using ServerSlotApi;
 using ServerSlotApi.Data;
 using ServerSlotApi.Domain.Entities;
 using ServerSlotApi.Services;
@@ -12,6 +13,8 @@ namespace ServerSlotApiTests.Services
     [TestFixture]
     internal class ServerSlotServiceTests
     {
+        private const int SERVER_SLOTS_PER_USER = 3;
+
         protected MockRepository mockRepository;
         private Mock<IConfiguration> configurationMock;
         private Mock<IDatabaseRepository<ServerDataDbContext>> repositoryMock;
@@ -23,8 +26,10 @@ namespace ServerSlotApiTests.Services
         {
             mockRepository = new MockRepository(MockBehavior.Default);
             configurationMock = new Mock<IConfiguration>();
+            configurationMock.Setup(config => config[Configuration.SERVER_SLOTS_PER_USER
+                ]).Returns(SERVER_SLOTS_PER_USER.ToString());
             repositoryMock = new Mock<IDatabaseRepository<ServerDataDbContext>>();
-            serverSlotService = new ServerSlotService(configurationMock.Object, repositoryMock.Object);
+            serverSlotService = new ServerSlotService(repositoryMock.Object, configurationMock.Object);
             cancellationToken = new CancellationToken();
         }
         private Mock<ServerDataDbContext> CreateMockDbContext()
@@ -54,13 +59,13 @@ namespace ServerSlotApiTests.Services
             dbContextMock.Setup(x => x.ServerSlots).Returns(dbSetMock.Object);
             repositoryMock.Setup(x => x.CreateDbContextAsync(cancellationToken)).ReturnsAsync(dbContextMock.Object);
             // Act
-            var result = await serverSlotService.GetServerSlotsByEmailAsync(email, cancellationToken);
+            var result = await serverSlotService.GetSlotsByEmailAsync(email, cancellationToken);
             // Assert
             Assert.That(result.Count(), Is.EqualTo(2));
             Assert.That(result.First().Name, Is.EqualTo("Slot2"));
         }
         [Test]
-        public async Task GerServerSlotsContainingStringAsync_ValidEmailAndString_ReturnsServerSlots()
+        public async Task GetServerSlotsContainingStringAsync_ValidEmailAndString_ReturnsServerSlots()
         {
             // Arrange
             var email = "test@example.com";
@@ -76,10 +81,50 @@ namespace ServerSlotApiTests.Services
             dbContextMock.Setup(x => x.ServerSlots).Returns(dbSetMock.Object);
             repositoryMock.Setup(x => x.CreateDbContextAsync(cancellationToken)).ReturnsAsync(dbContextMock.Object);
             // Act
-            var result = await serverSlotService.GerServerSlotsContainingStringAsync(email, searchString, cancellationToken);
+            var result = await serverSlotService.GerSlotsContainingStringAsync(email, searchString, cancellationToken);
             // Assert
             Assert.That(result.Count(), Is.EqualTo(2));
             Assert.IsTrue(result.All(x => x.Name.Contains(searchString)));
+        }
+        [Test]
+        public async Task CheckIfKeyValidAsync_ValidKey_ReturnsTrue()
+        {
+            // Arrange
+            var key = "valid-key";
+            var serverSlots = new List<ServerSlot>
+        {
+            new ServerSlot { SlotKey = key }
+        };
+            var dbContextMock = CreateMockDbContext();
+            var dbSetMock = GetDbSetMock(serverSlots.AsQueryable());
+            dbContextMock.Setup(x => x.ServerSlots).Returns(dbSetMock.Object);
+            repositoryMock.Setup(x => x.CreateDbContextAsync(cancellationToken)).ReturnsAsync(dbContextMock.Object);
+
+            // Act
+            var result = await serverSlotService.CheckIfKeyValidAsync(key, cancellationToken);
+
+            // Assert
+            Assert.IsTrue(result);
+        }
+        [Test]
+        public async Task CheckIfKeyValidAsync_InvalidKey_ReturnsFalse()
+        {
+            // Arrange
+            var key = "invalid-key";
+            var serverSlots = new List<ServerSlot>
+        {
+            new ServerSlot { SlotKey = "some-other-key" }
+        };
+            var dbContextMock = CreateMockDbContext();
+            var dbSetMock = GetDbSetMock(serverSlots.AsQueryable());
+            dbContextMock.Setup(x => x.ServerSlots).Returns(dbSetMock.Object);
+            repositoryMock.Setup(x => x.CreateDbContextAsync(cancellationToken)).ReturnsAsync(dbContextMock.Object);
+
+            // Act
+            var result = await serverSlotService.CheckIfKeyValidAsync(key, cancellationToken);
+
+            // Assert
+            Assert.IsFalse(result);
         }
         [Test]
         public async Task CreateServerSlotAsync_ValidSlot_SlotCreated()
@@ -90,9 +135,8 @@ namespace ServerSlotApiTests.Services
             var dbSetMock = GetDbSetMock(new List<ServerSlot>().AsQueryable());
             dbContextMock.Setup(x => x.ServerSlots).Returns(dbSetMock.Object);
             repositoryMock.Setup(x => x.CreateDbContextAsync(cancellationToken)).ReturnsAsync(dbContextMock.Object);
-            configurationMock.Setup(c => c["SlotsPerUser"]).Returns("5");
             // Act
-            var result = await serverSlotService.CreateServerSlotAsync(serverSlot, cancellationToken);
+            var result = await serverSlotService.CreateSlotAsync(serverSlot, cancellationToken);
             // Assert
             dbSetMock.Verify(x => x.AddAsync(serverSlot, cancellationToken), Times.Once);
             dbContextMock.Verify(x => x.SaveChangesAsync(cancellationToken), Times.Once);
@@ -107,9 +151,8 @@ namespace ServerSlotApiTests.Services
             var dbSetMock = GetDbSetMock(new List<ServerSlot> { serverSlot, serverSlot, serverSlot, serverSlot, serverSlot, serverSlot }.AsQueryable());
             dbContextMock.Setup(x => x.ServerSlots).Returns(dbSetMock.Object);
             repositoryMock.Setup(x => x.CreateDbContextAsync(cancellationToken)).ReturnsAsync(dbContextMock.Object);
-            configurationMock.Setup(c => c["SlotsPerUser"]).Returns("5");
             // Act & Assert
-            Assert.ThrowsAsync<InvalidOperationException>(async () => await serverSlotService.CreateServerSlotAsync(serverSlot, cancellationToken));
+            Assert.ThrowsAsync<InvalidOperationException>(async () => await serverSlotService.CreateSlotAsync(serverSlot, cancellationToken));
         }
         [Test]
         public async Task UpdateServerSlotAsync_ValidSlot_SlotUpdated()
@@ -122,7 +165,7 @@ namespace ServerSlotApiTests.Services
             dbContextMock.Setup(x => x.ServerSlots).Returns(dbSetMock.Object);
             repositoryMock.Setup(x => x.CreateDbContextAsync(cancellationToken)).ReturnsAsync(dbContextMock.Object);
             // Act
-            await serverSlotService.UpdateServerSlotAsync(serverSlot, cancellationToken);
+            await serverSlotService.UpdateSlotAsync(serverSlot, cancellationToken);
             // Assert
             dbContextMock.Verify(x => x.SaveChangesAsync(cancellationToken), Times.Once);
             Assert.That(serverSlotInDb.Name, Is.EqualTo(serverSlot.Name));
@@ -137,7 +180,7 @@ namespace ServerSlotApiTests.Services
             dbContextMock.Setup(x => x.ServerSlots).Returns(dbSetMock.Object);
             repositoryMock.Setup(x => x.CreateDbContextAsync(cancellationToken)).ReturnsAsync(dbContextMock.Object);
             // Act
-            await serverSlotService.DeleteServerSlotByIdAsync(serverSlot.Id, cancellationToken);
+            await serverSlotService.DeleteSlotByIdAsync(serverSlot.UserEmail, serverSlot.Id, cancellationToken);
             // Assert
             dbSetMock.Verify(x => x.Remove(serverSlot), Times.Once);
             dbContextMock.Verify(x => x.SaveChangesAsync(cancellationToken), Times.Once);

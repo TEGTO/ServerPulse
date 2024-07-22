@@ -19,14 +19,14 @@ namespace AuthenticationApi.Controllers
         private readonly IMapper mapper;
         private readonly IAuthService authService;
         private readonly IConfiguration configuration;
-        private readonly int expiryInDays;
+        private readonly double expiryInDays;
 
         public AuthController(IMapper mapper, IAuthService authService, IConfiguration configuration)
         {
             this.mapper = mapper;
             this.authService = authService;
             this.configuration = configuration;
-            expiryInDays = int.Parse(configuration[Configuration.AUTH_REFRESH_TOKEN_EXPIRY_IN_DAYS]);
+            expiryInDays = double.Parse(configuration[Configuration.AUTH_REFRESH_TOKEN_EXPIRY_IN_DAYS]!);
         }
 
         [HttpPost("register")]

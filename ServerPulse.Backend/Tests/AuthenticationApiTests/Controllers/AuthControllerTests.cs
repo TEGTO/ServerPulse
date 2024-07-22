@@ -18,11 +18,12 @@ namespace AuthenticationApiTests.Controllers
     [TestFixture]
     internal class AuthControllerTests
     {
+        private const int EXPIRY_IN_DAYS = 7;
+
         private Mock<IMapper> mapperMock;
         private Mock<IAuthService> authServiceMock;
         private Mock<IConfiguration> configurationMock;
         private AuthController authController;
-        private const int ExpiryInDays = 7;
 
         [SetUp]
         public void SetUp()
@@ -30,9 +31,10 @@ namespace AuthenticationApiTests.Controllers
             mapperMock = new Mock<IMapper>();
             authServiceMock = new Mock<IAuthService>();
             configurationMock = new Mock<IConfiguration>();
-            configurationMock.Setup(config => config["AuthSettings:RefreshExpiryInDays"]).Returns(ExpiryInDays.ToString());
+            configurationMock.Setup(config => config["AuthSettings:RefreshExpiryInDays"]).Returns(EXPIRY_IN_DAYS.ToString());
             authController = new AuthController(mapperMock.Object, authServiceMock.Object, configurationMock.Object);
         }
+
         [Test]
         public async Task Register_ValidRequest_ReturnsCreated()
         {
@@ -42,8 +44,10 @@ namespace AuthenticationApiTests.Controllers
             var identityResult = IdentityResult.Success;
             mapperMock.Setup(m => m.Map<User>(registrationRequest)).Returns(user);
             authServiceMock.Setup(a => a.RegisterUserAsync(user, registrationRequest.Password)).ReturnsAsync(identityResult);
+
             // Act
             var result = await authController.Register(registrationRequest);
+
             // Assert
             Assert.IsInstanceOf<CreatedResult>(result);
             var createdResult = result as CreatedResult;
@@ -54,8 +58,10 @@ namespace AuthenticationApiTests.Controllers
         {
             // Arrange
             UserRegistrationRequest registrationRequest = null;
+
             // Act
             var result = await authController.Register(registrationRequest);
+
             // Assert
             Assert.IsInstanceOf<BadRequestObjectResult>(result);
             var badRequestResult = result as BadRequestObjectResult;
@@ -70,8 +76,10 @@ namespace AuthenticationApiTests.Controllers
             var identityResult = IdentityResult.Failed(new IdentityError { Description = "Error" });
             mapperMock.Setup(m => m.Map<User>(registrationRequest)).Returns(user);
             authServiceMock.Setup(a => a.RegisterUserAsync(user, registrationRequest.Password)).ReturnsAsync(identityResult);
+
             // Act
             var result = await authController.Register(registrationRequest);
+
             // Assert
             Assert.IsInstanceOf<BadRequestObjectResult>(result);
             var badRequestResult = result as BadRequestObjectResult;
@@ -85,13 +93,15 @@ namespace AuthenticationApiTests.Controllers
             // Arrange
             var authRequest = new UserAuthenticationRequest { Login = "testuser", Password = "Password123" };
             var tokenData = new AccessTokenData { AccessToken = "token", RefreshToken = "refreshToken" };
-            var tokenDto = new AuthToken { AccessToken = "token", RefreshToken = "refreshToken", RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(ExpiryInDays) };
+            var tokenDto = new AuthToken { AccessToken = "token", RefreshToken = "refreshToken", RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(EXPIRY_IN_DAYS) };
             var user = new User { UserName = "testuser", Email = "testuser@example.com" };
-            authServiceMock.Setup(a => a.LoginUserAsync(authRequest.Login, authRequest.Password, ExpiryInDays)).ReturnsAsync(tokenData);
+            authServiceMock.Setup(a => a.LoginUserAsync(authRequest.Login, authRequest.Password, EXPIRY_IN_DAYS)).ReturnsAsync(tokenData);
             mapperMock.Setup(m => m.Map<AuthToken>(tokenData)).Returns(tokenDto);
             authServiceMock.Setup(a => a.GetUserByLoginAsync(authRequest.Login)).ReturnsAsync(user);
+
             // Act
             var result = await authController.Login(authRequest);
+
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(result.Result);
             var okResult = result.Result as OkObjectResult;
@@ -108,8 +118,10 @@ namespace AuthenticationApiTests.Controllers
             var serviceUpdateRequest = new UserUpdateData { UserName = "newuser", OldEmail = "old@example.com", NewEmail = "new@example.com", OldPassword = "OldPassword123", NewPassword = "NewPassword123" };
             mapperMock.Setup(m => m.Map<UserUpdateData>(updateRequest)).Returns(serviceUpdateRequest);
             authServiceMock.Setup(a => a.UpdateUserAsync(serviceUpdateRequest)).ReturnsAsync(new List<IdentityError>());
+
             // Act
             var result = await authController.Update(updateRequest);
+
             // Assert
             Assert.IsInstanceOf<OkResult>(result);
         }
@@ -122,8 +134,10 @@ namespace AuthenticationApiTests.Controllers
             var identityErrors = new List<IdentityError> { new IdentityError { Description = "Error" } };
             mapperMock.Setup(m => m.Map<UserUpdateData>(updateRequest)).Returns(serviceUpdateRequest);
             authServiceMock.Setup(a => a.UpdateUserAsync(serviceUpdateRequest)).ReturnsAsync(identityErrors);
+
             // Act
             var result = await authController.Update(updateRequest);
+
             // Assert
             Assert.IsInstanceOf<BadRequestObjectResult>(result);
             var badRequestResult = result as BadRequestObjectResult;
@@ -138,12 +152,14 @@ namespace AuthenticationApiTests.Controllers
             var accessTokenDto = new AuthToken { AccessToken = "token", RefreshToken = "refreshToken" };
             var accessTokenData = new AccessTokenData { AccessToken = "token", RefreshToken = "refreshToken" };
             var newTokenData = new AccessTokenData { AccessToken = "newToken", RefreshToken = "newRefreshToken" };
-            var newTokenDto = new AuthToken { AccessToken = "newToken", RefreshToken = "newRefreshToken", RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(ExpiryInDays) };
+            var newTokenDto = new AuthToken { AccessToken = "newToken", RefreshToken = "newRefreshToken", RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(EXPIRY_IN_DAYS) };
             mapperMock.Setup(m => m.Map<AccessTokenData>(accessTokenDto)).Returns(accessTokenData);
-            authServiceMock.Setup(a => a.RefreshTokenAsync(accessTokenData)).ReturnsAsync(newTokenData);
+            authServiceMock.Setup(a => a.RefreshTokenAsync(accessTokenData, EXPIRY_IN_DAYS)).ReturnsAsync(newTokenData);
             mapperMock.Setup(m => m.Map<AuthToken>(newTokenData)).Returns(newTokenDto);
+
             // Act
             var result = await authController.Refresh(accessTokenDto);
+
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(result.Result);
             var okResult = result.Result as OkObjectResult;

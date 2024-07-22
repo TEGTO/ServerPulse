@@ -21,14 +21,14 @@ namespace AuthenticationApi.Services
         {
             return await userManager.CreateAsync(user, password);
         }
-        public async Task<AccessTokenData> LoginUserAsync(string login, string password, int refreshTokeExpiryInDays)
+        public async Task<AccessTokenData> LoginUserAsync(string login, string password, double refreshTokenExpiryInDays)
         {
             var user = await GetUserByLoginAsync(login);
             if (user == null || !await userManager.CheckPasswordAsync(user, password))
             {
                 throw new UnauthorizedAccessException("Invalid authentication. Login or email address is not correct.");
             }
-            var tokenData = CreateNewTokenData(user, refreshTokeExpiryInDays);
+            var tokenData = CreateNewTokenData(user, refreshTokenExpiryInDays);
             await SetRefreshToken(user, tokenData);
             return tokenData;
         }
@@ -64,7 +64,7 @@ namespace AuthenticationApi.Services
 
             return RemoveDuplicates(identityErrors);
         }
-        public async Task<AccessTokenData> RefreshTokenAsync(AccessTokenData accessTokenData, int refreshTokeExpiryInDays)
+        public async Task<AccessTokenData> RefreshTokenAsync(AccessTokenData accessTokenData, double refreshTokenExpiryInDays)
         {
             var principal = tokenHandler.GetPrincipalFromExpiredToken(accessTokenData.AccessToken);
             var user = await userManager.FindByNameAsync(principal.Identity.Name);
@@ -79,7 +79,7 @@ namespace AuthenticationApi.Services
                 throw new InvalidDataException("Refresh token is not valid!");
             }
 
-            var tokenData = CreateNewTokenData(user, refreshTokeExpiryInDays);
+            var tokenData = CreateNewTokenData(user, refreshTokenExpiryInDays);
             await SetRefreshToken(user, tokenData);
             return tokenData;
         }
@@ -93,10 +93,10 @@ namespace AuthenticationApi.Services
             return true;
         }
 
-        private AccessTokenData CreateNewTokenData(User user, int refreshTokeExpiryInDays)
+        private AccessTokenData CreateNewTokenData(User user, double refreshTokenExpiryInDays)
         {
             var tokenData = tokenHandler.CreateToken(user);
-            tokenData.RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(refreshTokeExpiryInDays);
+            tokenData.RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(refreshTokenExpiryInDays);
             return tokenData;
         }
         private async Task SetRefreshToken(User user, AccessTokenData accessTokenData)

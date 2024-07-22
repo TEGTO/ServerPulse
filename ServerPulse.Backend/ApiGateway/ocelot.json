@@ -12,9 +12,7 @@
           "Host": "authenticationapi",
           "Port": 8080
         }
-      ],
-      "RequestIdKey": "OcelotRequestId",
-      "Timeout": 5000
+      ]
     },
     {
       "Key": "Authentication_Register",
@@ -27,9 +25,7 @@
           "Host": "authenticationapi",
           "Port": 8080
         }
-      ],
-      "RequestIdKey": "OcelotRequestId",
-      "Timeout": 5000
+      ]
     },
     {
       "Key": "Authentication_Update",
@@ -48,9 +44,7 @@
       },
       "AddHeadersToRequest": {
         "Authorization": "Bearer {token}"
-      },
-      "RequestIdKey": "OcelotRequestId",
-      "Timeout": 5000
+      }
     },
     {
       "Key": "Authentication_Refresh",
@@ -63,9 +57,7 @@
           "Host": "authenticationapi",
           "Port": 8080
         }
-      ],
-      "RequestIdKey": "OcelotRequestId",
-      "Timeout": 5000
+      ]
     },
     {
       "Key": "Authentication_Check",
@@ -78,9 +70,7 @@
           "Host": "authenticationapi",
           "Port": 8080
         }
-      ],
-      "RequestIdKey": "OcelotRequestId",
-      "Timeout": 5000
+      ]
     },
     //Server Slot API
     {
@@ -100,9 +90,7 @@
       },
       "AddHeadersToRequest": {
         "Authorization": "Bearer {token}"
-      },
-      "RequestIdKey": "OcelotRequestId",
-      "Timeout": 5000
+      }
     },
     {
       "Key": "ServerSlot_CheckIfExists",
@@ -115,9 +103,7 @@
           "Host": "serverslotapi",
           "Port": 8080
         }
-      ],
-      "RequestIdKey": "OcelotRequestId",
-      "Timeout": 5000
+      ]
     },
     {
       "Key": "ServerSlot_Delete",
@@ -136,9 +122,7 @@
       },
       "AddHeadersToRequest": {
         "Authorization": "Bearer {token}"
-      },
-      "RequestIdKey": "OcelotRequestId",
-      "Timeout": 5000
+      }
     },
     {
       "Key": "ServerSlot_GetWithString",
@@ -157,9 +141,7 @@
       },
       "AddHeadersToRequest": {
         "Authorization": "Bearer {token}"
-      },
-      "RequestIdKey": "OcelotRequestId",
-      "Timeout": 5000
+      }
     },
     //Server Interaction API
     {
@@ -174,11 +156,28 @@
           "Port": 8080
         }
       ],
-      "RequestIdKey": "OcelotRequestId",
-      "Timeout": 5000
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "3 s",
+        "Limit": 1
+      }
     }
   ],
+
   "GlobalConfiguration": {
-    "BaseUrl": "https://localhost:7129"
+    "BaseUrl": "https://localhost:7129",
+    "RateLimitOptions": {
+      "ClientWhitelist": [],
+      "EnableRateLimiting": true,
+      "Period": "1s",
+      "Limit": 5
+    },
+    "QoSOptions": {
+      "ExceptionsAllowedBeforeBreaking": 3,
+      "DurationOfBreak": 5000,
+      "TimeoutValue": 10000
+    },
+    "RequestIdKey": "OcelotRequestId",
   }
 }

@@ -12,6 +12,8 @@ namespace AuthenticationApiTests.Services
     [TestFixture]
     internal class AuthServiceTests
     {
+        private const int EXPIRY_IN_DAYS = 7;
+
         private Mock<UserManager<User>> userManagerMock;
         private Mock<ITokenHandler> tokenHandlerMock;
         private AuthService authService;
@@ -21,7 +23,7 @@ namespace AuthenticationApiTests.Services
         {
             var userStoreMock = new Mock<IUserStore<User>>();
             userManagerMock = new Mock<UserManager<User>>(userStoreMock.Object, null, null, null, null, null, null, null, null);
-            tokenHandlerMock = new Mock<ITokenHandler>(null);
+            tokenHandlerMock = new Mock<ITokenHandler>();
             authService = new AuthService(userManagerMock.Object, tokenHandlerMock.Object);
         }
 
@@ -52,9 +54,10 @@ namespace AuthenticationApiTests.Services
             tokenHandlerMock.Setup(x => x.CreateToken(user)).Returns(tokenData);
             userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
             //Act
-            var result = await authService.LoginUserAsync(login, password, 7);
+            var result = await authService.LoginUserAsync(login, password, EXPIRY_IN_DAYS);
             //Assert
             Assert.That(result, Is.EqualTo(tokenData));
+            Assert.That(result.RefreshTokenExpiryDate, Is.GreaterThan(DateTime.UtcNow.AddDays(EXPIRY_IN_DAYS - 1)));
         }
         [Test]
         public async Task GetUserByLoginAsync_LoginProvided_UserReturned()
@@ -106,9 +109,10 @@ namespace AuthenticationApiTests.Services
             userManagerMock.Setup(x => x.FindByNameAsync(user.UserName)).ReturnsAsync(user);
             tokenHandlerMock.Setup(x => x.CreateToken(user)).Returns(accessTokenData);
             //Act
-            var result = await authService.RefreshTokenAsync(accessTokenData);
+            var result = await authService.RefreshTokenAsync(accessTokenData, EXPIRY_IN_DAYS);
             //Assert
             Assert.That(result, Is.EqualTo(accessTokenData));
+            Assert.That(result.RefreshTokenExpiryDate, Is.GreaterThan(DateTime.UtcNow.AddDays(EXPIRY_IN_DAYS - 1)));
         }
         [Test]
         public async Task CheckAuthDataAsync_ValidLoginAndPassword_ReturnsTrue()

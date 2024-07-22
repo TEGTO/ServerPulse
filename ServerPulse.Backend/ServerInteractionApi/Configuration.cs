@@ -6,9 +6,8 @@
         public static string KAFKA_CLIENT_ID { get; } = "Kafka:ClientId";
         public static string KAFKA_PARTITIONS_AMOUNT { get; } = "Kafka:PartitionsAmount";
         public static string KAFKA_ALIVE_TOPIC { get; } = "Kafka:AliveTopic";
-        public static string KAFKA_KEY_DELETE_TOPIC { get; } = "Kafka:DeleteTopic";
-        public static string KAFKA_TIMEOUT_IN_MILLISECONDS { get; } = "Kafka:TimeoutInMilliseconds";
         public static string SERVER_SLOT_API { get; } = "ServerSlotApi";
         public static string REDIS_CONNECTION_STRING { get; } = "ServerInteractionRedis";
+        public static string REDIS_SERVER_SLOT_EXPITRY_IN_MINUTES { get; } = "Redis:ServerSlotExpiryInMinutes";
     }
 }

@@ -11,6 +11,7 @@ namespace ServerInteractionApi.Services
         private readonly IConfiguration configuration;
         private readonly string serverSlotApi;
         private readonly int partitionsAmount;
+        private readonly double redisExpiryInMinutes;
 
         public SlotKeyChecker(IHttpClientFactory httpClientFactory, IRedisService redisService, IConfiguration configuration)
         {
@@ -18,6 +19,7 @@ namespace ServerInteractionApi.Services
             this.redisService = redisService;
             this.configuration = configuration;
             serverSlotApi = configuration[Configuration.SERVER_SLOT_API]!;
+            redisExpiryInMinutes = double.Parse(configuration[Configuration.REDIS_SERVER_SLOT_EXPITRY_IN_MINUTES]!);
         }
 
         public async Task<bool> CheckSlotKeyAsync(string slotKey, CancellationToken cancellationToken)
@@ -46,7 +48,7 @@ namespace ServerInteractionApi.Services
 
             if (response != null && response.IsExisting)
             {
-                redisService.SetValueAsync(slotKey, JsonSerializer.Serialize(response));
+                await redisService.SetValueAsync(slotKey, JsonSerializer.Serialize(response), redisExpiryInMinutes);
                 return true;
             }
 

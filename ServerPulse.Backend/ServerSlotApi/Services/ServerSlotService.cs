@@ -16,7 +16,7 @@ namespace ServerSlotApi.Services
             slotsPerUser = int.Parse(configuration[Configuration.SERVER_SLOTS_PER_USER]!);
         }
 
-        public async Task<ServerSlot?> GetServerSlotIdAsync(string id, CancellationToken cancellationToken)
+        public async Task<ServerSlot?> GetSlotIdAsync(string id, CancellationToken cancellationToken)
         {
             ServerSlot? serverSlot = null;
             using (var dbContext = await CreateDbContextAsync(cancellationToken))
@@ -25,7 +25,7 @@ namespace ServerSlotApi.Services
             }
             return serverSlot;
         }
-        public async Task<IEnumerable<ServerSlot>> GetServerSlotsByEmailAsync(string email, CancellationToken cancellationToken)
+        public async Task<IEnumerable<ServerSlot>> GetSlotsByEmailAsync(string email, CancellationToken cancellationToken)
         {
             List<ServerSlot> serverSlots = new List<ServerSlot>();
             using (var dbContext = await CreateDbContextAsync(cancellationToken))
@@ -36,7 +36,7 @@ namespace ServerSlotApi.Services
             }
             return serverSlots;
         }
-        public async Task<IEnumerable<ServerSlot>> GerServerSlotsContainingStringAsync(string email, string str, CancellationToken cancellationToken)
+        public async Task<IEnumerable<ServerSlot>> GerSlotsContainingStringAsync(string email, string str, CancellationToken cancellationToken)
         {
             List<ServerSlot> serverSlots = new List<ServerSlot>();
             using (var dbContext = await CreateDbContextAsync(cancellationToken))
@@ -54,7 +54,7 @@ namespace ServerSlotApi.Services
                 return await dbContext.ServerSlots.AnyAsync(x => x.SlotKey == key, cancellationToken);
             }
         }
-        public async Task<ServerSlot> CreateServerSlotAsync(ServerSlot serverSlot, CancellationToken cancellationToken)
+        public async Task<ServerSlot> CreateSlotAsync(ServerSlot serverSlot, CancellationToken cancellationToken)
         {
             using (var dbContext = await CreateDbContextAsync(cancellationToken))
             {
@@ -68,7 +68,7 @@ namespace ServerSlotApi.Services
             }
             return serverSlot;
         }
-        public async Task UpdateServerSlotAsync(ServerSlot serverSlot, CancellationToken cancellationToken)
+        public async Task UpdateSlotAsync(ServerSlot serverSlot, CancellationToken cancellationToken)
         {
             using (var dbContext = await CreateDbContextAsync(cancellationToken))
             {
@@ -78,7 +78,7 @@ namespace ServerSlotApi.Services
                 await dbContext.SaveChangesAsync(cancellationToken);
             }
         }
-        public async Task DeleteServerSlotByIdAsync(string email, string id, CancellationToken cancellationToken)
+        public async Task DeleteSlotByIdAsync(string email, string id, CancellationToken cancellationToken)
         {
             using (var dbContext = await CreateDbContextAsync(cancellationToken))
             {
