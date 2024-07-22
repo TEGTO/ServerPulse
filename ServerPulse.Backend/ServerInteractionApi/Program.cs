@@ -20,6 +20,7 @@ var producerConfig = new ProducerConfig
     EnableIdempotence = true,
 };
 builder.Services.AddSingleton(producerConfig);
+builder.Services.AddSingleton<IProducerFactory, ProducerFactory>();
 builder.Services.AddSingleton<IMessageProducer, KafkaProducer>();
 
 builder.Services.AddSingleton<IMessageSender, MessageSender>();

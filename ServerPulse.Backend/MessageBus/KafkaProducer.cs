@@ -4,32 +4,24 @@ namespace MessageBus
 {
     public class KafkaProducer : IMessageProducer
     {
-        private readonly ProducerConfig producerConfig;
-        private readonly ProducerBuilder<string, string> producerBuilder;
+        private readonly IProducerFactory producerFactory;
 
-        public KafkaProducer(ProducerConfig producerConfig)
+        public KafkaProducer(IProducerFactory producerFactory)
         {
-            this.producerConfig = producerConfig;
-            producerBuilder = new ProducerBuilder<string, string>(producerConfig);
+            this.producerFactory = producerFactory;
         }
 
         public async Task ProduceAsync(string topic, string message, int partitionAmount, CancellationToken cancellationToken)
         {
-            using (var producer = CreateProducer())
+            using (var producer = producerFactory.CreateProducer())
             {
                 var kafkaMessage = new Message<string, string>
                 {
                     Value = message
                 };
 
-                var topicPart = new TopicPartition(topic, new Partition(partitionAmount));
-
                 await producer.ProduceAsync(topic, kafkaMessage, cancellationToken);
             }
-        }
-        private IProducer<string, string> CreateProducer()
-        {
-            return producerBuilder.Build();
         }
     }
 }

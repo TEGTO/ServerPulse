@@ -1,4 +1,5 @@
 ﻿using Confluent.Kafka;
+using MessageBus;
 using System.Runtime.CompilerServices;
 
 namespace TestKafka.Consumer.Services
@@ -6,19 +7,17 @@ namespace TestKafka.Consumer.Services
     public class KafkaConsumer : IMessageConsumer
     {
         private readonly IAdminClient adminClient;
-        private readonly ConsumerConfig consumerConfig;
-        private readonly ConsumerBuilder<string, string> consumerBuilder;
+        private readonly IConsumerFactory consumerFactory;
 
-        public KafkaConsumer(IAdminClient adminClient, ConsumerConfig consumerConfig)
+        public KafkaConsumer(IAdminClient adminClient, IConsumerFactory consumerFactory)
         {
             this.adminClient = adminClient;
-            this.consumerConfig = consumerConfig;
-            consumerBuilder = new ConsumerBuilder<string, string>(consumerConfig);
+            this.consumerFactory = consumerFactory;
         }
 
         public async IAsyncEnumerable<string> ConsumeAsync(string topic, int timeoutInMilliseconds, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            using (var consumer = consumerBuilder.Build())
+            using (var consumer = consumerFactory.CreateConsumer())
             {
                 consumer.Subscribe(topic);
                 while (!cancellationToken.IsCancellationRequested)
@@ -32,14 +31,16 @@ namespace TestKafka.Consumer.Services
                 }
             }
         }
+
         public async Task<string?> ReadLastTopicMessageAsync(string topicName, int timeoutInMilliseconds = 2000, CancellationToken cancellationToken = default!)
         {
             var val = await Task.Run(() => ReadLastTopicMessage(topicName, timeoutInMilliseconds, cancellationToken));
             return val;
         }
+
         private string? ReadLastTopicMessage(string topicName, int timeoutInMilliseconds, CancellationToken cancellationToken)
         {
-            using (var consumer = consumerBuilder.Build())
+            using (var consumer = consumerFactory.CreateConsumer())
             {
                 consumer.Subscribe(topicName);
                 var topicMetadata = adminClient.GetMetadata(topicName, TimeSpan.FromMilliseconds(timeoutInMilliseconds));
@@ -65,6 +66,7 @@ namespace TestKafka.Consumer.Services
                 return latestMessage?.Message.Value;
             }
         }
+
         private ConsumeResult<string, string>? ReadPartitionLatestMessage(IConsumer<string, string> consumer, string topicName, int partitionId, int timeoutInMilliseconds, CancellationToken cancellationToken)
         {
             var partition = new TopicPartition(topicName, partitionId);
@@ -83,11 +85,13 @@ namespace TestKafka.Consumer.Services
 
             return consumeResult;
         }
+
         public async Task<List<string>> ReadMessagesInDateRangeAsync(string topicName, DateTime startDate, DateTime endDate, int timeoutInMilliseconds = 2000, CancellationToken cancellationToken = default!)
         {
             var val = await Task.Run(() => ReadMessagesInDateRange(topicName, startDate, endDate, timeoutInMilliseconds, cancellationToken));
             return val;
         }
+
         private List<string> ReadMessagesInDateRange(string topicName, DateTime startDate, DateTime endDate, int timeoutInMilliseconds, CancellationToken cancellationToken)
         {
             if (startDate.ToUniversalTime() >= DateTime.UtcNow || startDate.ToUniversalTime() >= endDate.ToUniversalTime())
@@ -96,7 +100,7 @@ namespace TestKafka.Consumer.Services
             }
 
             var messages = new List<string>();
-            using (var consumer = GetConsumer())
+            using (var consumer = consumerFactory.CreateConsumer())
             {
                 consumer.Subscribe(topicName);
                 var topicMetadata = adminClient.GetMetadata(topicName, TimeSpan.FromMilliseconds(timeoutInMilliseconds));
@@ -132,10 +136,6 @@ namespace TestKafka.Consumer.Services
                 }
             }
             return messages;
-        }
-        private IConsumer<string, string> GetConsumer()
-        {
-            return consumerBuilder.Build();
         }
     }
 }

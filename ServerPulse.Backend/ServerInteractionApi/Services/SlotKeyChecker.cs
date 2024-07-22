@@ -19,7 +19,7 @@ namespace ServerInteractionApi.Services
             this.redisService = redisService;
             this.configuration = configuration;
             serverSlotApi = configuration[Configuration.SERVER_SLOT_API]!;
-            redisExpiryInMinutes = double.Parse(configuration[Configuration.REDIS_SERVER_SLOT_EXPITRY_IN_MINUTES]!);
+            redisExpiryInMinutes = double.Parse(configuration[Configuration.REDIS_SERVER_SLOT_EXPIRY_IN_MINUTES]!);
         }
 
         public async Task<bool> CheckSlotKeyAsync(string slotKey, CancellationToken cancellationToken)

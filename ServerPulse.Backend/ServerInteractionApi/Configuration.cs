@@ -8,6 +8,6 @@
         public static string KAFKA_ALIVE_TOPIC { get; } = "Kafka:AliveTopic";
         public static string SERVER_SLOT_API { get; } = "ServerSlotApi";
         public static string REDIS_CONNECTION_STRING { get; } = "ServerInteractionRedis";
-        public static string REDIS_SERVER_SLOT_EXPITRY_IN_MINUTES { get; } = "Redis:ServerSlotExpiryInMinutes";
+        public static string REDIS_SERVER_SLOT_EXPIRY_IN_MINUTES { get; } = "Redis:ServerSlotExpiryInMinutes";
     }
 }
