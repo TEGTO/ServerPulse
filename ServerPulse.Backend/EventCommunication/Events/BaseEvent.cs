@@ -1,4 +1,4 @@
-﻿namespace MessageBus.Dtos
+﻿namespace EventCommunication.Events
 {
     public record BaseEvent()
     {

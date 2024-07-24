@@ -1,15 +1,15 @@
 ﻿using Confluent.Kafka;
-using MessageBus;
 using System.Runtime.CompilerServices;
+using TestKafka.Consumer.Services;
 
-namespace TestKafka.Consumer.Services
+namespace MessageBus.Kafka
 {
     public class KafkaConsumer : IMessageConsumer
     {
         private readonly IAdminClient adminClient;
-        private readonly IConsumerFactory consumerFactory;
+        private readonly IKafkaConsumerFactory consumerFactory;
 
-        public KafkaConsumer(IAdminClient adminClient, IConsumerFactory consumerFactory)
+        public KafkaConsumer(IAdminClient adminClient, IKafkaConsumerFactory consumerFactory)
         {
             this.adminClient = adminClient;
             this.consumerFactory = consumerFactory;

@@ -36,12 +36,23 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - Kafka__BootstrapServers=${Kafka__BootstrapServers}
-      - Kafka__ClientId=${Kafka__ClientId__InteractionServer}
+      - Kafka__ClientId=${Kafka__ClientId__ServerInteractionApi}
       - Kafka__PartitionsAmount=${Kafka__PartitionsAmount}
       - Kafka__AliveTopic=${Kafka__AliveTopic}
-      - ServerSlotApi=${ServerSlotApi}
-      - ConnectionStrings__ServerInteractionRedis=${ConnectionStrings__ServerInteractionRedis}
+      - ServerSlotApi__Check=${ServerSlotApi__Check}
+      - ConnectionStrings__RedisServer=${ConnectionStrings__ServerInteractionRedis}
       - Redis__ServerSlotExpiryInMinutes=${Redis__ServerSlotExpiryInMinutes}
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+  analyzerapi:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - Kafka__BootstrapServers=${Kafka__BootstrapServers}
+      - Kafka__ClientId=${Kafka__ClientId__Analyzer}
+      - Kafka__GroupId=${Kafka__GroupId__Analyzer}
+      - Kafka__AliveTopic=${Kafka__AliveTopic}
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro

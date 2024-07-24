@@ -1,8 +1,8 @@
 ﻿using Confluent.Kafka;
 
-namespace MessageBus
+namespace MessageBus.Kafka
 {
-    public interface IProducerFactory
+    public interface IKafkaProducerFactory
     {
         public IProducer<string, string> CreateProducer();
     }

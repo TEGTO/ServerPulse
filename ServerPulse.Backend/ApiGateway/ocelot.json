@@ -159,12 +159,31 @@
       "RateLimitOptions": {
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
-        "Period": "3 s",
+        "Period": "3s",
+        "Limit": 1
+      }
+    },
+    //Analyzer Api
+    {
+      "Key": "Analyzer_GetAnalyzedData",
+      "UpstreamPathTemplate": "/analyze/{key}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "DownstreamPathTemplate": "/analyze/{key}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "analyzerapi",
+          "Port": 8080
+        }
+      ],
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "4s",
         "Limit": 1
       }
     }
   ],
-
   "GlobalConfiguration": {
     "BaseUrl": "https://localhost:7129",
     "RateLimitOptions": {
@@ -178,6 +197,6 @@
       "DurationOfBreak": 5000,
       "TimeoutValue": 10000
     },
-    "RequestIdKey": "OcelotRequestId",
+    "RequestIdKey": "OcelotRequestId"
   }
 }

@@ -1,5 +1,5 @@
 ﻿using Confluent.Kafka;
-using MessageBus;
+using MessageBus.Kafka;
 using Moq;
 
 namespace MessageBusTests
@@ -8,14 +8,14 @@ namespace MessageBusTests
     public class KafkaProducerTests
     {
         private Mock<IProducer<string, string>> mockProducer;
-        private Mock<IProducerFactory> mockProducerFactory;
+        private Mock<IKafkaProducerFactory> mockProducerFactory;
         private KafkaProducer kafkaProducer;
 
         [SetUp]
         public void Setup()
         {
             mockProducer = new Mock<IProducer<string, string>>();
-            mockProducerFactory = new Mock<IProducerFactory>();
+            mockProducerFactory = new Mock<IKafkaProducerFactory>();
             mockProducerFactory.Setup(x => x.CreateProducer()).Returns(mockProducer.Object);
             kafkaProducer = new KafkaProducer(mockProducerFactory.Object);
         }

@@ -28,6 +28,15 @@ services:
     networks:
     - backend-net
   
+  analyzerapi:
+    container_name: serverpulse-analyzer-api
+    image: ${DOCKER_REGISTRY-}analyzerapi
+    build:
+      context: .
+      dockerfile: AnalyzerApi/Dockerfile
+    networks:
+    - backend-net
+
   apigateway:
     container_name: serverpulse-apigateway
     image: ${DOCKER_REGISTRY-}apigateway
@@ -42,6 +51,7 @@ services:
     - authenticationapi
     - serverslotapi
     - serverinteractionapi
+    - analyzerapi
 
 networks:
   backend-net:

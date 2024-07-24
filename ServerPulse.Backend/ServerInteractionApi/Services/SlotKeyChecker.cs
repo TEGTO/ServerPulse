@@ -9,7 +9,7 @@ namespace ServerInteractionApi.Services
         private readonly IHttpClientFactory httpClientFactory;
         private readonly IRedisService redisService;
         private readonly IConfiguration configuration;
-        private readonly string serverSlotApi;
+        private readonly string slotCheckerUrl;
         private readonly int partitionsAmount;
         private readonly double redisExpiryInMinutes;
 
@@ -18,7 +18,7 @@ namespace ServerInteractionApi.Services
             this.httpClientFactory = httpClientFactory;
             this.redisService = redisService;
             this.configuration = configuration;
-            serverSlotApi = configuration[Configuration.SERVER_SLOT_API]!;
+            slotCheckerUrl = configuration[Configuration.SERVER_SLOT_ALIVE_CHECKER]!;
             redisExpiryInMinutes = double.Parse(configuration[Configuration.REDIS_SERVER_SLOT_EXPIRY_IN_MINUTES]!);
         }
 
@@ -40,7 +40,7 @@ namespace ServerInteractionApi.Services
                 Encoding.UTF8,
                 "application/json"
             );
-            var checkUrl = serverSlotApi + "/check";
+            var checkUrl = slotCheckerUrl;
 
             var httpResponseMessage = await httpClient.PostAsync(checkUrl, jsonContent, cancellationToken);
             using var contentStream = await httpResponseMessage.Content.ReadAsStreamAsync();

@@ -1,12 +1,12 @@
 ﻿using Confluent.Kafka;
 
-namespace MessageBus
+namespace MessageBus.Kafka
 {
     public class KafkaProducer : IMessageProducer
     {
-        private readonly IProducerFactory producerFactory;
+        private readonly IKafkaProducerFactory producerFactory;
 
-        public KafkaProducer(IProducerFactory producerFactory)
+        public KafkaProducer(IKafkaProducerFactory producerFactory)
         {
             this.producerFactory = producerFactory;
         }

@@ -28,7 +28,7 @@ namespace ServerInteractionApiTests.Services
             redisServiceMock = new Mock<IRedisService>();
             configurationMock = new Mock<IConfiguration>();
 
-            configurationMock.Setup(config => config[Configuration.SERVER_SLOT_API]).Returns(ServerSlotApiUrl);
+            configurationMock.Setup(config => config[Configuration.SERVER_SLOT_ALIVE_CHECKER]).Returns(ServerSlotApiUrl);
             configurationMock.Setup(config => config[Configuration.REDIS_SERVER_SLOT_EXPIRY_IN_MINUTES]).Returns(RedisExpiryInMinutes.ToString());
 
             slotKeyChecker = new SlotKeyChecker(httpClientFactoryMock.Object, redisServiceMock.Object, configurationMock.Object);

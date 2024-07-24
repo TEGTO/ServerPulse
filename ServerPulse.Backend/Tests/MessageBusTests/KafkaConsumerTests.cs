@@ -1,7 +1,6 @@
 ﻿using Confluent.Kafka;
-using MessageBus;
+using MessageBus.Kafka;
 using Moq;
-using TestKafka.Consumer.Services;
 
 namespace MessageBusTests
 {
@@ -10,7 +9,7 @@ namespace MessageBusTests
     {
         private Mock<IAdminClient> mockAdminClient;
         private Mock<IConsumer<string, string>> mockConsumer;
-        private Mock<IConsumerFactory> mockConsumerFactory;
+        private Mock<IKafkaConsumerFactory> mockConsumerFactory;
         private KafkaConsumer kafkaConsumer;
 
         [SetUp]
@@ -18,7 +17,7 @@ namespace MessageBusTests
         {
             mockAdminClient = new Mock<IAdminClient>();
             mockConsumer = new Mock<IConsumer<string, string>>();
-            mockConsumerFactory = new Mock<IConsumerFactory>();
+            mockConsumerFactory = new Mock<IKafkaConsumerFactory>();
             mockConsumerFactory.Setup(x => x.CreateConsumer()).Returns(mockConsumer.Object);
             kafkaConsumer = new KafkaConsumer(mockAdminClient.Object, mockConsumerFactory.Object);
         }

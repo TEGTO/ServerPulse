@@ -1,6 +1,7 @@
 using Confluent.Kafka;
 using FluentValidation;
 using MessageBus;
+using MessageBus.Kafka;
 using ServerInteractionApi;
 using ServerInteractionApi.Services;
 using Shared;
@@ -20,7 +21,7 @@ var producerConfig = new ProducerConfig
     EnableIdempotence = true,
 };
 builder.Services.AddSingleton(producerConfig);
-builder.Services.AddSingleton<IProducerFactory, ProducerFactory>();
+builder.Services.AddSingleton<IKafkaProducerFactory, KafkaProducerFactory>();
 builder.Services.AddSingleton<IMessageProducer, KafkaProducer>();
 
 builder.Services.AddSingleton<IMessageSender, MessageSender>();
