@@ -2,7 +2,7 @@
 
 namespace ServerPulse.Client.Events
 {
-    internal sealed record class ConfigurationEvent(string Key, TimeSpan ServerKeepAliveInterval) : BaseEvent(Key)
+    public sealed record class LoadEvent(string Key) : BaseEvent(Key)
     {
         public override string ToString()
         {

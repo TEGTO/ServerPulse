@@ -5,29 +5,31 @@ namespace ServerPulse.Client.Services
 {
     internal class ServerStatusSender : BackgroundService
     {
-        private readonly IEventSender eventSender;
-        private readonly Configuration configuration;
+        private readonly IMessageSender messageSender;
         private readonly string aliveUrl;
         private readonly string confUrl;
+        private readonly string slotKey;
+        private readonly double sendingInterval;
 
-        public ServerStatusSender(IEventSender eventSender, Configuration configuration)
+        public ServerStatusSender(IMessageSender eventSender, Configuration configuration)
         {
-            this.eventSender = eventSender;
-            this.configuration = configuration;
-            aliveUrl = configuration.EventController + $"/alive/{configuration.SlotKey}";
-            confUrl = configuration.EventController + $"/configuration/{configuration.SlotKey}";
+            this.messageSender = eventSender;
+            aliveUrl = configuration.EventController + $"/serverinteraction/alive";
+            confUrl = configuration.EventController + $"/serverinteraction/configuration";
+            slotKey = configuration.SlotKey;
+            sendingInterval = configuration.ServerKeepAliveInterval;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var confEvent = new ConfigurationEvent(configuration.SlotKey, TimeSpan.FromSeconds(configuration.AliveEventSendInterval));
-            await eventSender.SendEventAsync(confEvent, confUrl, stoppingToken);
+            var confEvent = new ConfigurationEvent(slotKey, TimeSpan.FromSeconds(sendingInterval));
+            await messageSender.SendJsonAsync(confEvent.ToString(), confUrl, stoppingToken);
 
-            using PeriodicTimer timer = new(TimeSpan.FromSeconds(configuration.AliveEventSendInterval));
+            using PeriodicTimer timer = new(TimeSpan.FromSeconds(sendingInterval));
             while (!stoppingToken.IsCancellationRequested && await timer.WaitForNextTickAsync(stoppingToken))
             {
-                var aliveEvent = new AliveEvent(configuration.SlotKey, true);
-                await eventSender.SendEventAsync(aliveEvent, aliveUrl, stoppingToken);
+                var aliveEvent = new AliveEvent(slotKey, true);
+                await messageSender.SendJsonAsync(aliveEvent.ToString(), aliveUrl, stoppingToken);
             }
         }
     }

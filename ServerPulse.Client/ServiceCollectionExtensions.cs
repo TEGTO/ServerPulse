@@ -9,8 +9,10 @@ namespace ServerPulse.Client
         {
             services.AddHttpClient();
             services.AddSingleton(configuration);
-            services.AddSingleton<IEventSender, EventSender>();
+            services.AddSingleton<IMessageSender, MessageSender>();
+            services.AddSingleton<IServerLoadSender, ServerLoadSender>();
             services.AddHostedService<ServerStatusSender>();
+            services.AddHostedService<ServerLoadSender>();
 
             return services;
         }

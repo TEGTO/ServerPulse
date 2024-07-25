@@ -58,11 +58,6 @@ namespace MessageBus.Kafka
                 .OrderByDescending(result => result.Message.Timestamp.UtcDateTime)
                 .FirstOrDefault();
 
-            Console.WriteLine(tasks.Count());
-            foreach (var item in tasks.Select(task => task.Result).Where(result => result != null))
-            {
-                Console.WriteLine($"{item.Message.Value}: {item.Message.Timestamp.UtcDateTime}");
-            }
             return latestMessage?.Message.Value;
         }
         private ConsumeResult<string, string>? ReadPartitionLatestMessage(string topicName, int partitionId, int timeoutInMilliseconds, CancellationToken cancellationToken)

@@ -16,6 +16,7 @@
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
         "Period": "4s",
+        "PeriodTimespan": 1,
         "Limit": 1
       }
     }
