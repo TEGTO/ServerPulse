@@ -1,3 +1,4 @@
+using ApiGateway;
 using Authentication;
 using Authentication.Configuration;
 using Ocelot.DependencyInjection;
@@ -33,9 +34,20 @@ var jwtSettings = new JwtSettings()
 };
 builder.Services.AddCustomJwtAuthentication(jwtSettings);
 
-builder.Configuration.SetBasePath(builder.Environment.ContentRootPath)
-    .AddJsonFile("ocelot.json", optional: false, reloadOnChange: true)
+var mergedPath = "merged.json";
+Utility.MergeJsonFiles(
+    [
+    "ocelot.json",
+    "ocelot.analyzer.json",
+    "ocelot.authentication.json",
+    "ocelot.interaction.json",
+    "ocelot.slot.json"
+    ], mergedPath);
+builder.Configuration
+    .SetBasePath(builder.Environment.ContentRootPath)
+    .AddJsonFile(mergedPath, optional: false, reloadOnChange: true)
     .AddEnvironmentVariables();
+
 builder.Services.AddOcelot(builder.Configuration).AddPolly();
 
 var app = builder.Build();

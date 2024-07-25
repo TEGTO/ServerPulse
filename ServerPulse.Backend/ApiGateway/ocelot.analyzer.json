@@ -1,0 +1,23 @@
+{
+  "Routes": [
+    {
+      "Key": "Analyzer_GetAnalyzedData",
+      "UpstreamPathTemplate": "/analyze/{key}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "DownstreamPathTemplate": "/analyze/{key}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "analyzerapi",
+          "Port": 8080
+        }
+      ],
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "4s",
+        "Limit": 1
+      }
+    }
+  ]
+}

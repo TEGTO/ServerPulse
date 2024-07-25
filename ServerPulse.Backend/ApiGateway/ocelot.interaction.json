@@ -1,0 +1,44 @@
+{
+  "Routes": [
+    {
+      "Key": "ServerInteraction_SendConfiguration",
+      "UpstreamPathTemplate": "/serverinteraction/configuration",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamPathTemplate": "/serverinteraction/configuration",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "serverinteractionapi",
+          "Port": 8080
+        }
+      ],
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "3s",
+        "PeriodTimespan": 1,
+        "Limit": 1
+      }
+    },
+    {
+      "Key": "ServerInteraction_SendAlive",
+      "UpstreamPathTemplate": "/serverinteraction/alive",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamPathTemplate": "/serverinteraction/alive",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "serverinteractionapi",
+          "Port": 8080
+        }
+      ],
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "3s",
+        "PeriodTimespan": 1,
+        "Limit": 1
+      }
+    }
+  ]
+}
