@@ -1,6 +1,6 @@
 ﻿namespace AnalyzerApi.Domain.Models
 {
-    public class AnalyzedData
+    public class ServerStatus
     {
         public bool IsServerAlive { get; set; }
     }

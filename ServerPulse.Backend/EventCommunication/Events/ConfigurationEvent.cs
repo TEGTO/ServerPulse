@@ -1,11 +1,9 @@
 ﻿using System.Text.Json;
 
-namespace ServerPulse.Client.Events
+namespace EventCommunication.Events
 {
-    public record BaseEvent(string Key)
+    public sealed record class ConfigurationEvent(string Key, TimeSpan AliveEventSendInterval) : BaseEvent(Key)
     {
-        public DateTime CreationDate { get; } = DateTime.UtcNow;
-
         public override string ToString()
         {
             return JsonSerializer.Serialize(this);

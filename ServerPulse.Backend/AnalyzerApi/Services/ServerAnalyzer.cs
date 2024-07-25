@@ -12,10 +12,10 @@ namespace AnalyzerApi.Services
             this.messageReceiver = messageReceiver;
         }
 
-        public async Task<AnalyzedData> GetAnalyzedDataByKeyAsync(string key)
+        public async Task<ServerStatus> GetCurrentServerStatusByKeyAsync(string key, CancellationToken cancellationToken)
         {
-            AliveEvent aliveEvent = await messageReceiver.ReceiveLastAliveEventByKeyAsync(key);
-            AnalyzedData analyzedData = new AnalyzedData
+            AliveEvent aliveEvent = await messageReceiver.ReceiveLastAliveEventByKeyAsync(key, cancellationToken);
+            ServerStatus analyzedData = new ServerStatus
             {
                 IsServerAlive = aliveEvent.IsAlive
             };

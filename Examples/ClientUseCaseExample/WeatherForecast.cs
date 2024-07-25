@@ -1,4 +1,4 @@
-namespace TestServer
+namespace ClientUseCaseExample
 {
     public class WeatherForecast
     {

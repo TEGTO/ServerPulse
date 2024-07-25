@@ -4,6 +4,6 @@ namespace AnalyzerApi.Services
 {
     public interface IMessageReceiver
     {
-        public Task<AliveEvent> ReceiveLastAliveEventByKeyAsync(string key);
+        public Task<AliveEvent> ReceiveLastAliveEventByKeyAsync(string key, CancellationToken cancellationToken);
     }
 }

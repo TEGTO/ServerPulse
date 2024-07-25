@@ -39,6 +39,7 @@ services:
       - Kafka__ClientId=${Kafka__ClientId__ServerInteractionApi}
       - Kafka__PartitionsAmount=${Kafka__PartitionsAmount}
       - Kafka__AliveTopic=${Kafka__AliveTopic}
+      - Kafka__ConfigurationTopic=${Kafka__ConfigurationTopic}
       - ServerSlotApi__Check=${ServerSlotApi__Check}
       - ConnectionStrings__RedisServer=${ConnectionStrings__ServerInteractionRedis}
       - Redis__ServerSlotExpiryInMinutes=${Redis__ServerSlotExpiryInMinutes}
@@ -53,6 +54,7 @@ services:
       - Kafka__ClientId=${Kafka__ClientId__Analyzer}
       - Kafka__GroupId=${Kafka__GroupId__Analyzer}
       - Kafka__AliveTopic=${Kafka__AliveTopic}
+      - Kafka__AnalyzerReceiveTimeout=${Kafka__Timeout}
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro

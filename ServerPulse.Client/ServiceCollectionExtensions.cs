@@ -10,7 +10,7 @@ namespace ServerPulse.Client
             services.AddHttpClient();
             services.AddSingleton(configuration);
             services.AddSingleton<IEventSender, EventSender>();
-            services.AddHostedService<AliveSender>();
+            services.AddHostedService<ServerStatusSender>();
 
             return services;
         }

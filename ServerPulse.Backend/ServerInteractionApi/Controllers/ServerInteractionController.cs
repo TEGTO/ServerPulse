@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using EventCommunication.Events;
+using Microsoft.AspNetCore.Mvc;
 using ServerInteractionApi.Services;
 
 namespace ServerInteractionApi.Controllers
@@ -16,20 +17,25 @@ namespace ServerInteractionApi.Controllers
             this.serverSlotChecker = serverSlotChecker;
         }
 
-        [HttpPost("alive/{slotKey}")]
-        public async Task<IActionResult> SendAlive(string slotKey, CancellationToken cancellationToken)
+        [HttpPost("alive")]
+        public async Task<IActionResult> SendAlive(AliveEvent aliveEvent, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(slotKey))
+            if (await serverSlotChecker.CheckSlotKeyAsync(aliveEvent.Key, cancellationToken))
             {
-                throw new ArgumentException("Key must be provided");
-            }
-
-            if (await serverSlotChecker.CheckSlotKeyAsync(slotKey, cancellationToken))
-            {
-                await messageSender.SendAliveEventAsync(slotKey, cancellationToken);
+                await messageSender.SendAliveEventAsync(aliveEvent, cancellationToken);
                 return Ok();
             }
-            return NotFound($"Server slot with key '{slotKey}' is not found!");
+            return NotFound($"Server slot with key '{aliveEvent.Key}' is not found!");
+        }
+        [HttpPost("configuration")]
+        public async Task<IActionResult> SendConfiguration(ConfigurationEvent configurationEvent, CancellationToken cancellationToken)
+        {
+            if (await serverSlotChecker.CheckSlotKeyAsync(configurationEvent.Key, cancellationToken))
+            {
+                await messageSender.SendConfigurationEventAsync(configurationEvent, cancellationToken);
+                return Ok();
+            }
+            return NotFound($"Server slot with key '{configurationEvent.Key}' is not found!");
         }
     }
 }

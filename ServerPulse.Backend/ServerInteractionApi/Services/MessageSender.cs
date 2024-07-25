@@ -1,6 +1,5 @@
 ﻿using EventCommunication.Events;
 using MessageBus;
-using System.Text.Json;
 
 namespace ServerInteractionApi.Services
 {
@@ -8,20 +7,30 @@ namespace ServerInteractionApi.Services
     {
         private readonly IMessageProducer producer;
         private readonly string aliveTopic;
+        private readonly string configurationTopic;
         private readonly int partitionsAmount;
 
         public MessageSender(IMessageProducer producer, IConfiguration configuration)
         {
             this.producer = producer;
-            aliveTopic = configuration[Configuration.KAFKA_ALIVE_TOPIC]!;
             partitionsAmount = int.Parse(configuration[Configuration.KAFKA_PARTITIONS_AMOUNT]!);
+            aliveTopic = configuration[Configuration.KAFKA_ALIVE_TOPIC]!;
+            configurationTopic = configuration[Configuration.KAFKA_CONFIGURATION_TOPIC]!;
         }
 
-        public async Task SendAliveEventAsync(string slotId, CancellationToken cancellationToken)
+        public async Task SendAliveEventAsync(AliveEvent aliveEvent, CancellationToken cancellationToken)
         {
-            string topic = aliveTopic.Replace("{id}", slotId);
-            AliveEvent aliveEvent = new AliveEvent(slotId, true);
-            var message = JsonSerializer.Serialize(aliveEvent);
+            string topic = aliveTopic.Replace("{id}", aliveEvent.Key);
+            await SendEvent(aliveEvent, topic, cancellationToken);
+        }
+        public async Task SendConfigurationEventAsync(ConfigurationEvent configurationEvent, CancellationToken cancellationToken)
+        {
+            string topic = configurationTopic.Replace("{id}", configurationEvent.Key);
+            await SendEvent(configurationEvent, topic, cancellationToken);
+        }
+        private async Task SendEvent(BaseEvent @event, string topic, CancellationToken cancellationToken)
+        {
+            var message = @event.ToString();
             await producer.ProduceAsync(topic, message, partitionsAmount, cancellationToken);
         }
     }

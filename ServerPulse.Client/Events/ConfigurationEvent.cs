@@ -2,10 +2,8 @@
 
 namespace ServerPulse.Client.Events
 {
-    public record BaseEvent(string Key)
+    internal sealed record class ConfigurationEvent(string Key, TimeSpan AliveEventSendInterval) : BaseEvent(Key)
     {
-        public DateTime CreationDate { get; } = DateTime.UtcNow;
-
         public override string ToString()
         {
             return JsonSerializer.Serialize(this);

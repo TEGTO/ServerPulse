@@ -1,6 +1,6 @@
-﻿using AnalyzerApi.Domain.Models;
+﻿using AnalyzerApi.Domain.Dtos;
+using AnalyzerApi.Domain.Models;
 using AutoMapper;
-using Shared.Dtos.Analyzation;
 
 namespace AuthenticationApi
 {
@@ -8,7 +8,7 @@ namespace AuthenticationApi
     {
         public AutoMapperProfile()
         {
-            CreateMap<AnalyzedData, AnalyzedDataReponse>();
+            CreateMap<ServerStatus, AnalyzedDataReponse>();
         }
     }
 }

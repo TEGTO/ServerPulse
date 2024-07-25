@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.34928.147
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestServer", "TestServer\TestServer.csproj", "{FE829492-D65E-48A0-BE20-8564CCA56FCB}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Microservices", "Microservices", "{C260E3F5-9C36-4648-99F6-6714CF242134}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{055C1BB6-678D-4258-80AC-4816688B1AF6}"
@@ -41,9 +39,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageBusTests", "Tests\Me
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerInteractionApiTests", "Tests\ServerInteractionApiTests\ServerInteractionApiTests.csproj", "{464DB892-D620-42C4-9490-C2646F387239}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnalyzerApi", "AnalyzerApi\AnalyzerApi.csproj", "{FBB592FC-661A-488B-B704-DD131AF03FB8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnalyzerApi", "AnalyzerApi\AnalyzerApi.csproj", "{FBB592FC-661A-488B-B704-DD131AF03FB8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventCommunication", "EventCommunication\EventCommunication.csproj", "{437B8E5F-F901-4EA9-A5D0-E3BC4EC6F65E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventCommunication", "EventCommunication\EventCommunication.csproj", "{437B8E5F-F901-4EA9-A5D0-E3BC4EC6F65E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,10 +49,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{FE829492-D65E-48A0-BE20-8564CCA56FCB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FE829492-D65E-48A0-BE20-8564CCA56FCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FE829492-D65E-48A0-BE20-8564CCA56FCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FE829492-D65E-48A0-BE20-8564CCA56FCB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F9C12789-CC5E-4A77-B686-7ABA033FE2C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F9C12789-CC5E-4A77-B686-7ABA033FE2C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F9C12789-CC5E-4A77-B686-7ABA033FE2C9}.Release|Any CPU.ActiveCfg = Release|Any CPU

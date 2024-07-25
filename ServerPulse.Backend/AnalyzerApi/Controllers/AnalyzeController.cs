@@ -1,7 +1,7 @@
-﻿using AnalyzerApi.Services;
+﻿using AnalyzerApi.Domain.Dtos;
+using AnalyzerApi.Services;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Shared.Dtos.Analyzation;
 
 namespace AnalyzerApi.Controllers
 {
@@ -19,13 +19,13 @@ namespace AnalyzerApi.Controllers
         }
 
         [HttpGet("{key}")]
-        public async Task<ActionResult<AnalyzedDataReponse>> GetAnalyzedDataByKey(string key)
+        public async Task<ActionResult<AnalyzedDataReponse>> GetCurrentServerStatusByKey(string key, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(key))
             {
                 return BadRequest("Invalid key!");
             }
-            var analyzedData = await serverAnalyzer.GetAnalyzedDataByKeyAsync(key);
+            var analyzedData = await serverAnalyzer.GetCurrentServerStatusByKeyAsync(key, cancellationToken);
             var response = mapper.Map<AnalyzedDataReponse>(analyzedData);
             return Ok(response);
         }

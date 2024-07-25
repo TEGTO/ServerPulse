@@ -1,4 +1,4 @@
-﻿namespace Shared.Dtos.Analyzation
+﻿namespace AnalyzerApi.Domain.Dtos
 {
     public class AnalyzedDataReponse
     {

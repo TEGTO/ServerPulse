@@ -145,23 +145,30 @@
     },
     //Server Interaction API
     {
-      "Key": "ServerInteraction_SendAlive",
-      "UpstreamPathTemplate": "/serverinteraction/alive/{key}",
+      "Key": "ServerInteraction_SendConfiguration",
+      "UpstreamPathTemplate": "/serverinteraction/configuration",
       "UpstreamHttpMethod": [ "POST" ],
-      "DownstreamPathTemplate": "/serverinteraction/alive/{key}",
+      "DownstreamPathTemplate": "/serverinteraction/configuration",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "serverinteractionapi",
           "Port": 8080
         }
-      ],
-      "RateLimitOptions": {
-        "ClientWhitelist": [],
-        "EnableRateLimiting": true,
-        "Period": "3s",
-        "Limit": 1
-      }
+      ]
+    },
+    {
+      "Key": "ServerInteraction_SendAlive",
+      "UpstreamPathTemplate": "/serverinteraction/alive",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamPathTemplate": "/serverinteraction/alive",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "serverinteractionapi",
+          "Port": 8080
+        }
+      ]
     },
     //Analyzer Api
     {
@@ -175,23 +182,11 @@
           "Host": "analyzerapi",
           "Port": 8080
         }
-      ],
-      "RateLimitOptions": {
-        "ClientWhitelist": [],
-        "EnableRateLimiting": true,
-        "Period": "4s",
-        "Limit": 1
-      }
+      ]
     }
   ],
   "GlobalConfiguration": {
     "BaseUrl": "https://localhost:7129",
-    "RateLimitOptions": {
-      "ClientWhitelist": [],
-      "EnableRateLimiting": true,
-      "Period": "1s",
-      "Limit": 5
-    },
     "QoSOptions": {
       "ExceptionsAllowedBeforeBreaking": 3,
       "DurationOfBreak": 5000,
