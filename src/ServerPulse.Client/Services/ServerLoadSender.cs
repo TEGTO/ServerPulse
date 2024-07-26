@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Hosting;
 using ServerPulse.EventCommunication.Events;
+using System.Collections.Concurrent;
 using System.Text.Json;
 
 namespace ServerPulse.Client.Services
@@ -10,7 +11,7 @@ namespace ServerPulse.Client.Services
         private readonly string sendingUrl;
         private readonly int maxEventsPerSending;
         private readonly double sendingInterval;
-        private Queue<LoadEvent> loadEvents = new Queue<LoadEvent>();
+        private readonly ConcurrentQueue<LoadEvent> loadEvents = new ConcurrentQueue<LoadEvent>();
 
         public ServerLoadSender(IMessageSender eventSender, Configuration configuration)
         {
@@ -29,7 +30,7 @@ namespace ServerPulse.Client.Services
             using PeriodicTimer timer = new(TimeSpan.FromSeconds(sendingInterval));
             while (!stoppingToken.IsCancellationRequested && await timer.WaitForNextTickAsync(stoppingToken))
             {
-                if (loadEvents.Count > 0)
+                if (!loadEvents.IsEmpty)
                 {
                     var json = GetEventsJson();
                     await messageSender.SendJsonAsync(json, sendingUrl, stoppingToken);
@@ -39,9 +40,9 @@ namespace ServerPulse.Client.Services
         private string GetEventsJson()
         {
             var events = new List<LoadEvent>();
-            for (int i = 0; i < maxEventsPerSending && loadEvents.Count > 0; i++)
+            for (int i = 0; i < maxEventsPerSending && loadEvents.TryDequeue(out var loadEvent); i++)
             {
-                events.Add(loadEvents.Dequeue());
+                events.Add(loadEvent);
             }
             return JsonSerializer.Serialize(events);
         }

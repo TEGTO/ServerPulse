@@ -8,27 +8,27 @@ namespace ServerPulse.Client.Services
         private readonly IMessageSender messageSender;
         private readonly string aliveUrl;
         private readonly string confUrl;
-        private readonly string slotKey;
+        private readonly string key;
         private readonly double sendingInterval;
 
-        public ServerStatusSender(IMessageSender eventSender, Configuration configuration)
+        public ServerStatusSender(IMessageSender messageSender, Configuration configuration)
         {
-            this.messageSender = eventSender;
+            this.messageSender = messageSender;
             aliveUrl = configuration.EventController + $"/serverinteraction/alive";
             confUrl = configuration.EventController + $"/serverinteraction/configuration";
-            slotKey = configuration.SlotKey;
+            key = configuration.Key;
             sendingInterval = configuration.ServerKeepAliveInterval;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var confEvent = new ConfigurationEvent(slotKey, TimeSpan.FromSeconds(sendingInterval));
+            var confEvent = new ConfigurationEvent(key, TimeSpan.FromSeconds(sendingInterval));
             await messageSender.SendJsonAsync(confEvent.ToString(), confUrl, stoppingToken);
 
             using PeriodicTimer timer = new(TimeSpan.FromSeconds(sendingInterval));
             while (!stoppingToken.IsCancellationRequested && await timer.WaitForNextTickAsync(stoppingToken))
             {
-                var aliveEvent = new AliveEvent(slotKey, true);
+                var aliveEvent = new AliveEvent(key, true);
                 await messageSender.SendJsonAsync(aliveEvent.ToString(), aliveUrl, stoppingToken);
             }
         }

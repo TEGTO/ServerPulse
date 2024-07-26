@@ -2,7 +2,7 @@
 {
     public class Configuration
     {
-        public required string SlotKey { get; set; }
+        public required string Key { get; set; }
         /// <summary>
         /// Event endpoints.
         /// </summary>

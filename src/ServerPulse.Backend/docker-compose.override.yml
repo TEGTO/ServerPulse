@@ -40,6 +40,7 @@ services:
       - Kafka__PartitionsAmount=${Kafka__PartitionsAmount}
       - Kafka__AliveTopic=${Kafka__AliveTopic}
       - Kafka__ConfigurationTopic=${Kafka__ConfigurationTopic}
+      - Kafka__LoadTopic=${Kafka__LoadTopic}
       - ServerSlotApi__Check=${ServerSlotApi__Check}
       - ConnectionStrings__RedisServer=${ConnectionStrings__ServerInteractionRedis}
       - Redis__ServerSlotExpiryInMinutes=${Redis__ServerSlotExpiryInMinutes}
@@ -64,7 +65,7 @@ services:
       - ASPNETCORE_URLS=http://+:8080;https://+:8081;
       - ASPNETCORE_HTTPS_PORTS=8081
       - ASPNETCORE_HTTP_PORTS=8080
-      - ASPNETCORE_Kestrel__Certificates__Default__Password=12345
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=${CertificatePassword}
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/app/certificates/aspnetapp.pfx
       - AllowedCORSOrigins=*
       - AuthSettings__Key=${AuthSettings__Key}

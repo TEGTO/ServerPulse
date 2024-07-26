@@ -16,8 +16,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: MyAllowSpecificOrigins, policy =>
     {
         policy.WithOrigins(allowedOrigins)
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+        .AllowAnyHeader()
+        .AllowAnyMethod();
         if (builder.Environment.IsDevelopment())
         {
             policy.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost");

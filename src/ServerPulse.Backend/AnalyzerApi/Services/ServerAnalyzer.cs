@@ -1,5 +1,5 @@
 ﻿using AnalyzerApi.Domain.Models;
-using EventCommunication.Events;
+using ServerPulse.EventCommunication.Events;
 
 namespace AnalyzerApi.Services
 {

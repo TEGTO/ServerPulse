@@ -1,11 +1,11 @@
-﻿using FluentValidation.TestHelper;
-using Shared.Dtos.ServerEvent;
-using Shared.Validators;
+﻿using EventCommunication.Validators;
+using FluentValidation.TestHelper;
+using ServerPulse.EventCommunication.Events;
 
-namespace SharedTests.Validators
+namespace ServerPulse.EventCommunicationTests.Validators
 {
     [TestFixture]
-    public class AliveEventValidatorTests
+    internal class AliveEventValidatorTests
     {
         private AliveEventValidator validator;
 
@@ -23,7 +23,7 @@ namespace SharedTests.Validators
             // Act
             var result = validator.TestValidate(model);
             // Assert
-            result.ShouldHaveValidationErrorFor(x => x.SlotKey);
+            result.ShouldHaveValidationErrorFor(x => x.Key);
         }
         [Test]
         public void ValidateSlotKey_SlotKeyIsEmpty_ValidationError()
@@ -33,7 +33,7 @@ namespace SharedTests.Validators
             // Act
             var result = validator.TestValidate(model);
             // Assert
-            result.ShouldHaveValidationErrorFor(x => x.SlotKey);
+            result.ShouldHaveValidationErrorFor(x => x.Key);
         }
         [Test]
         public void ValidateSlotKey_SlotKeyIsTooLong_ValidationError()
@@ -44,7 +44,7 @@ namespace SharedTests.Validators
             // Act
             var result = validator.TestValidate(model);
             // Assert
-            result.ShouldHaveValidationErrorFor(x => x.SlotKey);
+            result.ShouldHaveValidationErrorFor(x => x.Key);
         }
         [Test]
         public void ValidateSlotKey_SlotKeyIsValid_NoValidationError()
@@ -54,7 +54,7 @@ namespace SharedTests.Validators
             // Act
             var result = validator.TestValidate(model);
             // Assert
-            result.ShouldNotHaveValidationErrorFor(x => x.SlotKey);
+            result.ShouldNotHaveValidationErrorFor(x => x.Key);
         }
     }
 }

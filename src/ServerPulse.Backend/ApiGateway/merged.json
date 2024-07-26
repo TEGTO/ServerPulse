@@ -196,6 +196,28 @@
       }
     },
     {
+      "Key": "ServerInteraction_SendLoad",
+      "UpstreamPathTemplate": "/serverinteraction/load",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DownstreamPathTemplate": "/serverinteraction/load",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "serverinteractionapi",
+          "Port": 8080
+        }
+      ],
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "3s",
+        "PeriodTimespan": 1,
+        "Limit": 1
+      }
+    },
+    {
       "Key": "ServerSlot_GetAll",
       "UpstreamPathTemplate": "/serverslot",
       "UpstreamHttpMethod": [

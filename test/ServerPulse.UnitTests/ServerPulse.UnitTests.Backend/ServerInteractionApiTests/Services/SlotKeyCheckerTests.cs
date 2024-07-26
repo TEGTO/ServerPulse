@@ -11,7 +11,7 @@ using System.Text.Json;
 namespace ServerInteractionApiTests.Services
 {
     [TestFixture]
-    public class SlotKeyCheckerTests
+    internal class SlotKeyCheckerTests
     {
         private const string ServerSlotApiUrl = "http://localhost:5000";
         private const double RedisExpiryInMinutes = 60;

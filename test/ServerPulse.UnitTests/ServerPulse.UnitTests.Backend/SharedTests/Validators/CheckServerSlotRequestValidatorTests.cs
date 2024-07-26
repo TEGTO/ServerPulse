@@ -5,7 +5,7 @@ using Shared.Validators;
 namespace SharedTests.Validators
 {
     [TestFixture]
-    public class CheckServerSlotRequestValidatorTests
+    internal class CheckServerSlotRequestValidatorTests
     {
         private CheckServerSlotRequestValidator validator;
 

@@ -1,9 +1,14 @@
-﻿using Microsoft.AspNetCore.Http;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace ServerPulse.EventCommunication.Events
 {
-    public sealed record class LoadEvent(string Key, PathString Endpoint, string Method, int StatusCode, TimeSpan Duration, DateTime Timestamp) : BaseEvent(Key)
+    public sealed record class LoadEvent(
+        string Key,
+        string Endpoint,
+        string Method,
+        int StatusCode,
+        TimeSpan Duration,
+        DateTime Timestamp) : BaseEvent(Key)
     {
         public override string ToString()
         {

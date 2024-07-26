@@ -5,7 +5,7 @@ using Moq;
 namespace MessageBusTests
 {
     [TestFixture]
-    public class KafkaProducerTests
+    internal class KafkaProducerTests
     {
         private Mock<IProducer<string, string>> mockProducer;
         private Mock<IKafkaProducerFactory> mockProducerFactory;

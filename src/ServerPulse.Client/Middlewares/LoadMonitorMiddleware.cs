@@ -15,7 +15,7 @@ namespace ServerPulse.Client.Middlewares
         {
             this.serverLoadSender = serverLoadSender;
             this.next = next;
-            key = configuration.SlotKey;
+            key = configuration.Key;
         }
 
         public async Task InvokeAsync(HttpContext httpContext)

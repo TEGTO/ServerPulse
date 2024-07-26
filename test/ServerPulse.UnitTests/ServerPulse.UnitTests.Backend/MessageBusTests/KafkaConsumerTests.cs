@@ -5,7 +5,7 @@ using Moq;
 namespace MessageBusTests
 {
     [TestFixture]
-    public class KafkaConsumerTests
+    internal class KafkaConsumerTests
     {
         private Mock<IAdminClient> mockAdminClient;
         private Mock<IConsumer<string, string>> mockConsumer;

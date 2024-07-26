@@ -5,7 +5,7 @@ using Shared.Validators;
 namespace SharedTests.Validators
 {
     [TestFixture]
-    public class CheckAuthDataRequestValidatorTests
+    internal class CheckAuthDataRequestValidatorTests
     {
         private CheckAuthDataRequestValidator validator;
 

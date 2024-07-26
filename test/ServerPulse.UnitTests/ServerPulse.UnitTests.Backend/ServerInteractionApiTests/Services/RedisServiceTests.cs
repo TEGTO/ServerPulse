@@ -5,7 +5,7 @@ using StackExchange.Redis;
 namespace ServerInteractionApiTests.Services
 {
     [TestFixture]
-    public class RedisServiceTests
+    internal class RedisServiceTests
     {
         private Mock<IConnectionMultiplexer> connectionMultiplexerMock;
         private Mock<IDatabase> databaseMock;

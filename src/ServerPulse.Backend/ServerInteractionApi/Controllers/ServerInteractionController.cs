@@ -37,5 +37,21 @@ namespace ServerInteractionApi.Controllers
             }
             return NotFound($"Server slot with key '{configurationEvent.Key}' is not found!");
         }
+        [HttpPost("load")]
+        public async Task<IActionResult> SendLoadEvents(LoadEvent[] loadEvents, CancellationToken cancellationToken)
+        {
+            var firstKey = loadEvents.First().Key;
+            if (!loadEvents.All(x => x.Key == firstKey))
+            {
+                return BadRequest($"All load events must have the same key per request!");
+            }
+
+            if (await serverSlotChecker.CheckSlotKeyAsync(firstKey, cancellationToken))
+            {
+                await messageSender.SendLoadEventsAsync(loadEvents, cancellationToken);
+                return Ok();
+            }
+            return NotFound($"Server slot with key '{firstKey}' is not found!");
+        }
     }
 }
