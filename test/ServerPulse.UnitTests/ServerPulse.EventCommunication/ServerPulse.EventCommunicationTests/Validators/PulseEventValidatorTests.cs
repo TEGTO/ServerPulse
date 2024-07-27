@@ -5,21 +5,21 @@ using ServerPulse.EventCommunication.Events;
 namespace ServerPulse.EventCommunicationTests.Validators
 {
     [TestFixture]
-    internal class AliveEventValidatorTests
+    internal class PulseEventValidatorTests
     {
-        private AliveEventValidator validator;
+        private PulseEventValidator validator;
 
         [SetUp]
         public void Setup()
         {
-            validator = new AliveEventValidator();
+            validator = new PulseEventValidator();
         }
 
         [Test]
         public void ValidateSlotKey_SlotKeyIsNull_ValidationError()
         {
             // Arrange
-            var model = new AliveEvent(null, true);
+            var model = new PulseEvent(null, true);
             // Act
             var result = validator.TestValidate(model);
             // Assert
@@ -29,7 +29,7 @@ namespace ServerPulse.EventCommunicationTests.Validators
         public void ValidateSlotKey_SlotKeyIsEmpty_ValidationError()
         {
             // Arrange
-            var model = new AliveEvent(string.Empty, true);
+            var model = new PulseEvent(string.Empty, true);
             // Act
             var result = validator.TestValidate(model);
             // Assert
@@ -40,7 +40,7 @@ namespace ServerPulse.EventCommunicationTests.Validators
         {
             // Arrange
             var longSlotKey = new string('x', 257);
-            var model = new AliveEvent(longSlotKey, true);
+            var model = new PulseEvent(longSlotKey, true);
             // Act
             var result = validator.TestValidate(model);
             // Assert
@@ -50,7 +50,7 @@ namespace ServerPulse.EventCommunicationTests.Validators
         public void ValidateSlotKey_SlotKeyIsValid_NoValidationError()
         {
             // Arrange
-            var model = new AliveEvent("ValidSlotKey", true);
+            var model = new PulseEvent("ValidSlotKey", true);
             // Act
             var result = validator.TestValidate(model);
             // Assert

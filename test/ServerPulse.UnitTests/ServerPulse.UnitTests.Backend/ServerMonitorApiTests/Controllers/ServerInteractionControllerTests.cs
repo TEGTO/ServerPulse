@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Moq;
-using ServerInteractionApi.Controllers;
-using ServerInteractionApi.Services;
+using ServerMonitorApi.Controllers;
+using ServerMonitorApi.Services;
 using ServerPulse.EventCommunication.Events;
 
-namespace ServerInteractionApiTests.Controllers
+namespace ServerMonitorApiTests.Controllers
 {
     [TestFixture]
     internal class ServerInteractionControllerTests
@@ -22,29 +22,29 @@ namespace ServerInteractionApiTests.Controllers
         }
 
         [Test]
-        public async Task SendAlive_SlotKeyIsValid_CallsMessageSender()
+        public async Task SendPulse_SlotKeyIsValid_CallsMessageSender()
         {
             // Arrange
             var key = "validSlotKey";
-            var aliveEvent = new AliveEvent(key, true);
+            var message = new PulseEvent(key, true);
             var cancellationToken = CancellationToken.None;
             mockSlotChecker.Setup(x => x.CheckSlotKeyAsync(key, cancellationToken)).ReturnsAsync(true);
             // Act
-            var result = await controller.SendAlive(aliveEvent, cancellationToken);
+            var result = await controller.SendPulse(message, cancellationToken);
             // Assert
-            mockMessageSender.Verify(x => x.SendAliveEventAsync(aliveEvent, cancellationToken), Times.Once);
+            mockMessageSender.Verify(x => x.SendPulseEventAsync(message, cancellationToken), Times.Once);
             Assert.IsInstanceOf<OkResult>(result);
         }
         [Test]
-        public async Task SendAlive_SlotKeyIsNotFound_ReturnsNotFound()
+        public async Task SendPulse_SlotKeyIsNotFound_ReturnsNotFound()
         {
             // Arrange
             var key = "invalidSlotKey";
-            var aliveEvent = new AliveEvent(key, true);
+            var message = new PulseEvent(key, true);
             var cancellationToken = CancellationToken.None;
             mockSlotChecker.Setup(x => x.CheckSlotKeyAsync(key, cancellationToken)).ReturnsAsync(false);
             // Act
-            var result = await controller.SendAlive(aliveEvent, cancellationToken);
+            var result = await controller.SendPulse(message, cancellationToken);
             // Assert
             Assert.IsInstanceOf<NotFoundObjectResult>(result);
             var notFoundResult = result as NotFoundObjectResult;

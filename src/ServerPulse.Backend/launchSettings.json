@@ -10,7 +10,7 @@
         "broker-1": "StartWithoutDebugging",
         "controller-1": "StartWithoutDebugging",
         "serverpulse-db": "StartWithoutDebugging",
-        "serverinteractionapi": "StartDebugging",
+        "servermonitorapi": "StartDebugging",
         "analyzerapi": "StartDebugging"
       }
     }

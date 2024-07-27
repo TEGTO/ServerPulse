@@ -2,7 +2,7 @@
 using System.Text;
 using System.Text.Json;
 
-namespace ServerInteractionApi.Services
+namespace ServerMonitorApi.Services
 {
     public class SlotKeyChecker : ISlotKeyChecker
     {

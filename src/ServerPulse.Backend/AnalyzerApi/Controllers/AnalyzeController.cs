@@ -19,14 +19,14 @@ namespace AnalyzerApi.Controllers
         }
 
         [HttpGet("{key}")]
-        public async Task<ActionResult<AnalyzedDataReponse>> GetCurrentServerStatusByKey(string key, CancellationToken cancellationToken)
+        public async Task<ActionResult<ServerStatisticsResponse>> GetCurrentServerStatusByKey(string key, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(key))
             {
                 return BadRequest("Invalid key!");
             }
-            var analyzedData = await serverAnalyzer.GetCurrentServerStatusByKeyAsync(key, cancellationToken);
-            var response = mapper.Map<AnalyzedDataReponse>(analyzedData);
+            var analyzedData = await serverAnalyzer.GetServerStatisticsByKeyAsync(key, cancellationToken);
+            var response = mapper.Map<ServerStatisticsResponse>(analyzedData);
             return Ok(response);
         }
     }

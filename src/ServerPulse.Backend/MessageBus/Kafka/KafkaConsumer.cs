@@ -1,4 +1,5 @@
 ﻿using Confluent.Kafka;
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using TestKafka.Consumer.Services;
 
@@ -82,17 +83,14 @@ namespace MessageBus.Kafka
         }
         public async Task<List<string>> ReadMessagesInDateRangeAsync(string topicName, DateTime startDate, DateTime endDate, int timeoutInMilliseconds, CancellationToken cancellationToken)
         {
-            var val = await Task.Run(() => ReadMessagesInDateRange(topicName, startDate, endDate, timeoutInMilliseconds, cancellationToken));
-            return val;
-        }
-        private List<string> ReadMessagesInDateRange(string topicName, DateTime startDate, DateTime endDate, int timeoutInMilliseconds, CancellationToken cancellationToken)
-        {
             if (startDate.ToUniversalTime() >= DateTime.UtcNow || startDate.ToUniversalTime() >= endDate.ToUniversalTime())
             {
                 throw new Exception("Invalid Start Date! Must be less than now (UTC) and End Date!");
             }
 
-            var messages = new List<string>();
+            var messages = new ConcurrentBag<string>();
+            var tasks = new List<Task>();
+
             using (var consumer = consumerFactory.CreateConsumer())
             {
                 consumer.Subscribe(topicName);
@@ -104,31 +102,68 @@ namespace MessageBus.Kafka
                 var endTimestamps = topicPartitions.Select(tp => new TopicPartitionTimestamp(tp, new Timestamp(endDate.ToUniversalTime()))).ToList();
                 var startOffsets = consumer.OffsetsForTimes(startTimestamps, TimeSpan.FromMilliseconds(timeoutInMilliseconds)).ToList();
                 var endOffsets = consumer.OffsetsForTimes(endTimestamps, TimeSpan.FromMilliseconds(timeoutInMilliseconds)).ToList();
+
                 consumer.Assign(startOffsets);
 
                 foreach (var startOffset in startOffsets)
                 {
-                    consumer.Seek(startOffset);
                     var endOffset = endOffsets.First(e => e.TopicPartition == startOffset.TopicPartition);
-                    while (!cancellationToken.IsCancellationRequested)
+
+                    tasks.Add(Task.Run(() =>
                     {
-                        var consumeResult = consumer.Consume(timeoutInMilliseconds);
-                        if (consumeResult == null)
-                            break;
-                        if (string.IsNullOrEmpty(consumeResult.Message.Value))
-                            continue;
+                        consumer.Seek(startOffset);
 
-                        if (consumeResult.Message.Timestamp.UtcDateTime >= startDate && consumeResult.Message.Timestamp.UtcDateTime <= endDate)
+                        while (!cancellationToken.IsCancellationRequested)
                         {
-                            messages.Add(consumeResult.Message.Value);
-                        }
+                            var consumeResult = consumer.Consume(timeoutInMilliseconds);
+                            if (consumeResult == null)
+                                break;
+                            if (string.IsNullOrEmpty(consumeResult.Message.Value))
+                                continue;
 
-                        if (consumeResult.Offset >= endOffset.Offset && endOffset.Offset != Offset.End)
-                            break;
-                    }
+                            if (consumeResult.Message.Timestamp.UtcDateTime >= startDate && consumeResult.Message.Timestamp.UtcDateTime <= endDate)
+                            {
+                                messages.Add(consumeResult.Message.Value);
+                            }
+
+                            if (consumeResult.Offset >= endOffset.Offset && endOffset.Offset != Offset.End)
+                                break;
+                        }
+                    }, cancellationToken));
                 }
+
+                await Task.WhenAll(tasks);
             }
-            return messages;
+
+            return messages.ToList();
+        }
+
+        public async Task<int> GetAmountTopicMessagesAsync(string topicName, int timeoutInMilliseconds, CancellationToken cancellationToken)
+        {
+            var val = await Task.Run(() => GetAmountTopicMessages(topicName, timeoutInMilliseconds, cancellationToken));
+            return val;
+        }
+        private int GetAmountTopicMessages(string topicName, int timeoutInMilliseconds, CancellationToken cancellationToken)
+        {
+            using (var consumer = consumerFactory.CreateConsumer())
+            {
+                var topicMetadata = adminClient.GetMetadata(topicName, TimeSpan.FromMilliseconds(timeoutInMilliseconds));
+                var partitionMetadatas = topicMetadata.Topics.First(x => x.Topic == topicName).Partitions;
+                var partitions = partitionMetadatas.Select(p => new TopicPartition(topicName, p.PartitionId)).ToList();
+
+                long total = 0;
+                foreach (var partition in partitions)
+                {
+                    WatermarkOffsets watermarkOffsets = consumer.QueryWatermarkOffsets(partition, TimeSpan.FromMilliseconds(timeoutInMilliseconds));
+                    total += watermarkOffsets.High - watermarkOffsets.Low;
+                }
+                return (int)total;
+            }
+        }
+        public async Task<int> GetAmountTopicMessagesInDateRangeAsync(string topicName, DateTime startDate, DateTime endDate, int timeoutInMilliseconds, CancellationToken cancellationToken)
+        {
+            var messages = await ReadMessagesInDateRangeAsync(topicName, startDate, endDate, timeoutInMilliseconds, cancellationToken);
+            return messages.Count();
         }
     }
 }

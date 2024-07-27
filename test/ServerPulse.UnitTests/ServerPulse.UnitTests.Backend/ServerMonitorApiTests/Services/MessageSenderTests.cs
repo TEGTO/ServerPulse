@@ -1,11 +1,11 @@
 ﻿using MessageBus;
 using Microsoft.Extensions.Configuration;
 using Moq;
-using ServerInteractionApi;
-using ServerInteractionApi.Services;
+using ServerMonitorApi;
+using ServerMonitorApi.Services;
 using ServerPulse.EventCommunication.Events;
 
-namespace ServerInteractionApiTests.Services
+namespace ServerMonitorApiTests.Services
 {
     [TestFixture]
     internal class MessageSenderTests
@@ -32,15 +32,15 @@ namespace ServerInteractionApiTests.Services
         }
 
         [Test]
-        public async Task SendAliveEventAsync_CreatesCorrectTopicAndMessage()
+        public async Task SendPulseEventAsync_CreatesCorrectTopicAndMessage()
         {
             // Arrange
             var key = "slot123";
             var expectedTopic = KAFKA_ALIVE_TOPIC.Replace("{id}", key);
-            var aliveEvent = new AliveEvent(key, true);
+            var aliveEvent = new PulseEvent(key, true);
             var cancellationToken = CancellationToken.None;
             // Act
-            await messageSender.SendAliveEventAsync(aliveEvent, cancellationToken);
+            await messageSender.SendPulseEventAsync(aliveEvent, cancellationToken);
             // Assert
             mockProducer.Verify(x => x.ProduceAsync(
                 expectedTopic,
@@ -50,15 +50,15 @@ namespace ServerInteractionApiTests.Services
             ), Times.Once);
         }
         [Test]
-        public async Task SendAliveEventAsync_SerializesAliveEventCorrectly()
+        public async Task SendPulseEventAsync_SerializesPulseEventCorrectly()
         {
             // Arrange
             var key = "slot123";
-            var aliveEvent = new AliveEvent(key, true);
+            var aliveEvent = new PulseEvent(key, true);
             var expectedMessage = aliveEvent.ToString();
             var cancellationToken = CancellationToken.None;
             // Act
-            await messageSender.SendAliveEventAsync(aliveEvent, cancellationToken);
+            await messageSender.SendPulseEventAsync(aliveEvent, cancellationToken);
             // Assert
             mockProducer.Verify(x => x.ProduceAsync(
                 It.IsAny<string>(),
@@ -68,14 +68,14 @@ namespace ServerInteractionApiTests.Services
             ), Times.Once);
         }
         [Test]
-        public async Task SendAliveEventAsync_UsesCorrectPartitionAmount()
+        public async Task SendPulseEventAsync_UsesCorrectPartitionAmount()
         {
             // Arrange
             var key = "slot123";
-            var aliveEvent = new AliveEvent(key, true);
+            var aliveEvent = new PulseEvent(key, true);
             var cancellationToken = CancellationToken.None;
             // Act
-            await messageSender.SendAliveEventAsync(aliveEvent, cancellationToken);
+            await messageSender.SendPulseEventAsync(aliveEvent, cancellationToken);
             // Assert
             mockProducer.Verify(x => x.ProduceAsync(
                 It.IsAny<string>(),

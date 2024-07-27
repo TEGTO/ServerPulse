@@ -1,96 +1,95 @@
-﻿using AnalyzerApi;
+﻿using AnalyzerApi.Controllers;
+using AnalyzerApi.Domain.Dtos;
+using AnalyzerApi.Domain.Models;
 using AnalyzerApi.Services;
-using Microsoft.Extensions.Configuration;
+using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Moq;
-using ServerPulse.EventCommunication.Events;
-using System.Text.Json;
-using TestKafka.Consumer.Services;
 
 namespace AnalyzerApiTests.Controllers
 {
     [TestFixture]
-    internal class MessageReceiverTests
+    internal class AnalyzeControllerTests
     {
-        private const string KAFKA_ALIVE_TOPIC = "KafkaAliveTopic_{id}";
-        private const int KAFKA_TIMEOUT_IN_MILLISECONDS = 5000;
-
-        private Mock<IMessageConsumer> mockMessageConsumer;
-        private Mock<IConfiguration> mockConfiguration;
-        private MessageReceiver messageReceiver;
+        private Mock<IMapper> mockMapper;
+        private Mock<IServerAnalyzer> mockServerAnalyzer;
+        private AnalyzeController controller;
 
         [SetUp]
-        public void Setup()
+        public void SetUp()
         {
-            mockMessageConsumer = new Mock<IMessageConsumer>();
-            mockConfiguration = new Mock<IConfiguration>();
-            mockConfiguration.SetupGet(c => c[Configuration.KAFKA_ALIVE_TOPIC]).Returns(KAFKA_ALIVE_TOPIC);
-            mockConfiguration.SetupGet(c => c[Configuration.KAFKA_TIMEOUT_IN_MILLISECONDS]).Returns(KAFKA_TIMEOUT_IN_MILLISECONDS.ToString());
-            messageReceiver = new MessageReceiver(mockMessageConsumer.Object, mockConfiguration.Object);
+            mockMapper = new Mock<IMapper>();
+            mockServerAnalyzer = new Mock<IServerAnalyzer>();
+            controller = new AnalyzeController(mockMapper.Object, mockServerAnalyzer.Object);
         }
 
         [Test]
-        public async Task ReceiveLastAliveEventByKeyAsync_ValidMessage_ReturnsDeserializedAliveEvent()
+        public async Task GetCurrentServerStatusByKey_InvalidKey_ReturnsBadRequest()
         {
             // Arrange
-            var key = "validSlotKey";
-            var topic = KAFKA_ALIVE_TOPIC.Replace("{id}", key);
-            var message = JsonSerializer.Serialize(new AliveEvent(key, true));
+            var invalidKey = string.Empty;
             var cancellationToken = CancellationToken.None;
-            mockMessageConsumer.Setup(x => x.ReadLastTopicMessageAsync(topic, KAFKA_TIMEOUT_IN_MILLISECONDS, cancellationToken)).ReturnsAsync(message);
             // Act
-            var result = await messageReceiver.ReceiveLastAliveEventByKeyAsync(key, cancellationToken);
+            var result = (await controller.GetCurrentServerStatusByKey(invalidKey, cancellationToken)).Result;
             // Assert
-            Assert.IsInstanceOf<AliveEvent>(result);
-            Assert.That(result.Key, Is.EqualTo(key));
-            Assert.That(result.IsAlive, Is.EqualTo(true));
+            Assert.IsInstanceOf<BadRequestObjectResult>(result);
+            var badRequestResult = result as BadRequestObjectResult;
+            Assert.That(badRequestResult.Value, Is.EqualTo("Invalid key!"));
         }
         [Test]
-        public async Task ReceiveLastAliveEventByKeyAsync_NoMessage_ReturnsDefaultAliveEvent()
+        public async Task GetCurrentServerStatusByKey_ValidKey_ReturnsOkWithMappedResponse()
         {
             // Arrange
-            var key = "validSlotKey";
-            var topic = KAFKA_ALIVE_TOPIC.Replace("{id}", key);
+            var validKey = "valid-key";
+            var serverStatus = new ServerStatistics { IsAlive = true };
+            var analyzedDataResponse = new ServerStatisticsResponse { IsAlive = true };
             var cancellationToken = CancellationToken.None;
-            mockMessageConsumer.Setup(x => x.ReadLastTopicMessageAsync(topic, KAFKA_TIMEOUT_IN_MILLISECONDS, cancellationToken)).ReturnsAsync((string?)null);
+            mockServerAnalyzer
+                .Setup(sa => sa.GetServerStatisticsByKeyAsync(validKey, cancellationToken))
+                .ReturnsAsync(serverStatus);
+            mockMapper
+                .Setup(m => m.Map<ServerStatisticsResponse>(serverStatus))
+                .Returns(analyzedDataResponse);
             // Act
-            var result = await messageReceiver.ReceiveLastAliveEventByKeyAsync(key, cancellationToken);
+            var result = (await controller.GetCurrentServerStatusByKey(validKey, cancellationToken)).Result;
             // Assert
-            Assert.IsInstanceOf<AliveEvent>(result);
-            Assert.That(result.Key, Is.EqualTo(key));
-            Assert.That(result.IsAlive, Is.EqualTo(false));
+            Assert.IsInstanceOf<OkObjectResult>(result);
+            var okResult = result as OkObjectResult;
+            Assert.That(okResult.Value, Is.EqualTo(analyzedDataResponse));
         }
         [Test]
-        public async Task ReceiveLastAliveEventByKeyAsync_EmptyMessage_ReturnsDefaultAliveEvent()
+        public async Task GetCurrentServerStatusByKey_ValidKey_ServerAnalyzerCalled()
         {
             // Arrange
-            var key = "validSlotKey";
-            var topic = KAFKA_ALIVE_TOPIC.Replace("{id}", key);
+            var validKey = "valid-key";
+            var serverStatus = new ServerStatistics { IsAlive = true };
             var cancellationToken = CancellationToken.None;
-            mockMessageConsumer.Setup(x => x.ReadLastTopicMessageAsync(topic, KAFKA_TIMEOUT_IN_MILLISECONDS, cancellationToken)).ReturnsAsync(string.Empty);
+            mockServerAnalyzer
+                .Setup(sa => sa.GetServerStatisticsByKeyAsync(validKey, cancellationToken))
+                .ReturnsAsync(serverStatus);
             // Act
-            var result = await messageReceiver.ReceiveLastAliveEventByKeyAsync(key, cancellationToken);
+            await controller.GetCurrentServerStatusByKey(validKey, cancellationToken);
             // Assert
-            Assert.IsInstanceOf<AliveEvent>(result);
-            Assert.That(result.Key, Is.EqualTo(key));
-            Assert.That(result.IsAlive, Is.EqualTo(false));
+            mockServerAnalyzer.Verify(sa => sa.GetServerStatisticsByKeyAsync(validKey, cancellationToken), Times.Once);
         }
         [Test]
-        public async Task ReceiveLastAliveEventByKeyAsync_ChecksCorrectTopicAndTimeout()
+        public async Task GetCurrentServerStatusByKey_ValidKey_MapperCalled()
         {
             // Arrange
-            var key = "validSlotKey";
-            var topic = KAFKA_ALIVE_TOPIC.Replace("{id}", key);
-            var message = JsonSerializer.Serialize(new AliveEvent(key, true));
+            var validKey = "valid-key";
+            var serverStatus = new ServerStatistics { IsAlive = true };
+            var analyzedDataResponse = new ServerStatisticsResponse { IsAlive = true };
             var cancellationToken = CancellationToken.None;
-            mockMessageConsumer.Setup(x => x.ReadLastTopicMessageAsync(topic, KAFKA_TIMEOUT_IN_MILLISECONDS, cancellationToken)).ReturnsAsync(message);
+            mockServerAnalyzer
+                .Setup(sa => sa.GetServerStatisticsByKeyAsync(validKey, cancellationToken))
+                .ReturnsAsync(serverStatus);
+            mockMapper
+                .Setup(m => m.Map<ServerStatisticsResponse>(serverStatus))
+                .Returns(analyzedDataResponse);
             // Act
-            await messageReceiver.ReceiveLastAliveEventByKeyAsync(key, cancellationToken);
+            await controller.GetCurrentServerStatusByKey(validKey, cancellationToken);
             // Assert
-            mockMessageConsumer.Verify(x => x.ReadLastTopicMessageAsync(
-                topic,
-                KAFKA_TIMEOUT_IN_MILLISECONDS,
-                cancellationToken
-            ), Times.Once);
+            mockMapper.Verify(m => m.Map<ServerStatisticsResponse>(serverStatus), Times.Once);
         }
     }
 }

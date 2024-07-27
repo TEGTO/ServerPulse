@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\src\ServerPulse.Backend\ServerInteractionApi\ServerInteractionApi.csproj" />
+    <ProjectReference Include="..\..\..\..\src\ServerPulse.Backend\ServerMonitorApi\ServerMonitorApi.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -4,6 +4,6 @@ namespace AnalyzerApi.Services
 {
     public interface IServerAnalyzer
     {
-        public Task<ServerStatus> GetCurrentServerStatusByKeyAsync(string key, CancellationToken cancellationToken);
+        public Task<ServerStatistics> GetServerStatisticsByKeyAsync(string key, CancellationToken cancellationToken);
     }
 }

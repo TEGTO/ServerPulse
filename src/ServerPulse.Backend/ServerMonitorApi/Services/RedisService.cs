@@ -1,6 +1,6 @@
 ﻿using StackExchange.Redis;
 
-namespace ServerInteractionApi.Services
+namespace ServerMonitorApi.Services
 {
     public class RedisService : IRedisService
     {

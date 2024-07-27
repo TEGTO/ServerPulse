@@ -3,9 +3,9 @@ using ServerPulse.EventCommunication.Events;
 
 namespace EventCommunication.Validators
 {
-    public class AliveEventValidator : AbstractValidator<AliveEvent>
+    public class PulseEventValidator : AbstractValidator<PulseEvent>
     {
-        public AliveEventValidator()
+        public PulseEventValidator()
         {
             RuleFor(x => x.Key).NotNull().NotEmpty().MaximumLength(256);
         }

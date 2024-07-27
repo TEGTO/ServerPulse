@@ -9,19 +9,19 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["ServerInteractionApi/ServerInteractionApi.csproj", "ServerInteractionApi/"]
+COPY ["ServerMonitorApi/ServerMonitorApi.csproj", "ServerMonitorApi/"]
 COPY ["MessageBus/MessageBus.csproj", "MessageBus/"]
 COPY ["Shared/Shared.csproj", "Shared/"]
-RUN dotnet restore "./ServerInteractionApi/ServerInteractionApi.csproj"
+RUN dotnet restore "./ServerMonitorApi/ServerMonitorApi.csproj"
 COPY . .
-WORKDIR "/src/ServerInteractionApi"
-RUN dotnet build "./ServerInteractionApi.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/ServerMonitorApi"
+RUN dotnet build "./ServerMonitorApi.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./ServerInteractionApi.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./ServerMonitorApi.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "ServerInteractionApi.dll"]
+ENTRYPOINT ["dotnet", "ServerMonitorApi.dll"]

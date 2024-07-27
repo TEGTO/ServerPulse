@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using ServerPulse.EventCommunication.Events;
 using System.Collections.Concurrent;
 using System.Text.Json;
@@ -12,13 +13,15 @@ namespace ServerPulse.Client.Services
         private readonly int maxEventsPerSending;
         private readonly double sendingInterval;
         private readonly ConcurrentQueue<LoadEvent> loadEvents = new ConcurrentQueue<LoadEvent>();
+        private readonly ILogger<ServerLoadSender> logger;
 
-        public ServerLoadSender(IMessageSender eventSender, Configuration configuration)
+        public ServerLoadSender(IMessageSender eventSender, Configuration configuration, ILogger<ServerLoadSender> logger)
         {
             this.messageSender = eventSender;
-            sendingUrl = configuration.EventController + $"/serverinteraction/load";
-            maxEventsPerSending = configuration.MaxEventSendingAmount;
-            sendingInterval = configuration.EventSendingInterval;
+            this.sendingUrl = configuration.EventController + $"/serverinteraction/load";
+            this.maxEventsPerSending = configuration.MaxEventSendingAmount;
+            this.sendingInterval = configuration.EventSendingInterval;
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public void SendEvent(LoadEvent loadEvent)
@@ -30,10 +33,17 @@ namespace ServerPulse.Client.Services
             using PeriodicTimer timer = new(TimeSpan.FromSeconds(sendingInterval));
             while (!stoppingToken.IsCancellationRequested && await timer.WaitForNextTickAsync(stoppingToken))
             {
-                if (!loadEvents.IsEmpty)
+                try
                 {
-                    var json = GetEventsJson();
-                    await messageSender.SendJsonAsync(json, sendingUrl, stoppingToken);
+                    if (!loadEvents.IsEmpty)
+                    {
+                        var json = GetEventsJson();
+                        await messageSender.SendJsonAsync(json, sendingUrl, stoppingToken);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "An error occurred while sending load events.");
                 }
             }
         }

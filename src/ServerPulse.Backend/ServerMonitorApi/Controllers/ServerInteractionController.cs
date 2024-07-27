@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ServerInteractionApi.Services;
+using ServerMonitorApi.Services;
 using ServerPulse.EventCommunication.Events;
 
-namespace ServerInteractionApi.Controllers
+namespace ServerMonitorApi.Controllers
 {
     [Route("serverinteraction")]
     [ApiController]
@@ -17,15 +17,15 @@ namespace ServerInteractionApi.Controllers
             this.serverSlotChecker = serverSlotChecker;
         }
 
-        [HttpPost("alive")]
-        public async Task<IActionResult> SendAlive(AliveEvent aliveEvent, CancellationToken cancellationToken)
+        [HttpPost("pulse")]
+        public async Task<IActionResult> SendPulse(PulseEvent pulseEvent, CancellationToken cancellationToken)
         {
-            if (await serverSlotChecker.CheckSlotKeyAsync(aliveEvent.Key, cancellationToken))
+            if (await serverSlotChecker.CheckSlotKeyAsync(pulseEvent.Key, cancellationToken))
             {
-                await messageSender.SendAliveEventAsync(aliveEvent, cancellationToken);
+                await messageSender.SendPulseEventAsync(pulseEvent, cancellationToken);
                 return Ok();
             }
-            return NotFound($"Server slot with key '{aliveEvent.Key}' is not found!");
+            return NotFound($"Server slot with key '{pulseEvent.Key}' is not found!");
         }
         [HttpPost("configuration")]
         public async Task<IActionResult> SendConfiguration(ConfigurationEvent configurationEvent, CancellationToken cancellationToken)

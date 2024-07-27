@@ -1,3 +1,4 @@
+using ClientUseCase.Middlewares;
 using ServerPulse.Client;
 using ServerPulse.Client.Middlewares;
 
@@ -7,18 +8,20 @@ builder.Services.AddControllers();
 
 var configuration = new Configuration
 {
-    EventController = "https://localhost:7129",
-    Key = "13c3bcba-cd71-4736-9aea-774f89fe1ed2",
+    EventController = builder.Configuration["ServerPulse:EventController"],
+    Key = builder.Configuration["ServerPulse:Key"],
 };
 builder.Services.AddServerPulseClient(configuration);
 
 var app = builder.Build();
 
+app.UseExceptionMiddleware();
 app.UseLoadMonitor();
 
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
 
 app.MapControllers();
 

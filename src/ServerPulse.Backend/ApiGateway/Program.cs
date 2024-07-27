@@ -41,6 +41,7 @@ Utility.MergeJsonFiles(
     "ocelot.analyzer.json",
     "ocelot.authentication.json",
     "ocelot.interaction.json",
+    "ocelot.statisticscontrol.json",
     "ocelot.slot.json"
     ], mergedPath);
 builder.Configuration

@@ -8,7 +8,7 @@ namespace AuthenticationApi
     {
         public AutoMapperProfile()
         {
-            CreateMap<ServerStatus, AnalyzedDataReponse>();
+            CreateMap<ServerStatistics, ServerStatisticsResponse>();
         }
     }
 }

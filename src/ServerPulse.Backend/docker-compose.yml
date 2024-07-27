@@ -19,12 +19,12 @@ services:
     networks:
     - backend-net
 
-  serverinteractionapi:
-    container_name: serverpulse-serverinteraction-api
-    image: ${DOCKER_REGISTRY-}serverinteractionapi
+  servermonitorapi:
+    container_name: serverpulse-servermonitor-api
+    image: ${DOCKER_REGISTRY-}servermonitor
     build:
       context: .
-      dockerfile: ServerInteractionApi/Dockerfile
+      dockerfile: ServerMonitorApi/Dockerfile
     networks:
     - backend-net
   
@@ -50,7 +50,7 @@ services:
     depends_on:
     - authenticationapi
     - serverslotapi
-    - serverinteractionapi
+    - servermonitorapi
     - analyzerapi
 
 networks:

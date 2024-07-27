@@ -1,8 +1,8 @@
 ﻿using Moq;
-using ServerInteractionApi.Services;
+using ServerMonitorApi.Services;
 using StackExchange.Redis;
 
-namespace ServerInteractionApiTests.Services
+namespace ServerMonitorApiTests.Services
 {
     [TestFixture]
     internal class RedisServiceTests

@@ -21,14 +21,14 @@ namespace AnalyzerApiTests
         public void ServerStatusToAnalyzedDataReponse_MappedCorrectly()
         {
             // Arrange
-            var serverStatus = new ServerStatus
+            var serverStatus = new ServerStatistics
             {
-                IsServerAlive = true
+                IsAlive = true
             };
             // Act
-            var result = mapper.Map<AnalyzedDataReponse>(serverStatus);
+            var result = mapper.Map<ServerStatisticsResponse>(serverStatus);
             // Assert
-            Assert.That(result.IsServerAlive, Is.EqualTo(serverStatus.IsServerAlive));
+            Assert.That(result.IsAlive, Is.EqualTo(serverStatus.IsAlive));
         }
     }
 }

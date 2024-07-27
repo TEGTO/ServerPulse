@@ -1,4 +1,4 @@
-﻿namespace ServerInteractionApi
+﻿namespace ServerMonitorApi
 {
     public class Configuration
     {

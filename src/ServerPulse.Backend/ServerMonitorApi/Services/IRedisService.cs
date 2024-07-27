@@ -1,5 +1,5 @@
 ﻿
-namespace ServerInteractionApi.Services
+namespace ServerMonitorApi.Services
 {
     public interface IRedisService
     {

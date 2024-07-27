@@ -1,14 +1,14 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Moq;
 using Moq.Protected;
-using ServerInteractionApi;
-using ServerInteractionApi.Services;
+using ServerMonitorApi;
+using ServerMonitorApi.Services;
 using Shared.Dtos.ServerSlot;
 using System.Net;
 using System.Text;
 using System.Text.Json;
 
-namespace ServerInteractionApiTests.Services
+namespace ServerMonitorApiTests.Services
 {
     [TestFixture]
     internal class SlotKeyCheckerTests

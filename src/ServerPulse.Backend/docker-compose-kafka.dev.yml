@@ -10,7 +10,7 @@ services:
 
   kafdrop:
     image: obsidiandynamics/kafdrop:latest
-    container_name: kafdrop
+    container_name: serverpulse-kafdrop
     ports:
       - "9000:9000"
     environment:

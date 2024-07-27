@@ -1,7 +1,7 @@
 ﻿using MessageBus;
 using ServerPulse.EventCommunication.Events;
 
-namespace ServerInteractionApi.Services
+namespace ServerMonitorApi.Services
 {
     public class MessageSender : IMessageSender
     {
@@ -20,27 +20,27 @@ namespace ServerInteractionApi.Services
             loadTopic = configuration[Configuration.KAFKA_LOAD_TOPIC]!;
         }
 
-        public async Task SendAliveEventAsync(AliveEvent aliveEvent, CancellationToken cancellationToken)
+        public async Task SendPulseEventAsync(PulseEvent ev, CancellationToken cancellationToken)
         {
-            string topic = aliveTopic.Replace("{id}", aliveEvent.Key);
-            await SendEvent(aliveEvent, topic, cancellationToken);
+            string topic = aliveTopic.Replace("{id}", ev.Key);
+            await SendEvent(ev, topic, cancellationToken);
         }
-        public async Task SendConfigurationEventAsync(ConfigurationEvent configurationEvent, CancellationToken cancellationToken)
+        public async Task SendConfigurationEventAsync(ConfigurationEvent ev, CancellationToken cancellationToken)
         {
-            string topic = configurationTopic.Replace("{id}", configurationEvent.Key);
-            await SendEvent(configurationEvent, topic, cancellationToken);
+            string topic = configurationTopic.Replace("{id}", ev.Key);
+            await SendEvent(ev, topic, cancellationToken);
         }
-        public async Task SendLoadEventsAsync(LoadEvent[] loadEvents, CancellationToken cancellationToken)
+        public async Task SendLoadEventsAsync(LoadEvent[] events, CancellationToken cancellationToken)
         {
-            await Parallel.ForEachAsync(loadEvents, async (loadEvent, ct) =>
+            await Parallel.ForEachAsync(events, async (loadEvent, ct) =>
             {
                 string topic = loadTopic.Replace("{id}", loadEvent.Key);
                 await SendEvent(loadEvent, topic, ct);
             });
         }
-        private async Task SendEvent(BaseEvent @event, string topic, CancellationToken cancellationToken)
+        private async Task SendEvent(BaseEvent ev, string topic, CancellationToken cancellationToken)
         {
-            var message = @event.ToString();
+            var message = ev.ToString();
             await producer.ProduceAsync(topic, message, partitionsAmount, cancellationToken);
         }
     }

@@ -19,59 +19,59 @@ namespace AnalyzerApiTests.Services
         }
 
         [Test]
-        public async Task GetCurrentServerStatusByKeyAsync_AliveEventIsTrue_ReturnsServerStatusWithAliveTrue()
+        public async Task GetCurrentServerStatusByKeyAsync_PulseEventIsTrue_ReturnsServerStatusWithAliveTrue()
         {
             // Arrange
             var key = "validSlotKey";
-            var aliveEvent = new AliveEvent(key, true);
+            var aliveEvent = new PulseEvent(key, true);
             var cancellationToken = CancellationToken.None;
-            mockMessageReceiver.Setup(x => x.ReceiveLastAliveEventByKeyAsync(key, cancellationToken)).ReturnsAsync(aliveEvent);
+            mockMessageReceiver.Setup(x => x.ReceiveLastPulseEventByKeyAsync(key, cancellationToken)).ReturnsAsync(aliveEvent);
             // Act
-            var result = await serverAnalyzer.GetCurrentServerStatusByKeyAsync(key, cancellationToken);
+            var result = await serverAnalyzer.GetServerStatisticsByKeyAsync(key, cancellationToken);
             // Assert
-            Assert.IsInstanceOf<ServerStatus>(result);
-            Assert.IsTrue(result.IsServerAlive);
+            Assert.IsInstanceOf<ServerStatistics>(result);
+            Assert.IsTrue(result.IsAlive);
         }
         [Test]
-        public async Task GetCurrentServerStatusByKeyAsync_AliveEventIsFalse_ReturnsServerStatusWithAliveFalse()
+        public async Task GetCurrentServerStatusByKeyAsync_PulseEventIsFalse_ReturnsServerStatusWithAliveFalse()
         {
             // Arrange
             var key = "validSlotKey";
-            var aliveEvent = new AliveEvent(key, false);
+            var aliveEvent = new PulseEvent(key, false);
             var cancellationToken = CancellationToken.None;
-            mockMessageReceiver.Setup(x => x.ReceiveLastAliveEventByKeyAsync(key, cancellationToken)).ReturnsAsync(aliveEvent);
+            mockMessageReceiver.Setup(x => x.ReceiveLastPulseEventByKeyAsync(key, cancellationToken)).ReturnsAsync(aliveEvent);
             // Act
-            var result = await serverAnalyzer.GetCurrentServerStatusByKeyAsync(key, cancellationToken);
+            var result = await serverAnalyzer.GetServerStatisticsByKeyAsync(key, cancellationToken);
             // Assert
-            Assert.IsInstanceOf<ServerStatus>(result);
-            Assert.IsFalse(result.IsServerAlive);
+            Assert.IsInstanceOf<ServerStatistics>(result);
+            Assert.IsFalse(result.IsAlive);
         }
         [Test]
         public async Task GetCurrentServerStatusByKeyAsync_EmptyKey_ReturnsServerStatusWithDefaultValue()
         {
             // Arrange
             var key = string.Empty;
-            var aliveEvent = new AliveEvent(key, false);
+            var aliveEvent = new PulseEvent(key, false);
             var cancellationToken = CancellationToken.None;
-            mockMessageReceiver.Setup(x => x.ReceiveLastAliveEventByKeyAsync(key, cancellationToken)).ReturnsAsync(aliveEvent);
+            mockMessageReceiver.Setup(x => x.ReceiveLastPulseEventByKeyAsync(key, cancellationToken)).ReturnsAsync(aliveEvent);
             // Act
-            var result = await serverAnalyzer.GetCurrentServerStatusByKeyAsync(key, cancellationToken);
+            var result = await serverAnalyzer.GetServerStatisticsByKeyAsync(key, cancellationToken);
             // Assert
-            Assert.IsInstanceOf<ServerStatus>(result);
-            Assert.IsFalse(result.IsServerAlive);
+            Assert.IsInstanceOf<ServerStatistics>(result);
+            Assert.IsFalse(result.IsAlive);
         }
         [Test]
         public async Task GetCurrentServerStatusByKeyAsync_ValidKey_CallsMessageReceiver()
         {
             // Arrange
             var key = "validSlotKey";
-            var aliveEvent = new AliveEvent(key, true);
+            var aliveEvent = new PulseEvent(key, true);
             var cancellationToken = CancellationToken.None;
-            mockMessageReceiver.Setup(x => x.ReceiveLastAliveEventByKeyAsync(key, cancellationToken)).ReturnsAsync(aliveEvent);
+            mockMessageReceiver.Setup(x => x.ReceiveLastPulseEventByKeyAsync(key, cancellationToken)).ReturnsAsync(aliveEvent);
             // Act
-            await serverAnalyzer.GetCurrentServerStatusByKeyAsync(key, cancellationToken);
+            await serverAnalyzer.GetServerStatisticsByKeyAsync(key, cancellationToken);
             // Assert
-            mockMessageReceiver.Verify(x => x.ReceiveLastAliveEventByKeyAsync(
+            mockMessageReceiver.Verify(x => x.ReceiveLastPulseEventByKeyAsync(
                 key,
                 cancellationToken
             ), Times.Once);
