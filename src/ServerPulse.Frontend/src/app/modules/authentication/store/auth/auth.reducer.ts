@@ -76,12 +76,12 @@ export const authReducer = createReducer(
         ...initialAuthState,
     })),
 
-    on(refreshAccessTokenSuccess, (state, { authToken: accessToken }) => ({
+    on(refreshAccessTokenSuccess, (state, { authToken: authToken }) => ({
         ...state,
         isAuthenticated: true,
-        accessToken: accessToken.accessToken,
-        refreshToken: accessToken.refreshToken,
-        refreshTokenExpiryDate: accessToken.refreshTokenExpiryDate,
+        accessToken: authToken.accessToken,
+        refreshToken: authToken.refreshToken,
+        refreshTokenExpiryDate: authToken.refreshTokenExpiryDate,
         error: null
     })),
     on(refreshAccessTokenFailure, (state, { error: error }) => ({

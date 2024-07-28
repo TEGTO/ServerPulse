@@ -30,7 +30,7 @@ namespace AnalyzerApiTests.Controllers
             var invalidKey = string.Empty;
             var cancellationToken = CancellationToken.None;
             // Act
-            var result = (await controller.GetCurrentServerStatusByKey(invalidKey, cancellationToken)).Result;
+            var result = (await controller.GetCurrentServerStatisticsByKey(invalidKey, cancellationToken)).Result;
             // Assert
             Assert.IsInstanceOf<BadRequestObjectResult>(result);
             var badRequestResult = result as BadRequestObjectResult;
@@ -51,7 +51,7 @@ namespace AnalyzerApiTests.Controllers
                 .Setup(m => m.Map<ServerStatisticsResponse>(serverStatus))
                 .Returns(analyzedDataResponse);
             // Act
-            var result = (await controller.GetCurrentServerStatusByKey(validKey, cancellationToken)).Result;
+            var result = (await controller.GetCurrentServerStatisticsByKey(validKey, cancellationToken)).Result;
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(result);
             var okResult = result as OkObjectResult;
@@ -68,7 +68,7 @@ namespace AnalyzerApiTests.Controllers
                 .Setup(sa => sa.GetServerStatisticsByKeyAsync(validKey, cancellationToken))
                 .ReturnsAsync(serverStatus);
             // Act
-            await controller.GetCurrentServerStatusByKey(validKey, cancellationToken);
+            await controller.GetCurrentServerStatisticsByKey(validKey, cancellationToken);
             // Assert
             mockServerAnalyzer.Verify(sa => sa.GetServerStatisticsByKeyAsync(validKey, cancellationToken), Times.Once);
         }
@@ -87,7 +87,7 @@ namespace AnalyzerApiTests.Controllers
                 .Setup(m => m.Map<ServerStatisticsResponse>(serverStatus))
                 .Returns(analyzedDataResponse);
             // Act
-            await controller.GetCurrentServerStatusByKey(validKey, cancellationToken);
+            await controller.GetCurrentServerStatisticsByKey(validKey, cancellationToken);
             // Assert
             mockMapper.Verify(m => m.Map<ServerStatisticsResponse>(serverStatus), Times.Once);
         }

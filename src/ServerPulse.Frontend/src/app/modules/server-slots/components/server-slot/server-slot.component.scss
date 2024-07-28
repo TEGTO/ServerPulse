@@ -51,9 +51,9 @@
                     animation: glow 1.5s infinite alternate;
                 }
 
-                .server-status__indicator.orange {
-                    --color: orange;
-                    @include indicator-color(orange);
+                .server-status__indicator.red {
+                    --color: red;
+                    @include indicator-color(red);
                     animation: glow 1.5s infinite alternate;
                 }
 
@@ -103,7 +103,7 @@
         gap: 10px;
         padding: 10px;
         width: 100%;
-        height: 350px;
+        height: 430px;
     }
 }
 

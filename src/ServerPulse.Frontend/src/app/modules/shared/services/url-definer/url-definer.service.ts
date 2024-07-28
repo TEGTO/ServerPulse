@@ -11,4 +11,7 @@ export class URLDefiner {
   combineWithAuthApiUrl(subpath: string): string {
     return environment.api + "/auth" + subpath;
   }
+  combineWithStatisticsApiUrl(subpath: string): string {
+    return environment.api + "/analyze" + subpath;
+  }
 }

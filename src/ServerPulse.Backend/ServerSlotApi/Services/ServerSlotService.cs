@@ -83,7 +83,10 @@ namespace ServerSlotApi.Services
             using (var dbContext = await CreateDbContextAsync(cancellationToken))
             {
                 var serverSlot = await dbContext.ServerSlots.FirstOrDefaultAsync(x => x.Id == id && x.UserEmail == email, cancellationToken);
-                dbContext.ServerSlots.Remove(serverSlot);
+                if (serverSlot != null)
+                {
+                    dbContext.ServerSlots.Remove(serverSlot);
+                }
                 await dbContext.SaveChangesAsync(cancellationToken);
             }
         }

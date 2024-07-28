@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Inject, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_SNACK_BAR_DATA, MatSnackBarAction, MatSnackBarActions, MatSnackBarLabel, MatSnackBarRef } from '@angular/material/snack-bar';
 
@@ -8,7 +8,8 @@ import { MAT_SNACK_BAR_DATA, MatSnackBarAction, MatSnackBarActions, MatSnackBarL
   standalone: true,
   imports: [MatButtonModule, MatSnackBarLabel, MatSnackBarActions, MatSnackBarAction, CommonModule],
   templateUrl: './error-annotated.component.html',
-  styleUrl: './error-annotated.component.scss'
+  styleUrl: './error-annotated.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ErrorAnnotatedComponent {
   snackBarRef = inject(MatSnackBarRef);

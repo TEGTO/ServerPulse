@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
 import { catchError, map, mergeMap, of } from "rxjs";
 import { getAuthData, getAuthDataFailure, getAuthDataSuccess, logOutUser, logOutUserSuccess, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerFailure, registerSuccess, registerUser, signInUser, signInUserFailure, signInUserSuccess, updateUserData, updateUserDataFailure, updateUserDataSuccess } from "../..";
-import { AuthData, AuthenticationApiService, LocalStorageService, UserData } from "../../../shared";
+import { AuthData, AuthenticationApiService, getAuthDataFromAuthToken, getUserFromAuthResponse, getUserFromUpdateRequest, LocalStorageService, UserData } from "../../../shared";
 
 //Registration
 @Injectable()
@@ -42,17 +42,8 @@ export class SignInEffects {
             mergeMap((action) =>
                 this.apiService.loginUser(action.authRequest).pipe(
                     map((response) => {
-                        let authData: AuthData = {
-                            isAuthenticated: true,
-                            accessToken: response.authToken.accessToken,
-                            refreshToken: response.authToken.refreshToken,
-                            refreshTokenExpiryDate: response.authToken.refreshTokenExpiryDate
-                        };
-                        let userData: UserData =
-                        {
-                            userName: response.userName,
-                            email: response.email,
-                        }
+                        let authData: AuthData = getAuthDataFromAuthToken(response.authToken);
+                        let userData: UserData = getUserFromAuthResponse(response);
                         this.localStorage.setItem(this.storageAuthDataKey, JSON.stringify(authData));
                         this.localStorage.setItem(this.storageUserDataKey, JSON.stringify(userData));
                         return signInUserSuccess({ authData: authData, userData: userData });
@@ -83,14 +74,8 @@ export class SignInEffects {
         this.actions$.pipe(
             ofType(logOutUser),
             mergeMap(() => {
-                let json = this.localStorage.getItem(this.storageAuthDataKey);
-                if (json !== null) {
-                    this.localStorage.removeItem(this.storageAuthDataKey);
-                }
-                json = this.localStorage.getItem(this.storageUserDataKey);
-                if (json !== null) {
-                    this.localStorage.removeItem(this.storageUserDataKey);
-                }
+                this.localStorage.removeItem(this.storageAuthDataKey);
+                this.localStorage.removeItem(this.storageUserDataKey);
                 return of(logOutUserSuccess());
             })
         )
@@ -101,12 +86,8 @@ export class SignInEffects {
             mergeMap((action) =>
                 this.apiService.refreshToken(action.authToken).pipe(
                     map((response) => {
-                        let json = this.localStorage.getItem(this.storageAuthDataKey);
-                        if (json !== null) {
-                            let authData = JSON.parse(json) as AuthData;
-                            authData.accessToken = response.accessToken;
-                            this.localStorage.setItem(this.storageAuthDataKey, JSON.stringify(authData));
-                        }
+                        let authData: AuthData = getAuthDataFromAuthToken(response);
+                        this.localStorage.setItem(this.storageAuthDataKey, JSON.stringify(authData));
                         return refreshAccessTokenSuccess({ authToken: response });
                     }),
                     catchError(error => {
@@ -123,13 +104,7 @@ export class SignInEffects {
             mergeMap((action) =>
                 this.apiService.updateUser(action.updateRequest).pipe(
                     map(() => {
-                        let userData: UserData =
-                        {
-                            userName: action.updateRequest.userName,
-                            email: action.updateRequest.newEmail
-                                ? action.updateRequest.newEmail
-                                : action.updateRequest.oldEmail
-                        };
+                        let userData: UserData = getUserFromUpdateRequest(action.updateRequest);
                         this.localStorage.setItem(this.storageUserDataKey, JSON.stringify(userData));
                         return updateUserDataSuccess({ userData: userData });
                     }),

@@ -10,7 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { RouterModule, Routes } from '@angular/router';
 import { provideEffects } from '@ngrx/effects';
 import { provideState, provideStore } from '@ngrx/store';
-import { ServerSlotComponent, ServerSlotControllerService, ServerSlotDeleteConfirmComponent, ServerSlotDialogManager, ServerSlotDialogManagerService, ServerSlotEffects, ServerSlotInfoComponent, serverSlotReducer, ServerSlotService, SlotBoardComponent } from '.';
+import { ServerSlotComponent, ServerSlotControllerService, ServerSlotDeleteConfirmComponent, ServerSlotDialogManager, ServerSlotDialogManagerService, ServerSlotEffects, ServerSlotInfoComponent, serverSlotReducer, ServerSlotService, ServerStatisticsControllerService, ServerStatisticsService, SlotBoardComponent } from '.';
 import { AnalyticsModule } from '../analytics/analytics.module';
 
 const routes: Routes = [
@@ -45,6 +45,7 @@ const routes: Routes = [
   providers: [
     { provide: ServerSlotDialogManager, useClass: ServerSlotDialogManagerService },
     { provide: ServerSlotService, useClass: ServerSlotControllerService },
+    { provide: ServerStatisticsService, useClass: ServerStatisticsControllerService },
     provideStore(),
     provideState({ name: "serverslot", reducer: serverSlotReducer }),
     provideEffects(ServerSlotEffects),

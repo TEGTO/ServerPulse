@@ -30,7 +30,11 @@
 
         <div class="header__center-group">
             <div class="center-group__server-status">
-                <span class="server-status__indicator grey"></span>
+                <span [ngClass]="{
+                  'green': serverStatus === 'green',
+                  'red': serverStatus === 'red',
+                  'grey': serverStatus === 'grey'
+                }" class="server-status__indicator"></span>
             </div>
             <div class="center-group__name">
                 <input #nameInput [ngStyle]="{'width': inputWidth + 'px'}" [(ngModel)]="inputValue" class="name__input"

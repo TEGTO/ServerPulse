@@ -1,17 +1,19 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { AuthenticationDialogManager, AuthenticationService } from '../../../authentication';
 
 @Component({
   selector: 'app-main-view',
   templateUrl: './main-view.component.html',
-  styleUrl: './main-view.component.scss'
+  styleUrl: './main-view.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MainViewComponent implements OnInit {
   isAuthenticated: boolean = false;
 
   constructor(
     private readonly authService: AuthenticationService,
-    private readonly authDialogManager: AuthenticationDialogManager
+    private readonly authDialogManager: AuthenticationDialogManager,
+    private readonly cdr: ChangeDetectorRef
   ) { }
 
   openLoginMenu() {
@@ -21,6 +23,7 @@ export class MainViewComponent implements OnInit {
   ngOnInit(): void {
     this.authService.getAuthData().subscribe(data => {
       this.isAuthenticated = data.isAuthenticated;
+      this.cdr.detectChanges();
     })
   }
 }

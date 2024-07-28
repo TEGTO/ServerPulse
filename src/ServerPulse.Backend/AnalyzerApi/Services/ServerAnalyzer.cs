@@ -37,6 +37,7 @@ namespace AnalyzerApi.Services
             ServerStatistics statistics = new ServerStatistics
             {
                 IsAlive = isAlive,
+                DataExists = configurationEvent != null,
                 ServerLastStartDateTime = configurationEvent?.CreationDate,
                 ServerUptime = uptime,
                 LastServerUptime = lastUptime,

@@ -19,7 +19,7 @@ namespace AnalyzerApi.Controllers
         }
 
         [HttpGet("{key}")]
-        public async Task<ActionResult<ServerStatisticsResponse>> GetCurrentServerStatusByKey(string key, CancellationToken cancellationToken)
+        public async Task<ActionResult<ServerStatisticsResponse>> GetCurrentServerStatisticsByKey(string key, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(key))
             {
