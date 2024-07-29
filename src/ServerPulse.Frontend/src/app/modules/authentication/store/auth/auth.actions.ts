@@ -51,7 +51,7 @@ export const refreshAccessToken = createAction(
 );
 export const refreshAccessTokenSuccess = createAction(
     '[Auth] Refresh Access Token Success',
-    props<{ authToken: AuthToken }>()
+    props<{ authData: AuthToken }>()
 );
 export const refreshAccessTokenFailure = createAction(
     '[Auth] Refresh Access Token Failure',

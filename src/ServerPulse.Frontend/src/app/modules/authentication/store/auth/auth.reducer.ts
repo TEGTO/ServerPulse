@@ -1,5 +1,5 @@
 import { createReducer, on } from "@ngrx/store";
-import { getAuthDataFailure, getAuthDataSuccess, logOutUserSuccess, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerFailure, registerSuccess, registerUser, signInUser, signInUserFailure, signInUserSuccess, updateUserData, updateUserDataFailure, updateUserDataSuccess } from "../..";
+import { getAuthDataFailure, getAuthDataSuccess, logOutUserSuccess, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerFailure, registerSuccess, registerUser, signInUser, signInUserFailure, signInUserSuccess, updateUserData, updateUserDataFailure, updateUserDataSuccess } from "../..";
 
 //Registration
 export interface RegistrationState {
@@ -32,6 +32,7 @@ export interface AuthState {
     accessToken: string,
     refreshToken: string,
     refreshTokenExpiryDate: Date,
+    isRefreshSuccessful: boolean,
     error: any
 }
 const initialAuthState: AuthState = {
@@ -39,6 +40,7 @@ const initialAuthState: AuthState = {
     accessToken: "",
     refreshToken: "",
     refreshTokenExpiryDate: new Date(),
+    isRefreshSuccessful: false,
     error: null
 };
 
@@ -76,12 +78,18 @@ export const authReducer = createReducer(
         ...initialAuthState,
     })),
 
-    on(refreshAccessTokenSuccess, (state, { authToken: authToken }) => ({
+    on(refreshAccessToken, (state) => ({
+        ...state,
+        isRefreshSuccessful: false,
+        error: null
+    })),
+    on(refreshAccessTokenSuccess, (state, { authData: authToken }) => ({
         ...state,
         isAuthenticated: true,
         accessToken: authToken.accessToken,
         refreshToken: authToken.refreshToken,
         refreshTokenExpiryDate: authToken.refreshTokenExpiryDate,
+        isRefreshSuccessful: true,
         error: null
     })),
     on(refreshAccessTokenFailure, (state, { error: error }) => ({

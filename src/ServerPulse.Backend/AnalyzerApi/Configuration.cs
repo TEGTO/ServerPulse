@@ -9,7 +9,6 @@
         public static string KAFKA_ALIVE_TOPIC { get; } = "Kafka:AliveTopic";
         public static string KAFKA_LOAD_TOPIC { get; } = "Kafka:LoadTopic";
         public static string KAFKA_CONFIGURATION_TOPIC { get; } = "Kafka:ConfigurationTopic";
-        public static string CURRENT_LOAD_OFFSET_IN_MILLISECONDS { get; } = "LoadOffsetInMilliseconds";
         public static string PULSE_EVENT_INTERVAL_IN_MILLISECONDS { get; } = "PulseEventIntervalInMilliseconds";
     }
 }

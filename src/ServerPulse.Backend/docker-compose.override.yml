@@ -58,7 +58,6 @@ services:
       - Kafka__AliveTopic=${Kafka__AliveTopic}
       - Kafka__ConfigurationTopic=${Kafka__ConfigurationTopic}
       - Kafka__LoadTopic=${Kafka__LoadTopic}
-      - LoadOffsetInMilliseconds=${LoadOffsetInMilliseconds}
       - PulseEventIntervalInMilliseconds=${PulseEventIntervalInMilliseconds}
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro

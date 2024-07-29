@@ -126,9 +126,9 @@ describe('Authentication Actions', () => {
                     refreshToken: "refreshToken",
                     refreshTokenExpiryDate: new Date()
                 }
-                const action = refreshAccessTokenSuccess({ authToken: accessToken });
+                const action = refreshAccessTokenSuccess({ authData: accessToken });
                 expect(action.type).toBe('[Auth] Refresh Access Token Success');
-                expect(action.authToken).toBe(accessToken);
+                expect(action.authData).toBe(accessToken);
             });
             it('should create refreshAccessTokenFailure action', () => {
                 const action = refreshAccessTokenFailure({ error });

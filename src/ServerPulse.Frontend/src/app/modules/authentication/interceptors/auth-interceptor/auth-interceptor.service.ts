@@ -1,7 +1,7 @@
 import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { jwtDecode, JwtPayload } from 'jwt-decode';
-import { catchError, Observable, switchMap, throwError } from 'rxjs';
+import { BehaviorSubject, filter, Observable, switchMap, take, throwError } from 'rxjs';
 import { AuthenticationService } from '../..';
 import { AuthData, AuthToken } from '../../../shared';
 
@@ -9,12 +9,10 @@ import { AuthData, AuthToken } from '../../../shared';
   providedIn: 'root'
 })
 export class AuthInterceptor implements HttpInterceptor {
-
-  private static isRefreshingToken = false;
-  private readonly refreshTokenCheckInFutureInMinutes: number = 0;
-
-  private authToken!: AuthToken;
+  private authToken: AuthToken | null = null;
   private decodedToken: JwtPayload | null = null;
+  private isRefreshing = false;
+  private refreshTokenSubject: BehaviorSubject<any> = new BehaviorSubject<any>(null);
 
   constructor(
     private readonly authService: AuthenticationService
@@ -24,44 +22,58 @@ export class AuthInterceptor implements HttpInterceptor {
         this.processAuthData(data);
       }
     );
+    this.authService.getAuthErrors().subscribe(errors => {
+      if (errors !== null) {
+        this.authToken = null;
+        this.decodedToken = null;
+        this.logOutUserWithError(errors);
+      }
+    });
   }
 
-  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    if (req.headers.has('X-Skip-Interceptor') || !this.decodedToken) {
-      return next.handle(req);
-    } else {
-      return this.interceptWithToken(req, next);
+  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<Object>> {
+    let authReq = req;
+
+    if (authReq.url.includes('/refresh')) {
+      return next.handle(authReq);
     }
+    if (this.authToken != null) {
+      authReq = this.addTokenHeader(req, this.authToken.accessToken);
+    }
+    if (this.isTokenExpired()) {
+      return this.refreshToken(authReq, next);
+    }
+
+    return next.handle(authReq);
   }
-  private interceptWithToken(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    if (this.authToken.refreshTokenExpiryDate < new Date()) {
-      return this.logOutUserWithError('Refresh token expired');
+  private refreshToken(request: HttpRequest<any>, next: HttpHandler) {
+    if (!this.isRefreshing) {
+      this.isRefreshing = true;
+      this.refreshTokenSubject.next(null);
+      if (this.authToken) {
+        return this.authService.refreshToken(this.authToken).pipe(
+          filter(isSuccess => isSuccess === true),
+          take(1),
+          switchMap(() => {
+            this.isRefreshing = false;
+            this.refreshTokenSubject.next(this.authToken!.accessToken);
+            return next.handle(this.addTokenHeader(request, this.authToken!.accessToken));
+          })
+        );
+      }
     }
-    if (this.isTokenExpired() && !AuthInterceptor.isRefreshingToken) {
-      AuthInterceptor.isRefreshingToken = true;
-      return this.authService.refreshToken(this.authToken).pipe(
-        switchMap(data => {
-          this.processAuthData(data);
-          AuthInterceptor.isRefreshingToken = false;
-          console.log(data.refreshToken);
-          return this.sendRequestWithToken(req, next);
-        }),
-        catchError(error => {
-          AuthInterceptor.isRefreshingToken = false;
-          return this.logOutUserWithError(error.message);
-        })
-      );
-    } else {
-      return this.sendRequestWithToken(req, next);
-    }
+    return this.refreshTokenSubject.pipe(
+      filter(token => token !== null),
+      take(1),
+      switchMap((token) => next.handle(this.addTokenHeader(request, token)))
+    );
   }
-  private sendRequestWithToken(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+  private addTokenHeader(req: HttpRequest<any>, token: string) {
     const clonedRequest = req.clone({
       headers: req.headers
-        .set('Authorization', `Bearer ${this.authToken.accessToken}`)
-        .set('X-Skip-Interceptor', 'true'),
+        .set('Authorization', `Bearer ${token}`)
     });
-    return next.handle(clonedRequest);
+    return clonedRequest;
   }
   private logOutUserWithError(errorMessage: string): Observable<never> {
     this.authService.logOutUser();
@@ -73,7 +85,6 @@ export class AuthInterceptor implements HttpInterceptor {
       expirationDate.setUTCSeconds(this.decodedToken.exp);
 
       const currentDatePlusMinutes = new Date();
-      currentDatePlusMinutes.setMinutes(currentDatePlusMinutes.getMinutes() + this.refreshTokenCheckInFutureInMinutes);
 
       return expirationDate < currentDatePlusMinutes;
     }

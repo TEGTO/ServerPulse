@@ -144,7 +144,7 @@ describe('AuthReducer', () => {
             refreshToken: 'newRefreshToken',
             refreshTokenExpiryDate: new Date()
         };
-        const action = refreshAccessTokenSuccess({ authToken: accessToken });
+        const action = refreshAccessTokenSuccess({ authData: accessToken });
         const state = authReducer(initialState, action);
         expect(state).toEqual({
             ...initialState,

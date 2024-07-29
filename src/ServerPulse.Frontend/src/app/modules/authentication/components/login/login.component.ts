@@ -37,7 +37,8 @@ export class LoginComponent {
         login: formValues.login,
         password: formValues.password,
       };
-      this.authService.singInUser(userData).subscribe(authData => {
+      this.authService.singInUser(userData);
+      this.authService.getAuthData().subscribe(authData => {
         if (authData.isAuthenticated) {
           this.dialogRef.close();
         }

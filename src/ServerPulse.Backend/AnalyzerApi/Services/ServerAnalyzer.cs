@@ -6,13 +6,11 @@ namespace AnalyzerApi.Services
     public class ServerAnalyzer : IServerAnalyzer
     {
         private readonly IMessageReceiver messageReceiver;
-        private readonly int currentLoadOffsetMilliseconds;
         private readonly int pulseEventInterval;
 
         public ServerAnalyzer(IMessageReceiver messageReceiver, IConfiguration configuration)
         {
             this.messageReceiver = messageReceiver;
-            currentLoadOffsetMilliseconds = int.Parse(configuration[Configuration.CURRENT_LOAD_OFFSET_IN_MILLISECONDS]!);
             pulseEventInterval = int.Parse(configuration[Configuration.PULSE_EVENT_INTERVAL_IN_MILLISECONDS]!);
         }
 

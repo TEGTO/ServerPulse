@@ -88,7 +88,7 @@ export class SignInEffects {
                     map((response) => {
                         let authData: AuthData = getAuthDataFromAuthToken(response);
                         this.localStorage.setItem(this.storageAuthDataKey, JSON.stringify(authData));
-                        return refreshAccessTokenSuccess({ authToken: response });
+                        return refreshAccessTokenSuccess({ authData: response });
                     }),
                     catchError(error => {
                         this.localStorage.removeItem(this.storageAuthDataKey);

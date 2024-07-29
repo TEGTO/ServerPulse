@@ -19,8 +19,7 @@ export class AuthenticationApiService extends BaseApiService {
     );
   }
   refreshToken(tokenData: AuthToken): Observable<AuthToken> {
-    const headers = { 'X-Skip-Interceptor': 'true' };
-    return this.httpClient.post<AuthToken>(this.combinePathWithAuthApiUrl(`/refresh`), tokenData, { headers }).pipe(
+    return this.httpClient.post<AuthToken>(this.combinePathWithAuthApiUrl(`/refresh`), tokenData).pipe(
       catchError((resp) => this.handleError(resp))
     );
   }

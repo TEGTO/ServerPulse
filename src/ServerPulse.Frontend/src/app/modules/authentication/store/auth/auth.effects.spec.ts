@@ -192,7 +192,7 @@ describe('SignInEffects', () => {
         it('should dispatch refreshAccessTokenSuccess on successful refreshToken', (done) => {
             const authToken: AuthToken = { accessToken: 'newAccessToken', refreshToken: 'refreshToken', refreshTokenExpiryDate: new Date() };
             const action = refreshAccessToken({ authToken: authToken });
-            const outcome = refreshAccessTokenSuccess({ authToken: authToken });
+            const outcome = refreshAccessTokenSuccess({ authData: authToken });
 
             mockLocalStorage.getItem.and.returnValue(JSON.stringify({ isAuthenticated: true, accessToken: 'oldAccessToken', refreshToken: 'refreshToken', refreshTokenExpiryDate: new Date() }));
 

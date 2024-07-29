@@ -23,6 +23,10 @@ export const selectAuthData: MemoizedSelector<object, AuthData> = createSelector
         refreshTokenExpiryDate: state.refreshTokenExpiryDate
     })
 );
+export const selectIsRefreshSuccessful = createSelector(
+    selectAuthState,
+    (state: AuthState) => state.isRefreshSuccessful
+);
 export const selectAuthErrors = createSelector(
     selectAuthState,
     (state: AuthState) => state.error
