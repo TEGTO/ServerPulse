@@ -1,4 +1,6 @@
 using Confluent.Kafka;
+using ConsulUtils.Configuration;
+using ConsulUtils.Extension;
 using FluentValidation;
 using MessageBus;
 using MessageBus.Kafka;
@@ -11,15 +13,29 @@ using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var consulConfiguration = new ConsulConfiguration
+{
+    Host = builder.Configuration[Configuration.CONSUL_HOST]!,
+    ServiceName = builder.Configuration[Configuration.CONSUL_SERVICE_NAME]!,
+    ServicePort = int.Parse(builder.Configuration[Configuration.CONSUL_SERVICE_PORT]!)
+};
+string environmentName = builder.Environment.EnvironmentName;
+builder.Services.AddHealthChecks();
+builder.Services.AddConsulService(consulConfiguration);
+builder.Configuration.AddConsulConfiguration(consulConfiguration, environmentName);
+
 builder.Services.Configure<KestrelServerOptions>(options =>
 {
     options.Limits.MaxRequestBodySize = 1 * 1024 * 1024; //1 MB
 });
 
+var test = builder.Configuration.GetConnectionString(Configuration.REDIS_CONNECTION_STRING);
+Console.WriteLine("Configuration.REDIS_CONNECTION_STRING: " + test);
+
 builder.Services.AddSingleton<IConnectionMultiplexer>(
     ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString(Configuration.REDIS_CONNECTION_STRING)!));
 builder.Services.AddHttpClient();
- 
+
 var producerConfig = new ProducerConfig
 {
     BootstrapServers = builder.Configuration[Configuration.KAFKA_BOOTSTRAP_SERVERS],
@@ -54,10 +70,12 @@ ValidatorOptions.Global.LanguageManager.Enabled = false;
 var app = builder.Build();
 
 app.UseHttpsRedirection();
+
 app.UseExceptionMiddleware();
 
 app.UseAuthorization();
 
+app.MapHealthChecks("/health");
 app.MapControllers();
 
 app.Run();

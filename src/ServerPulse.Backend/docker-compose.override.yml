@@ -6,13 +6,9 @@ services:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
       - ASPNETCORE_URLS=http://+:8080;
       - ASPNETCORE_HTTP_PORTS=8080
-      - ConnectionStrings__AuthenticationConnection=${ConnectionStrings__AuthenticationConnection}
-      - EFCreateDatabase=${EFCreateDatabase}
-      - AuthSettings__Key=${AuthSettings__Key}
-      - AuthSettings__Issuer=${AuthSettings__Issuer}
-      - AuthSettings__ExpiryInMinutes=${AuthSettings__ExpiryInMinutes}
-      - AuthSettings__Audience=${AuthSettings__Audience}
-      - AuthSettings__RefreshExpiryInDays=${AuthSettings__RefreshExpiryInDays}
+      - Consul__Host=${Consul__Host}
+      - Consul__ServiceName=authentication
+      - Consul__ServicePort=8080
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
@@ -21,13 +17,9 @@ services:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
       - ASPNETCORE_URLS=http://+:8080;
       - ASPNETCORE_HTTP_PORTS=8080
-      - ConnectionStrings__ServerSlotDataConnection=${ConnectionStrings__ServerSlotDataConnection}
-      - SlotsPerUser=${SlotsPerUser}
-      - EFCreateDatabase=${EFCreateDatabase}
-      - AuthSettings__Key=${AuthSettings__Key}
-      - AuthSettings__Issuer=${AuthSettings__Issuer}
-      - AuthSettings__ExpiryInMinutes=${AuthSettings__ExpiryInMinutes}
-      - AuthSettings__Audience=${AuthSettings__Audience}
+      - Consul__Host=${Consul__Host}
+      - Consul__ServiceName=server-slot
+      - Consul__ServicePort=8080
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
@@ -35,15 +27,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
-      - Kafka__BootstrapServers=${Kafka__BootstrapServers}
-      - Kafka__ClientId=${Kafka__ClientId__ServerMonitorApi}
-      - Kafka__PartitionsAmount=${Kafka__PartitionsAmount}
-      - Kafka__AliveTopic=${Kafka__AliveTopic}
-      - Kafka__ConfigurationTopic=${Kafka__ConfigurationTopic}
-      - Kafka__LoadTopic=${Kafka__LoadTopic}
-      - ServerSlotApi__Check=${ServerSlotApi__Check}
-      - ConnectionStrings__RedisServer=${ConnectionStrings__ServerMonitorRedis}
-      - Redis__ServerSlotExpiryInMinutes=${Redis__ServerSlotExpiryInMinutes}
+      - Consul__Host=${Consul__Host}
+      - Consul__ServiceName=server-monitor
+      - Consul__ServicePort=8080
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
@@ -51,14 +37,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
-      - Kafka__BootstrapServers=${Kafka__BootstrapServers}
-      - Kafka__ClientId=${Kafka__ClientId__Analyzer}
-      - Kafka__GroupId=${Kafka__GroupId__Analyzer}
-      - Kafka__AnalyzerReceiveTimeout=${Kafka__AnalyzerReceiveTimeout}
-      - Kafka__AliveTopic=${Kafka__AliveTopic}
-      - Kafka__ConfigurationTopic=${Kafka__ConfigurationTopic}
-      - Kafka__LoadTopic=${Kafka__LoadTopic}
-      - PulseEventIntervalInMilliseconds=${PulseEventIntervalInMilliseconds}
+      - Consul__Host=${Consul__Host}
+      - Consul__ServiceName=analyzer
+      - Consul__ServicePort=8080
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
@@ -70,11 +51,9 @@ services:
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_Kestrel__Certificates__Default__Password=${CertificatePassword}
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/app/certificates/aspnetapp.pfx
-      - AllowedCORSOrigins=*
-      - AuthSettings__Key=${AuthSettings__Key}
-      - AuthSettings__Issuer=${AuthSettings__Issuer}
-      - AuthSettings__ExpiryInMinutes=${AuthSettings__ExpiryInMinutes}
-      - AuthSettings__Audience=${AuthSettings__Audience}
+      - Consul__Host=${Consul__Host}
+      - Consul__ServiceName=apigateway
+      - Consul__ServicePort=8080
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro

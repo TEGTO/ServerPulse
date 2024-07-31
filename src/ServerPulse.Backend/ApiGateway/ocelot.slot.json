@@ -2,16 +2,14 @@
   "Routes": [
     {
       "Key": "ServerSlot_GetAll",
+      "ServiceName": "server-slot",
       "UpstreamPathTemplate": "/serverslot",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT" ],
       "DownstreamPathTemplate": "/serverslot",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "serverslotapi",
-          "Port": 8080
-        }
-      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer"
       },
@@ -28,16 +26,14 @@
     },
     {
       "Key": "ServerSlot_CheckIfExists",
+      "ServiceName": "server-slot",
       "UpstreamPathTemplate": "/serverslot/check",
       "UpstreamHttpMethod": [ "POST" ],
       "DownstreamPathTemplate": "/check",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "serverslotapi",
-          "Port": 8080
-        }
-      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
       "RateLimitOptions": {
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
@@ -48,16 +44,14 @@
     },
     {
       "Key": "ServerSlot_Delete",
+      "ServiceName": "server-slot",
       "UpstreamPathTemplate": "/serverslot/{id}",
       "UpstreamHttpMethod": [ "DELETE" ],
       "DownstreamPathTemplate": "/serverslot/{id}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "serverslotapi",
-          "Port": 8080
-        }
-      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer"
       },
@@ -74,16 +68,14 @@
     },
     {
       "Key": "ServerSlot_GetWithString",
+      "ServiceName": "server-slot",
       "UpstreamPathTemplate": "/serverslot/{str}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/serverslot/{str}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "serverslotapi",
-          "Port": 8080
-        }
-      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer"
       },

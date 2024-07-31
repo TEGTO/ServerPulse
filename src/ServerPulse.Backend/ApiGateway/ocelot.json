@@ -1,6 +1,13 @@
 {
   "GlobalConfiguration": {
     "BaseUrl": "https://localhost:7129",
+    "ServiceDiscoveryProvider": {
+      "Scheme": "http",
+      "Host": "consul-node1",
+      "Port": 8500,
+      "Type": "Consul",
+      "PollingInterval": 100
+    },
     "RateLimitOptions": {
       "DisableRateLimitHeaders": false,
       "ClientIdHeader": "X-Forwarded-For"

@@ -1,6 +1,8 @@
 using AnalyzerApi;
 using AnalyzerApi.Services;
 using Confluent.Kafka;
+using ConsulUtils.Configuration;
+using ConsulUtils.Extension;
 using FluentValidation;
 using MessageBus.Kafka;
 using Shared;
@@ -8,6 +10,17 @@ using Shared.Middlewares;
 using TestKafka.Consumer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var consulConfiguration = new ConsulConfiguration
+{
+    Host = builder.Configuration[Configuration.CONSUL_HOST]!,
+    ServiceName = builder.Configuration[Configuration.CONSUL_SERVICE_NAME]!,
+    ServicePort = int.Parse(builder.Configuration[Configuration.CONSUL_SERVICE_PORT]!)
+};
+string environmentName = builder.Environment.EnvironmentName;
+builder.Services.AddHealthChecks();
+builder.Services.AddConsulService(consulConfiguration);
+builder.Configuration.AddConsulConfiguration(consulConfiguration, environmentName);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -44,6 +57,7 @@ app.UseExceptionMiddleware();
 
 app.UseAuthorization();
 
+app.MapHealthChecks("/health");
 app.MapControllers();
 
 app.Run();

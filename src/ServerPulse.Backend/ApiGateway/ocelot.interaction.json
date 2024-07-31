@@ -2,16 +2,14 @@
   "Routes": [
     {
       "Key": "ServerInteraction_SendConfiguration",
+      "ServiceName": "server-monitor",
       "UpstreamPathTemplate": "/serverinteraction/configuration",
       "UpstreamHttpMethod": [ "POST" ],
       "DownstreamPathTemplate": "/serverinteraction/configuration",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "servermonitorapi",
-          "Port": 8080
-        }
-      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
       "RateLimitOptions": {
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
@@ -22,16 +20,14 @@
     },
     {
       "Key": "ServerInteraction_SendAlive",
+      "ServiceName": "server-monitor",
       "UpstreamPathTemplate": "/serverinteraction/pulse",
       "UpstreamHttpMethod": [ "POST" ],
       "DownstreamPathTemplate": "/serverinteraction/pulse",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "servermonitorapi",
-          "Port": 8080
-        }
-      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection" 
+      },
       "RateLimitOptions": {
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
@@ -42,16 +38,14 @@
     },
     {
       "Key": "ServerInteraction_SendLoad",
+      "ServiceName": "server-monitor",
       "UpstreamPathTemplate": "/serverinteraction/load",
       "UpstreamHttpMethod": [ "POST" ],
       "DownstreamPathTemplate": "/serverinteraction/load",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "servermonitorapi",
-          "Port": 8080
-        }
-      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection" 
+      },
       "RateLimitOptions": {
         "ClientWhitelist": [],
         "EnableRateLimiting": true,

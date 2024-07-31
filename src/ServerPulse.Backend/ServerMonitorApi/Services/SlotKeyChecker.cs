@@ -18,7 +18,8 @@ namespace ServerMonitorApi.Services
             this.httpClientFactory = httpClientFactory;
             this.redisService = redisService;
             this.configuration = configuration;
-            slotCheckerUrl = configuration[Configuration.SERVER_SLOT_ALIVE_CHECKER]!;
+
+            slotCheckerUrl = $"{configuration[Configuration.API_GATEWAY]}{configuration[Configuration.SERVER_SLOT_ALIVE_CHECKER]}";
             redisExpiryInMinutes = double.Parse(configuration[Configuration.REDIS_SERVER_SLOT_EXPIRY_IN_MINUTES]!);
         }
 

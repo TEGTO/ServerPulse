@@ -2,16 +2,14 @@
   "Routes": [
     {
       "Key": "Authentication_Login",
+      "ServiceName": "authentication",
       "UpstreamPathTemplate": "/auth/login",
       "UpstreamHttpMethod": [ "POST" ],
       "DownstreamPathTemplate": "/auth/login",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "authenticationapi",
-          "Port": 8080
-        }
-      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
       "RateLimitOptions": {
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
@@ -22,16 +20,14 @@
     },
     {
       "Key": "Authentication_Register",
+      "ServiceName": "authentication",
       "UpstreamPathTemplate": "/auth/register",
       "UpstreamHttpMethod": [ "POST" ],
       "DownstreamPathTemplate": "/auth/register",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "authenticationapi",
-          "Port": 8080
-        }
-      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
       "RateLimitOptions": {
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
@@ -42,16 +38,14 @@
     },
     {
       "Key": "Authentication_Update",
+      "ServiceName": "authentication",
       "UpstreamPathTemplate": "/auth/update",
       "UpstreamHttpMethod": [ "PUT" ],
       "DownstreamPathTemplate": "/auth/update",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "authenticationapi",
-          "Port": 8080
-        }
-      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer"
       },
@@ -68,16 +62,14 @@
     },
     {
       "Key": "Authentication_Refresh",
+      "ServiceName": "authentication",
       "UpstreamPathTemplate": "/auth/refresh",
       "UpstreamHttpMethod": [ "POST" ],
       "DownstreamPathTemplate": "/auth/refresh",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "authenticationapi",
-          "Port": 8080
-        }
-      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
       "RateLimitOptions": {
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
@@ -88,16 +80,14 @@
     },
     {
       "Key": "Authentication_Check",
+      "ServiceName": "authentication",
       "UpstreamPathTemplate": "/auth/check",
       "UpstreamHttpMethod": [ "POST" ],
       "DownstreamPathTemplate": "/auth/check",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "authenticationapi",
-          "Port": 8080
-        }
-      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
       "RateLimitOptions": {
         "ClientWhitelist": [],
         "EnableRateLimiting": true,

@@ -1,15 +1,32 @@
 using ApiGateway;
 using Authentication;
 using Authentication.Configuration;
+using ConsulUtils.Configuration;
+using ConsulUtils.Extension;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
+using Ocelot.Provider.Consul;
 using Ocelot.Provider.Polly;
 using Shared.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var consulConfiguration = new ConsulConfiguration
+{
+    Host = builder.Configuration[Configuration.CONSUL_HOST]!,
+    ServiceName = builder.Configuration[Configuration.CONSUL_SERVICE_NAME]!,
+    ServicePort = int.Parse(builder.Configuration[Configuration.CONSUL_SERVICE_PORT]!)
+};
+string environmentName = builder.Environment.EnvironmentName;
+builder.Services.AddHealthChecks();
+builder.Services.AddConsulService(consulConfiguration);
+builder.Configuration.AddConsulConfiguration(consulConfiguration, environmentName);
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
-var allowedOrigins = builder.Configuration.GetSection("AllowedCORSOrigins").Get<string[]>() ?? [];
+var allowedOrigins = builder.Configuration.GetSection(Configuration.ALLOWED_CORS_ORIGINS).Get<string[]>() ?? [];
 
 builder.Services.AddCors(options =>
 {
@@ -27,10 +44,10 @@ builder.Services.AddCors(options =>
 
 var jwtSettings = new JwtSettings()
 {
-    Key = builder.Configuration["AuthSettings:Key"],
-    Audience = builder.Configuration["AuthSettings:Audience"],
-    Issuer = builder.Configuration["AuthSettings:Issuer"],
-    ExpiryInMinutes = Convert.ToDouble(builder.Configuration["AuthSettings:ExpiryInMinutes"]),
+    Key = builder.Configuration[Configuration.JWT_SETTINGS_KEY]!,
+    Audience = builder.Configuration[Configuration.JWT_SETTINGS_AUDIENCE]!,
+    Issuer = builder.Configuration[Configuration.JWT_SETTINGS_ISSUER]!,
+    ExpiryInMinutes = Convert.ToDouble(builder.Configuration[Configuration.JWT_SETTINGS_EXPIRY_IN_MINUTES]!),
 };
 builder.Services.AddCustomJwtAuthentication(jwtSettings);
 
@@ -49,15 +66,20 @@ builder.Configuration
     .AddJsonFile(mergedPath, optional: false, reloadOnChange: true)
     .AddEnvironmentVariables();
 
-builder.Services.AddOcelot(builder.Configuration).AddPolly();
+builder.Services.AddOcelot(builder.Configuration).AddPolly().AddConsul();
 
 var app = builder.Build();
 
 app.UseCors(MyAllowSpecificOrigins);
 app.UseExceptionMiddleware();
 
+app.UseRouting();
+
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseEndpoints(_ => { });
+app.MapHealthChecks("/health");
 
 await app.UseOcelot();
 app.Run();

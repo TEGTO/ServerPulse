@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { environment } from '../../../../../environment/environment';
 import { AuthenticationDialogManager, AuthenticationService } from '../../../authentication';
 
 @Component({
@@ -9,6 +10,7 @@ import { AuthenticationDialogManager, AuthenticationService } from '../../../aut
 })
 export class MainViewComponent implements OnInit {
   isAuthenticated: boolean = false;
+  projectUrl = environment.projectUrl;
 
   constructor(
     private readonly authService: AuthenticationService,

@@ -1,6 +1,13 @@
 {
   "GlobalConfiguration": {
     "BaseUrl": "https://localhost:7129",
+    "ServiceDiscoveryProvider": {
+      "Scheme": "http",
+      "Host": "consul-node1",
+      "Port": 8500,
+      "Type": "Consul",
+      "PollingInterval": 100
+    },
     "RateLimitOptions": {
       "DisableRateLimitHeaders": false,
       "ClientIdHeader": "X-Forwarded-For"
@@ -15,18 +22,16 @@
   "Routes": [
     {
       "Key": "Analyzer_GetAnalyzedData",
+      "ServiceName": "analyzer",
       "UpstreamPathTemplate": "/analyze/{key}",
       "UpstreamHttpMethod": [
         "GET"
       ],
       "DownstreamPathTemplate": "/analyze/{key}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "analyzerapi",
-          "Port": 8080
-        }
-      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
       "RateLimitOptions": {
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
@@ -37,18 +42,16 @@
     },
     {
       "Key": "Authentication_Login",
+      "ServiceName": "authentication",
       "UpstreamPathTemplate": "/auth/login",
       "UpstreamHttpMethod": [
         "POST"
       ],
       "DownstreamPathTemplate": "/auth/login",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "authenticationapi",
-          "Port": 8080
-        }
-      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
       "RateLimitOptions": {
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
@@ -59,18 +62,16 @@
     },
     {
       "Key": "Authentication_Register",
+      "ServiceName": "authentication",
       "UpstreamPathTemplate": "/auth/register",
       "UpstreamHttpMethod": [
         "POST"
       ],
       "DownstreamPathTemplate": "/auth/register",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "authenticationapi",
-          "Port": 8080
-        }
-      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
       "RateLimitOptions": {
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
@@ -81,18 +82,16 @@
     },
     {
       "Key": "Authentication_Update",
+      "ServiceName": "authentication",
       "UpstreamPathTemplate": "/auth/update",
       "UpstreamHttpMethod": [
         "PUT"
       ],
       "DownstreamPathTemplate": "/auth/update",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "authenticationapi",
-          "Port": 8080
-        }
-      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer"
       },
@@ -109,18 +108,16 @@
     },
     {
       "Key": "Authentication_Refresh",
+      "ServiceName": "authentication",
       "UpstreamPathTemplate": "/auth/refresh",
       "UpstreamHttpMethod": [
         "POST"
       ],
       "DownstreamPathTemplate": "/auth/refresh",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "authenticationapi",
-          "Port": 8080
-        }
-      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
       "RateLimitOptions": {
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
@@ -131,18 +128,16 @@
     },
     {
       "Key": "Authentication_Check",
+      "ServiceName": "authentication",
       "UpstreamPathTemplate": "/auth/check",
       "UpstreamHttpMethod": [
         "POST"
       ],
       "DownstreamPathTemplate": "/auth/check",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "authenticationapi",
-          "Port": 8080
-        }
-      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
       "RateLimitOptions": {
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
@@ -153,18 +148,16 @@
     },
     {
       "Key": "ServerInteraction_SendConfiguration",
+      "ServiceName": "server-monitor",
       "UpstreamPathTemplate": "/serverinteraction/configuration",
       "UpstreamHttpMethod": [
         "POST"
       ],
       "DownstreamPathTemplate": "/serverinteraction/configuration",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "servermonitorapi",
-          "Port": 8080
-        }
-      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
       "RateLimitOptions": {
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
@@ -175,18 +168,16 @@
     },
     {
       "Key": "ServerInteraction_SendAlive",
+      "ServiceName": "server-monitor",
       "UpstreamPathTemplate": "/serverinteraction/pulse",
       "UpstreamHttpMethod": [
         "POST"
       ],
       "DownstreamPathTemplate": "/serverinteraction/pulse",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "servermonitorapi",
-          "Port": 8080
-        }
-      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
       "RateLimitOptions": {
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
@@ -197,18 +188,16 @@
     },
     {
       "Key": "ServerInteraction_SendLoad",
+      "ServiceName": "server-monitor",
       "UpstreamPathTemplate": "/serverinteraction/load",
       "UpstreamHttpMethod": [
         "POST"
       ],
       "DownstreamPathTemplate": "/serverinteraction/load",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "servermonitorapi",
-          "Port": 8080
-        }
-      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
       "RateLimitOptions": {
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
@@ -247,6 +236,7 @@
     },
     {
       "Key": "ServerSlot_GetAll",
+      "ServiceName": "server-slot",
       "UpstreamPathTemplate": "/serverslot",
       "UpstreamHttpMethod": [
         "GET",
@@ -255,12 +245,9 @@
       ],
       "DownstreamPathTemplate": "/serverslot",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "serverslotapi",
-          "Port": 8080
-        }
-      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer"
       },
@@ -277,18 +264,16 @@
     },
     {
       "Key": "ServerSlot_CheckIfExists",
+      "ServiceName": "server-slot",
       "UpstreamPathTemplate": "/serverslot/check",
       "UpstreamHttpMethod": [
         "POST"
       ],
       "DownstreamPathTemplate": "/check",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "serverslotapi",
-          "Port": 8080
-        }
-      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
       "RateLimitOptions": {
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
@@ -299,18 +284,16 @@
     },
     {
       "Key": "ServerSlot_Delete",
+      "ServiceName": "server-slot",
       "UpstreamPathTemplate": "/serverslot/{id}",
       "UpstreamHttpMethod": [
         "DELETE"
       ],
       "DownstreamPathTemplate": "/serverslot/{id}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "serverslotapi",
-          "Port": 8080
-        }
-      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer"
       },
@@ -327,18 +310,16 @@
     },
     {
       "Key": "ServerSlot_GetWithString",
+      "ServiceName": "server-slot",
       "UpstreamPathTemplate": "/serverslot/{str}",
       "UpstreamHttpMethod": [
         "GET"
       ],
       "DownstreamPathTemplate": "/serverslot/{str}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "serverslotapi",
-          "Port": 8080
-        }
-      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer"
       },
