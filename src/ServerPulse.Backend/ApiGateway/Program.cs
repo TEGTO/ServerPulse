@@ -34,6 +34,7 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(allowedOrigins)
         .AllowAnyHeader()
+        .AllowCredentials()
         .AllowAnyMethod();
         if (builder.Environment.IsDevelopment())
         {
@@ -81,5 +82,6 @@ app.UseAuthorization();
 app.UseEndpoints(_ => { });
 app.MapHealthChecks("/health");
 
+app.UseWebSockets();
 await app.UseOcelot();
 app.Run();

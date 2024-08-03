@@ -1,4 +1,6 @@
-﻿using ServerPulse.EventCommunication.Events;
+﻿using Confluent.Kafka;
+using ServerPulse.EventCommunication.Events;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using TestKafka.Consumer.Services;
 
@@ -21,6 +23,30 @@ namespace AnalyzerApi.Services
             timeoutInMilliseconds = int.Parse(configuration[Configuration.KAFKA_TIMEOUT_IN_MILLISECONDS]!);
         }
 
+        public async IAsyncEnumerable<PulseEvent> ConsumePulseEventAsync(string key, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            string topic = aliveTopic.Replace("{id}", key);
+            await foreach (var message in messageConsumer.ConsumeAsync(topic, timeoutInMilliseconds, Offset.End, cancellationToken))
+            {
+                var pulseEvent = JsonSerializer.Deserialize<PulseEvent>(message);
+                if (pulseEvent != null)
+                {
+                    yield return pulseEvent;
+                }
+            }
+        }
+        public async IAsyncEnumerable<ConfigurationEvent> ConsumeConfigurationEventAsync(string key, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            string topic = configurationTopic.Replace("{id}", key);
+            await foreach (var message in messageConsumer.ConsumeAsync(topic, timeoutInMilliseconds, Offset.End, cancellationToken))
+            {
+                var pulseEvent = JsonSerializer.Deserialize<ConfigurationEvent>(message);
+                if (pulseEvent != null)
+                {
+                    yield return pulseEvent;
+                }
+            }
+        }
         public async Task<PulseEvent?> ReceiveLastPulseEventByKeyAsync(string key, CancellationToken cancellationToken)
         {
             string topic = aliveTopic.Replace("{id}", key);
@@ -49,12 +75,6 @@ namespace AnalyzerApi.Services
         {
             string topic = loadTopic.Replace("{id}", key);
             int amount = await messageConsumer.GetAmountTopicMessagesAsync(topic, timeoutInMilliseconds, cancellationToken);
-            return amount;
-        }
-        public async Task<int> ReceiveLoadEventAmountInDateRangeByKeyAsync(string key, DateTime startDate, DateTime endDate, CancellationToken cancellationToken)
-        {
-            string topic = loadTopic.Replace("{id}", key);
-            int amount = await messageConsumer.GetAmountTopicMessagesInDateRangeAsync(topic, startDate, endDate, timeoutInMilliseconds, cancellationToken);
             return amount;
         }
     }

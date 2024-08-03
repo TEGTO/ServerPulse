@@ -16,21 +16,39 @@ namespace MessageBus.Kafka
             this.consumerFactory = consumerFactory;
         }
 
-        public async IAsyncEnumerable<string> ConsumeAsync(string topic, int timeoutInMilliseconds, [EnumeratorCancellation] CancellationToken cancellationToken)
+        public async IAsyncEnumerable<string> ConsumeAsync(string topic, int timeoutInMilliseconds, Offset consumeFrom, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             using (var consumer = consumerFactory.CreateConsumer())
             {
-                consumer.Subscribe(topic);
+                var partitions = GetTopicPartitionOffsets(topic, timeoutInMilliseconds, consumeFrom);
+                consumer.Assign(partitions);
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     var consumeResult = consumer.Consume(TimeSpan.FromMilliseconds(timeoutInMilliseconds));
-                    if (consumeResult != null && !string.IsNullOrEmpty(consumeResult.Message.Value))
+                    if (IsValidMessage(consumeResult))
                     {
                         yield return consumeResult.Message.Value;
                     }
                     await Task.Yield();
                 }
             }
+        }
+        private List<TopicPartitionOffset> GetTopicPartitionOffsets(string topic, int timeoutInMilliseconds, Offset offset)
+        {
+            var metadata = adminClient.GetMetadata(topic, TimeSpan.FromSeconds(timeoutInMilliseconds));
+            var partitions = new List<TopicPartitionOffset>();
+            foreach (var partition in metadata.Topics[0].Partitions)
+            {
+                partitions.Add(new TopicPartitionOffset(topic, partition.PartitionId, offset));
+            }
+            return partitions;
+        }
+        private bool IsValidMessage(ConsumeResult<string, string> consumeResult)
+        {
+            return
+                 consumeResult?.Message != null
+                && !consumeResult.IsPartitionEOF
+                && !string.IsNullOrEmpty(consumeResult.Message.Value);
         }
         public async Task<string?> ReadLastTopicMessageAsync(string topicName, int timeoutInMilliseconds, CancellationToken cancellationToken)
         {
@@ -159,11 +177,6 @@ namespace MessageBus.Kafka
                 }
                 return (int)total;
             }
-        }
-        public async Task<int> GetAmountTopicMessagesInDateRangeAsync(string topicName, DateTime startDate, DateTime endDate, int timeoutInMilliseconds, CancellationToken cancellationToken)
-        {
-            var messages = await ReadMessagesInDateRangeAsync(topicName, startDate, endDate, timeoutInMilliseconds, cancellationToken);
-            return messages.Count();
         }
     }
 }

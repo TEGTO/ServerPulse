@@ -21,18 +21,23 @@ namespace MessageBusTests
             mockConsumerFactory.Setup(x => x.CreateConsumer()).Returns(mockConsumer.Object);
             kafkaConsumer = new KafkaConsumer(mockAdminClient.Object, mockConsumerFactory.Object);
         }
-
         [Test]
         public async Task ConsumeAsync_ConsumesMessages()
         {
             // Arrange
             var topic = "test-topic";
             var timeoutInMilliseconds = 1000;
+            var consumeFrom = Offset.Beginning;
             var cancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = cancellationTokenSource.Token;
             var messages = new List<string> { "message1", "message2" };
             var messageIndex = 0;
-            mockConsumer.Setup(x => x.Subscribe(topic));
+            mockAdminClient.Setup(x => x.GetMetadata(topic, It.IsAny<TimeSpan>())).Returns(new Metadata(
+                new List<BrokerMetadata>(),
+                new List<TopicMetadata> { new TopicMetadata(topic, new List<PartitionMetadata>(), null) },
+                0,
+                "cluster-id"
+            ));
             mockConsumer.Setup(x => x.Consume(It.IsAny<TimeSpan>()))
                 .Returns(() =>
                 {
@@ -45,23 +50,20 @@ namespace MessageBusTests
                     }
                     return null;
                 });
+            var partitions = new List<TopicPartitionOffset> { new TopicPartitionOffset(topic, 0, consumeFrom) };
+            mockConsumer.Setup(x => x.Assign(It.Is<List<TopicPartitionOffset>>(l => l.SequenceEqual(partitions))));
             // Act
-            var consumingTask = Task.Run(async () =>
+            var resultMessages = new List<string>();
+            await foreach (var message in kafkaConsumer.ConsumeAsync(topic, timeoutInMilliseconds, consumeFrom, cancellationToken))
             {
-                var resultMessages = new List<string>();
-                await foreach (var message in kafkaConsumer.ConsumeAsync(topic, timeoutInMilliseconds, cancellationToken))
+                resultMessages.Add(message);
+                if (resultMessages.Count >= messages.Count)
                 {
-                    resultMessages.Add(message);
-                    if (resultMessages.Count >= messages.Count)
-                    {
-                        cancellationTokenSource.Cancel();
-                    }
+                    cancellationTokenSource.Cancel();
                 }
-                return resultMessages;
-            });
-            var result = await consumingTask;
+            }
             // Assert
-            Assert.That(result, Is.EqualTo(messages));
+            Assert.That(resultMessages, Is.EqualTo(messages));
         }
         private static async Task<List<string>> ConsumeMessagesAsync(IAsyncEnumerable<string> asyncEnumerable, CancellationToken cancellationToken)
         {

@@ -72,7 +72,6 @@ if (app.Configuration[Configuration.EF_CREATE_DATABASE] == "true")
     await app.ConfigureDatabaseAsync<AuthIdentityDbContext>(CancellationToken.None);
 }
 
-app.UseHttpsRedirection();
 app.UseExceptionMiddleware();
 
 app.UseAuthentication();

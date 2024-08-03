@@ -50,25 +50,12 @@
     </header>
     <div class="server-slot__body bg-white dark:bg-gray-900">
         <div class="body__activity-chart w-full h-5/6">
-            <activity-chart></activity-chart>
+            <activity-chart [chartUniqueId]="serverSlot.id"></activity-chart>
         </div>
         <div class="body__bottom w-full flex justify-between items-end">
             <button mat-raised-button (click)="showKey()">
                 <span class="material-icons">key</span>
             </button>
-            <div class="bottom__update-rate relative inline-block text-left justify-self-end">
-                <label for="updateRate" class="block mb-1 text-sm font-medium text-gray-900 dark:text-white">
-                    Update Rate (s):
-                </label>
-                <select id="updateRate" matNativeControl [formControl]="updateRateFormControl"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                    <option value="5" selected>5</option>
-                    <option value="15">15</option>
-                    <option value="30">30</option>
-                    <option value="60">60</option>
-                    <option value="DontUpdate">Don't update</option>
-                </select>
-            </div>
         </div>
     </div>
 </div>

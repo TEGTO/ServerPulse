@@ -29,9 +29,6 @@ builder.Services.Configure<KestrelServerOptions>(options =>
     options.Limits.MaxRequestBodySize = 1 * 1024 * 1024; //1 MB
 });
 
-var test = builder.Configuration.GetConnectionString(Configuration.REDIS_CONNECTION_STRING);
-Console.WriteLine("Configuration.REDIS_CONNECTION_STRING: " + test);
-
 builder.Services.AddSingleton<IConnectionMultiplexer>(
     ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString(Configuration.REDIS_CONNECTION_STRING)!));
 builder.Services.AddHttpClient();
@@ -68,8 +65,6 @@ builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 ValidatorOptions.Global.LanguageManager.Enabled = false;
 
 var app = builder.Build();
-
-app.UseHttpsRedirection();
 
 app.UseExceptionMiddleware();
 

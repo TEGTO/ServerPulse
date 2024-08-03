@@ -1,4 +1,5 @@
 using AnalyzerApi;
+using AnalyzerApi.Hubs;
 using AnalyzerApi.Services;
 using Confluent.Kafka;
 using ConsulUtils.Configuration;
@@ -30,6 +31,8 @@ var consumerConfig = new ConsumerConfig
     BootstrapServers = builder.Configuration[Configuration.KAFKA_BOOTSTRAP_SERVERS],
     ClientId = builder.Configuration[Configuration.KAFKA_CLIENT_ID],
     GroupId = builder.Configuration[Configuration.KAFKA_GROUP_ID],
+    EnablePartitionEof = true,
+    AutoOffsetReset = AutoOffsetReset.Earliest
 };
 var adminConfig = new AdminClientConfig
 {
@@ -40,7 +43,8 @@ builder.Services.AddSingleton(new AdminClientBuilder(adminConfig).Build());
 builder.Services.AddSingleton<IKafkaConsumerFactory, KafkaConsumerFactory>();
 builder.Services.AddSingleton<IMessageConsumer, KafkaConsumer>();
 builder.Services.AddSingleton<IMessageReceiver, MessageReceiver>();
-builder.Services.AddSingleton<IServerAnalyzer, ServerAnalyzer>();
+builder.Services.AddSingleton<IStatisticsSender, StatisticsSender>();
+builder.Services.AddSingleton<IServerStatisticsCollector, ServerStatisticsCollector>();
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
@@ -50,14 +54,17 @@ ValidatorOptions.Global.LanguageManager.Enabled = false;
 builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
 builder.Services.AddEndpointsApiExplorer();
 
+builder.Services.AddSignalR();
+
 var app = builder.Build();
 
-app.UseHttpsRedirection();
 app.UseExceptionMiddleware();
 
 app.UseAuthorization();
 
 app.MapHealthChecks("/health");
 app.MapControllers();
+
+app.MapHub<StatisticsHub>("/statisticshub");
 
 app.Run();

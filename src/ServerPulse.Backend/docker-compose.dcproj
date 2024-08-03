@@ -8,7 +8,7 @@
     <DockerServiceUrl>{Scheme}://localhost:{ServicePort}/weatherforecast</DockerServiceUrl>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <AdditionalComposeFilePaths>docker-compose-databases.yml;docker-compose-databases.override.yml;docker-compose-kafka.yml;docker-compose-kafka.dev.yml;docker-compose-consul.yml;</AdditionalComposeFilePaths>
+    <AdditionalComposeFilePaths>docker-compose-databases.yml;docker-compose-databases.override.yml;docker-compose-kafka.yml;docker-compose-kafka.dev.yml;docker-compose-consul.yml;docker-compose-redis.yml;docker-compose-redis.override.yml;</AdditionalComposeFilePaths>
     <DockerTargetOS>Linux</DockerTargetOS>
     <DockerPublishLocally>False</DockerPublishLocally>
     <DockerLaunchAction>None</DockerLaunchAction>
@@ -26,6 +26,10 @@
     <None Include="docker-compose-kafka.dev.yml">
       <DependentUpon>docker-compose-kafka.yml</DependentUpon>
     </None>
+	 <None Include="docker-compose-redis.override.yml" >
+		 <DependentUpon >docker-compose-redis.yml</DependentUpon>
+	 </None>
+    <None Include="docker-compose-redis.yml" />
     <None Include="docker-compose.override.yml">
       <DependentUpon>docker-compose.yml</DependentUpon>
     </None>

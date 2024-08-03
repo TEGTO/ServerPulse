@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { throwError } from 'rxjs';
-import { CustomErrorHandler, URLDefiner } from '../../../index';
+import { ErrorHandler, URLDefiner } from '../../../index';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +13,7 @@ export class BaseApiService {
 
   constructor(
     private readonly _httpClient: HttpClient,
-    private readonly errorHandler: CustomErrorHandler,
+    private readonly errorHandler: ErrorHandler,
     private readonly _urlDefiner: URLDefiner
   ) { }
 

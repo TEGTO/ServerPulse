@@ -1,0 +1,6 @@
+version: '3.4'
+
+services:
+  redis-node-1:
+    environment:
+        - REDIS_PASSWORD=${REDIS_PASSWORD}

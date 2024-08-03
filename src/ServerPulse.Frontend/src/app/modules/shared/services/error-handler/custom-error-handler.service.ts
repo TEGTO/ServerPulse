@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
+import { ErrorHandler } from './error-handler';
 
 @Injectable({
   providedIn: 'root'
 })
-export class CustomErrorHandler {
+export class CustomErrorHandler implements ErrorHandler {
 
   handleApiError(error: any): string {
     let errorMessage;
@@ -18,7 +19,18 @@ export class CustomErrorHandler {
       const statusCode = getStatusCodeDescription(error.status);
       errorMessage = `An unknown error occurred! (${statusCode})`
     }
-    console.log(errorMessage);
+    console.error(errorMessage);
+    return errorMessage;
+  }
+  handleHubError(error: any): string {
+    let errorMessage;
+    if (error.message) {
+      errorMessage = error.message;
+    }
+    if (!errorMessage) {
+      errorMessage = `An unknown error occurred!`
+    }
+    console.error(errorMessage);
     return errorMessage;
   }
 }

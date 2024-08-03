@@ -1,7 +1,6 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
 import { ServerSlotDialogManager, ServerSlotService, ServerStatisticsService } from '../..';
-import { RedirectorService, ServerSlot, ServerStatisticsResponse, SnackbarManager, UpdateServerSlotRequest } from '../../../shared';
+import { convertToServerStatisticsResponse, RedirectorService, ServerSlot, ServerStatisticsResponse, SnackbarManager, UpdateServerSlotRequest } from '../../../shared';
 
 enum ServerStatus {
   Online = 'green',
@@ -19,13 +18,11 @@ export class ServerSlotComponent implements AfterViewInit, OnInit {
   @Input({ required: true }) serverSlot!: ServerSlot;
   @ViewChild('textSizer', { static: false }) textSizer!: ElementRef;
   @ViewChild('nameInput', { static: false }) nameInput!: ElementRef<HTMLInputElement>;
-  updateRateFormControl = new FormControl('5', [Validators.required]);
   hideKey: boolean = true;
   inputIsEditable: boolean = false;
   serverStatus: ServerStatus = ServerStatus.NoData;
   inputWidth: number = 120;
   inputValue: string = "";
-  private intervalId: any;
   private currentServerSlotStatistics: ServerStatisticsResponse | undefined;
 
   constructor(
@@ -39,27 +36,31 @@ export class ServerSlotComponent implements AfterViewInit, OnInit {
 
   ngOnInit(): void {
     this.inputValue = this.serverSlot.name;
-    this.fetchStatistics();
-    this.startInterval();
-    this.updateRateFormControl.valueChanges.subscribe(value => {
-      if (value === 'DontUpdate') {
-        this.stopInterval();
-      } else {
-        this.resetInterval();
-      }
+    this.serverStatisticsService.startConnection().subscribe(() => {
+      this.serverStatisticsService.startListenPulse(this.serverSlot.slotKey);
+      this.serverStatisticsService.receiveStatistics().subscribe(
+        (message) => {
+          try {
+            if (message.key === this.serverSlot.slotKey) {
+              this.currentServerSlotStatistics = convertToServerStatisticsResponse(JSON.parse(message.data));
+              this.toggleServerStatus();
+              this.cdr.detectChanges();
+            }
+          } catch (error) {
+            this.currentServerSlotStatistics = undefined;
+            console.error('Error processing the received statistics:', error);
+          }
+        },
+        (error) => {
+          this.currentServerSlotStatistics = undefined;
+          console.error('Error receiving statistics:', error);
+        }
+      );
     });
   }
   ngAfterViewInit() {
     this.adjustInputWidth();
     this.cdr.detectChanges();
-  }
-
-  redirectToInfo() {
-    this.redirector.redirectTo(`serverslot/${this.serverSlot.id}`);
-  }
-
-  showKey() {
-    this.snackBarManager.openInfoSnackbar(`🔑: ${this.serverSlot.slotKey}`, 10);
   }
 
   onInputChange() {
@@ -71,30 +72,11 @@ export class ServerSlotComponent implements AfterViewInit, OnInit {
     this.updateServerSlotName();
   }
 
-  private startInterval() {
-    let updateInterval = parseInt(this.updateRateFormControl.value!, 10);
-    if (updateInterval) {
-      this.intervalId = setInterval(() => {
-        this.fetchStatistics();
-      }, updateInterval * 1000);
-    }
+  redirectToInfo() {
+    this.redirector.redirectTo(`serverslot/${this.serverSlot.id}`);
   }
-  private fetchStatistics() {
-    this.serverStatisticsService.getCurrentServerStatisticsByKey(this.serverSlot.slotKey).subscribe(statistics => {
-      this.currentServerSlotStatistics = statistics;
-      this.toggleServerStatus();
-      this.cdr.markForCheck();
-    })
-  }
-  private stopInterval() {
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
-    }
-  }
-  private resetInterval() {
-    this.stopInterval();
-    this.startInterval();
+  showKey() {
+    this.snackBarManager.openInfoSnackbar(`🔑: ${this.serverSlot.slotKey}`, 10);
   }
   toggleServerStatus() {
     if (this.currentServerSlotStatistics?.dataExists) {

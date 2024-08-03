@@ -13,5 +13,6 @@
         public static string KAFKA_LOAD_TOPIC { get; } = "Kafka:LoadTopic";
         public static string KAFKA_CONFIGURATION_TOPIC { get; } = "Kafka:ConfigurationTopic";
         public static string PULSE_EVENT_INTERVAL_IN_MILLISECONDS { get; } = "PulseEventIntervalInMilliseconds";
+        public static string STATISTICS_COLLECT_INTERVAL_IN_MILLISECONDS { get; } = "StatisticsCollectIntervalInMilliseconds";
     }
 }

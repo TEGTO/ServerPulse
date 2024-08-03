@@ -4,10 +4,11 @@ namespace AnalyzerApi.Services
 {
     public interface IMessageReceiver
     {
+        public IAsyncEnumerable<PulseEvent> ConsumePulseEventAsync(string key, CancellationToken cancellationToken);
+        public IAsyncEnumerable<ConfigurationEvent> ConsumeConfigurationEventAsync(string key, CancellationToken cancellationToken);
         public Task<PulseEvent?> ReceiveLastPulseEventByKeyAsync(string key, CancellationToken cancellationToken);
         public Task<ConfigurationEvent?> ReceiveLastConfigurationEventByKeyAsync(string key, CancellationToken cancellationToken);
         public Task<LoadEvent?> ReceiveLastLoadEventByKeyAsync(string key, CancellationToken cancellationToken);
         public Task<int> ReceiveLoadEventAmountByKeyAsync(string key, CancellationToken cancellationToken);
-        public Task<int> ReceiveLoadEventAmountInDateRangeByKeyAsync(string key, DateTime startDate, DateTime endDate, CancellationToken cancellationToken);
     }
 }

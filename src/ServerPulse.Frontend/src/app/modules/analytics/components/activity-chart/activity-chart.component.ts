@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 import {
   ApexAxisChartSeries,
   ApexChart,
@@ -8,8 +8,7 @@ import {
   ApexMarkers,
   ApexStroke,
   ApexXAxis,
-  ApexYAxis,
-  ChartComponent
+  ApexYAxis
 } from "ng-apexcharts";
 
 export type ChartOptions = {
@@ -31,12 +30,15 @@ export type ChartOptions = {
   styleUrl: './activity-chart.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ActivityChartComponent {
-  @ViewChild("chart") chart!: ChartComponent;
-  public chartOptions1: Partial<ChartOptions>;
-  public chartOptions2: Partial<ChartOptions>;
+export class ActivityChartComponent implements OnInit {
+  @Input({ required: true }) public chartUniqueId!: string;
+  public chartOptions1!: Partial<ChartOptions>;
+  public chartOptions2!: Partial<ChartOptions>;
 
-  constructor() {
+  constructor() { }
+  ngOnInit(): void {
+    let chart1Id = `chart1-${this.chartUniqueId}`;
+    let chart2Id = `chart2-${this.chartUniqueId}`;
     this.chartOptions1 = {
       series: [
         {
@@ -63,7 +65,7 @@ export class ActivityChartComponent {
         }
       ],
       chart: {
-        id: "chart2",
+        id: chart1Id,
         type: "area",
         height: 230,
         stacked: false,
@@ -127,12 +129,12 @@ export class ActivityChartComponent {
         }
       ],
       chart: {
-        id: "chart1",
+        id: chart2Id,
         height: 130,
         type: "area",
         stacked: true,
         brush: {
-          target: "chart2",
+          target: chart1Id,
           enabled: true
         },
         selection: {
