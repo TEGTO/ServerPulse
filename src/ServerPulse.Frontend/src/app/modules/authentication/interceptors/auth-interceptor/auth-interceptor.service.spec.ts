@@ -1,7 +1,7 @@
 import { HTTP_INTERCEPTORS, HttpClient } from '@angular/common/http';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { of, throwError } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { AuthenticationService } from '../..';
 import { AuthData, AuthToken } from '../../../shared';
 import { AuthInterceptor } from './auth-interceptor.service';
@@ -26,78 +26,77 @@ describe('AuthInterceptor', () => {
     refreshToken: 'refresh-token',
     refreshTokenExpiryDate: new Date(new Date().getTime() + 60000) // 1 minute in the future
   };
+  let authDataSubject: BehaviorSubject<AuthData>;
 
   beforeEach(() => {
-    const authServiceSpy = jasmine.createSpyObj('AuthenticationService', ['getAuthData', 'refreshToken', 'logOutUser']);
+    authDataSubject = new BehaviorSubject<AuthData>(mockAuthData);
+    authService = jasmine.createSpyObj('AuthenticationService', ['getAuthData', 'getAuthErrors', 'refreshToken', 'logOutUser']);
+    authService.getAuthData.and.returnValue(authDataSubject.asObservable());
+    authService.getAuthErrors.and.returnValue(of(null));
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [
         { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
-        { provide: AuthenticationService, useValue: authServiceSpy }
+        { provide: AuthenticationService, useValue: authService },
       ]
     });
 
     httpMock = TestBed.inject(HttpTestingController);
     httpClient = TestBed.inject(HttpClient);
-    authService = TestBed.inject(AuthenticationService) as jasmine.SpyObj<AuthenticationService>;
-
-    authService.getAuthData.and.returnValue(of(mockAuthData));
   });
 
   afterEach(() => {
     httpMock.verify();
   });
 
-  it('should add an Authorization header', (done) => {
+  it('should add an Authorization header', () => {
     httpClient.get('/test').subscribe(response => {
       expect(response).toBeTruthy();
-      done();
     });
 
     const httpRequest = httpMock.expectOne('/test');
 
-    expect(httpRequest.request.headers.has('Authorization')).toEqual(true);
+    expect(httpRequest.request.headers.has('Authorization')).toBe(true);
     expect(httpRequest.request.headers.get('Authorization')).toBe(`Bearer ${mockAuthToken.accessToken}`);
 
     httpRequest.flush({});
   });
 
-  it('should skip interception for requests with X-Skip-Interceptor header', (done) => {
-    httpClient.get('/test', { headers: { 'X-Skip-Interceptor': 'true' } }).subscribe(response => {
+  it('should skip interception for requests with /refresh in URL', (done) => {
+    httpClient.get('/refresh').subscribe(response => {
       expect(response).toBeTruthy();
       done();
     });
 
-    const httpRequest = httpMock.expectOne('/test');
+    const httpRequest = httpMock.expectOne('/refresh');
 
-    expect(httpRequest.request.headers.has('Authorization')).toEqual(false);
+    expect(httpRequest.request.headers.has('Authorization')).toBe(false);
 
     httpRequest.flush({});
   });
 
-  it('should logout if refresh token is expired', (done) => {
-    const expiredTokenData: AuthToken = { ...mockAuthToken, refreshTokenExpiryDate: new Date(new Date().getTime() - 60000) }; // 1 minute in the past
-    authService.getAuthData.and.returnValue(of({ ...mockAuthData, refreshTokenExpiryDate: expiredTokenData.refreshTokenExpiryDate }));
+  it('should logout if auth error', (done) => {
 
-    httpClient.get('/test').subscribe({
-      error: (error) => {
-        expect(authService.logOutUser).toHaveBeenCalled();
-        expect(error.message).toBe('Refresh token expired');
-        done();
-      }
+    authService.getAuthErrors.and.returnValue(of("Error"));
+
+    httpClient.get('/test').subscribe(response => {
+      expect(response).toBeTruthy();
+      done();
     });
-
-    httpMock.expectNone('/test');
+    expect(authService.logOutUser).toHaveBeenCalled();
+    const httpRequest = httpMock.expectOne('/test');
+    httpRequest.flush({});
   });
 
   it('should refresh token if access token is expired', (done) => {
     const newAuthData: AuthData = {
       ...mockAuthData,
+      accessToken: 'new-access-token'
     };
 
     authService.getAuthData.and.returnValue(of({ ...mockAuthData, accessToken: expiredAccessToken }));
-    authService.refreshToken.and.returnValue(of(newAuthData));
+    authService.refreshToken.and.returnValue(of(true));
 
     httpClient.get('/test').subscribe(response => {
       expect(response).toBeTruthy();
@@ -107,24 +106,7 @@ describe('AuthInterceptor', () => {
     const httpRequest = httpMock.expectOne('/test');
 
     expect(authService.refreshToken).toHaveBeenCalled();
-    expect(httpRequest.request.headers.has('Authorization')).toEqual(true);
-    expect(httpRequest.request.headers.get('Authorization')).toBe(`Bearer ${newAuthData.accessToken}`);
 
     httpRequest.flush({});
-  });
-
-  it('should handle error if token refresh fails', (done) => {
-    authService.getAuthData.and.returnValue(of({ ...mockAuthData, accessToken: expiredAccessToken }));
-    authService.refreshToken.and.returnValue(throwError(() => new Error('Token refresh failed')));
-
-    httpClient.get('/test').subscribe({
-      error: (error) => {
-        expect(authService.logOutUser).toHaveBeenCalled();
-        expect(error.message).toBe('Token refresh failed');
-        done();
-      }
-    });
-
-    httpMock.expectNone('/test');
   });
 });

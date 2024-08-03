@@ -2,7 +2,7 @@ import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, E
 import { ServerSlotDialogManager, ServerSlotService, ServerStatisticsService } from '../..';
 import { convertToServerStatisticsResponse, RedirectorService, ServerSlot, ServerStatisticsResponse, SnackbarManager, UpdateServerSlotRequest } from '../../../shared';
 
-enum ServerStatus {
+export enum ServerStatus {
   Online = 'green',
   Offline = 'red',
   NoData = 'grey'

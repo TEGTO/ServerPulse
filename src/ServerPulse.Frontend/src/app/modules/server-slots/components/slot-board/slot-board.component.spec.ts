@@ -74,7 +74,7 @@ describe('SlotBoardComponent', () => {
     expect(mockServerSlotService.createServerSlot).not.toHaveBeenCalled();
   });
 
-  it('should filter server slots on input change', () => {
+  it('should filter server slots on input change', (done) => {
     const input = fixture.debugElement.query(By.css('#server-str')).nativeElement;
     const event = new Event('input');
     input.value = 'test';
@@ -82,8 +82,10 @@ describe('SlotBoardComponent', () => {
 
     mockServerSlotService.getServerSlotsWithString.and.returnValue(of([mockServerSlots[1]]));
     component.onInputChange(event);
-
-    expect(mockServerSlotService.getServerSlotsWithString).toHaveBeenCalledWith('test');
-    expect(component.serverSlots).toEqual([mockServerSlots[1]]);
+    setTimeout(function () {
+      expect(mockServerSlotService.getServerSlotsWithString).toHaveBeenCalledWith('test');
+      expect(component.serverSlots).toEqual([mockServerSlots[1]]);
+      done();
+    }, 600);
   });
 });

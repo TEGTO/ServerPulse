@@ -1,15 +1,14 @@
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
-
 import { CUSTOM_ELEMENTS_SCHEMA, DebugElement } from '@angular/core';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
-import { ServerSlotDialogManager, ServerSlotService } from '../..';
-import { RedirectorService, SnackbarManager } from '../../../shared';
-import { ServerSlotComponent } from './server-slot.component';
+import { ServerSlotDialogManager, ServerSlotService, ServerStatisticsService } from '../..';
+import { RedirectorService, ServerStatisticsResponse, SnackbarManager, TimeSpan } from '../../../shared';
+import { ServerSlotComponent, ServerStatus } from './server-slot.component';
 
 describe('ServerSlotComponent', () => {
   let component: ServerSlotComponent;
@@ -19,12 +18,21 @@ describe('ServerSlotComponent', () => {
   let dialogManager: jasmine.SpyObj<ServerSlotDialogManager>;
   let redirector: jasmine.SpyObj<RedirectorService>;
   let snackBarManager: jasmine.SpyObj<SnackbarManager>;
+  let serverStatisticsService: jasmine.SpyObj<ServerStatisticsService>;
 
   const mockServerSlot = {
     id: '1',
     name: 'Test Slot',
     slotKey: 'testkey',
     userEmail: 'test@example.com'
+  };
+  const mockStatistics: ServerStatisticsResponse = {
+    isAlive: true,
+    dataExists: true,
+    serverLastStartDateTime: new Date(),
+    serverUptime: new TimeSpan(),
+    lastServerUptime: new TimeSpan(),
+    lastPulseDateTime: new Date()
   };
 
   const mockDialogRef = {
@@ -36,6 +44,10 @@ describe('ServerSlotComponent', () => {
     dialogManager = jasmine.createSpyObj('ServerSlotDialogManager', ['openDeleteSlotConfirmMenu']);
     redirector = jasmine.createSpyObj('RedirectorService', ['redirectTo']);
     snackBarManager = jasmine.createSpyObj('SnackbarManager', ['openInfoSnackbar']);
+    serverStatisticsService = jasmine.createSpyObj('ServerStatisticsService', ['startConnection', 'startListenPulse', 'receiveStatistics']);
+
+    serverStatisticsService.startConnection.and.returnValue(of());
+    serverStatisticsService.receiveStatistics.and.returnValue(of({ key: mockServerSlot.slotKey, data: JSON.stringify(mockStatistics) }));
 
     await TestBed.configureTestingModule({
       declarations: [ServerSlotComponent],
@@ -50,7 +62,8 @@ describe('ServerSlotComponent', () => {
         { provide: ServerSlotService, useValue: serverSlotService },
         { provide: ServerSlotDialogManager, useValue: dialogManager },
         { provide: RedirectorService, useValue: redirector },
-        { provide: SnackbarManager, useValue: snackBarManager }
+        { provide: SnackbarManager, useValue: snackBarManager },
+        { provide: ServerStatisticsService, useValue: serverStatisticsService }
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA]
     }).compileComponents();
@@ -107,5 +120,50 @@ describe('ServerSlotComponent', () => {
     component.openConfirmDeletion();
     expect(dialogManager.openDeleteSlotConfirmMenu).toHaveBeenCalled();
     expect(serverSlotService.deleteServerSlot).toHaveBeenCalledWith(mockServerSlot.id);
+  });
+
+  it('should set serverStatus to Online if data exists and isAlive is true', () => {
+    (component as any).currentServerSlotStatistics = {
+      isAlive: true,
+      dataExists: true,
+      serverLastStartDateTime: new Date(),
+      serverUptime: null,
+      lastServerUptime: null,
+      lastPulseDateTime: new Date(),
+      lastLoadDateTime: new Date(),
+      loadEventNumber: 1
+    };
+    component.toggleServerStatus();
+    expect(component.serverStatus).toBe(ServerStatus.Online);
+  });
+
+  it('should set serverStatus to Offline if data exists and isAlive is false', () => {
+    (component as any).currentServerSlotStatistics = {
+      isAlive: false,
+      dataExists: true,
+      serverLastStartDateTime: new Date(),
+      serverUptime: null,
+      lastServerUptime: null,
+      lastPulseDateTime: new Date(),
+      lastLoadDateTime: new Date(),
+      loadEventNumber: 1
+    };
+    component.toggleServerStatus();
+    expect(component.serverStatus).toBe(ServerStatus.Offline);
+  });
+
+  it('should set serverStatus to NoData if data does not exist', () => {
+    (component as any).currentServerSlotStatistics = {
+      isAlive: false,
+      dataExists: false,
+      serverLastStartDateTime: new Date(),
+      serverUptime: null,
+      lastServerUptime: null,
+      lastPulseDateTime: new Date(),
+      lastLoadDateTime: new Date(),
+      loadEventNumber: 1
+    };
+    component.toggleServerStatus();
+    expect(component.serverStatus).toBe(ServerStatus.NoData);
   });
 });

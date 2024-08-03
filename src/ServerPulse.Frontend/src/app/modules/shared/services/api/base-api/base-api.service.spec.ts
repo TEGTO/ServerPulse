@@ -1,25 +1,25 @@
 import { HttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { CustomErrorHandler } from '../../error-handler/custom-error-handler.service';
+import { ErrorHandler } from '../../..';
 import { URLDefiner } from '../../url-definer/url-definer.service';
 import { BaseApiService } from './base-api.service';
 
 describe('BaseApiService', () => {
   let service: BaseApiService;
   let mockHttpClient: jasmine.SpyObj<HttpClient>;
-  let mockErrorHandler: jasmine.SpyObj<CustomErrorHandler>;
+  let mockErrorHandler: jasmine.SpyObj<ErrorHandler>;
   let mockUrlDefiner: jasmine.SpyObj<URLDefiner>;
 
   beforeEach(() => {
     mockHttpClient = jasmine.createSpyObj('HttpClient', ['get', 'post', 'put', 'delete']);
-    mockErrorHandler = jasmine.createSpyObj('CustomErrorHandler', ['handleApiError']);
+    mockErrorHandler = jasmine.createSpyObj('ErrorHandler', ['handleApiError']);
     mockUrlDefiner = jasmine.createSpyObj('URLDefiner', ['combineWithApartmentApiUrl']);
 
     TestBed.configureTestingModule({
       providers: [
         BaseApiService,
         { provide: HttpClient, useValue: mockHttpClient },
-        { provide: CustomErrorHandler, useValue: mockErrorHandler },
+        { provide: ErrorHandler, useValue: mockErrorHandler },
         { provide: URLDefiner, useValue: mockUrlDefiner }
       ]
     });

@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
-import { getAuthData, logOutUser, refreshAccessToken, registerUser, signInUser, updateUserData } from '../..';
+import { getAuthData, logOutUser, refreshAccessToken, registerUser, selectAuthData, selectIsRefreshSuccessful, signInUser, updateUserData } from '../..';
 import { AuthData, AuthToken, UserAuthenticationRequest, UserData, UserRegistrationRequest, UserUpdateDataRequest } from '../../../shared';
 import { AuthenticationControllerService } from './authentication-controller.service';
 
@@ -60,7 +60,8 @@ describe('AuthenticationControllerService', () => {
     const userAuthData: UserAuthenticationRequest = { login: 'user@example.com', password: 'password' };
     store.select.and.returnValue(of(mockAuthData));
 
-    service.singInUser(userAuthData).subscribe(result => {
+    service.singInUser(userAuthData);
+    service.getAuthData().subscribe(result => {
       expect(store.dispatch).toHaveBeenCalledWith(signInUser({ authRequest: userAuthData }));
       expect(result).toEqual(mockAuthData);
       done();
@@ -89,7 +90,8 @@ describe('AuthenticationControllerService', () => {
   it('should dispatch logOutUser action and return authData observable', (done) => {
     store.select.and.returnValue(of(mockAuthData));
 
-    service.logOutUser().subscribe(result => {
+    service.logOutUser();
+    service.getAuthData().subscribe(result => {
       expect(store.dispatch).toHaveBeenCalledWith(logOutUser());
       expect(result).toEqual(mockAuthData);
       done();
@@ -98,9 +100,15 @@ describe('AuthenticationControllerService', () => {
 
   it('should dispatch refreshAccessToken action and return authData observable', (done) => {
     const accessToken: AuthToken = { accessToken: 'newToken', refreshToken: 'newRefresh', refreshTokenExpiryDate: new Date() };
-    store.select.and.returnValue(of(mockAuthData));
+    // @ts-ignore
+    store.select.withArgs(selectIsRefreshSuccessful).and.returnValue(of(true));
+    // @ts-ignore
+    store.select.withArgs(selectAuthData).and.returnValue(of(mockAuthData));
 
     service.refreshToken(accessToken).subscribe(result => {
+      expect(result).toEqual(true);
+    });
+    service.getAuthData().subscribe(result => {
       expect(store.dispatch).toHaveBeenCalledWith(refreshAccessToken({ authToken: accessToken }));
       expect(result).toEqual(mockAuthData);
       done();

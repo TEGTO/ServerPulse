@@ -50,6 +50,7 @@ describe('AuthReducer', () => {
         accessToken: "",
         refreshToken: "",
         refreshTokenExpiryDate: new Date(),
+        isRefreshSuccessful: false,
         error: null
     };
 
@@ -152,6 +153,7 @@ describe('AuthReducer', () => {
             accessToken: accessToken.accessToken,
             refreshToken: accessToken.refreshToken,
             refreshTokenExpiryDate: accessToken.refreshTokenExpiryDate,
+            isRefreshSuccessful: true,
             error: null
         });
     });

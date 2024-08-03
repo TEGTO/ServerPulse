@@ -21,7 +21,7 @@ describe('LoginComponent', () => {
   let dialogRef: jasmine.SpyObj<MatDialogRef<LoginComponent>>;
 
   beforeEach(waitForAsync(() => {
-    const authServiceSpy = jasmine.createSpyObj('AuthenticationService', ['singInUser', 'getAuthErrors']);
+    const authServiceSpy = jasmine.createSpyObj('AuthenticationService', ['singInUser', 'getAuthData', 'getAuthErrors']);
     const snackbarManagerSpy = jasmine.createSpyObj('SnackbarManager', ['openErrorSnackbar']);
     const authDialogManagerSpy = jasmine.createSpyObj('AuthenticationDialogManager', ['openRegisterMenu']);
     const dialogRefSpy = jasmine.createSpyObj('MatDialogRef', ['close']);
@@ -93,7 +93,7 @@ describe('LoginComponent', () => {
       password: 'password123'
     });
 
-    authService.singInUser.and.returnValue(of(authData));
+    authService.getAuthData.and.returnValue(of(authData));
     authService.getAuthErrors.and.returnValue(of(null));
 
     fixture.debugElement.query(By.css('button[type="submit"]')).nativeElement.click();
@@ -119,7 +119,7 @@ describe('LoginComponent', () => {
       password: 'password123'
     });
 
-    authService.singInUser.and.returnValue(of(authData));
+    authService.getAuthData.and.returnValue(of(authData));
     authService.getAuthErrors.and.returnValue(of('Login failed'));
 
     fixture.debugElement.query(By.css('button[type="submit"]')).nativeElement.click();
@@ -141,7 +141,7 @@ describe('LoginComponent', () => {
       refreshToken: "refreshToken",
       refreshTokenExpiryDate: new Date()
     }
-    authService.singInUser.and.returnValue(of(authData));
+    authService.getAuthData.and.returnValue(of(authData));
     authService.getAuthErrors.and.returnValue(of('Server error'));
 
     component.signInUser();

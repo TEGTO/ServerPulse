@@ -1,5 +1,5 @@
 import { AuthState, RegistrationState, UserDataState } from "./auth.reducer";
-import { selectAuthData, selectAuthErrors, selectAuthState, selectIsRegistrationSuccess, selectIsUpdateSuccessful, selectRegistrationErrors, selectRegistrationState, selectUserDataState, selectUserErrors } from "./auth.selector";
+import { selectAuthData, selectAuthErrors, selectAuthState, selectIsRefreshSuccessful, selectIsRegistrationSuccess, selectIsUpdateSuccessful, selectRegistrationErrors, selectRegistrationState, selectUserDataState, selectUserErrors } from "./auth.selector";
 
 describe('Registration Selectors', () => {
     const initialState: RegistrationState = {
@@ -31,6 +31,7 @@ describe('Authentication Selectors', () => {
         accessToken: "",
         refreshToken: "",
         refreshTokenExpiryDate: new Date(),
+        isRefreshSuccessful: false,
         error: null
     };
     const errorState: AuthState = {
@@ -38,7 +39,7 @@ describe('Authentication Selectors', () => {
         error: 'An error occurred'
     };
 
-    it('should select a authentication state', () => {
+    it('should select an authentication state', () => {
         const result = selectAuthState.projector(initialState);
         expect(result).toEqual(initialState);
     });
@@ -50,6 +51,10 @@ describe('Authentication Selectors', () => {
             refreshToken: initialState.refreshToken,
             refreshTokenExpiryDate: initialState.refreshTokenExpiryDate
         });
+    });
+    it('should select selectIsRefreshSuccessful', () => {
+        const result = selectIsRefreshSuccessful.projector(initialState);
+        expect(result).toEqual(initialState.isRefreshSuccessful);
     });
     it('should select authentication errors', () => {
         const result = selectAuthErrors.projector(errorState);

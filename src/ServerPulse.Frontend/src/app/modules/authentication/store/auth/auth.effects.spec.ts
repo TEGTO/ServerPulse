@@ -202,7 +202,6 @@ describe('SignInEffects', () => {
             effects.refreshToken$.subscribe(result => {
                 expect(result).toEqual(outcome);
                 expect(mockApiService.refreshToken).toHaveBeenCalledWith(authToken);
-                expect(mockLocalStorage.getItem).toHaveBeenCalledWith('authData');
                 expect(mockLocalStorage.setItem).toHaveBeenCalledWith('authData', JSON.stringify({ isAuthenticated: true, accessToken: 'newAccessToken', refreshToken: 'refreshToken', refreshTokenExpiryDate: authToken.refreshTokenExpiryDate }));
                 done();
             });

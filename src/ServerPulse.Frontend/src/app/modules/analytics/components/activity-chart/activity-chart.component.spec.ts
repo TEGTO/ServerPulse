@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ActivityChartComponent } from './activity-chart.component';
 
 describe('ActivityChartComponent', () => {
@@ -8,9 +9,10 @@ describe('ActivityChartComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ActivityChartComponent]
+      declarations: [ActivityChartComponent],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(ActivityChartComponent);
     component = fixture.componentInstance;

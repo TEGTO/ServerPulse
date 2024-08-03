@@ -33,7 +33,6 @@ export class AuthInterceptor implements HttpInterceptor {
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<Object>> {
     let authReq = req;
-
     if (authReq.url.includes('/refresh')) {
       return next.handle(authReq);
     }
