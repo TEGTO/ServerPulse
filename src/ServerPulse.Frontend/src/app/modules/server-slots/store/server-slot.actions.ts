@@ -3,6 +3,19 @@ import { CreateServerSlotRequest } from "../../shared/domain/dtos/server-slot/cr
 import { UpdateServerSlotRequest } from "../../shared/domain/dtos/server-slot/updateServerSlotRequest";
 import { ServerSlot } from "../../shared/domain/models/server-slot/serverSlot";
 
+//Get Server Slot By Id
+export const getServerSlotById = createAction(
+    '[Server Slot] Get Server Slot By Id',
+    props<{ id: string }>()
+);
+export const getServerSlotByIdSuccess = createAction(
+    '[Server Slot] Get Server Slot By Id Success',
+    props<{ serverSlot: ServerSlot }>()
+);
+export const getServerSlotByIdFailure = createAction(
+    '[Server Slot] Get Server Slot By Id Failure',
+    props<{ error: any }>()
+);
 //Get Server Slots
 export const getServerSlots = createAction(
     '[Server Slot] Get Server Slots Of The User',

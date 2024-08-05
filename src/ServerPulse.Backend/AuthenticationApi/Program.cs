@@ -1,5 +1,4 @@
 using Authentication;
-using Authentication.Configuration;
 using Authentication.Services;
 using AuthenticationApi;
 using AuthenticationApi.Data;
@@ -42,17 +41,8 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 .AddEntityFrameworkStores<AuthIdentityDbContext>()
 .AddDefaultTokenProviders();
 
-var jwtSettings = new JwtSettings()
-{
-    Key = builder.Configuration[Configuration.JWT_SETTINGS_KEY],
-    Audience = builder.Configuration[Configuration.JWT_SETTINGS_AUDIENCE],
-    Issuer = builder.Configuration[Configuration.JWT_SETTINGS_ISSUER],
-    ExpiryInMinutes = Convert.ToDouble(builder.Configuration[Configuration.JWT_SETTINGS_EXPIRY_IN_MINUTES]),
-};
-builder.Services.AddSingleton(jwtSettings);
-builder.Services.AddAuthorization();
+builder.Services.ConfigureIdentityServices(builder.Configuration);
 builder.Services.AddScoped<ITokenHandler, JwtHandler>();
-builder.Services.AddCustomJwtAuthentication(jwtSettings);
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IDatabaseRepository<AuthIdentityDbContext>, DatabaseRepository<AuthIdentityDbContext>>();

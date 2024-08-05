@@ -27,13 +27,13 @@ namespace Authentication.Services
             var refreshToken = GenerateRefreshToken();
             return new AccessTokenData { AccessToken = token, RefreshToken = refreshToken };
         }
-        public SigningCredentials GetSigningCredentials()
+        private SigningCredentials GetSigningCredentials()
         {
             var key = Encoding.UTF8.GetBytes(jwtSettings.Key);
             var secretKey = new SymmetricSecurityKey(key);
             return new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
         }
-        public List<Claim> GetClaims(IdentityUser user)
+        private List<Claim> GetClaims(IdentityUser user)
         {
             var claims = new List<Claim>
             {
@@ -42,7 +42,7 @@ namespace Authentication.Services
             };
             return claims;
         }
-        public JwtSecurityToken GenerateTokenOptions(SigningCredentials signingCredentials, List<Claim> claims)
+        private JwtSecurityToken GenerateTokenOptions(SigningCredentials signingCredentials, List<Claim> claims)
         {
             var tokenOptions = new JwtSecurityToken(
                 issuer: jwtSettings.Issuer,
@@ -70,7 +70,7 @@ namespace Authentication.Services
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
                 ValidateIssuer = true,
                 ValidateAudience = true,
-                ValidateLifetime = true,
+                ValidateLifetime = false,
                 ValidateIssuerSigningKey = true
             };
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -82,11 +82,6 @@ namespace Authentication.Services
                 throw new SecurityTokenException("Invalid Token");
             }
             return principal;
-        }
-        public AccessTokenData RefreshToken(IdentityUser user, AccessTokenData token)
-        {
-            var principal = GetPrincipalFromExpiredToken(token.AccessToken);
-            return CreateToken(user);
         }
     }
 }

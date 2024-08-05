@@ -6,6 +6,7 @@ import { CreateServerSlotRequest, ServerSlot, UpdateServerSlotRequest } from "..
     providedIn: 'root'
 })
 export abstract class ServerSlotService {
+    abstract getServerSlotById(id: string): Observable<ServerSlot | undefined>;
     abstract getServerSlots(): Observable<ServerSlot[]>;
     abstract getServerSlotsWithString(str: string): Observable<ServerSlot[]>;
     abstract createServerSlot(request: CreateServerSlotRequest): void;

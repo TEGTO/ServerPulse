@@ -1,0 +1,34 @@
+<div id="wrapper">
+    <div id="chart-control">
+        <div class="flex flex-wrap gap-1">
+            <button (click)="updateOptions( '1w' )" [class.active]="activeOptionButton=='1w'">
+                1W
+            </button>
+            <button (click)="updateOptions( '1m' )" [class.active]="activeOptionButton=='1m'">
+                1M
+            </button>
+            <button (click)="updateOptions( '3m' )" [class.active]="activeOptionButton=='3m'">
+                3M
+            </button>
+            <button (click)="updateOptions( '6m' )" [class.active]="activeOptionButton=='6m'">
+                6M
+            </button>
+            <button (click)="updateOptions( 'all' )" [class.active]="activeOptionButton=='all'">
+                All
+            </button>
+        </div>
+        <apx-chart #controlChart [series]="controlChartOptions.series!" [chart]="controlChartOptions.chart!"
+            [yaxis]="controlChartOptions.yaxis!" [xaxis]="controlChartOptions.xaxis!"
+            [colors]="controlChartOptions.colors!" [fill]="controlChartOptions.fill!"
+            [dataLabels]="controlChartOptions.dataLabels!" [yaxis]="controlChartOptions.yaxis!"
+            [stroke]="controlChartOptions.stroke!" [tooltip]="controlChartOptions.tooltip!"
+            [legend]="{show: false}"></apx-chart>
+    </div>
+    <div id="chart-daily">
+        <apx-chart [series]="dailyChartOptions.series!" [chart]="dailyChartOptions.chart!"
+            [title]="dailyChartOptions.title!" [xaxis]="dailyChartOptions.xaxis!" [yaxis]="dailyChartOptions.yaxis!"
+            [legend]="dailyChartOptions.legend!" [dataLabels]="dailyChartOptions.dataLabels!"
+            [colors]="dailyChartOptions.colors!" [fill]="dailyChartOptions.fill!" [markers]="dailyChartOptions.markers!"
+            [stroke]="dailyChartOptions.stroke!" [tooltip]="dailyChartOptions.tooltip!"></apx-chart>
+    </div>
+</div>

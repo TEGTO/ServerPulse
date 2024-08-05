@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
 import { catchError, map, mergeMap, of } from "rxjs";
-import { createServerSlot, createServerSlotFailure, createServerSlotSuccess, deleteServerSlot, deleteServerSlotFailure, deleteServerSlotSuccess, getServerSlots, getServerSlotsFailure, getServerSlotsSuccess, getServerSlotsWithString, getServerSlotsWithStringFailure, getServerSlotsWithStringSuccess, updateServerSlot, updateServerSlotFailure, updateServerSlotSuccess } from "..";
+import { createServerSlot, createServerSlotFailure, createServerSlotSuccess, deleteServerSlot, deleteServerSlotFailure, deleteServerSlotSuccess, getServerSlotById, getServerSlotByIdFailure, getServerSlotByIdSuccess, getServerSlots, getServerSlotsFailure, getServerSlotsSuccess, getServerSlotsWithString, getServerSlotsWithStringFailure, getServerSlotsWithStringSuccess, updateServerSlot, updateServerSlotFailure, updateServerSlotSuccess } from "..";
 import { ServerSlotApiService, serverSlotResponseToServerSlot } from "../../shared";
 
 //ServerSlots
@@ -13,6 +13,20 @@ export class ServerSlotEffects {
         private readonly apiService: ServerSlotApiService,
     ) { }
 
+    getServerSlotById$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(getServerSlotById),
+            mergeMap((action) =>
+                this.apiService.getServerSlotById(action.id).pipe(
+                    map((response) => {
+                        var serverSlot = serverSlotResponseToServerSlot(response);
+                        return getServerSlotByIdSuccess({ serverSlot: serverSlot });
+                    }),
+                    catchError(error => of(getServerSlotByIdFailure({ error: error.message })))
+                )
+            )
+        )
+    );
     getServerSlots$ = createEffect(() =>
         this.actions$.pipe(
             ofType(getServerSlots),

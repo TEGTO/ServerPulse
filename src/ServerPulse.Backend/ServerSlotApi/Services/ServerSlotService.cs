@@ -16,7 +16,7 @@ namespace ServerSlotApi.Services
             slotsPerUser = int.Parse(configuration[Configuration.SERVER_SLOTS_PER_USER]!);
         }
 
-        public async Task<ServerSlot?> GetSlotIdAsync(string id, CancellationToken cancellationToken)
+        public async Task<ServerSlot?> GetSlotByIdAsync(string id, CancellationToken cancellationToken)
         {
             ServerSlot? serverSlot = null;
             using (var dbContext = await CreateDbContextAsync(cancellationToken))

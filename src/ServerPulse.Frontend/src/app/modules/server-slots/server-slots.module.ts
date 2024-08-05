@@ -6,18 +6,12 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { RouterModule, Routes } from '@angular/router';
 import { provideEffects } from '@ngrx/effects';
 import { provideState, provideStore } from '@ngrx/store';
 import { ServerSlotComponent, ServerSlotControllerService, ServerSlotDeleteConfirmComponent, ServerSlotDialogManager, ServerSlotDialogManagerService, ServerSlotEffects, ServerSlotInfoComponent, serverSlotReducer, ServerSlotService, ServerStatisticsControllerService, ServerStatisticsService, SlotBoardComponent } from '.';
 import { AnalyticsModule } from '../analytics/analytics.module';
-
-const routes: Routes = [
-  {
-    path: "serverslot/:slotId", component: ServerSlotInfoComponent,
-  }
-];
 
 @NgModule({
   exports: [
@@ -32,7 +26,6 @@ const routes: Routes = [
   imports: [
     CommonModule,
     AnalyticsModule,
-    RouterModule.forRoot(routes),
     MatButtonModule,
     MatDialogModule,
     MatInputModule,
@@ -41,6 +34,7 @@ const routes: Routes = [
     ReactiveFormsModule,
     MatSelectModule,
     MatMenuModule,
+    MatProgressSpinnerModule
   ],
   providers: [
     { provide: ServerSlotDialogManager, useClass: ServerSlotDialogManagerService },

@@ -17,10 +17,10 @@
 
 .server-slot {
     padding: 2rem;
-    gap: 10px;
     box-shadow: 2px 2px 7px 1px colors.$task-box-shadow;
     display: flex;
     flex-direction: column;
+    overflow-x: hidden;
 
     .server-slot__header {
         display: flex;
@@ -72,9 +72,12 @@
                 text-wrap: nowrap;
 
                 .name__input {
-                    min-width: 120px;
+                    min-width: 130px;
                     font-size: inherit;
                     font-weight: inherit;
+                    overflow: inherit;
+                    text-overflow: inherit;
+                    text-wrap: inherit;
                     border: none;
                     outline: none;
                 }
@@ -103,7 +106,7 @@
         gap: 10px;
         padding: 10px;
         width: 100%;
-        height: 430px;
+        height: 315px;
     }
 }
 

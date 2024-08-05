@@ -1,5 +1,5 @@
 import { createReducer, on } from "@ngrx/store";
-import { createServerSlotFailure, createServerSlotSuccess, deleteServerSlotFailure, deleteServerSlotSuccess, getServerSlotsFailure, getServerSlotsSuccess, getServerSlotsWithStringFailure, getServerSlotsWithStringSuccess, updateServerSlotFailure, updateServerSlotSuccess } from "..";
+import { createServerSlotFailure, createServerSlotSuccess, deleteServerSlotFailure, deleteServerSlotSuccess, getServerSlotByIdFailure, getServerSlotByIdSuccess, getServerSlotsFailure, getServerSlotsSuccess, getServerSlotsWithStringFailure, getServerSlotsWithStringSuccess, updateServerSlotFailure, updateServerSlotSuccess } from "..";
 import { applyUpdateRequestOnServerSlot, ServerSlot } from "../../shared";
 
 //ServerSlots
@@ -13,6 +13,20 @@ const initialServerSlotState: ServerSlotState = {
 };
 export const serverSlotReducer = createReducer(
     initialServerSlotState,
+    //Get Server Slot By Id
+    on(getServerSlotByIdSuccess, (state, { serverSlot: serverSlot }) => {
+        let serverSlots = state.serverSlots.filter(x => x.id !== serverSlot.id);
+        serverSlots.push(serverSlot);
+        return {
+            ...state,
+            serverSlots: serverSlots,
+            error: null
+        }
+    }),
+    on(getServerSlotByIdFailure, (state, { error: error }) => ({
+        ...state,
+        error: error
+    })),
     //Get Server Slots
     on(getServerSlotsSuccess, (state, { serverSlots: serverSlots }) => ({
         ...state,

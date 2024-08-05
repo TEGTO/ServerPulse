@@ -1,95 +1,60 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
-import {
-  ApexAxisChartSeries,
-  ApexChart,
-  ApexDataLabels,
-  ApexFill,
-  ApexLegend,
-  ApexMarkers,
-  ApexStroke,
-  ApexXAxis,
-  ApexYAxis
-} from "ng-apexcharts";
-
-export type ChartOptions = {
-  series: ApexAxisChartSeries;
-  chart: ApexChart;
-  xaxis: ApexXAxis;
-  dataLabels: ApexDataLabels;
-  yaxis: ApexYAxis;
-  fill: ApexFill;
-  legend: ApexLegend;
-  stroke: ApexStroke;
-  markers: ApexMarkers;
-  colors: string[];
-};
+import { ChartOptions } from '../..';
 
 @Component({
   selector: 'activity-chart',
   templateUrl: './activity-chart.component.html',
-  styleUrl: './activity-chart.component.scss',
+  styleUrls: ['./activity-chart.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ActivityChartComponent implements OnInit {
   @Input({ required: true }) public chartUniqueId!: string;
-  public chartOptions1!: Partial<ChartOptions>;
-  public chartOptions2!: Partial<ChartOptions>;
+  public chartOptions!: Partial<ChartOptions>;
 
   constructor() { }
+
   ngOnInit(): void {
-    let chart1Id = `chart1-${this.chartUniqueId}`;
-    let chart2Id = `chart2-${this.chartUniqueId}`;
-    this.chartOptions1 = {
+    const currentTime = new Date();
+    const hourAgo = new Date(currentTime.getTime() - 1 * 60 * 60 * 1000);
+    const chartId = `chart-${this.chartUniqueId}`;
+
+    this.chartOptions = {
       series: [
         {
-          name: "Pulse",
-          data: this.generateDayWiseTimeSeries(
-            new Date("11 Feb 2017").getTime(),
-            185,
+          name: "Events",
+          data: this.generate5MinutesTimeSeries(
+            hourAgo,
+            12,
             {
               min: 0,
-              max: 20
+              max: 100
             }
-          )
-        },
-        {
-          name: "Load",
-          data: this.generateDayWiseTimeSeries(
-            new Date("11 Feb 2017").getTime(),
-            185,
-            {
-              min: 0,
-              max: 20
-            }
-          )
+          ),
         }
       ],
       chart: {
-        id: chart1Id,
-        type: "area",
-        height: 230,
+        id: chartId,
+        type: "bar",
+        height: 260,
         stacked: false,
         toolbar: {
           autoSelected: "pan",
           show: false
         },
         animations: {
-          enabled: false,
+          enabled: true,
         }
-      },
-      colors: ['#E53F47', '#008FFB'],
-      stroke: {
-        width: [2, 4],
-        curve: ['monotoneCubic', 'smooth']
       },
       fill: {
         type: "gradient",
         gradient: {
-          shadeIntensity: 1,
-          inverseColors: false,
-          opacityFrom: 0.45,
-          opacityTo: 0.05,
-          stops: [20, 100, 100, 100]
+          shade: "light",
+          type: "horizontal",
+          shadeIntensity: 0.25,
+          inverseColors: true,
+          opacityFrom: 1,
+          opacityTo: 1,
+          stops: [50, 0, 100, 100]
         }
       },
       dataLabels: {
@@ -100,86 +65,47 @@ export class ActivityChartComponent implements OnInit {
       },
       xaxis: {
         type: "datetime",
-      }
-    };
-
-    this.chartOptions2 = {
-      series: [
-        {
-          name: "Pulse",
-          data: this.generateDayWiseTimeSeries(
-            new Date("11 Feb 2017").getTime(),
-            185,
-            {
-              min: 0,
-              max: 20
-            }
-          )
+        min: hourAgo.getTime(),
+        max: currentTime.getTime(),
+        labels: {
+          datetimeUTC: false,
+          format: 'HH:mm'
         },
-        {
-          name: "Load",
-          data: this.generateDayWiseTimeSeries(
-            new Date("11 Feb 2017").getTime(),
-            185,
-            {
-              min: 0,
-              max: 20
-            }
-          )
-        }
-      ],
-      chart: {
-        id: chart2Id,
-        height: 130,
-        type: "area",
-        stacked: true,
-        brush: {
-          target: chart1Id,
-          enabled: true
-        },
-        selection: {
-          enabled: true,
-          xaxis: {
-            min: new Date("19 Jun 2017").getTime(),
-            max: new Date("14 Aug 2017").getTime()
-          }
-        },
-      },
-      colors: ['#E53F47', '#008FFB'],
-      stroke: {
-        width: [0.5, 2],
-        curve: ['monotoneCubic', 'smooth']
-      },
-      fill: {
-        type: "gradient",
-        gradient: {
-          opacityFrom: 0.91,
-          opacityTo: 0.1
-        },
-      },
-      xaxis: {
-        type: "datetime",
+        tickAmount: 12,
         tooltip: {
           enabled: false
         }
       },
       yaxis: {
-        tickAmount: 2
-      }
+        show: true,
+        title: {
+          text: "Number of Events"
+        }
+      },
+      tooltip: {
+        x: {
+          formatter: function (val) {
+            let date = new Date(val);
+            let hours = date.getHours().toString().padStart(2, '0');
+            let minutes = date.getMinutes().toString().padStart(2, '0');
+            let nextMinutes = (date.getMinutes() + 5).toString().padStart(2, '0');
+            return `${hours}:${minutes} - ${hours}:${nextMinutes}`;
+          }
+        },
+        marker: {
+          show: true,
+          fillColors: ['#40abfc']
+        }
+      },
     };
   }
 
-  public generateDayWiseTimeSeries(baseval: any, count: any, yrange: any) {
-    var i = 0;
-    var series = [];
-    while (i < count) {
-      var x = baseval;
-      var y =
-        Math.floor(Math.random() * (yrange.max - yrange.min + 1)) + yrange.min;
-
+  public generate5MinutesTimeSeries(baseval: Date, count: number, yrange: { min: number, max: number }) {
+    const series = [];
+    for (let i = 0; i < count; i++) {
+      const x = baseval.getTime() + i * 5 * 60 * 1000;
+      const y = Math.floor(Math.random() * (yrange.max - yrange.min + 1)) + yrange.min;
       series.push([x, y]);
-      baseval += 86400000;
-      i++;
     }
     return series;
   }

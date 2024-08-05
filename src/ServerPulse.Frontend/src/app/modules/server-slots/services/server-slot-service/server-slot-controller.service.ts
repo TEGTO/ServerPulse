@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-import { createServerSlot, deleteServerSlot, getServerSlots, getServerSlotsWithString, selectServerSlots, updateServerSlot } from '../..';
+import { createServerSlot, deleteServerSlot, getServerSlotById, getServerSlots, getServerSlotsWithString, selectServerSlotById, selectServerSlots, updateServerSlot } from '../..';
 import { CreateServerSlotRequest, ServerSlot, UpdateServerSlotRequest } from '../../../shared';
 import { ServerSlotService } from './server-slot-service';
 
@@ -14,6 +14,10 @@ export class ServerSlotControllerService implements ServerSlotService {
     private readonly store: Store
   ) { }
 
+  getServerSlotById(id: string): Observable<ServerSlot | undefined> {
+    this.store.dispatch(getServerSlotById({ id: id }));
+    return this.store.select(selectServerSlotById(id));
+  }
   getServerSlots(): Observable<ServerSlot[]> {
     this.store.dispatch(getServerSlots());
     return this.store.select(selectServerSlots);

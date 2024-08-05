@@ -1,5 +1,6 @@
 ﻿using Authentication.Configuration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -8,6 +9,19 @@ namespace Authentication
 {
     public static class CustomAuthExtension
     {
+        public static void ConfigureIdentityServices(this IServiceCollection services, IConfiguration configuration)
+        {
+            var jwtSettings = new JwtSettings()
+            {
+                Key = configuration[JWTConfiguration.JWT_SETTINGS_KEY]!,
+                Audience = configuration[JWTConfiguration.JWT_SETTINGS_AUDIENCE]!,
+                Issuer = configuration[JWTConfiguration.JWT_SETTINGS_ISSUER]!,
+                ExpiryInMinutes = Convert.ToDouble(configuration[JWTConfiguration.JWT_SETTINGS_EXPIRY_IN_MINUTES]!),
+            };
+            services.AddSingleton(jwtSettings);
+            services.AddAuthorization();
+            services.AddCustomJwtAuthentication(jwtSettings);
+        }
         public static void AddCustomJwtAuthentication(this IServiceCollection services, JwtSettings jwtSettings)
         {
             services.AddAuthentication(options =>

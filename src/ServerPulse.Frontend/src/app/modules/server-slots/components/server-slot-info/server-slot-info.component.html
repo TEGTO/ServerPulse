@@ -1,1 +1,126 @@
-<p>server-slot-info works!</p>
+<ng-container *ngIf="serverSlot !== undefined; else loading">
+
+    <nav class="slot-info-wrapper bg-white dark:bg-gray-900">
+        <div
+            class="slot-info-wrapper__content max-w-screen-xl gap-3 mx-auto p-4 border border-gray-200 rounded-lg shadow md:flex-row dark:border-gray-700">
+            <section class="content__statistics">
+                <div class="statistics__header border-b border-gray-200 dark:border-gray-600 pb-1.5">
+                    <button mat-icon-button [matMenuTriggerFor]="serverSlotMoreOptions">
+                        <span class="material-icons">more_vert</span>
+                    </button>
+                    <mat-menu #serverSlotMoreOptions="matMenu" id="serverSlotMoreOptions">
+                        <button mat-menu-item (click)="showKey()">
+                            <div class="flex gap-2 items-center justify-between">
+                                <span class="text-base">Key</span>
+                                <span class="material-icons ">key</span>
+                            </div>
+                        </button>
+                        <button mat-menu-item (click)="makeInputEditable()">
+                            <div class="flex gap-2 items-center justify-between">
+                                <span class="text-base">Rename</span>
+                                <span class="material-icons ">edit</span>
+                            </div>
+                        </button>
+                        <button mat-menu-item (click)="openConfirmDeletion()">
+                            <div class="flex gap-2 items-center justify-between">
+                                <span class="text-base text-red-600">Delete</span>
+                                <span class="material-icons text-red-600">delete</span>
+                            </div>
+                        </button>
+                    </mat-menu>
+                    <div class="header__center-group">
+                        <div class="center-group__name">
+                            <input #nameInput [ngStyle]="{'width': inputWidth + 'px'}" [(ngModel)]="inputValue"
+                                class="name__input"
+                                [ngClass]="{'editable': inputIsEditable, 'non-editable': !inputIsEditable}"
+                                (input)="onInputChange()" (blur)="onBlur();" [readonly]="!inputIsEditable"
+                                (dblclick)="makeInputEditable()" placeholder="Enter slot name" />
+                            <span #textSizer class="name__input-sizer">{{ inputValue }}</span>
+                        </div>
+                    </div>
+                    <button mat-icon-button>
+                        <span class="material-icons">download</span>
+                    </button>
+                </div>
+                <div class="statistics__content">
+                    <section class="content__left child:border-b border-gray-200 dark:border-gray-600">
+                        <div class="left__status">
+                            Status: No Data
+                            <div class="status__illumination">
+                                <span [ngClass]="{
+                                    'green': serverStatus === 'green',
+                                    'red': serverStatus === 'red',
+                                    'grey': serverStatus === 'grey'
+                                    }" class="illumination__indicator"></span>
+                            </div>
+                        </div>
+                        <div class="left__uptime">
+                            Last start:
+                        </div>
+                        <div class="left__uptime">
+                            Uptime:
+                        </div>
+                        <div class="left__last-uptime">
+                            Last uptime:
+                        </div>
+                        <div class="left__last-uptime">
+                            Last pulse:
+                        </div>
+                    </section>
+                    <section class="content__right">
+                        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                            <thead
+                                class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3">
+                                        Endpoint
+                                    </th>
+                                    <th scope="col" class="px-6 py-3">
+                                        Method
+                                    </th>
+                                    <th scope="col" class="px-6 py-3">
+                                        Status code
+                                    </th>
+                                    <th scope="col" class="px-6 py-3">
+                                        Date
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (item of [1,2,3,4,5]; track $index) {
+                                <tr class="border-b dark:border-gray-700">
+                                    <th scope="row"
+                                        class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                        /example
+                                    </th>
+                                    <td class="px-6 py-4">
+                                        'GET'
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        404
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        05.08.2024 15:31
+                                    </td>
+                                </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </section>
+                </div>
+            </section>
+            <section class="content__charts">
+                <activity-chart-detail [chartUniqueId]="slotId!"></activity-chart-detail>
+            </section>
+        </div>
+    </nav>
+
+
+
+</ng-container>
+
+<ng-template #loading>
+    <div class="flex items-center justify-center h-screen">
+        <mat-spinner></mat-spinner>
+    </div>
+</ng-template>

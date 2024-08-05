@@ -1,6 +1,5 @@
 using ApiGateway;
 using Authentication;
-using Authentication.Configuration;
 using ConsulUtils.Configuration;
 using ConsulUtils.Extension;
 using Ocelot.DependencyInjection;
@@ -43,14 +42,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-var jwtSettings = new JwtSettings()
-{
-    Key = builder.Configuration[Configuration.JWT_SETTINGS_KEY]!,
-    Audience = builder.Configuration[Configuration.JWT_SETTINGS_AUDIENCE]!,
-    Issuer = builder.Configuration[Configuration.JWT_SETTINGS_ISSUER]!,
-    ExpiryInMinutes = Convert.ToDouble(builder.Configuration[Configuration.JWT_SETTINGS_EXPIRY_IN_MINUTES]!),
-};
-builder.Services.AddCustomJwtAuthentication(jwtSettings);
+builder.Services.ConfigureIdentityServices(builder.Configuration);
 
 var mergedPath = "merged.json";
 Utility.MergeJsonFiles(

@@ -2,11 +2,12 @@
 using Authentication.Configuration;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
-using System.Text;
 
 namespace AuthenticationTests
 {
@@ -14,44 +15,67 @@ namespace AuthenticationTests
     internal class CustomAuthExtensionTests
     {
         private IServiceCollection services;
-        private Mock<JwtSettings> jwtSettingsMock;
+        private Mock<IConfiguration> configurationMock;
+        private JwtSettings expectedJwtSettings;
 
         [SetUp]
         public void SetUp()
         {
             services = new ServiceCollection();
-            jwtSettingsMock = new Mock<JwtSettings>();
-            jwtSettingsMock.Setup(s => s.Key).Returns("A very secret key");
-            jwtSettingsMock.Setup(s => s.Issuer).Returns("TestIssuer");
-            jwtSettingsMock.Setup(s => s.Audience).Returns("TestAudience");
+            configurationMock = new Mock<IConfiguration>();
+            expectedJwtSettings = new JwtSettings
+            {
+                Key = "A very secret key",
+                Issuer = "TestIssuer",
+                Audience = "TestAudience",
+                ExpiryInMinutes = 60
+            };
+
+            configurationMock.Setup(c => c[JWTConfiguration.JWT_SETTINGS_KEY]).Returns(expectedJwtSettings.Key);
+            configurationMock.Setup(c => c[JWTConfiguration.JWT_SETTINGS_AUDIENCE]).Returns(expectedJwtSettings.Audience);
+            configurationMock.Setup(c => c[JWTConfiguration.JWT_SETTINGS_ISSUER]).Returns(expectedJwtSettings.Issuer);
+            configurationMock.Setup(c => c[JWTConfiguration.JWT_SETTINGS_EXPIRY_IN_MINUTES]).Returns(expectedJwtSettings.ExpiryInMinutes.ToString());
         }
 
         [Test]
-        public void AddCustomJwtAuthentication_ShouldConfigureAuthenticationSchemes()
+        public void ConfigureIdentityServices_ShouldAddJwtSettingsAsSingleton()
         {
-            //Arrange
-            services.AddCustomJwtAuthentication(jwtSettingsMock.Object);
-            //Act
+            // Act
+            services.ConfigureIdentityServices(configurationMock.Object);
+            // Assert
+            var serviceProvider = services.BuildServiceProvider();
+            var jwtSettings = serviceProvider.GetRequiredService<JwtSettings>();
+            Assert.That(jwtSettings.Key, Is.EqualTo(expectedJwtSettings.Key));
+            Assert.That(jwtSettings.Issuer, Is.EqualTo(expectedJwtSettings.Issuer));
+            Assert.That(jwtSettings.Audience, Is.EqualTo(expectedJwtSettings.Audience));
+            Assert.That(jwtSettings.ExpiryInMinutes, Is.EqualTo(expectedJwtSettings.ExpiryInMinutes));
+        }
+        [Test]
+        public void ConfigureIdentityServices_ShouldConfigureAuthorization()
+        {
+            // Act
+            services.ConfigureIdentityServices(configurationMock.Object);
+            // Assert
+            var serviceProvider = services.BuildServiceProvider();
+            var authorizationOptions = serviceProvider.GetRequiredService<IOptions<AuthorizationOptions>>().Value;
+            Assert.That(authorizationOptions, Is.Not.Null);
+        }
+        [Test]
+        public void ConfigureIdentityServices_ShouldConfigureCustomJwtAuthentication()
+        {
+            // Act
+            services.ConfigureIdentityServices(configurationMock.Object);
+            // Assert
             var serviceProvider = services.BuildServiceProvider();
             var authenticationOptions = serviceProvider.GetRequiredService<IOptions<AuthenticationOptions>>().Value;
-            //Assert
             Assert.That(authenticationOptions.DefaultAuthenticateScheme, Is.EqualTo(JwtBearerDefaults.AuthenticationScheme));
             Assert.That(authenticationOptions.DefaultChallengeScheme, Is.EqualTo(JwtBearerDefaults.AuthenticationScheme));
             Assert.That(authenticationOptions.DefaultScheme, Is.EqualTo(JwtBearerDefaults.AuthenticationScheme));
-        }
-        [Test]
-        public void AddCustomJwtAuthentication_ShouldConfigureTokenValidationParameters()
-        {
-            //Arrange
-            services.AddCustomJwtAuthentication(jwtSettingsMock.Object);
-            //Act
-            var serviceProvider = services.BuildServiceProvider();
             var jwtBearerOptions = serviceProvider.GetRequiredService<IOptionsSnapshot<JwtBearerOptions>>().Get(JwtBearerDefaults.AuthenticationScheme);
             var tokenValidationParameters = jwtBearerOptions.TokenValidationParameters;
-            //Assert
-            Assert.That(tokenValidationParameters.ValidIssuer, Is.EqualTo(jwtSettingsMock.Object.Issuer));
-            Assert.That(tokenValidationParameters.ValidAudience, Is.EqualTo(jwtSettingsMock.Object.Audience));
-            Assert.That(tokenValidationParameters.IssuerSigningKey.KeyId, Is.EqualTo(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettingsMock.Object.Key)).KeyId));
+            Assert.That(tokenValidationParameters.ValidIssuer, Is.EqualTo(expectedJwtSettings.Issuer));
+            Assert.That(tokenValidationParameters.ValidAudience, Is.EqualTo(expectedJwtSettings.Audience));
+            Assert.That(tokenValidationParameters.IssuerSigningKey, Is.TypeOf<SymmetricSecurityKey>());
             Assert.IsTrue(tokenValidationParameters.ValidateIssuer);
             Assert.IsTrue(tokenValidationParameters.ValidateAudience);
             Assert.IsTrue(tokenValidationParameters.ValidateLifetime);

@@ -1,5 +1,4 @@
 using Authentication;
-using Authentication.Configuration;
 using ConsulUtils.Configuration;
 using ConsulUtils.Extension;
 using FluentValidation;
@@ -31,15 +30,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddScoped<IServerSlotService, ServerSlotService>();
 builder.Services.AddScoped<IDatabaseRepository<ServerDataDbContext>, DatabaseRepository<ServerDataDbContext>>();
 
-var jwtSettings = new JwtSettings()
-{
-    Key = builder.Configuration[Configuration.JWT_SETTINGS_KEY],
-    Audience = builder.Configuration[Configuration.JWT_SETTINGS_AUDIENCE],
-    Issuer = builder.Configuration[Configuration.JWT_SETTINGS_ISSUER],
-    ExpiryInMinutes = Convert.ToDouble(builder.Configuration[Configuration.JWT_SETTINGS_EXPIRY_IN_MINUTES]),
-};
-builder.Services.AddAuthorization();
-builder.Services.AddCustomJwtAuthentication(jwtSettings);
+builder.Services.ConfigureIdentityServices(builder.Configuration);
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 

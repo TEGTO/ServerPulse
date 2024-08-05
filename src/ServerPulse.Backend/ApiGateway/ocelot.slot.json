@@ -25,6 +25,30 @@
       }
     },
     {
+      "Key": "ServerSlot_GetById",
+      "ServiceName": "server-slot",
+      "UpstreamPathTemplate": "/serverslot/{id}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "DownstreamPathTemplate": "/serverslot/{id}",
+      "DownstreamScheme": "http",
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToRequest": {
+        "Authorization": "Bearer {token}"
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 5
+      }
+    },
+    {
       "Key": "ServerSlot_CheckIfExists",
       "ServiceName": "server-slot",
       "UpstreamPathTemplate": "/serverslot/check",
@@ -69,9 +93,9 @@
     {
       "Key": "ServerSlot_GetWithString",
       "ServiceName": "server-slot",
-      "UpstreamPathTemplate": "/serverslot/{str}",
+      "UpstreamPathTemplate": "/serverslot/contains/{str}",
       "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/serverslot/{str}",
+      "DownstreamPathTemplate": "/serverslot/contains/{str}",
       "DownstreamScheme": "http",
       "LoadBalancerOptions": {
         "Type": "LeastConnection"

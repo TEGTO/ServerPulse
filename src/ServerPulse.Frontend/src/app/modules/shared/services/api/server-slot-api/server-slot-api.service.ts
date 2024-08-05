@@ -13,8 +13,13 @@ export class ServerSlotApiService extends BaseApiService {
       catchError((resp) => this.handleError(resp))
     );
   }
+  getServerSlotById(id: string): Observable<ServerSlotResponse> {
+    return this.httpClient.get<ServerSlotResponse>(this.combinePathWithServerSlotApiUrl(`/${id}`)).pipe(
+      catchError((resp) => this.handleError(resp))
+    );
+  }
   getUserServerSlotsWithString(str: string): Observable<ServerSlotResponse[]> {
-    return this.httpClient.get<ServerSlotResponse[]>(this.combinePathWithServerSlotApiUrl(`/${str}`)).pipe(
+    return this.httpClient.get<ServerSlotResponse[]>(this.combinePathWithServerSlotApiUrl(`/contains/${str}`)).pipe(
       catchError((resp) => this.handleError(resp))
     );
   }

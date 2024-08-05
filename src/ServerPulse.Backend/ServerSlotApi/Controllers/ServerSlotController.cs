@@ -32,7 +32,16 @@ namespace ServerSlotApi.Controllers
             return Ok(serverSlots.Select(mapper.Map<ServerSlotResponse>));
         }
         [Authorize]
-        [HttpGet("{str}")]
+        [Route("{id}")]
+        [HttpGet]
+        public async Task<ActionResult<ServerSlotResponse>> GetSlotById(string id, CancellationToken cancellationToken)
+        {
+            var serverSlot = await serverSlotService.GetSlotByIdAsync(id, cancellationToken);
+            var response = mapper.Map<ServerSlotResponse>(serverSlot);
+            return Ok(response);
+        }
+        [Authorize]
+        [HttpGet("contains/{str}")]
         public async Task<ActionResult<IEnumerable<ServerSlotResponse>>> GerSlotsContainingString(string str, CancellationToken cancellationToken)
         {
             var email = User.FindFirstValue(ClaimTypes.Email);

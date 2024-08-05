@@ -40,7 +40,7 @@
                 <input #nameInput [ngStyle]="{'width': inputWidth + 'px'}" [(ngModel)]="inputValue" class="name__input"
                     [ngClass]="{'editable': inputIsEditable, 'non-editable': !inputIsEditable}"
                     (input)="onInputChange()" (blur)="onBlur();" [readonly]="!inputIsEditable"
-                    placeholder="Enter slot name" />
+                    (dblclick)="makeInputEditable()" placeholder="Enter slot name" />
                 <span #textSizer class="name__input-sizer">{{ inputValue }}</span>
             </div>
         </div>
@@ -55,6 +55,9 @@
         <div class="body__bottom w-full flex justify-between items-end">
             <button mat-raised-button (click)="showKey()">
                 <span class="material-icons">key</span>
+            </button>
+            <button mat-icon-button>
+                <span class="material-icons">download</span>
             </button>
         </div>
     </div>

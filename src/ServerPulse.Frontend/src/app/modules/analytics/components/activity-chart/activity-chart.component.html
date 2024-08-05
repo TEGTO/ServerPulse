@@ -1,13 +1,8 @@
 <div id="wrapper">
     <div id="chart-line">
-        <apx-chart [series]="chartOptions1.series!" [chart]="chartOptions1.chart!" [xaxis]="chartOptions1.xaxis!"
-            [legend]="chartOptions1.legend!" [dataLabels]="chartOptions1.dataLabels!" [colors]="chartOptions1.colors!"
-            [fill]="chartOptions1.fill!" [markers]="chartOptions1.markers!"
-            [stroke]="chartOptions1.stroke!"></apx-chart>
-    </div>
-    <div id="chart-line2">
-        <apx-chart [series]="chartOptions2.series!" [chart]="chartOptions2.chart!" [xaxis]="chartOptions2.xaxis!"
-            [colors]="chartOptions2.colors!" [fill]="chartOptions2.fill!" [yaxis]="chartOptions2.yaxis!"
-            [stroke]="chartOptions2.stroke!" [legend]="{show: false}"></apx-chart>
+        <apx-chart [series]="chartOptions.series!" [chart]="chartOptions.chart!" [xaxis]="chartOptions.xaxis!"
+            [yaxis]="chartOptions.yaxis!" [legend]="chartOptions.legend!" [dataLabels]="chartOptions.dataLabels!"
+            [colors]="chartOptions.colors!" [fill]="chartOptions.fill!" [markers]="chartOptions.markers!"
+            [stroke]="chartOptions.stroke!" [tooltip]="chartOptions.tooltip!"></apx-chart>
     </div>
 </div>
