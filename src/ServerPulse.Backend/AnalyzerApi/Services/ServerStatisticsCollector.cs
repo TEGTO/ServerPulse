@@ -1,20 +1,21 @@
 ﻿using AnalyzerApi.Domain.Models;
+using AnalyzerApi.Services.Interfaces;
 using ServerPulse.EventCommunication.Events;
 using System.Collections.Concurrent;
 
 namespace AnalyzerApi.Services
 {
-    public class ServerStatisticsCollector : IServerStatisticsCollector
+    public class ServerStatisticsCollector : IStatisticsCollector
     {
         private readonly ConcurrentDictionary<string, ConfigurationEvent> Configurations = new();
         private readonly ConcurrentDictionary<string, PulseEvent> LastPulseEvents = new();
         private readonly ConcurrentDictionary<string, CancellationTokenSource> StatisticsListeners = new();
-        private readonly IMessageReceiver messageReceiver;
+        private readonly IServerStatusReceiver messageReceiver;
         private readonly IStatisticsSender statisticsSender;
         private readonly PeriodicTimer periodicTimer;
         private readonly ILogger<ServerStatisticsCollector> logger;
 
-        public ServerStatisticsCollector(IMessageReceiver messageReceiver, IStatisticsSender statisticsSender, IConfiguration configuration, ILogger<ServerStatisticsCollector> logger)
+        public ServerStatisticsCollector(IServerStatusReceiver messageReceiver, IStatisticsSender statisticsSender, IConfiguration configuration, ILogger<ServerStatisticsCollector> logger)
         {
             this.messageReceiver = messageReceiver;
             this.statisticsSender = statisticsSender;
@@ -78,7 +79,7 @@ namespace AnalyzerApi.Services
                     {
                         LastPulseEvents.TryRemove(key, out lastPulse);
                     }
-                    await statisticsSender.SendStatisticsAsync(key, statistics);
+                    await statisticsSender.SendServerStatisticsAsync(key, statistics);
                 }
                 if (Configurations.TryGetValue(key, out var lastConfiguration))
                 {
@@ -89,13 +90,18 @@ namespace AnalyzerApi.Services
         }
         private async Task SendInitialStatisticsAsync(string key, CancellationToken cancellationToken)
         {
-            var configurationEvent = await messageReceiver.ReceiveLastConfigurationEventByKeyAsync(key, cancellationToken);
+            var configurationTask = messageReceiver.ReceiveLastConfigurationEventByKeyAsync(key, cancellationToken);
+            var pulseTask = messageReceiver.ReceiveLastPulseEventByKeyAsync(key, cancellationToken);
+
+            await Task.WhenAll(configurationTask, pulseTask);
+
+            var configurationEvent = await configurationTask;
             if (configurationEvent != null)
             {
                 Configurations.TryAdd(key, configurationEvent);
             }
 
-            var pulseEvent = await messageReceiver.ReceiveLastPulseEventByKeyAsync(key, cancellationToken);
+            var pulseEvent = await pulseTask;
             if (pulseEvent != null)
             {
                 LastPulseEvents.TryAdd(key, pulseEvent);
@@ -107,7 +113,7 @@ namespace AnalyzerApi.Services
                 LastPulseEvents.TryRemove(key, out var lastPulse);
             }
 
-            await statisticsSender.SendStatisticsAsync(key, statistics);
+            await statisticsSender.SendServerStatisticsAsync(key, statistics);
         }
         private async Task SubscribeToPulseEventsAsync(string key, CancellationToken cancellationToken)
         {

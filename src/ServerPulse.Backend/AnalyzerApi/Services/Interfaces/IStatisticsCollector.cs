@@ -1,6 +1,6 @@
-﻿namespace AnalyzerApi.Services
+﻿namespace AnalyzerApi.Services.Interfaces
 {
-    public interface IServerStatisticsCollector
+    public interface IStatisticsCollector
     {
         public void StartConsumingStatistics(string key);
         public void StopConsumingStatistics(string key);

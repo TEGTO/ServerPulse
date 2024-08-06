@@ -10,13 +10,13 @@ namespace ConsulUtilsTests
     internal class ConsulConfigurationExtensionTests
     {
         private Mock<IConfigurationBuilder> configurationBuilderMock;
-        private ConsulConfiguration configuration;
+        private ConsulSettings configuration;
 
         [SetUp]
         public void SetUp()
         {
             configurationBuilderMock = new Mock<IConfigurationBuilder>();
-            configuration = new ConsulConfiguration
+            configuration = new ConsulSettings
             {
                 Host = "http://localhost:8500",
                 ServiceName = "TestService"
@@ -31,7 +31,7 @@ namespace ConsulUtilsTests
             var sources = new List<IConfigurationSource> { configurationSourceMock.Object };
             configurationBuilderMock.Setup(cb => cb.Sources).Returns(sources);
             // Act
-            configurationBuilderMock.Object.AddConsulConfiguration(configuration, "Development");
+            configurationBuilderMock.Object.ConfigureConsul(configuration, "Development");
             // Assert
             configurationBuilderMock.Verify(cb => cb.Add(It.IsAny<IConfigurationSource>()), Times.AtLeastOnce);
         }

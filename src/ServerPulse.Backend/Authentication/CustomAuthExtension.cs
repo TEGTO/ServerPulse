@@ -13,10 +13,10 @@ namespace Authentication
         {
             var jwtSettings = new JwtSettings()
             {
-                Key = configuration[JWTConfiguration.JWT_SETTINGS_KEY]!,
-                Audience = configuration[JWTConfiguration.JWT_SETTINGS_AUDIENCE]!,
-                Issuer = configuration[JWTConfiguration.JWT_SETTINGS_ISSUER]!,
-                ExpiryInMinutes = Convert.ToDouble(configuration[JWTConfiguration.JWT_SETTINGS_EXPIRY_IN_MINUTES]!),
+                Key = configuration[JwtConfiguration.JWT_SETTINGS_KEY]!,
+                Audience = configuration[JwtConfiguration.JWT_SETTINGS_AUDIENCE]!,
+                Issuer = configuration[JwtConfiguration.JWT_SETTINGS_ISSUER]!,
+                ExpiryInMinutes = Convert.ToDouble(configuration[JwtConfiguration.JWT_SETTINGS_EXPIRY_IN_MINUTES]!),
             };
             services.AddSingleton(jwtSettings);
             services.AddAuthorization();

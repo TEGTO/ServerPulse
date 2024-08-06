@@ -4,9 +4,7 @@ using AuthenticationApi;
 using AuthenticationApi.Data;
 using AuthenticationApi.Domain.Entities;
 using AuthenticationApi.Services;
-using ConsulUtils.Configuration;
 using ConsulUtils.Extension;
-using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Shared;
@@ -15,16 +13,11 @@ using Shared.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var consulConfiguration = new ConsulConfiguration
-{
-    Host = builder.Configuration[Configuration.CONSUL_HOST]!,
-    ServiceName = builder.Configuration[Configuration.CONSUL_SERVICE_NAME]!,
-    ServicePort = int.Parse(builder.Configuration[Configuration.CONSUL_SERVICE_PORT]!)
-};
 string environmentName = builder.Environment.EnvironmentName;
 builder.Services.AddHealthChecks();
-builder.Services.AddConsulService(consulConfiguration);
-builder.Configuration.AddConsulConfiguration(consulConfiguration, environmentName);
+var consulSettings = ConsulExtension.GetConsulSettings(builder.Configuration);
+builder.Services.AddConsulService(consulSettings);
+builder.Configuration.ConfigureConsul(consulSettings, environmentName);
 
 builder.Services.AddDbContextFactory<AuthIdentityDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString(Configuration.AUTH_DATABASE_CONNECTION_STRING)));
@@ -49,8 +42,7 @@ builder.Services.AddScoped<IDatabaseRepository<AuthIdentityDbContext>, DatabaseR
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
-builder.Services.AddValidatorsFromAssemblyContaining<Program>();
-ValidatorOptions.Global.LanguageManager.Enabled = false;
+builder.Services.AddSharedFluentValidation(typeof(Program));
 
 builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
 builder.Services.AddEndpointsApiExplorer();

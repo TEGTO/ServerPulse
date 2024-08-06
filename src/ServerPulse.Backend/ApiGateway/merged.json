@@ -21,24 +21,29 @@
   },
   "Routes": [
     {
-      "Key": "Analyzer_GetStatistics",
+      "Key": "Analyzer_GetLoadEventsInDataRange",
       "ServiceName": "analyzer",
-      "UpstreamPathTemplate": "/statisticshub",
-      "DownstreamPathTemplate": "/statisticshub",
-      "DownstreamScheme": "ws",
+      "UpstreamPathTemplate": "/analyze/daterange",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DownstreamPathTemplate": "/analyze/daterange",
+      "DownstreamScheme": "http",
       "LoadBalancerOptions": {
         "Type": "LeastConnection"
       },
-      "UpstreamHttpMethod": [
-        "GET",
-        "POST",
-        "PUT",
-        "DELETE",
-        "OPTIONS",
-        "CONNECT"
-      ],
-      "QoSOptions": {
-        "TimeoutValue": 320000
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToRequest": {
+        "Authorization": "Bearer {token}"
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 1
       }
     },
     {
@@ -60,6 +65,39 @@
       ],
       "QoSOptions": {
         "TimeoutValue": 320000
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToRequest": {
+        "Authorization": "Bearer {token}"
+      }
+    },
+    {
+      "Key": "Analyzer_GetLoadStatistics",
+      "ServiceName": "analyzer",
+      "UpstreamPathTemplate": "/loadstatisticshub/{path}",
+      "DownstreamPathTemplate": "/loadstatisticshub/{path}",
+      "DownstreamScheme": "ws",
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "OPTIONS",
+        "CONNECT"
+      ],
+      "QoSOptions": {
+        "TimeoutValue": 320000
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToRequest": {
+        "Authorization": "Bearer {token}"
       }
     },
     {

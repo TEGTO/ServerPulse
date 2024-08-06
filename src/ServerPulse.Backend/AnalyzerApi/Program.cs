@@ -1,27 +1,20 @@
 using AnalyzerApi;
 using AnalyzerApi.Hubs;
 using AnalyzerApi.Services;
+using AnalyzerApi.Services.Interfaces;
 using Confluent.Kafka;
-using ConsulUtils.Configuration;
 using ConsulUtils.Extension;
-using FluentValidation;
-using MessageBus.Kafka;
+using MessageBus;
 using Shared;
 using Shared.Middlewares;
-using TestKafka.Consumer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var consulConfiguration = new ConsulConfiguration
-{
-    Host = builder.Configuration[Configuration.CONSUL_HOST]!,
-    ServiceName = builder.Configuration[Configuration.CONSUL_SERVICE_NAME]!,
-    ServicePort = int.Parse(builder.Configuration[Configuration.CONSUL_SERVICE_PORT]!)
-};
 string environmentName = builder.Environment.EnvironmentName;
 builder.Services.AddHealthChecks();
-builder.Services.AddConsulService(consulConfiguration);
-builder.Configuration.AddConsulConfiguration(consulConfiguration, environmentName);
+var consulSettings = ConsulExtension.GetConsulSettings(builder.Configuration);
+builder.Services.AddConsulService(consulSettings);
+builder.Configuration.ConfigureConsul(consulSettings, environmentName);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -38,18 +31,17 @@ var adminConfig = new AdminClientConfig
 {
     BootstrapServers = builder.Configuration[Configuration.KAFKA_BOOTSTRAP_SERVERS]
 };
-builder.Services.AddSingleton(consumerConfig);
-builder.Services.AddSingleton(new AdminClientBuilder(adminConfig).Build());
-builder.Services.AddSingleton<IKafkaConsumerFactory, KafkaConsumerFactory>();
-builder.Services.AddSingleton<IMessageConsumer, KafkaConsumer>();
-builder.Services.AddSingleton<IMessageReceiver, MessageReceiver>();
+builder.Services.AddKafkaConsumer(consumerConfig, adminConfig);
+
+builder.Services.AddSingleton<IServerStatusReceiver, ServerStatusReceiver>();
+builder.Services.AddSingleton<IServerLoadReceiver, ServerLoadReceiver>();
 builder.Services.AddSingleton<IStatisticsSender, StatisticsSender>();
-builder.Services.AddSingleton<IServerStatisticsCollector, ServerStatisticsCollector>();
+builder.Services.AddSingleton<ServerStatisticsCollector>();
+builder.Services.AddSingleton<LoadStatisticsCollector>();
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
-builder.Services.AddValidatorsFromAssemblyContaining<Program>();
-ValidatorOptions.Global.LanguageManager.Enabled = false;
+builder.Services.AddSharedFluentValidation(typeof(Program));
 
 builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -65,6 +57,7 @@ app.UseAuthorization();
 app.MapHealthChecks("/health");
 app.MapControllers();
 
-app.MapHub<StatisticsHub>("/statisticshub");
+app.MapHub<StatisticsHub<ServerStatisticsCollector>>("/statisticshub");
+app.MapHub<StatisticsHub<LoadStatisticsCollector>>("/loadstatisticshub");
 
 app.Run();

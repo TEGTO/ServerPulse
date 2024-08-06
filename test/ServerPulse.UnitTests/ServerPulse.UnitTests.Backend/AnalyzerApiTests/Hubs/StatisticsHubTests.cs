@@ -1,5 +1,5 @@
 ﻿using AnalyzerApi.Hubs;
-using AnalyzerApi.Services;
+using AnalyzerApi.Services.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -9,7 +9,7 @@ namespace AnalyzerApiTests.Hubs
     [TestFixture]
     internal class StatisticsHubTests
     {
-        private Mock<IServerStatisticsCollector> mockServerStatisticsCollector;
+        private Mock<IStatisticsCollector> mockServerStatisticsCollector;
         private Mock<ILogger<StatisticsHub>> mockLogger;
         private Mock<IHubCallerClients<IStatisticsHubClient>> mockClients;
         private Mock<IGroupManager> mockGroups;
@@ -19,7 +19,7 @@ namespace AnalyzerApiTests.Hubs
         [SetUp]
         public void SetUp()
         {
-            mockServerStatisticsCollector = new Mock<IServerStatisticsCollector>();
+            mockServerStatisticsCollector = new Mock<IStatisticsCollector>();
             mockLogger = new Mock<ILogger<StatisticsHub>>();
             mockClients = new Mock<IHubCallerClients<IStatisticsHubClient>>();
             mockGroups = new Mock<IGroupManager>();
@@ -49,8 +49,8 @@ namespace AnalyzerApiTests.Hubs
             hub = GetHub();
             var key = "test-key";
             // Act
-            await hub.StartListenPulse(key);
-            await hub.StartListenPulse(key);
+            await hub.StartListen(key);
+            await hub.StartListen(key);
             // Assert
             mockGroups.Verify(g => g.AddToGroupAsync("connectionId", key, It.IsAny<CancellationToken>()), Times.Exactly(2));
             mockLogger.Verify(l => l.Log(
@@ -69,8 +69,8 @@ namespace AnalyzerApiTests.Hubs
             hub = GetHub();
 
             var keys = new List<string> { "key1", "key2" };
-            await hub.StartListenPulse(keys[0]);
-            await hub.StartListenPulse(keys[1]);
+            await hub.StartListen(keys[0]);
+            await hub.StartListen(keys[1]);
             // Act
             await hub.OnDisconnectedAsync(null);
             // Assert

@@ -31,10 +31,10 @@ namespace AuthenticationTests
                 ExpiryInMinutes = 60
             };
 
-            configurationMock.Setup(c => c[JWTConfiguration.JWT_SETTINGS_KEY]).Returns(expectedJwtSettings.Key);
-            configurationMock.Setup(c => c[JWTConfiguration.JWT_SETTINGS_AUDIENCE]).Returns(expectedJwtSettings.Audience);
-            configurationMock.Setup(c => c[JWTConfiguration.JWT_SETTINGS_ISSUER]).Returns(expectedJwtSettings.Issuer);
-            configurationMock.Setup(c => c[JWTConfiguration.JWT_SETTINGS_EXPIRY_IN_MINUTES]).Returns(expectedJwtSettings.ExpiryInMinutes.ToString());
+            configurationMock.Setup(c => c[JwtConfiguration.JWT_SETTINGS_KEY]).Returns(expectedJwtSettings.Key);
+            configurationMock.Setup(c => c[JwtConfiguration.JWT_SETTINGS_AUDIENCE]).Returns(expectedJwtSettings.Audience);
+            configurationMock.Setup(c => c[JwtConfiguration.JWT_SETTINGS_ISSUER]).Returns(expectedJwtSettings.Issuer);
+            configurationMock.Setup(c => c[JwtConfiguration.JWT_SETTINGS_EXPIRY_IN_MINUTES]).Returns(expectedJwtSettings.ExpiryInMinutes.ToString());
         }
 
         [Test]

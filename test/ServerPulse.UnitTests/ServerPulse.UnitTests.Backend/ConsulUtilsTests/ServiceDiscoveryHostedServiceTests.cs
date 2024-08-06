@@ -12,7 +12,7 @@ namespace ConsulUtilsTests
     {
         private Mock<IConsulClient> consulClientMock;
         private Mock<IHostApplicationLifetime> hostApplicationLifetimeMock;
-        private ConsulConfiguration configuration;
+        private ConsulSettings configuration;
         private ServiceDiscoveryHostedService hostedService;
 
         [SetUp]
@@ -21,7 +21,7 @@ namespace ConsulUtilsTests
             consulClientMock = new Mock<IConsulClient>();
             hostApplicationLifetimeMock = new Mock<IHostApplicationLifetime>();
 
-            configuration = new ConsulConfiguration
+            configuration = new ConsulSettings
             {
                 Host = "http://localhost:8500",
                 ServiceName = "TestService",

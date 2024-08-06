@@ -6,7 +6,7 @@ import { Observable } from "rxjs";
 })
 export abstract class ServerStatisticsService {
 
-    abstract startConnection(): Observable<void>;
-    abstract receiveStatistics(): Observable<{ key: string, data: string }>;
-    abstract startListenPulse(key: string): void;
+    abstract startConnection(hubUrl: string): Observable<void>;
+    abstract receiveStatistics(hubUrl: string): Observable<{ key: string, data: string }>;
+    abstract startListen(hubUrl: string, key: string): void;
 }

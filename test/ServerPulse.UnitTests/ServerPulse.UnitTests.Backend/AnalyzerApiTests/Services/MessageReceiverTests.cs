@@ -19,7 +19,7 @@ namespace AnalyzerApiTests.Services
 
         private Mock<IMessageConsumer> mockMessageConsumer;
         private Mock<IConfiguration> mockConfiguration;
-        private MessageReceiver messageReceiver;
+        private ServerStatusReceiver messageReceiver;
 
         [SetUp]
         public void Setup()
@@ -30,7 +30,7 @@ namespace AnalyzerApiTests.Services
             mockConfiguration.SetupGet(c => c[Configuration.KAFKA_CONFIGURATION_TOPIC]).Returns(KAFKA_CONFIGURATION_TOPIC);
             mockConfiguration.SetupGet(c => c[Configuration.KAFKA_LOAD_TOPIC]).Returns(KAFKA_LOAD_TOPIC);
             mockConfiguration.SetupGet(c => c[Configuration.KAFKA_TIMEOUT_IN_MILLISECONDS]).Returns(KAFKA_TIMEOUT_IN_MILLISECONDS.ToString());
-            messageReceiver = new MessageReceiver(mockMessageConsumer.Object, mockConfiguration.Object);
+            messageReceiver = new ServerStatusReceiver(mockMessageConsumer.Object, mockConfiguration.Object);
         }
 
         [Test]

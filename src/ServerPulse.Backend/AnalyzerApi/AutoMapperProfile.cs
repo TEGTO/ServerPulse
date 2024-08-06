@@ -1,6 +1,7 @@
 ﻿using AnalyzerApi.Domain.Dtos;
 using AnalyzerApi.Domain.Models;
 using AutoMapper;
+using ServerPulse.EventCommunication.Events;
 
 namespace AuthenticationApi
 {
@@ -9,6 +10,8 @@ namespace AuthenticationApi
         public AutoMapperProfile()
         {
             CreateMap<ServerStatistics, ServerStatisticsResponse>();
+            CreateMap<LoadEvent, ServerLoadResponse>();
+            CreateMap<ServerLoadStatistics, ServerLoadStatisticsResponse>();
         }
     }
 }

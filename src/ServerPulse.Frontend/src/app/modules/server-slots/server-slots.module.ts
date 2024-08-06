@@ -12,6 +12,7 @@ import { provideEffects } from '@ngrx/effects';
 import { provideState, provideStore } from '@ngrx/store';
 import { ServerSlotComponent, ServerSlotControllerService, ServerSlotDeleteConfirmComponent, ServerSlotDialogManager, ServerSlotDialogManagerService, ServerSlotEffects, ServerSlotInfoComponent, serverSlotReducer, ServerSlotService, ServerStatisticsControllerService, ServerStatisticsService, SlotBoardComponent } from '.';
 import { AnalyticsModule } from '../analytics/analytics.module';
+import { AuthenticationModule } from '../authentication/authentication.module';
 
 @NgModule({
   exports: [
@@ -24,6 +25,7 @@ import { AnalyticsModule } from '../analytics/analytics.module';
     ServerSlotDeleteConfirmComponent
   ],
   imports: [
+    AuthenticationModule,
     CommonModule,
     AnalyticsModule,
     MatButtonModule,

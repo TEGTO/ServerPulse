@@ -1,9 +1,6 @@
 using Confluent.Kafka;
-using ConsulUtils.Configuration;
 using ConsulUtils.Extension;
-using FluentValidation;
 using MessageBus;
-using MessageBus.Kafka;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using ServerMonitorApi;
 using ServerMonitorApi.Services;
@@ -13,16 +10,11 @@ using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var consulConfiguration = new ConsulConfiguration
-{
-    Host = builder.Configuration[Configuration.CONSUL_HOST]!,
-    ServiceName = builder.Configuration[Configuration.CONSUL_SERVICE_NAME]!,
-    ServicePort = int.Parse(builder.Configuration[Configuration.CONSUL_SERVICE_PORT]!)
-};
 string environmentName = builder.Environment.EnvironmentName;
 builder.Services.AddHealthChecks();
-builder.Services.AddConsulService(consulConfiguration);
-builder.Configuration.AddConsulConfiguration(consulConfiguration, environmentName);
+var consulSettings = ConsulExtension.GetConsulSettings(builder.Configuration);
+builder.Services.AddConsulService(consulSettings);
+builder.Configuration.ConfigureConsul(consulSettings, environmentName);
 
 builder.Services.Configure<KestrelServerOptions>(options =>
 {
@@ -43,11 +35,7 @@ var adminConfig = new AdminClientConfig
 {
     BootstrapServers = builder.Configuration[Configuration.KAFKA_BOOTSTRAP_SERVERS]
 };
-builder.Services.AddSingleton(producerConfig);
-builder.Services.AddSingleton(new AdminClientBuilder(adminConfig).Build());
-builder.Services.AddSingleton<IKafkaProducerFactory, KafkaProducerFactory>();
-builder.Services.AddSingleton<IMessageProducer, KafkaProducer>();
-builder.Services.AddSingleton<ITopicManager, KafkaTopicManager>();
+builder.Services.AddKafkaProducer(producerConfig, adminConfig);
 
 builder.Services.AddSingleton<IMessageSender, MessageSender>();
 builder.Services.AddSingleton<IStatisticsControlService, StatisticsControlService>();
@@ -61,8 +49,7 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
-builder.Services.AddValidatorsFromAssemblyContaining<Program>();
-ValidatorOptions.Global.LanguageManager.Enabled = false;
+builder.Services.AddSharedFluentValidation(typeof(Program));
 
 var app = builder.Build();
 

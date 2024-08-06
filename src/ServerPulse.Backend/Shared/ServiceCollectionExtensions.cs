@@ -24,11 +24,13 @@ namespace Shared
             });
             return services;
         }
-        public static IServiceCollection AddSharedFluentValidation(this IServiceCollection services)
+        public static IServiceCollection AddSharedFluentValidation(this IServiceCollection services, Type type)
         {
             services.AddFluentValidationAutoValidation();
             services.AddFluentValidationClientsideAdapters();
             services.AddValidatorsFromAssemblyContaining<ExceptionMiddleware>();
+            services.AddValidatorsFromAssemblyContaining(type);
+            ValidatorOptions.Global.LanguageManager.Enabled = false;
             return services;
         }
     }

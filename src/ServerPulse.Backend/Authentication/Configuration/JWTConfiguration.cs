@@ -1,6 +1,6 @@
 ﻿namespace Authentication.Configuration
 {
-    public class JWTConfiguration
+    internal class JwtConfiguration
     {
         public static string JWT_SETTINGS_KEY { get; } = "AuthSettings:Key";
         public static string JWT_SETTINGS_AUDIENCE { get; } = "AuthSettings:Audience";

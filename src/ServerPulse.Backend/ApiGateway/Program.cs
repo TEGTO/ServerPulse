@@ -1,6 +1,5 @@
 using ApiGateway;
 using Authentication;
-using ConsulUtils.Configuration;
 using ConsulUtils.Extension;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
@@ -10,16 +9,11 @@ using Shared.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var consulConfiguration = new ConsulConfiguration
-{
-    Host = builder.Configuration[Configuration.CONSUL_HOST]!,
-    ServiceName = builder.Configuration[Configuration.CONSUL_SERVICE_NAME]!,
-    ServicePort = int.Parse(builder.Configuration[Configuration.CONSUL_SERVICE_PORT]!)
-};
 string environmentName = builder.Environment.EnvironmentName;
 builder.Services.AddHealthChecks();
-builder.Services.AddConsulService(consulConfiguration);
-builder.Configuration.AddConsulConfiguration(consulConfiguration, environmentName);
+var consulSettings = ConsulExtension.GetConsulSettings(builder.Configuration);
+builder.Services.AddConsulService(consulSettings);
+builder.Configuration.ConfigureConsul(consulSettings, environmentName);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -74,6 +68,6 @@ app.UseAuthorization();
 app.UseEndpoints(_ => { });
 app.MapHealthChecks("/health");
 
-app.UseWebSockets();
+app.UseOcelotWebSockets();
 await app.UseOcelot();
 app.Run();

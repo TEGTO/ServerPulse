@@ -1,6 +1,7 @@
 ﻿using AnalyzerApi;
 using AnalyzerApi.Domain.Models;
 using AnalyzerApi.Services;
+using AnalyzerApi.Services.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -11,7 +12,7 @@ namespace AnalyzerApiTests.Services
     [TestFixture]
     internal class ServerStatisticsCollectorTests
     {
-        private Mock<IMessageReceiver> mockMessageReceiver;
+        private Mock<IServerStatusReceiver> mockMessageReceiver;
         private Mock<IStatisticsSender> mockStatisticsSender;
         private Mock<IConfiguration> mockConfiguration;
         private Mock<ILogger<ServerStatisticsCollector>> mockLogger;
@@ -21,7 +22,7 @@ namespace AnalyzerApiTests.Services
         [SetUp]
         public void Setup()
         {
-            mockMessageReceiver = new Mock<IMessageReceiver>();
+            mockMessageReceiver = new Mock<IServerStatusReceiver>();
             mockStatisticsSender = new Mock<IStatisticsSender>();
             mockConfiguration = new Mock<IConfiguration>();
             mockLogger = new Mock<ILogger<ServerStatisticsCollector>>();

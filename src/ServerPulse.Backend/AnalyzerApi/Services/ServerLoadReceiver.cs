@@ -1,4 +1,5 @@
-﻿using Confluent.Kafka;
+﻿using AnalyzerApi.Services.Interfaces;
+using Confluent.Kafka;
 using ServerPulse.EventCommunication.Events;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -6,56 +7,45 @@ using TestKafka.Consumer.Services;
 
 namespace AnalyzerApi.Services
 {
-    public class MessageReceiver : IMessageReceiver
+    public class ServerLoadReceiver : IServerLoadReceiver
     {
         private readonly IMessageConsumer messageConsumer;
-        private readonly string aliveTopic;
-        private readonly string configurationTopic;
         private readonly string loadTopic;
         private readonly int timeoutInMilliseconds;
 
-        public MessageReceiver(IMessageConsumer messageConsumer, IConfiguration configuration)
+        public ServerLoadReceiver(IMessageConsumer messageConsumer, IConfiguration configuration)
         {
             this.messageConsumer = messageConsumer;
-            aliveTopic = configuration[Configuration.KAFKA_ALIVE_TOPIC]!;
-            configurationTopic = configuration[Configuration.KAFKA_CONFIGURATION_TOPIC]!;
             loadTopic = configuration[Configuration.KAFKA_LOAD_TOPIC]!;
             timeoutInMilliseconds = int.Parse(configuration[Configuration.KAFKA_TIMEOUT_IN_MILLISECONDS]!);
         }
 
-        public async IAsyncEnumerable<PulseEvent> ConsumePulseEventAsync(string key, [EnumeratorCancellation] CancellationToken cancellationToken)
+        public async IAsyncEnumerable<LoadEvent> ConsumeLoadEventAsync(string key, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            string topic = aliveTopic.Replace("{id}", key);
+            string topic = loadTopic.Replace("{id}", key);
             await foreach (var message in messageConsumer.ConsumeAsync(topic, timeoutInMilliseconds, Offset.End, cancellationToken))
             {
-                var pulseEvent = JsonSerializer.Deserialize<PulseEvent>(message);
-                if (pulseEvent != null)
+                var loadEvent = JsonSerializer.Deserialize<LoadEvent>(message);
+                if (loadEvent != null)
                 {
-                    yield return pulseEvent;
+                    yield return loadEvent;
                 }
             }
         }
-        public async IAsyncEnumerable<ConfigurationEvent> ConsumeConfigurationEventAsync(string key, [EnumeratorCancellation] CancellationToken cancellationToken)
+        public async Task<IEnumerable<LoadEvent>> ReceiveEventsInRangeAsync(string key, DateTime from, DateTime to, CancellationToken cancellationToken)
         {
-            string topic = configurationTopic.Replace("{id}", key);
-            await foreach (var message in messageConsumer.ConsumeAsync(topic, timeoutInMilliseconds, Offset.End, cancellationToken))
+            string topic = loadTopic.Replace("{id}", key);
+            List<string> events = await messageConsumer.ReadMessagesInDateRangeAsync(topic, from, to, timeoutInMilliseconds, cancellationToken);
+            List<LoadEvent> loadEvents = new List<LoadEvent>();
+            foreach (var eventString in events)
             {
-                var pulseEvent = JsonSerializer.Deserialize<ConfigurationEvent>(message);
-                if (pulseEvent != null)
+                var loadEvent = JsonSerializer.Deserialize<LoadEvent>(eventString);
+                if (loadEvent != null)
                 {
-                    yield return pulseEvent;
+                    loadEvents.Add(loadEvent);
                 }
             }
-        }
-        public async Task<PulseEvent?> ReceiveLastPulseEventByKeyAsync(string key, CancellationToken cancellationToken)
-        {
-            string topic = aliveTopic.Replace("{id}", key);
-            return await TaskGetLastEventFromTopic<PulseEvent>(topic, cancellationToken);
-        }
-        public async Task<ConfigurationEvent?> ReceiveLastConfigurationEventByKeyAsync(string key, CancellationToken cancellationToken)
-        {
-            string topic = configurationTopic.Replace("{id}", key);
-            return await TaskGetLastEventFromTopic<ConfigurationEvent>(topic, cancellationToken);
+            return loadEvents;
         }
         public async Task<LoadEvent?> ReceiveLastLoadEventByKeyAsync(string key, CancellationToken cancellationToken)
         {

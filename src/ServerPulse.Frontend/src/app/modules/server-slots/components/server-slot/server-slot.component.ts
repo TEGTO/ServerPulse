@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { ServerSlotDialogManager, ServerSlotService, ServerStatisticsService } from '../..';
+import { environment } from '../../../../../environment/environment';
 import { convertToServerStatisticsResponse, RedirectorService, ServerSlot, ServerStatisticsResponse, SnackbarManager, UpdateServerSlotRequest } from '../../../shared';
 
 export enum ServerStatus {
@@ -33,9 +34,9 @@ export class ServerSlotComponent implements AfterViewInit, OnInit {
 
   ngOnInit(): void {
     this.inputValue = this.serverSlot.name;
-    this.serverStatisticsService.startConnection().subscribe(() => {
-      this.serverStatisticsService.startListenPulse(this.serverSlot.slotKey);
-      this.serverStatisticsService.receiveStatistics().subscribe(
+    this.serverStatisticsService.startConnection(environment.statisticsHub).subscribe(() => {
+      this.serverStatisticsService.startListen(environment.statisticsHub, this.serverSlot.slotKey);
+      this.serverStatisticsService.receiveStatistics(environment.statisticsHub).subscribe(
         (message) => {
           try {
             if (message.key === this.serverSlot.slotKey) {

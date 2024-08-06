@@ -1,18 +1,18 @@
-﻿using AnalyzerApi.Services;
+﻿using AnalyzerApi.Services.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
 
 namespace AnalyzerApi.Hubs
 {
-    public sealed class StatisticsHub : Hub<IStatisticsHubClient>
+    public sealed class StatisticsHub<StatisticsCollector> : Hub<IStatisticsHubClient> where StatisticsCollector : IStatisticsCollector
     {
         private static readonly ConcurrentDictionary<string, List<string>> ConnectedClients = new();
-        private static readonly ConcurrentDictionary<string, int> KeyPulseListeners = new();
+        private static readonly ConcurrentDictionary<string, int> ListenerAmount = new();
 
-        private readonly IServerStatisticsCollector serverStatisticsCollector;
-        private readonly ILogger<StatisticsHub> logger;
+        private readonly StatisticsCollector serverStatisticsCollector;
+        private readonly ILogger<StatisticsHub<StatisticsCollector>> logger;
 
-        public StatisticsHub(IServerStatisticsCollector serverStatisticsCollector, ILogger<StatisticsHub> logger)
+        public StatisticsHub(StatisticsCollector serverStatisticsCollector, ILogger<StatisticsHub<StatisticsCollector>> logger)
         {
             this.serverStatisticsCollector = serverStatisticsCollector;
             this.logger = logger;
@@ -25,15 +25,15 @@ namespace AnalyzerApi.Hubs
                 await RemoveClientFromGroupAsync(keys);
             }
         }
-        public async Task StartListenPulse(string key)
+        public async Task StartListen(string key)
         {
             await AddClientToGroupAsync(key);
-            logger.LogInformation($"Start listening pulse with key '{key}'");
+            logger.LogInformation($"Start listening key '{key}'");
             serverStatisticsCollector.StartConsumingStatistics(key);
         }
         private async Task AddClientToGroupAsync(string key)
         {
-            KeyPulseListeners.AddOrUpdate(key, 1, (k, count) => count + 1);
+            ListenerAmount.AddOrUpdate(key, 1, (k, count) => count + 1);
             ConnectedClients.AddOrUpdate(Context.ConnectionId, new List<string>() { key },
             (k, keys) =>
             {
@@ -47,17 +47,17 @@ namespace AnalyzerApi.Hubs
             foreach (var key in keys)
             {
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, key);
-                if (KeyPulseListeners.TryGetValue(key, out var count))
+                if (ListenerAmount.TryGetValue(key, out var count))
                 {
                     if (count <= 1)
                     {
-                        logger.LogInformation($"Stop listening pulse with key '{key}'");
-                        KeyPulseListeners.TryRemove(key, out _);
+                        logger.LogInformation($"Stop listening key '{key}'");
+                        ListenerAmount.TryRemove(key, out _);
                         serverStatisticsCollector.StopConsumingStatistics(key);
                     }
                     else
                     {
-                        KeyPulseListeners[key] = count - 1;
+                        ListenerAmount[key] = count - 1;
                     }
                 }
             }
