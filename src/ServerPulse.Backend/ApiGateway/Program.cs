@@ -1,4 +1,5 @@
 using ApiGateway;
+using ApiGateway.Middlewares;
 using Authentication;
 using ConsulUtils.Extension;
 using Ocelot.DependencyInjection;
@@ -59,6 +60,7 @@ var app = builder.Build();
 
 app.UseCors(MyAllowSpecificOrigins);
 app.UseExceptionMiddleware();
+app.UseMiddleware<TokenFromQueryMiddleware>();
 
 app.UseRouting();
 

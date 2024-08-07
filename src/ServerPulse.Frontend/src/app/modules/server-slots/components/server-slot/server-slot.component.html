@@ -50,7 +50,7 @@
     </header>
     <div class="server-slot__body bg-white dark:bg-gray-900">
         <div class="body__activity-chart w-full h-5/6">
-            <activity-chart [chartUniqueId]="serverSlot.id"></activity-chart>
+            <server-slot-daily-chart [serverSlot]="serverSlot"></server-slot-daily-chart>
         </div>
         <div class="body__bottom w-full flex justify-between items-end">
             <button mat-raised-button (click)="showKey()">

@@ -4,7 +4,7 @@ import { Observable } from "rxjs";
 @Injectable({
     providedIn: 'root'
 })
-export abstract class ServerStatisticsService {
+export abstract class RealTimeStatisticsCollector {
 
     abstract startConnection(hubUrl: string): Observable<void>;
     abstract receiveStatistics(hubUrl: string): Observable<{ key: string, data: string }>;

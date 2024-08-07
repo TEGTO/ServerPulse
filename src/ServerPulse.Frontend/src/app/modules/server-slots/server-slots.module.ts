@@ -10,9 +10,10 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { provideEffects } from '@ngrx/effects';
 import { provideState, provideStore } from '@ngrx/store';
-import { ServerSlotComponent, ServerSlotControllerService, ServerSlotDeleteConfirmComponent, ServerSlotDialogManager, ServerSlotDialogManagerService, ServerSlotEffects, ServerSlotInfoComponent, serverSlotReducer, ServerSlotService, ServerStatisticsControllerService, ServerStatisticsService, SlotBoardComponent } from '.';
+import { RealTimeStatisticsCollector, ServerSlotComponent, ServerSlotControllerService, ServerSlotDeleteConfirmComponent, ServerSlotDialogManager, ServerSlotDialogManagerService, ServerSlotEffects, ServerSlotInfoComponent, serverSlotReducer, ServerSlotService, ServerStatisticsControllerService, ServerStatisticsService, SlotBoardComponent, StatisticsCollector } from '.';
 import { AnalyticsModule } from '../analytics/analytics.module';
 import { AuthenticationModule } from '../authentication/authentication.module';
+import { ServerSlotDailyChartComponent } from './components/server-slot-daily-chart/server-slot-daily-chart.component';
 
 @NgModule({
   exports: [
@@ -22,7 +23,8 @@ import { AuthenticationModule } from '../authentication/authentication.module';
     SlotBoardComponent,
     ServerSlotComponent,
     ServerSlotInfoComponent,
-    ServerSlotDeleteConfirmComponent
+    ServerSlotDeleteConfirmComponent,
+    ServerSlotDailyChartComponent
   ],
   imports: [
     AuthenticationModule,
@@ -41,6 +43,7 @@ import { AuthenticationModule } from '../authentication/authentication.module';
   providers: [
     { provide: ServerSlotDialogManager, useClass: ServerSlotDialogManagerService },
     { provide: ServerSlotService, useClass: ServerSlotControllerService },
+    { provide: RealTimeStatisticsCollector, useClass: StatisticsCollector },
     { provide: ServerStatisticsService, useClass: ServerStatisticsControllerService },
     provideStore(),
     provideState({ name: "serverslot", reducer: serverSlotReducer }),

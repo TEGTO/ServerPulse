@@ -5,5 +5,6 @@ export const environment =
   maxAmountOfSlotsPerUser: 5,
   ecryptionSecretKey: "encryption-secret-key",
   projectUrl: "https://github.com/TEGTO/ServerPulse",
-  statisticsHub: "https://localhost:7129/statisticshub"
+  statisticsHub: "https://localhost:7129/statisticshub",
+  loadStatisticsHub: "https://localhost:7129/loadstatisticshub"
 };

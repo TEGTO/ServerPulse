@@ -5,13 +5,13 @@ namespace ServerPulse.EventCommunication.Events
     public record BaseEvent
     {
         public string Id { get; init; }
-        public DateTime CreationDate { get; init; }
+        public DateTime CreationDateUTC { get; init; }
         public string Key { get; init; }
 
         public BaseEvent(string Key)
         {
             Id = Guid.NewGuid().ToString();
-            CreationDate = DateTime.UtcNow;
+            CreationDateUTC = DateTime.UtcNow;
             this.Key = Key;
         }
 

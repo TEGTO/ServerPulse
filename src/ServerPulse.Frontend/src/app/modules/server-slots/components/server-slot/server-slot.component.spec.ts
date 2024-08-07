@@ -6,7 +6,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
-import { ServerSlotDialogManager, ServerSlotService, ServerStatisticsService } from '../..';
+import { RealTimeStatisticsCollector, ServerSlotDialogManager, ServerSlotService } from '../..';
 import { RedirectorService, ServerStatisticsResponse, SnackbarManager, TimeSpan } from '../../../shared';
 import { ServerSlotComponent, ServerStatus } from './server-slot.component';
 
@@ -18,7 +18,7 @@ describe('ServerSlotComponent', () => {
   let dialogManager: jasmine.SpyObj<ServerSlotDialogManager>;
   let redirector: jasmine.SpyObj<RedirectorService>;
   let snackBarManager: jasmine.SpyObj<SnackbarManager>;
-  let serverStatisticsService: jasmine.SpyObj<ServerStatisticsService>;
+  let serverStatisticsService: jasmine.SpyObj<RealTimeStatisticsCollector>;
 
   const mockServerSlot = {
     id: '1',
@@ -29,10 +29,10 @@ describe('ServerSlotComponent', () => {
   const mockStatistics: ServerStatisticsResponse = {
     isAlive: true,
     dataExists: true,
-    serverLastStartDateTime: new Date(),
+    serverLastStartDateTimeUTC: new Date(),
     serverUptime: new TimeSpan(),
     lastServerUptime: new TimeSpan(),
-    lastPulseDateTime: new Date()
+    lastPulseDateTimeUTC: new Date()
   };
 
   const mockDialogRef = {
@@ -63,7 +63,7 @@ describe('ServerSlotComponent', () => {
         { provide: ServerSlotDialogManager, useValue: dialogManager },
         { provide: RedirectorService, useValue: redirector },
         { provide: SnackbarManager, useValue: snackBarManager },
-        { provide: ServerStatisticsService, useValue: serverStatisticsService }
+        { provide: RealTimeStatisticsCollector, useValue: serverStatisticsService }
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA]
     }).compileComponents();

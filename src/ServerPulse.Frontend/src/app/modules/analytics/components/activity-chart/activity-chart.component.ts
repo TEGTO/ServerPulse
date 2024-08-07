@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges, ViewChild } from '@angular/core';
+import { ChartComponent } from 'ng-apexcharts';
 import { ChartOptions } from '../..';
 
 @Component({
@@ -7,33 +8,43 @@ import { ChartOptions } from '../..';
   styleUrls: ['./activity-chart.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ActivityChartComponent implements OnInit {
-  @Input({ required: true }) public chartUniqueId!: string;
-  public chartOptions!: Partial<ChartOptions>;
+export class ActivityChartComponent implements OnInit, OnChanges {
+  @Input({ required: true }) chartUniqueId!: string;
+  @Input({ required: true }) dateFrom!: Date;
+  @Input({ required: true }) dateTo!: Date;
+  @Input({ required: true }) data!: any[];
+  @ViewChild('chart') chart!: ChartComponent;
+  chartOptions!: Partial<ChartOptions>;
 
-  constructor() { }
+  get chartId() { return `chart-${this.chartUniqueId}`; }
+
+  constructor(
+    private readonly cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
-    const currentTime = new Date();
-    const hourAgo = new Date(currentTime.getTime() - 1 * 60 * 60 * 1000);
-    const chartId = `chart-${this.chartUniqueId}`;
+    this.initChartOptions();
+  }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['data']) {
+      this.updateChartData();
+    }
+    if (changes['dateFrom'] || changes['dateTo']) {
+      this.updateChartRange();
+    }
+  }
+
+  private initChartOptions() {
     this.chartOptions = {
       series: [
         {
           name: "Events",
-          data: this.generate5MinutesTimeSeries(
-            hourAgo,
-            12,
-            {
-              min: 0,
-              max: 100
-            }
-          ),
+          data: this.data
         }
       ],
       chart: {
-        id: chartId,
+        id: this.chartId,
         type: "bar",
         height: 260,
         stacked: false,
@@ -65,8 +76,8 @@ export class ActivityChartComponent implements OnInit {
       },
       xaxis: {
         type: "datetime",
-        min: hourAgo.getTime(),
-        max: currentTime.getTime(),
+        min: this.dateFrom.getTime(),
+        max: this.dateTo.getTime(),
         labels: {
           datetimeUTC: false,
           format: 'HH:mm'
@@ -88,8 +99,11 @@ export class ActivityChartComponent implements OnInit {
             let date = new Date(val);
             let hours = date.getHours().toString().padStart(2, '0');
             let minutes = date.getMinutes().toString().padStart(2, '0');
-            let nextMinutes = (date.getMinutes() + 5).toString().padStart(2, '0');
-            return `${hours}:${minutes} - ${hours}:${nextMinutes}`;
+            let nextDate = new Date(date);
+            nextDate.setMinutes(date.getMinutes() + 5);
+            let nextHours = nextDate.getHours().toString().padStart(2, '0');
+            let nextMinutes = nextDate.getMinutes().toString().padStart(2, '0');
+            return `${hours}:${minutes} - ${nextHours}:${nextMinutes}`;
           }
         },
         marker: {
@@ -100,13 +114,31 @@ export class ActivityChartComponent implements OnInit {
     };
   }
 
-  public generate5MinutesTimeSeries(baseval: Date, count: number, yrange: { min: number, max: number }) {
-    const series = [];
-    for (let i = 0; i < count; i++) {
-      const x = baseval.getTime() + i * 5 * 60 * 1000;
-      const y = Math.floor(Math.random() * (yrange.max - yrange.min + 1)) + yrange.min;
-      series.push([x, y]);
+  private updateChartData() {
+    if (this.chart && this.chartOptions.series) {
+      this.chart.updateSeries([{
+        name: "Events",
+        data: this.data
+      }]);
     }
-    return series;
+  }
+
+  private updateChartRange() {
+    if (this.chart && this.chartOptions.xaxis) {
+      this.chart.updateOptions({
+        xaxis: {
+          min: this.dateFrom.getTime(),
+          max: this.dateTo.getTime(),
+          labels: {
+            datetimeUTC: false,
+            format: 'HH:mm'
+          },
+          tickAmount: 12,
+          tooltip: {
+            enabled: false
+          }
+        }
+      });
+    }
   }
 }

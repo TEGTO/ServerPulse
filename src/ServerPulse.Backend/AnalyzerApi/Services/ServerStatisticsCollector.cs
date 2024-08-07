@@ -142,17 +142,17 @@ namespace AnalyzerApi.Services
             {
                 IsAlive = isAlive,
                 DataExists = lastConfiguration != null,
-                ServerLastStartDateTime = lastConfiguration?.CreationDate,
+                ServerLastStartDateTimeUTC = lastConfiguration?.CreationDateUTC,
                 ServerUptime = uptime,
                 LastServerUptime = lastUptime,
-                LastPulseDateTime = lastPulse?.CreationDate,
+                LastPulseDateTimeUTC = lastPulse?.CreationDateUTC,
             };
         }
         private static bool CalculateIsServerAlive(PulseEvent? pulseEvent, ConfigurationEvent? configurationEvent)
         {
             if (pulseEvent != null && configurationEvent != null)
             {
-                bool isEventInInterval = pulseEvent.CreationDate >= DateTime.UtcNow.AddMilliseconds(-1 * configurationEvent.ServerKeepAliveInterval.TotalMilliseconds);
+                bool isEventInInterval = pulseEvent.CreationDateUTC >= DateTime.UtcNow.AddMilliseconds(-1 * configurationEvent.ServerKeepAliveInterval.TotalMilliseconds);
                 return pulseEvent.IsAlive && isEventInInterval;
             }
             return false;
@@ -161,7 +161,7 @@ namespace AnalyzerApi.Services
         {
             if (configurationEvent != null && isServerAlive)
             {
-                return DateTime.UtcNow - configurationEvent.CreationDate;
+                return DateTime.UtcNow - configurationEvent.CreationDateUTC;
             }
             return null;
         }
@@ -169,7 +169,7 @@ namespace AnalyzerApi.Services
         {
             if (pulseEvent != null && configurationEvent != null)
             {
-                return pulseEvent.CreationDate - configurationEvent.CreationDate;
+                return pulseEvent.CreationDateUTC - configurationEvent.CreationDateUTC;
             }
             return null;
         }

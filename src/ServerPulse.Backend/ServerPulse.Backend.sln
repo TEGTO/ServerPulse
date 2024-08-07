@@ -47,7 +47,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerMonitorApiTests", "..
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsulUtils", "ConsulUtils\ConsulUtils.csproj", "{FADBFC58-DD96-4E40-BEEA-99DAF4626740}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsulUtilsTests", "..\..\test\ServerPulse.UnitTests\ServerPulse.UnitTests.Backend\ConsulUtilsTests\ConsulUtilsTests.csproj", "{D4EAA225-7584-433F-8CB3-18F2CF4A33F7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsulUtilsTests", "..\..\test\ServerPulse.UnitTests\ServerPulse.UnitTests.Backend\ConsulUtilsTests\ConsulUtilsTests.csproj", "{D4EAA225-7584-433F-8CB3-18F2CF4A33F7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

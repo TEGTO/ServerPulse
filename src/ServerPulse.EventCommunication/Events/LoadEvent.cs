@@ -8,7 +8,7 @@ namespace ServerPulse.EventCommunication.Events
         string Method,
         int StatusCode,
         TimeSpan Duration,
-        DateTime Timestamp) : BaseEvent(Key)
+        DateTime TimestampUTC) : BaseEvent(Key)
     {
         public override string ToString()
         {

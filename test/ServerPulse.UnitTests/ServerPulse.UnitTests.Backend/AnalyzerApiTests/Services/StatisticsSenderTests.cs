@@ -39,10 +39,10 @@ namespace AnalyzerApiTests.Services
             {
                 IsAlive = true,
                 DataExists = true,
-                ServerLastStartDateTime = DateTime.UtcNow,
+                ServerLastStartDateTimeUTC = DateTime.UtcNow,
                 ServerUptime = TimeSpan.FromHours(5),
                 LastServerUptime = TimeSpan.FromMinutes(30),
-                LastPulseDateTime = DateTime.UtcNow,
+                LastPulseDateTimeUTC = DateTime.UtcNow,
             };
             var expectedSerializedData = JsonSerializer.Serialize(serverStatistics);
             // Act

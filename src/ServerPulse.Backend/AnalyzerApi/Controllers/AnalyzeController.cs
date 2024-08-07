@@ -21,8 +21,8 @@ namespace AnalyzerApi.Controllers
         [HttpPost]
         public async Task<ActionResult<IEnumerable<ServerLoadResponse>>> GetLoadEventsInDataRange([FromBody] LoadEventsRangeRequest request, CancellationToken cancellationToken)
         {
-            var events = await serverLoadReceiver.ReceiveEventsInRangeAsync(request.Key, request.From, request.To, cancellationToken);
-            return Ok(events.Select(x => mapper.Map<ServerLoadResponse>(x)));
+            var events = await serverLoadReceiver.ReceiveEventsInRangeAsync(request.Key, request.From.ToUniversalTime(), request.To.ToUniversalTime(), cancellationToken);
+            return Ok(events.Select(mapper.Map<ServerLoadResponse>));
         }
     }
 }
