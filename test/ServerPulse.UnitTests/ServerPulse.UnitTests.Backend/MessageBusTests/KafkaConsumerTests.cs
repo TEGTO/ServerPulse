@@ -1,4 +1,5 @@
 ﻿using Confluent.Kafka;
+using MessageBus.Interfaces;
 using MessageBus.Kafka;
 using Moq;
 

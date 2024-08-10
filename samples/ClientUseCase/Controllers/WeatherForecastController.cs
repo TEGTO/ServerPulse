@@ -59,7 +59,7 @@ namespace ClientUseCase.Controllers
               Method: "GET",
               StatusCode: 200,
               Duration: endTime - startTime,
-              Timestamp: startTime
+              TimestampUTC: startTime
             );
             serverLoadSender.SendEvent(loadEvent);
 

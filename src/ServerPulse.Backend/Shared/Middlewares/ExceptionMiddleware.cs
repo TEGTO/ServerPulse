@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Shared.Dtos;
 using System.Net;
-using System.Net.WebSockets;
 
 namespace Shared.Middlewares
 {
@@ -35,11 +34,6 @@ namespace Shared.Middlewares
             catch (UnauthorizedAccessException ex)
             {
                 await SetError(httpContext, HttpStatusCode.Unauthorized, ex, [ex.Message]);
-            }
-            catch (WebSocketException ex)
-            {
-                Console.WriteLine("WebSocketExceptionWebSocketExceptionWebSocketExceptionWebSocketExceptionWebSocketExceptionWebSocketExceptionWebSocketException");
-                return;
             }
             catch (Exception ex)
             {

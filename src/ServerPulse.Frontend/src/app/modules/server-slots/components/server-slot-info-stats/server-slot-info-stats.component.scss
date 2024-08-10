@@ -1,0 +1,86 @@
+ @use 'colors' as colors;
+
+ @keyframes glow {
+     0% {
+         box-shadow: 0 0 2px var(--color), 0 0 4px var(--color), 0 0 6px var(--color), 0 0 8px var(--color);
+     }
+
+     100% {
+         box-shadow: 0 0 4px var(--color), 0 0 8px var(--color), 0 0 12px var(--color), 0 0 16px var(--color);
+     }
+ }
+
+ @mixin indicator-color($color) {
+     background-color: $color;
+     box-shadow: 0 0 2px $color, 0 0 4px $color, 0 0 6px $color, 0 0 8px $color;
+ }
+
+ @mixin background-shadow-box() {
+     padding: 2rem;
+     box-shadow: 2px 2px 7px 1px rgba(0, 0, 0, 0.1);
+ }
+
+ .statistics__content {
+     width: 100%;
+     display: flex;
+     flex-direction: row;
+     align-items: flex-start;
+     gap: 2rem;
+
+     .content__left {
+         min-width: 400px;
+         @include background-shadow-box();
+         display: flex;
+         flex-direction: column;
+         font-size: 20px;
+         gap: 1rem;
+
+         &>* {
+             padding-bottom: 10px;
+         }
+
+         .left__status {
+             display: flex;
+             flex-direction: row;
+             align-items: center;
+             gap: 0.3rem;
+
+             .status__illumination {
+                 .illumination__indicator {
+                     display: inline-block;
+                     width: 10px;
+                     height: 10px;
+                     border-radius: 50%;
+                     margin-bottom: 2px;
+                     vertical-align: middle;
+                 }
+
+                 .illumination__indicator.green {
+                     --color: green;
+                     @include indicator-color(green);
+                     animation: glow 1.5s infinite alternate;
+                 }
+
+                 .illumination__indicator.red {
+                     --color: red;
+                     @include indicator-color(red);
+                     animation: glow 1.5s infinite alternate;
+                 }
+
+                 .illumination__indicator.grey {
+                     --color: grey;
+                     @include indicator-color(grey);
+                 }
+
+             }
+         }
+     }
+
+     .content__right {
+         @include background-shadow-box();
+         width: 100%;
+         max-height: 300px;
+         overflow-y: scroll;
+         overflow-x: auto;
+     }
+ }

@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using Shared;
+using System.Text.Json;
 
 namespace ApiGateway
 {
@@ -10,19 +11,21 @@ namespace ApiGateway
             foreach (var filePath in filePaths)
             {
                 var json = File.ReadAllText(filePath);
-                var dict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
 
-                foreach (var kvp in dict)
+                if (json.TryToDeserialize(out Dictionary<string, JsonElement> dict))
                 {
-                    if (mergedDict.ContainsKey(kvp.Key))
+                    foreach (var kvp in dict)
                     {
-                        var existingValue = mergedDict[kvp.Key];
-                        var newValue = kvp.Value;
-                        mergedDict[kvp.Key] = MergeArrays(existingValue, newValue);
-                    }
-                    else
-                    {
-                        mergedDict[kvp.Key] = kvp.Value;
+                        if (mergedDict.ContainsKey(kvp.Key))
+                        {
+                            var existingValue = mergedDict[kvp.Key];
+                            var newValue = kvp.Value;
+                            mergedDict[kvp.Key] = MergeArrays(existingValue, newValue);
+                        }
+                        else
+                        {
+                            mergedDict[kvp.Key] = kvp.Value;
+                        }
                     }
                 }
             }
@@ -31,8 +34,8 @@ namespace ApiGateway
         }
         private static JsonElement MergeArrays(JsonElement existingValue, JsonElement newValue)
         {
-            var existingList = JsonSerializer.Deserialize<List<JsonElement>>(existingValue.GetRawText());
-            var newList = JsonSerializer.Deserialize<List<JsonElement>>(newValue.GetRawText());
+            existingValue.GetRawText().TryToDeserialize(out List<JsonElement> existingList);
+            newValue.GetRawText().TryToDeserialize(out List<JsonElement> newList);
             existingList.AddRange(newList);
             return JsonDocument.Parse(JsonSerializer.Serialize(existingList)).RootElement;
         }

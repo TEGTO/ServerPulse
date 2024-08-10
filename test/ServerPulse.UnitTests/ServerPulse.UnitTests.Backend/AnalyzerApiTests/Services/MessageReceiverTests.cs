@@ -1,11 +1,11 @@
 ﻿using AnalyzerApi;
 using AnalyzerApi.Services;
 using Confluent.Kafka;
+using MessageBus.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using ServerPulse.EventCommunication.Events;
 using System.Text.Json;
-using TestKafka.Consumer.Services;
 
 namespace AnalyzerApiTests.Services
 {

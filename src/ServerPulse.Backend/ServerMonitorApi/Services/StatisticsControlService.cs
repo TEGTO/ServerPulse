@@ -1,4 +1,4 @@
-﻿using MessageBus;
+﻿using MessageBus.Interfaces;
 
 namespace ServerMonitorApi.Services
 {
@@ -17,8 +17,9 @@ namespace ServerMonitorApi.Services
         {
             List<string> topics = new List<string>
             {
-                configuration[Configuration.KAFKA_LOAD_TOPIC]!,
-                configuration[Configuration.KAFKA_ALIVE_TOPIC]!
+                configuration[Configuration.KAFKA_CONFIGURATION_TOPIC]! + key,
+                configuration[Configuration.KAFKA_ALIVE_TOPIC]! + key,
+                configuration[Configuration.KAFKA_LOAD_TOPIC]! + key,
             };
             await topicManager.DeleteTopicsAsync(topics);
         }

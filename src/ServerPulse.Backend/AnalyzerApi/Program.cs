@@ -2,6 +2,7 @@ using AnalyzerApi;
 using AnalyzerApi.Hubs;
 using AnalyzerApi.Services;
 using AnalyzerApi.Services.Interfaces;
+using CacheUtils;
 using Confluent.Kafka;
 using ConsulUtils.Extension;
 using MessageBus;
@@ -32,6 +33,8 @@ var adminConfig = new AdminClientConfig
     BootstrapServers = builder.Configuration[Configuration.KAFKA_BOOTSTRAP_SERVERS]
 };
 builder.Services.AddKafkaConsumer(consumerConfig, adminConfig);
+
+builder.Services.AddCache(builder.Configuration);
 
 builder.Services.AddSingleton<IServerStatusReceiver, ServerStatusReceiver>();
 builder.Services.AddSingleton<IServerLoadReceiver, ServerLoadReceiver>();

@@ -70,6 +70,11 @@ export class ActivityChartDetailComponent implements OnInit {
         animations:
         {
           enabled: false
+        },
+        events: {
+          dataPointSelection: (event, chartContext, opts) => {
+            console.log(chartContext, opts);
+          }
         }
       },
       dataLabels: {
@@ -107,7 +112,10 @@ export class ActivityChartDetailComponent implements OnInit {
         }
       },
       yaxis: {
-        tickAmount: 2
+        tickAmount: 2,
+        title: {
+          text: "Event Amount"
+        }
       }
     };
     this.dailyChartOptions = {
@@ -168,12 +176,6 @@ export class ActivityChartDetailComponent implements OnInit {
         tickAmount: 25,
         tooltip: {
           enabled: false
-        }
-      },
-      yaxis: {
-        show: true,
-        title: {
-          text: "Number of Events"
         }
       },
       tooltip: {

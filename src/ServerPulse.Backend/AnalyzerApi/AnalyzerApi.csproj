@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\ServerPulse.EventCommunication\ServerPulse.EventCommunication.csproj" />
+    <ProjectReference Include="..\CacheUtils\CacheUtils.csproj" />
     <ProjectReference Include="..\ConsulUtils\ConsulUtils.csproj" />
     <ProjectReference Include="..\MessageBus\MessageBus.csproj" />
     <ProjectReference Include="..\Shared\Shared.csproj" />

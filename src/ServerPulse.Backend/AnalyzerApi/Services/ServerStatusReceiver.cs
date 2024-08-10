@@ -1,9 +1,9 @@
 ﻿using AnalyzerApi.Services.Interfaces;
 using Confluent.Kafka;
+using MessageBus.Interfaces;
 using ServerPulse.EventCommunication.Events;
+using Shared;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
-using TestKafka.Consumer.Services;
 
 namespace AnalyzerApi.Services
 {
@@ -24,11 +24,10 @@ namespace AnalyzerApi.Services
 
         public async IAsyncEnumerable<PulseEvent> ConsumePulseEventAsync(string key, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            string topic = aliveTopic.Replace("{id}", key);
+            string topic = GetAliveTopic(key);
             await foreach (var message in messageConsumer.ConsumeAsync(topic, timeoutInMilliseconds, Offset.End, cancellationToken))
             {
-                var pulseEvent = JsonSerializer.Deserialize<PulseEvent>(message);
-                if (pulseEvent != null)
+                if (message.TryToDeserialize(out PulseEvent pulseEvent))
                 {
                     yield return pulseEvent;
                 }
@@ -36,34 +35,42 @@ namespace AnalyzerApi.Services
         }
         public async IAsyncEnumerable<ConfigurationEvent> ConsumeConfigurationEventAsync(string key, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            string topic = configurationTopic.Replace("{id}", key);
+            string topic = GetConfigurationTopic(key);
             await foreach (var message in messageConsumer.ConsumeAsync(topic, timeoutInMilliseconds, Offset.End, cancellationToken))
             {
-                var pulseEvent = JsonSerializer.Deserialize<ConfigurationEvent>(message);
-                if (pulseEvent != null)
+                if (message.TryToDeserialize(out ConfigurationEvent confEvent))
                 {
-                    yield return pulseEvent;
+                    yield return confEvent;
                 }
             }
         }
         public async Task<PulseEvent?> ReceiveLastPulseEventByKeyAsync(string key, CancellationToken cancellationToken)
         {
-            string topic = aliveTopic.Replace("{id}", key);
+            string topic = GetAliveTopic(key);
             return await TaskGetLastEventFromTopic<PulseEvent>(topic, cancellationToken);
         }
         public async Task<ConfigurationEvent?> ReceiveLastConfigurationEventByKeyAsync(string key, CancellationToken cancellationToken)
         {
-            string topic = configurationTopic.Replace("{id}", key);
+            string topic = GetConfigurationTopic(key);
             return await TaskGetLastEventFromTopic<ConfigurationEvent>(topic, cancellationToken);
         }
         private async Task<T?> TaskGetLastEventFromTopic<T>(string topic, CancellationToken cancellationToken) where T : BaseEvent
         {
             string? message = await messageConsumer.ReadLastTopicMessageAsync(topic, timeoutInMilliseconds, cancellationToken);
-            if (!string.IsNullOrEmpty(message))
+            if (message.TryToDeserialize(out T ev))
             {
-                return JsonSerializer.Deserialize<T>(message);
+                return ev;
             }
             return null;
+        }
+
+        private string GetAliveTopic(string key)
+        {
+            return aliveTopic + key;
+        }
+        private string GetConfigurationTopic(string key)
+        {
+            return configurationTopic + key;
         }
     }
 }

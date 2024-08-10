@@ -33,7 +33,7 @@ namespace ServerPulse.Client.Middlewares
                 Method: httpContext.Request.Method,
                 StatusCode: httpContext.Response.StatusCode,
                 Duration: endTime - startTime,
-                Timestamp: startTime
+                TimestampUTC: startTime
            );
 
             serverLoadSender.SendEvent(loadEvent);

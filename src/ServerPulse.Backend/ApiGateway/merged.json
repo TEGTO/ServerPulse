@@ -42,7 +42,59 @@
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
         "Period": "1s",
-        "PeriodTimespan": 1,
+        "PeriodTimespan": 5,
+        "Limit": 1
+      }
+    },
+    {
+      "Key": "Analyzer_GetLoadStatisticsPerDay",
+      "ServiceName": "analyzer",
+      "UpstreamPathTemplate": "/analyze/perday/{key}",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DownstreamPathTemplate": "/analyze/perday/{key}",
+      "DownstreamScheme": "http",
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToRequest": {
+        "Authorization": "Bearer {token}"
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 2,
+        "Limit": 1
+      }
+    },
+    {
+      "Key": "Analyzer_GetAmountStatisticsInRange",
+      "ServiceName": "analyzer",
+      "UpstreamPathTemplate": "/analyze/amountrange",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DownstreamPathTemplate": "/analyze/amountrange",
+      "DownstreamScheme": "http",
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToRequest": {
+        "Authorization": "Bearer {token}"
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 2,
         "Limit": 1
       }
     },

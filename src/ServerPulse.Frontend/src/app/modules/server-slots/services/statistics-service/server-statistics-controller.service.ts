@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
+import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-import { LoadEventsRangeRequest, ServerLoadResponse, StatisticsApiService } from '../../../shared';
+import { selectCurrentDate, selectDate } from '../..';
+import { LoadAmountStatisticsInRangeRequest, LoadAmountStatisticsResponse, LoadEventsRangeRequest, ServerLoadResponse, StatisticsApiService, TimeSpan } from '../../../shared';
 import { ServerStatisticsService } from './server-statistics-service';
 
 @Injectable({
@@ -9,7 +11,8 @@ import { ServerStatisticsService } from './server-statistics-service';
 export class ServerStatisticsControllerService implements ServerStatisticsService {
 
   constructor(
-    private readonly apiService: StatisticsApiService
+    private readonly apiService: StatisticsApiService,
+    private readonly store: Store
   ) { }
 
   getStatisticsInDateRange(key: string, from: Date, to: Date): Observable<ServerLoadResponse[]> {
@@ -19,5 +22,24 @@ export class ServerStatisticsControllerService implements ServerStatisticsServic
       to: to
     }
     return this.apiService.getLoadEventsInDataRange(request);
+  }
+  getWholeAmountStatisticsInDays(key: string): Observable<LoadAmountStatisticsResponse[]> {
+    return this.apiService.getWholeAmountStatisticsInDays(key);
+  }
+  getAmountStatisticsInRange(key: string, from: Date, to: Date, timeSpan: TimeSpan): Observable<LoadAmountStatisticsResponse[]> {
+    let request: LoadAmountStatisticsInRangeRequest =
+    {
+      key: key,
+      from: from,
+      to: to,
+      timeSpan: timeSpan.toString()
+    }
+    return this.apiService.getAmountStatisticsInRange(request);
+  }
+  getCurrentLoadStatisticsDate() {
+    return this.store.select(selectCurrentDate);
+  }
+  setCurrentLoadStatisticsDate(date: Date) {
+    this.store.dispatch(selectDate({ date: date }));
   }
 }

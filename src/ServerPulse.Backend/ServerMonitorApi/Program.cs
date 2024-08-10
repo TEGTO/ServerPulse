@@ -1,3 +1,4 @@
+using CacheUtils;
 using Confluent.Kafka;
 using ConsulUtils.Extension;
 using MessageBus;
@@ -6,7 +7,6 @@ using ServerMonitorApi;
 using ServerMonitorApi.Services;
 using Shared;
 using Shared.Middlewares;
-using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,8 +21,6 @@ builder.Services.Configure<KestrelServerOptions>(options =>
     options.Limits.MaxRequestBodySize = 1 * 1024 * 1024; //1 MB
 });
 
-builder.Services.AddSingleton<IConnectionMultiplexer>(
-    ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString(Configuration.REDIS_CONNECTION_STRING)!));
 builder.Services.AddHttpClient();
 
 var producerConfig = new ProducerConfig
@@ -37,10 +35,10 @@ var adminConfig = new AdminClientConfig
 };
 builder.Services.AddKafkaProducer(producerConfig, adminConfig);
 
+builder.Services.AddCache(builder.Configuration);
+
 builder.Services.AddSingleton<IMessageSender, MessageSender>();
 builder.Services.AddSingleton<IStatisticsControlService, StatisticsControlService>();
-
-builder.Services.AddSingleton<IRedisService, RedisService>();
 
 builder.Services.AddSingleton<ISlotKeyChecker, SlotKeyChecker>();
 

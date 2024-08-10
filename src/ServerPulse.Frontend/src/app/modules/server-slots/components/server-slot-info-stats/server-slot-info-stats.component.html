@@ -1,0 +1,70 @@
+<div class="statistics__content">
+    <section class="content__left child:border-b border-gray-200 dark:border-gray-600">
+        <div class="left__status">
+            Status: No Data
+            <div class="status__illumination">
+                <span [ngClass]="{
+                    'green': serverStatus === 'green',
+                    'red': serverStatus === 'red',
+                    'grey': serverStatus === 'grey'
+                }" class="illumination__indicator"></span>
+            </div>
+        </div>
+        <div class="left__uptime">
+            Last start:
+        </div>
+        <div class="left__uptime">
+            Uptime:
+        </div>
+        <div class="left__last-uptime">
+            Last uptime:
+        </div>
+        <div class="left__last-uptime">
+            Last pulse:
+        </div>
+    </section>
+    <section class="content__right">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                <tr>
+                    <th scope="col" class="px-6 py-3">
+                        Endpoint
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Method
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Status code
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Duration
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Timestamp
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (item of [1,2,3,4,5]; track $index) {
+                <tr class="border-b dark:border-gray-700">
+                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                        /example
+                    </th>
+                    <td class="px-6 py-4">
+                        'GET'
+                    </td>
+                    <td class="px-6 py-4">
+                        404 (Not Found)
+                    </td>
+                    <td class="px-6 py-4">
+                        00:00:10
+                    </td>
+                    <td class="px-6 py-4">
+                        05.08.2024 15:31
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+</div>

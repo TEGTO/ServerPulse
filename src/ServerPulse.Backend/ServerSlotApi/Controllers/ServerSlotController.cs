@@ -16,11 +16,13 @@ namespace ServerSlotApi.Controllers
     {
         private readonly IMapper mapper;
         private readonly IServerSlotService serverSlotService;
+        private readonly ISlotStatisticsService slotStatisticsService;
 
-        public ServerSlotController(IMapper mapper, IServerSlotService serverAuthService)
+        public ServerSlotController(IMapper mapper, IServerSlotService serverAuthService, ISlotStatisticsService slotStatisticsService)
         {
             this.mapper = mapper;
             this.serverSlotService = serverAuthService;
+            this.slotStatisticsService = slotStatisticsService;
         }
 
         [Authorize]
@@ -96,8 +98,19 @@ namespace ServerSlotApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSlot(string id, CancellationToken cancellationToken)
         {
-            var email = User.FindFirstValue(ClaimTypes.Email);
-            await serverSlotService.DeleteSlotByIdAsync(email, id, cancellationToken);
+            var slot = await serverSlotService.GetSlotByIdAsync(id, cancellationToken);
+            if (slot != null)
+            {
+                string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", string.Empty);
+                if (await slotStatisticsService.DeleteSlotStatisticsAsync(slot.SlotKey, token, cancellationToken))
+                {
+                    await serverSlotService.DeleteSlotByIdAsync(id, cancellationToken);
+                }
+                else
+                {
+                    return StatusCode(500, "Failed to delete server slot!");
+                }
+            }
             return Ok();
         }
     }

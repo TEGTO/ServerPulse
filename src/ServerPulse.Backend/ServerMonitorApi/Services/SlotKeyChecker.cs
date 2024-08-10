@@ -1,4 +1,5 @@
-﻿using Shared.Dtos.ServerSlot;
+﻿using Shared;
+using Shared.Dtos.ServerSlot;
 using System.Text;
 using System.Text.Json;
 
@@ -7,25 +8,23 @@ namespace ServerMonitorApi.Services
     public class SlotKeyChecker : ISlotKeyChecker
     {
         private readonly IHttpClientFactory httpClientFactory;
-        private readonly IRedisService redisService;
-        private readonly IConfiguration configuration;
+        private readonly ICacheService cacheService;
         private readonly string slotCheckerUrl;
         private readonly int partitionsAmount;
-        private readonly double redisExpiryInMinutes;
+        private readonly double cacheExpiryInMinutes;
 
-        public SlotKeyChecker(IHttpClientFactory httpClientFactory, IRedisService redisService, IConfiguration configuration)
+        public SlotKeyChecker(IHttpClientFactory httpClientFactory, ICacheService cacheService, IConfiguration configuration)
         {
             this.httpClientFactory = httpClientFactory;
-            this.redisService = redisService;
-            this.configuration = configuration;
+            this.cacheService = cacheService;
 
             slotCheckerUrl = $"{configuration[Configuration.API_GATEWAY]}{configuration[Configuration.SERVER_SLOT_ALIVE_CHECKER]}";
-            redisExpiryInMinutes = double.Parse(configuration[Configuration.REDIS_SERVER_SLOT_EXPIRY_IN_MINUTES]!);
+            cacheExpiryInMinutes = double.Parse(configuration[Configuration.CACHE_SERVER_SLOT_EXPIRY_IN_MINUTES]!);
         }
 
         public async Task<bool> CheckSlotKeyAsync(string slotKey, CancellationToken cancellationToken)
         {
-            if (await CheckSlotKeyInRedisAsync(slotKey))
+            if (await CheckSlotKeyInCacheAsync(slotKey))
             {
                 return true;
             }
@@ -49,22 +48,25 @@ namespace ServerMonitorApi.Services
 
             if (response != null && response.IsExisting)
             {
-                await redisService.SetValueAsync(slotKey, JsonSerializer.Serialize(response), redisExpiryInMinutes);
+                await cacheService.SetValueAsync(slotKey, JsonSerializer.Serialize(response), cacheExpiryInMinutes);
                 return true;
             }
 
             return false;
         }
 
-        private async Task<bool> CheckSlotKeyInRedisAsync(string slotKey)
+        private async Task<bool> CheckSlotKeyInCacheAsync(string slotKey)
         {
-            var json = await redisService.GetValueAsync(slotKey);
+            var json = await cacheService.GetValueAsync(slotKey);
             if (string.IsNullOrEmpty(json))
             {
                 return false;
             }
-            var response = JsonSerializer.Deserialize<CheckSlotKeyResponse>(json);
-            return response.IsExisting;
+            if (json.TryToDeserialize(out CheckSlotKeyResponse response))
+            {
+                return response.IsExisting;
+            }
+            return false;
         }
     }
 }

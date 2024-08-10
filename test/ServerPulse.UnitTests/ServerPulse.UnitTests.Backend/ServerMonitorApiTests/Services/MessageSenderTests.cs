@@ -1,4 +1,4 @@
-﻿using MessageBus;
+﻿using MessageBus.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using ServerMonitorApi;

@@ -10,6 +10,6 @@ namespace ServerSlotApi.Services
         public Task<bool> CheckIfKeyValidAsync(string key, CancellationToken cancellationToken);
         public Task<ServerSlot> CreateSlotAsync(ServerSlot serverSlot, CancellationToken cancellationToken);
         public Task UpdateSlotAsync(ServerSlot serverSlot, CancellationToken cancellationToken);
-        public Task DeleteSlotByIdAsync(string email, string id, CancellationToken cancellationToken);
+        public Task DeleteSlotByIdAsync(string id, CancellationToken cancellationToken);
     }
 }

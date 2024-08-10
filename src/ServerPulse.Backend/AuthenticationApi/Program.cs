@@ -38,7 +38,7 @@ builder.Services.ConfigureIdentityServices(builder.Configuration);
 builder.Services.AddScoped<ITokenHandler, JwtHandler>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IDatabaseRepository<AuthIdentityDbContext>, DatabaseRepository<AuthIdentityDbContext>>();
+builder.Services.AddSingleton<IDatabaseRepository<AuthIdentityDbContext>, DatabaseRepository<AuthIdentityDbContext>>();
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 

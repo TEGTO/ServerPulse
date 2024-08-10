@@ -1,13 +1,12 @@
 ﻿using Confluent.Kafka;
+using MessageBus.Interfaces;
 using MessageBus.Kafka;
 using Microsoft.Extensions.DependencyInjection;
-using TestKafka.Consumer.Services;
 
 namespace MessageBus
 {
     public static class KafkaExtenstions
     {
-
         public static IServiceCollection AddKafkaConsumer(this IServiceCollection services, ConsumerConfig consumerConfig, AdminClientConfig adminConfig)
         {
             services.AddSingleton(consumerConfig);

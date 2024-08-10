@@ -78,11 +78,11 @@ namespace ServerSlotApi.Services
                 await dbContext.SaveChangesAsync(cancellationToken);
             }
         }
-        public async Task DeleteSlotByIdAsync(string email, string id, CancellationToken cancellationToken)
+        public async Task DeleteSlotByIdAsync(string id, CancellationToken cancellationToken)
         {
             using (var dbContext = await CreateDbContextAsync(cancellationToken))
             {
-                var serverSlot = await dbContext.ServerSlots.FirstOrDefaultAsync(x => x.Id == id && x.UserEmail == email, cancellationToken);
+                var serverSlot = await dbContext.ServerSlots.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
                 if (serverSlot != null)
                 {
                     dbContext.ServerSlots.Remove(serverSlot);

@@ -20,8 +20,9 @@ builder.Services.AddDbContextFactory<ServerDataDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString(Configuration.SERVER_SLOT_DATABASE_CONNECTION_STRING)));
 
 builder.Services.AddHttpClient();
-builder.Services.AddScoped<IServerSlotService, ServerSlotService>();
-builder.Services.AddScoped<IDatabaseRepository<ServerDataDbContext>, DatabaseRepository<ServerDataDbContext>>();
+builder.Services.AddSingleton<IServerSlotService, ServerSlotService>();
+builder.Services.AddSingleton<IDatabaseRepository<ServerDataDbContext>, DatabaseRepository<ServerDataDbContext>>();
+builder.Services.AddSingleton<ISlotStatisticsService, SlotStatisticsService>();
 
 builder.Services.ConfigureIdentityServices(builder.Configuration);
 
@@ -40,6 +41,7 @@ if (app.Configuration[Configuration.EF_CREATE_DATABASE] == "true")
 }
 
 app.UseExceptionMiddleware();
+app.UseMiddleware<AccessTokenMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();
