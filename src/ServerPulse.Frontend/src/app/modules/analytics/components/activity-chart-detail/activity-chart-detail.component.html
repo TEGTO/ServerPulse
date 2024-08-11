@@ -1,19 +1,19 @@
 <div id="wrapper">
     <div id="chart-control">
         <div class="flex flex-wrap gap-1">
-            <button (click)="updateOptions( '1w' )" [class.active]="activeOptionButton=='1w'">
+            <button (click)="updateControlOptions( '1w' )" [class.active]="activeOptionButton=='1w'">
                 1W
             </button>
-            <button (click)="updateOptions( '1m' )" [class.active]="activeOptionButton=='1m'">
+            <button (click)="updateControlOptions( '1m' )" [class.active]="activeOptionButton=='1m'">
                 1M
             </button>
-            <button (click)="updateOptions( '3m' )" [class.active]="activeOptionButton=='3m'">
+            <button (click)="updateControlOptions( '3m' )" [class.active]="activeOptionButton=='3m'">
                 3M
             </button>
-            <button (click)="updateOptions( '6m' )" [class.active]="activeOptionButton=='6m'">
+            <button (click)="updateControlOptions( '6m' )" [class.active]="activeOptionButton=='6m'">
                 6M
             </button>
-            <button (click)="updateOptions( 'all' )" [class.active]="activeOptionButton=='all'">
+            <button (click)="updateControlOptions( 'all' )" [class.active]="activeOptionButton=='all'">
                 All
             </button>
         </div>

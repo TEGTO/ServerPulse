@@ -1,7 +1,6 @@
 import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
-import { RealTimeStatisticsCollector, ServerSlotDialogManager, ServerSlotService } from '../..';
-import { environment } from '../../../../../environment/environment';
-import { convertToServerStatisticsResponse, RedirectorService, ServerSlot, ServerStatisticsResponse, SnackbarManager, UpdateServerSlotRequest } from '../../../shared';
+import { ServerSlotDialogManager, ServerSlotService, ServerStatisticsService } from '../..';
+import { RedirectorService, ServerSlot, ServerStatisticsResponse, SnackbarManager, UpdateServerSlotRequest } from '../../../shared';
 
 export enum ServerStatus {
   Online = 'green',
@@ -31,7 +30,7 @@ export class ServerSlotComponent implements AfterViewInit, OnInit {
     private readonly dialogManager: ServerSlotDialogManager,
     private readonly redirector: RedirectorService,
     private readonly snackBarManager: SnackbarManager,
-    private readonly statisticsCollector: RealTimeStatisticsCollector
+    private readonly serverStatisticsService: ServerStatisticsService,
   ) { }
 
   ngOnInit(): void {
@@ -48,31 +47,18 @@ export class ServerSlotComponent implements AfterViewInit, OnInit {
   }
 
   private initializeStatisticsSubscription(): void {
-    this.statisticsCollector.startConnection(environment.statisticsHub).subscribe(() => {
-      this.statisticsCollector.startListen(environment.statisticsHub, this.serverSlot.slotKey);
-      this.statisticsCollector.receiveStatistics(environment.statisticsHub).subscribe(
-        (message) => this.handleStatisticsMessage(message),
-        (error) => this.handleStatisticsError(error)
-      );
+    this.serverStatisticsService.getLastServerStatistics(this.serverSlot.slotKey).subscribe(message => {
+      this.handleStatisticsMessage(message);
     });
   }
 
-  private handleStatisticsMessage(message: { key: string, data: string }): void {
-    try {
-      if (message.key === this.serverSlot.slotKey) {
-        this.currentServerSlotStatistics = convertToServerStatisticsResponse(JSON.parse(message.data));
-        this.updateServerStatus();
-        this.cdr.detectChanges();
-      }
-    } catch (error) {
-      this.currentServerSlotStatistics = undefined;
-      console.error('Error processing the received statistics:', error);
+  private handleStatisticsMessage(message: { key: string; statistics: ServerStatisticsResponse; } | null): void {
+    if (!message || message.key !== this.serverSlot.slotKey) {
+      return;
     }
-  }
-
-  private handleStatisticsError(error: any): void {
-    this.currentServerSlotStatistics = undefined;
-    console.error('Error receiving statistics:', error);
+    this.currentServerSlotStatistics = message.statistics;
+    this.updateServerStatus();
+    this.cdr.detectChanges();
   }
 
   onInputChange(): void {

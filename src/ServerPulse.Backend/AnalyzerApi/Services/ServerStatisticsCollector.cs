@@ -146,6 +146,7 @@ namespace AnalyzerApi.Services
                 ServerUptime = uptime,
                 LastServerUptime = lastUptime,
                 LastPulseDateTimeUTC = lastPulse?.CreationDateUTC,
+                CollectedDateUTC = DateTime.UtcNow
             };
         }
         private static bool CalculateIsServerAlive(PulseEvent? pulseEvent, ConfigurationEvent? configurationEvent)

@@ -4,5 +4,6 @@
     {
         public int AmountOfEvents { get; set; }
         public ServerLoadResponse? LastEvent { get; set; }
+        public DateTime CollectedDateUTC { get; set; }
     }
 }

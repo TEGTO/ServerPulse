@@ -73,7 +73,8 @@ namespace AnalyzerApi.Services
             var statistics = new ServerLoadStatistics
             {
                 AmountOfEvents = amountOfEvents,
-                LastEvent = lastLoadEvent
+                LastEvent = lastLoadEvent,
+                CollectedDateUTC = DateTime.UtcNow
             };
             await statisticsSender.SendServerLoadStatisticsAsync(key, statistics);
         }
@@ -85,7 +86,8 @@ namespace AnalyzerApi.Services
                 var statistics = new ServerLoadStatistics
                 {
                     AmountOfEvents = amountOfEvents,
-                    LastEvent = load
+                    LastEvent = load,
+                    CollectedDateUTC = DateTime.UtcNow
                 };
                 await statisticsSender.SendServerLoadStatisticsAsync(key, statistics);
             }

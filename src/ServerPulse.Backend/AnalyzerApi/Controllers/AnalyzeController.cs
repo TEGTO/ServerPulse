@@ -63,10 +63,7 @@ namespace AnalyzerApi.Controllers
         public async Task<ActionResult<IEnumerable<LoadAmountStatisticsResponse>>> GetAmountStatisticsInRange([FromBody] LoadAmountStatisticsInRangeRequest request, CancellationToken cancellationToken)
         {
             var options = new InRangeQueryOptions(request.Key, request.From.ToUniversalTime(), request.To.ToUniversalTime());
-            List<LoadAmountStatistics> statistics =
-            [
-                ..await serverLoadReceiver.GetAmountStatisticsInRangeAsync(options, request.TimeSpan, cancellationToken),
-            ];
+            var statistics = await serverLoadReceiver.GetAmountStatisticsInRangeAsync(options, request.TimeSpan, cancellationToken);
 
             return Ok(statistics.Select(mapper.Map<LoadAmountStatisticsResponse>));
         }

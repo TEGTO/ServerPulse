@@ -6,5 +6,6 @@ namespace AnalyzerApi.Domain.Models
     {
         public int AmountOfEvents { get; set; }
         public LoadEvent? LastEvent { get; set; }
+        public DateTime CollectedDateUTC { get; set; }
     }
 }

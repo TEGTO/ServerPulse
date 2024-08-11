@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-import { selectCurrentDate, selectDate } from '../..';
+import { selectCurrentDate, selectDate, selectLastLoadStatistics, selectLastStatistics, subscribeToLoadStatistics, subscribeToSlotStatistics } from '../..';
 import { LoadAmountStatisticsInRangeRequest, LoadAmountStatisticsResponse, LoadEventsRangeRequest, ServerLoadResponse, StatisticsApiService, TimeSpan } from '../../../shared';
 import { ServerStatisticsService } from './server-statistics-service';
 
@@ -35,6 +35,14 @@ export class ServerStatisticsControllerService implements ServerStatisticsServic
       timeSpan: timeSpan.toString()
     }
     return this.apiService.getAmountStatisticsInRange(request);
+  }
+  getLastServerStatistics(key: string) {
+    this.store.dispatch(subscribeToSlotStatistics({ slotKey: key }));
+    return this.store.select(selectLastStatistics);
+  }
+  getLastServerLoadStatistics(key: string) {
+    this.store.dispatch(subscribeToLoadStatistics({ slotKey: key }));
+    return this.store.select(selectLastLoadStatistics);
   }
   getCurrentLoadStatisticsDate() {
     return this.store.select(selectCurrentDate);

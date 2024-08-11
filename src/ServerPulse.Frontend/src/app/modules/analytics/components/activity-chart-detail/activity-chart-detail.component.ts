@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, SimpleChanges, ViewChild } from '@angular/core';
 import { ChartComponent } from 'ng-apexcharts';
 import { ChartOptions } from '../..';
 
@@ -9,12 +9,19 @@ type TimeRange = "1w" | "1m" | "3m" | "6m" | "all";
   styleUrl: './activity-chart-detail.component.scss'
 })
 export class ActivityChartDetailComponent implements OnInit {
-  @ViewChild("controlChart", { static: false }) controlChart!: ChartComponent;
   @Input({ required: true }) chartUniqueId!: string;
+  @Input({ required: true }) controlData!: any[];
+  @ViewChild('controlChart') controlChart!: ChartComponent;
   controlChartOptions!: Partial<ChartOptions>;
   dailyChartOptions!: Partial<ChartOptions>;
-  activeOptionButton = "1w";
-  private readonly currentTime: Date = new Date();
+  activeOptionButton: TimeRange = "1w";
+  private controlDateFrom: Date = new Date(this.currentTime.getTime() - this.week);
+  private controlDateTo: Date = this.currentTime;
+
+  get controlChartId() { return `chart1-${this.chartUniqueId}`; }
+  get dailyChartId() { return `chart2-${this.chartUniqueId}`; }
+  get currentTime() { return new Date(); }
+  get week() { return 7 * 24 * 60 * 60 * 1000; }
 
   updateOptionsData = {
     "1w": { xaxis: { min: this.currentTime.getTime() - 7 * 24 * 60 * 60 * 1000, max: this.currentTime.getTime() } },
@@ -24,12 +31,21 @@ export class ActivityChartDetailComponent implements OnInit {
     all: { xaxis: { min: undefined, max: undefined } }
   };
 
-  constructor() { }
-  ngOnInit(): void {
-    let controlChartId = `chart2-${this.chartUniqueId}`;
-    let dailyChartId = `chart1-${this.chartUniqueId}`;
+  constructor(
+  ) { }
 
-    const yearAgo = new Date(this.currentTime.getTime() - 365 * 24 * 60 * 60 * 1000);
+  ngOnInit(): void {
+    this.initChartOptions();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['controlData']) {
+      this.updateControlChartRange();
+      this.updateControlChartData();
+    }
+  }
+
+  initChartOptions(): void {
     const currentHour = new Date(this.currentTime.setMinutes(0, 0, 0));
     const oneDayAgo = new Date(currentHour.getTime() - 24 * 60 * 60 * 1000);
 
@@ -37,28 +53,14 @@ export class ActivityChartDetailComponent implements OnInit {
       series: [
         {
           name: "Events",
-          data: this.generateDayWiseTimeSeries(
-            yearAgo,
-            366,
-            {
-              min: 0,
-              max: 100
-            }
-          )
+          data: this.controlData
         }
       ],
       chart: {
-        id: controlChartId,
-        height: 260,
+        id: this.controlChartId,
         type: "bar",
-        stacked: true,
-        selection: {
-          enabled: true,
-          xaxis: {
-            min: this.currentTime.getTime() - 6 * 24 * 60 * 60 * 1000,
-            max: this.currentTime.getTime()
-          }
-        },
+        height: 260,
+        stacked: false,
         zoom: {
           type: "x",
           enabled: true,
@@ -77,13 +79,6 @@ export class ActivityChartDetailComponent implements OnInit {
           }
         }
       },
-      dataLabels: {
-        enabled: false
-      },
-      stroke: {
-        width: [2],
-        curve: ['smooth']
-      },
       fill: {
         type: "gradient",
         gradient: {
@@ -97,9 +92,13 @@ export class ActivityChartDetailComponent implements OnInit {
           stops: [50, 0, 100, 100]
         }
       },
+      dataLabels: {
+        enabled: false
+      },
       xaxis: {
         type: "datetime",
-        min: this.currentTime.getTime() - 6 * 24 * 60 * 60 * 1000,
+        min: this.controlDateFrom.getTime(),
+        max: this.controlDateTo.getTime(),
         tooltip: {
           enabled: false,
         }
@@ -133,7 +132,7 @@ export class ActivityChartDetailComponent implements OnInit {
         }
       ],
       chart: {
-        id: dailyChartId,
+        id: this.dailyChartId,
         type: "area",
         height: 220,
         stacked: false,
@@ -194,7 +193,7 @@ export class ActivityChartDetailComponent implements OnInit {
     };
   }
 
-  public generateHourlyTimeSeries(baseval: any, count: any, yrange: any) {
+  private generateHourlyTimeSeries(baseval: any, count: any, yrange: any) {
     const series = [];
     for (let i = 0; i < count; i++) {
       const x = baseval.getTime() + i * 3600 * 1000;
@@ -203,16 +202,23 @@ export class ActivityChartDetailComponent implements OnInit {
     }
     return series;
   }
-  public generateDayWiseTimeSeries(baseval: any, count: any, yrange: any) {
-    const series = [];
-    for (let i = 0; i < count; i++) {
-      const x = baseval.getTime() + i * 24 * 3600 * 1000;
-      const y = Math.floor(Math.random() * (yrange.max - yrange.min + 1)) + yrange.min;
-      series.push([x, y]);
+
+  updateControlChartData() {
+    if (this.controlChart != null && this.controlChartOptions.series != null) {
+      this.controlChart.updateSeries([{
+        name: "Events",
+        data: this.controlData
+      }]);
     }
-    return series;
   }
-  public updateOptions(option: TimeRange): void {
+
+  updateControlChartRange() {
+    if (this.controlChart && this.controlChartOptions.xaxis) {
+      this.updateControlOptions(this.activeOptionButton);
+    }
+  }
+
+  updateControlOptions(option: TimeRange): void {
     this.activeOptionButton = option;
     this.controlChart.updateOptions(this.updateOptionsData[option], false, true, true);
   }

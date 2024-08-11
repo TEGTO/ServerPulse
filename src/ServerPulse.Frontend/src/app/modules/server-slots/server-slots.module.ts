@@ -10,7 +10,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { provideEffects } from '@ngrx/effects';
 import { provideState, provideStore } from '@ngrx/store';
-import { RealTimeStatisticsCollector, ServerSlotComponent, ServerSlotControllerService, ServerSlotDeleteConfirmComponent, ServerSlotDialogManager, ServerSlotDialogManagerService, ServerSlotEffects, ServerSlotInfoComponent, serverSlotReducer, ServerSlotService, ServerStatisticsControllerService, ServerStatisticsService, SlotBoardComponent, slotLoadStatisticsReducer, StatisticsCollector } from '.';
+import { RealTimeStatisticsCollector, ServerSlotComponent, ServerSlotControllerService, ServerSlotDeleteConfirmComponent, ServerSlotDialogManager, ServerSlotDialogManagerService, ServerSlotEffects, ServerSlotInfoComponent, serverSlotReducer, ServerSlotService, ServerSlotStatisticsEffects, ServerStatisticsControllerService, ServerStatisticsService, SlotBoardComponent, slotLoadStatisticsReducer, slotstatisticsReducer, StatisticsCollector } from '.';
 import { AnalyticsModule } from '../analytics/analytics.module';
 import { AuthenticationModule } from '../authentication/authentication.module';
 import { ServerSlotDailyChartComponent } from './components/server-slot-daily-chart/server-slot-preview-activity-chart.component';
@@ -51,8 +51,10 @@ import { ServerSlotInfoStatsComponent } from './components/server-slot-info-stat
     { provide: ServerStatisticsService, useClass: ServerStatisticsControllerService },
     provideStore(),
     provideState({ name: "serverslot", reducer: serverSlotReducer }),
+    provideState({ name: "slotstatistics", reducer: slotstatisticsReducer }),
     provideState({ name: "slotloadstatistics", reducer: slotLoadStatisticsReducer }),
     provideEffects(ServerSlotEffects),
+    provideEffects(ServerSlotStatisticsEffects),
   ],
 })
 export class ServerSlotsModule { }

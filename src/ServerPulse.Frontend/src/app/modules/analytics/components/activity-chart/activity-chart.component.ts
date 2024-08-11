@@ -116,10 +116,7 @@ export class ActivityChartComponent implements OnInit, OnChanges {
 
   private updateChartData() {
     if (this.chart && this.chartOptions.series) {
-      this.chart.updateSeries([{
-        name: "Events",
-        data: this.data
-      }]);
+      this.chartOptions.series[0].data = this.data;
     }
   }
 

@@ -8,5 +8,6 @@
         public TimeSpan? ServerUptime { get; set; }
         public TimeSpan? LastServerUptime { get; set; }
         public DateTime? LastPulseDateTimeUTC { get; set; }
+        public DateTime CollectedDateUTC { get; set; }
     }
 }
