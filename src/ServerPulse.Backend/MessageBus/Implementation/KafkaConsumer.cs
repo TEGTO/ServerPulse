@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 namespace MessageBus.Kafka
 {
     public record MessageInRangeQueryOptions(string TopicName, int TimeoutInMilliseconds, DateTime From, DateTime To);
+    public record ReadSomeMessagesOptions(string TopicName, int TimeoutInMilliseconds, int NumberOfMessages, DateTime StartDate, bool ReadNew = false);
 
     public class KafkaConsumer : IMessageConsumer
     {
@@ -280,5 +281,66 @@ namespace MessageBus.Kafka
                 return finalResult;
             }
         }
+
+        public async Task<List<string>> ReadSomeMessagesAsync(ReadSomeMessagesOptions options, CancellationToken cancellationToken)
+        {
+            var startDate = options.StartDate.ToUniversalTime();
+
+            var threadResults = new List<List<string>>();
+
+            using (var consumer = consumerFactory.CreateConsumer())
+            {
+                var topicMetadata = adminClient.GetMetadata(options.TopicName, TimeSpan.FromMilliseconds(options.TimeoutInMilliseconds));
+                var partitions = topicMetadata.Topics.First(x => x.Topic == options.TopicName).Partitions.Select(p => p.PartitionId).ToList();
+
+                var startOffsets = consumer.OffsetsForTimes(partitions.Select(p =>
+                    new TopicPartitionTimestamp(new TopicPartition(options.TopicName, p), new Timestamp(startDate))),
+                    TimeSpan.FromMilliseconds(options.TimeoutInMilliseconds)).ToList();
+
+                consumer.Assign(startOffsets);
+
+                int messageAmount = 0;
+
+                var consumeTasks = startOffsets.Select(startOffset =>
+                {
+                    var partitionMessages = new List<string>();
+
+                    return Task.Run(() =>
+                    {
+                        consumer.Seek(startOffset);
+
+                        while (!cancellationToken.IsCancellationRequested)
+                        {
+
+                            if (messageAmount >= options.NumberOfMessages)
+                                break;
+
+                            var consumeResult = consumer.Consume(options.TimeoutInMilliseconds);
+                            if (consumeResult == null || consumeResult.Message == null || string.IsNullOrEmpty(consumeResult.Message.Value))
+                                break;
+
+                            if ((consumeResult.Message.Timestamp.UtcDateTime >= startDate && options.ReadNew) ||
+                            (consumeResult.Message.Timestamp.UtcDateTime <= startDate && !options.ReadNew))
+                            {
+                                partitionMessages.Add(consumeResult.Message.Value);
+                                Interlocked.Increment(ref messageAmount);
+                            }
+                        }
+
+                        lock (threadResults)
+                        {
+                            threadResults.Add(partitionMessages);
+                        }
+
+                    }, cancellationToken);
+
+                }).ToList();
+
+                await Task.WhenAll(consumeTasks);
+            }
+
+            return threadResults.SelectMany(x => x).ToList();
+        }
+
     }
 }

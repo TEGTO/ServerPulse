@@ -31,9 +31,9 @@
         <div class="header__center-group">
             <div class="center-group__server-status">
                 <span [ngClass]="{
-                  'green': serverStatus === 'green',
-                  'red': serverStatus === 'red',
-                  'grey': serverStatus === 'grey'
+                  'green': serverStatus === 'Online',
+                   'red': serverStatus === 'Offline',
+                   'grey': serverStatus === 'No Data'
                 }" class="server-status__indicator"></span>
             </div>
             <div class="center-group__name">

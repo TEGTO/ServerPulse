@@ -43,7 +43,7 @@
              display: flex;
              flex-direction: row;
              align-items: center;
-             gap: 0.3rem;
+             gap: 0.6rem;
 
              .status__illumination {
                  .illumination__indicator {
@@ -78,8 +78,9 @@
 
      .content__right {
          @include background-shadow-box();
+         padding-top: 1rem;
          width: 100%;
-         max-height: 300px;
+         max-height: 353px;
          overflow-y: scroll;
          overflow-x: auto;
      }

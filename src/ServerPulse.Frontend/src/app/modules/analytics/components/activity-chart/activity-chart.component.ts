@@ -14,6 +14,7 @@ export class ActivityChartComponent implements OnInit, OnChanges {
   @Input({ required: true }) dateTo!: Date;
   @Input({ required: true }) data!: any[];
   @ViewChild('chart') chart!: ChartComponent;
+
   chartOptions!: Partial<ChartOptions>;
 
   get chartId() { return `chart-${this.chartUniqueId}`; }
@@ -31,7 +32,7 @@ export class ActivityChartComponent implements OnInit, OnChanges {
       this.updateChartData();
     }
     if (changes['dateFrom'] || changes['dateTo']) {
-      this.updateChartRange();
+      // this.updateChartRange();
     }
   }
 
@@ -126,14 +127,6 @@ export class ActivityChartComponent implements OnInit, OnChanges {
         xaxis: {
           min: this.dateFrom.getTime(),
           max: this.dateTo.getTime(),
-          labels: {
-            datetimeUTC: false,
-            format: 'HH:mm'
-          },
-          tickAmount: 12,
-          tooltip: {
-            enabled: false
-          }
         }
       });
     }

@@ -1,26 +1,34 @@
 <div class="statistics__content">
     <section class="content__left child:border-b border-gray-200 dark:border-gray-600">
         <div class="left__status">
-            Status: No Data
+            Status:
+            {{serverStatus}}
             <div class="status__illumination">
                 <span [ngClass]="{
-                    'green': serverStatus === 'green',
-                    'red': serverStatus === 'red',
-                    'grey': serverStatus === 'grey'
+                    'green': serverStatus === 'Online',
+                    'red': serverStatus === 'Offline',
+                    'grey': serverStatus === 'No Data'
                 }" class="illumination__indicator"></span>
             </div>
         </div>
         <div class="left__uptime">
             Last start:
+            {{ serverLastStartDateTime ? (serverLastStartDateTime | date:'dd/MM/yy HH:mm:ss') : '—' }}
         </div>
         <div class="left__uptime">
             Uptime:
+            {{ currentServerSlotStatistics?.serverUptime ?? "—" }}
         </div>
         <div class="left__last-uptime">
             Last uptime:
+            {{ currentServerSlotStatistics?.lastServerUptime ?? "—" }}
         </div>
         <div class="left__last-uptime">
             Last pulse:
+            {{ lastPulseDateTime ? (lastPulseDateTime | date:'dd/MM/yy HH:mm:ss') : '—' }}
+        </div>
+        <div class="left__last-load-amount">
+            Load amount:
         </div>
     </section>
     <section class="content__right">
@@ -45,7 +53,7 @@
                 </tr>
             </thead>
             <tbody>
-                @for (item of [1,2,3,4,5]; track $index) {
+                @for (item of [1,2,3,4,5,6,7]; track $index) {
                 <tr class="border-b dark:border-gray-700">
                     <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                         /example

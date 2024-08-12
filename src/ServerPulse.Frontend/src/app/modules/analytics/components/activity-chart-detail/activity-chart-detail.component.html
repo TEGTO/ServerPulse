@@ -24,11 +24,12 @@
             [stroke]="controlChartOptions.stroke!" [tooltip]="controlChartOptions.tooltip!"
             [legend]="{show: false}"></apx-chart>
     </div>
-    <div id="chart-daily">
-        <apx-chart [series]="dailyChartOptions.series!" [chart]="dailyChartOptions.chart!"
-            [title]="dailyChartOptions.title!" [xaxis]="dailyChartOptions.xaxis!" [yaxis]="dailyChartOptions.yaxis!"
-            [legend]="dailyChartOptions.legend!" [dataLabels]="dailyChartOptions.dataLabels!"
-            [colors]="dailyChartOptions.colors!" [fill]="dailyChartOptions.fill!" [markers]="dailyChartOptions.markers!"
-            [stroke]="dailyChartOptions.stroke!" [tooltip]="dailyChartOptions.tooltip!"></apx-chart>
+    <div id="chart-secondary">
+        <apx-chart #secondaryChart [series]="secondaryChartOptions.series!" [chart]="secondaryChartOptions.chart!"
+            [title]="secondaryChartOptions.title!" [xaxis]="secondaryChartOptions.xaxis!"
+            [yaxis]="secondaryChartOptions.yaxis!" [legend]="secondaryChartOptions.legend!"
+            [dataLabels]="secondaryChartOptions.dataLabels!" [colors]="secondaryChartOptions.colors!"
+            [fill]="secondaryChartOptions.fill!" [markers]="secondaryChartOptions.markers!"
+            [stroke]="secondaryChartOptions.stroke!" [tooltip]="secondaryChartOptions.tooltip!"></apx-chart>
     </div>
 </div>

@@ -62,8 +62,17 @@ namespace AnalyzerApi.Controllers
         [HttpPost]
         public async Task<ActionResult<IEnumerable<LoadAmountStatisticsResponse>>> GetAmountStatisticsInRange([FromBody] LoadAmountStatisticsInRangeRequest request, CancellationToken cancellationToken)
         {
-            var options = new InRangeQueryOptions(request.Key, request.From.ToUniversalTime(), request.To.ToUniversalTime());
-            var statistics = await serverLoadReceiver.GetAmountStatisticsInRangeAsync(options, request.TimeSpan, cancellationToken);
+            var cacheKey = $"{cacheStatisticsKey}-amountrange-{request.From.ToUniversalTime()}-{request.To.ToUniversalTime()}";
+
+            List<LoadAmountStatistics>? statistics = await GetStatisticsInCacheAsync(cacheKey);
+
+            if (statistics == null)
+            {
+                var options = new InRangeQueryOptions(request.Key, request.From.ToUniversalTime(), request.To.ToUniversalTime());
+                statistics = (await serverLoadReceiver.GetAmountStatisticsInRangeAsync(options, request.TimeSpan, cancellationToken)).ToList();
+            }
+
+            await cacheService.SetValueAsync(cacheKey, JsonSerializer.Serialize(statistics), cacheExpiryInMinutes);
 
             return Ok(statistics.Select(mapper.Map<LoadAmountStatisticsResponse>));
         }

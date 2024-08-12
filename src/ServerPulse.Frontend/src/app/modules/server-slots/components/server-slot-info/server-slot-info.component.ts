@@ -1,8 +1,7 @@
 import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { ServerSlotDialogManager, ServerSlotService } from '../..';
-import { ServerSlot, ServerStatisticsResponse, SnackbarManager, UpdateServerSlotRequest } from '../../../shared';
-import { ServerStatus } from '../server-slot/server-slot.component';
+import { ServerSlotDialogManager, ServerSlotService, ServerStatisticsService } from '../..';
+import { ServerSlot, SnackbarManager, UpdateServerSlotRequest } from '../../../shared';
 
 @Component({
   selector: 'app-server-slot-info',
@@ -15,13 +14,12 @@ export class ServerSlotInfoComponent implements OnInit {
   slotId: string | null = null;
   serverSlot!: ServerSlot;
   inputIsEditable: boolean = false;
-  serverStatus: ServerStatus = ServerStatus.NoData;
   inputWidth: number = 120;
   inputValue: string = "";
-  private currentServerSlotStatistics: ServerStatisticsResponse | undefined;
 
   constructor(
     private readonly serverSlotService: ServerSlotService,
+    private readonly statisticsService: ServerStatisticsService,
     private readonly cdr: ChangeDetectorRef,
     private readonly snackBarManager: SnackbarManager,
     private readonly dialogManager: ServerSlotDialogManager,
@@ -39,7 +37,9 @@ export class ServerSlotInfoComponent implements OnInit {
             this.cdr.detectChanges();
             this.adjustInputWidth();
           }
-        })
+        });
+
+        this.statisticsService.setCurrentLoadStatisticsDate(new Date());
       }
     });
   }
@@ -56,19 +56,6 @@ export class ServerSlotInfoComponent implements OnInit {
   }
   showKey() {
     this.snackBarManager.openInfoSnackbar(`🔑: ${this.serverSlot.slotKey}`, 10);
-  }
-  toggleServerStatus() {
-    if (this.currentServerSlotStatistics?.dataExists) {
-      if (this.currentServerSlotStatistics?.isAlive) {
-        this.serverStatus = ServerStatus.Online;
-      }
-      else {
-        this.serverStatus = ServerStatus.Offline;
-      }
-    }
-    else {
-      this.serverStatus = ServerStatus.NoData;
-    }
   }
 
   private adjustInputWidth() {

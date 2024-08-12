@@ -81,11 +81,16 @@ namespace AnalyzerApi.Services
         public async Task<IEnumerable<LoadAmountStatistics>> GetAmountStatisticsInDaysAsync(string key, CancellationToken cancellationToken)
         {
             string topic = GetLoadTopic(key);
-            var todayStart = DateTime.UtcNow.Date.AddYears(statisticsSaveDataInDays);
-            var todayEnd = DateTime.UtcNow.Date.AddDays(1);
+            var start = DateTime.UtcNow.Date.AddDays(-1 * statisticsSaveDataInDays);
+            var end = DateTime.UtcNow.Date.AddDays(1);
             var timeSpan = TimeSpan.FromDays(1);
-            var options = new MessageInRangeQueryOptions(topic, timeoutInMilliseconds, todayStart, todayEnd);
+            var options = new MessageInRangeQueryOptions(topic, timeoutInMilliseconds, start, end);
             var messagesPerDay = await messageConsumer.GetMessageAmountPerTimespanAsync(options, timeSpan, cancellationToken);
+            foreach (var message in messagesPerDay)
+            {
+                Console.WriteLine(message);
+            }
+
             return ConvertToAmountStatistics(messagesPerDay);
         }
         public async Task<IEnumerable<LoadAmountStatistics>> GetAmountStatisticsLastDayAsync(string key, CancellationToken cancellationToken)

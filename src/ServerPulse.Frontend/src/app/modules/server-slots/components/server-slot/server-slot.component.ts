@@ -3,9 +3,9 @@ import { ServerSlotDialogManager, ServerSlotService, ServerStatisticsService } f
 import { RedirectorService, ServerSlot, ServerStatisticsResponse, SnackbarManager, UpdateServerSlotRequest } from '../../../shared';
 
 export enum ServerStatus {
-  Online = 'green',
-  Offline = 'red',
-  NoData = 'grey'
+  Online = 'Online',
+  Offline = 'Offline',
+  NoData = 'No Data'
 }
 
 @Component({

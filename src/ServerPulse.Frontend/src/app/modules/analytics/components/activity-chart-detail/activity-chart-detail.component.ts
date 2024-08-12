@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { ChartComponent } from 'ng-apexcharts';
 import { ChartOptions } from '../..';
 
@@ -11,15 +11,21 @@ type TimeRange = "1w" | "1m" | "3m" | "6m" | "all";
 export class ActivityChartDetailComponent implements OnInit {
   @Input({ required: true }) chartUniqueId!: string;
   @Input({ required: true }) controlData!: any[];
+  @Input({ required: true }) secondaryDateFrom!: Date;
+  @Input({ required: true }) secondaryDateTo!: Date;
+  @Input({ required: true }) secondaryData!: any[];
+  @Output() onControlSelect = new EventEmitter<any>();
   @ViewChild('controlChart') controlChart!: ChartComponent;
+  @ViewChild('secondaryChart') secondaryChart!: ChartComponent;
+
   controlChartOptions!: Partial<ChartOptions>;
-  dailyChartOptions!: Partial<ChartOptions>;
+  secondaryChartOptions!: Partial<ChartOptions>;
   activeOptionButton: TimeRange = "1w";
   private controlDateFrom: Date = new Date(this.currentTime.getTime() - this.week);
   private controlDateTo: Date = this.currentTime;
 
   get controlChartId() { return `chart1-${this.chartUniqueId}`; }
-  get dailyChartId() { return `chart2-${this.chartUniqueId}`; }
+  get secondaryChartId() { return `chart2-${this.chartUniqueId}`; }
   get currentTime() { return new Date(); }
   get week() { return 7 * 24 * 60 * 60 * 1000; }
 
@@ -43,12 +49,13 @@ export class ActivityChartDetailComponent implements OnInit {
       this.updateControlChartRange();
       this.updateControlChartData();
     }
+    if (changes['secondaryData']) {
+      this.updateSecondaryChartRange();
+      this.updateSecondaryChartData();
+    }
   }
 
   initChartOptions(): void {
-    const currentHour = new Date(this.currentTime.setMinutes(0, 0, 0));
-    const oneDayAgo = new Date(currentHour.getTime() - 24 * 60 * 60 * 1000);
-
     this.controlChartOptions = {
       series: [
         {
@@ -66,6 +73,9 @@ export class ActivityChartDetailComponent implements OnInit {
           enabled: true,
           autoScaleYaxis: true
         },
+        selection: {
+          enabled: false
+        },
         toolbar: {
           autoSelected: "zoom"
         },
@@ -75,7 +85,7 @@ export class ActivityChartDetailComponent implements OnInit {
         },
         events: {
           dataPointSelection: (event, chartContext, opts) => {
-            console.log(chartContext, opts);
+            this.onControlSelect.emit(opts);
           }
         }
       },
@@ -117,22 +127,15 @@ export class ActivityChartDetailComponent implements OnInit {
         }
       }
     };
-    this.dailyChartOptions = {
+    this.secondaryChartOptions = {
       series: [
         {
           name: "Event",
-          data: this.generateHourlyTimeSeries(
-            oneDayAgo,
-            25,
-            {
-              min: 0,
-              max: 20
-            }
-          )
+          data: this.secondaryData
         }
       ],
       chart: {
-        id: this.dailyChartId,
+        id: this.secondaryChartId,
         type: "area",
         height: 220,
         stacked: false,
@@ -166,13 +169,13 @@ export class ActivityChartDetailComponent implements OnInit {
       },
       xaxis: {
         type: "datetime",
-        min: oneDayAgo.getTime(),
-        max: currentHour.getTime(),
+        min: this.secondaryDateFrom.getTime(),
+        max: this.secondaryDateTo.getTime(),
         labels: {
           datetimeUTC: false,
           format: 'HH'
         },
-        tickAmount: 25,
+        tickAmount: 23,
         tooltip: {
           enabled: false
         }
@@ -193,21 +196,17 @@ export class ActivityChartDetailComponent implements OnInit {
     };
   }
 
-  private generateHourlyTimeSeries(baseval: any, count: any, yrange: any) {
-    const series = [];
-    for (let i = 0; i < count; i++) {
-      const x = baseval.getTime() + i * 3600 * 1000;
-      const y = Math.floor(Math.random() * (yrange.max - yrange.min + 1)) + yrange.min;
-      series.push([x, y]);
-    }
-    return series;
-  }
-
   updateControlChartData() {
-    if (this.controlChart != null && this.controlChartOptions.series != null) {
-      this.controlChart.updateSeries([{
+    this.updateChartData(this.controlChart, this.controlData);
+  }
+  updateSecondaryChartData() {
+    this.updateChartData(this.secondaryChart, this.secondaryData);
+  }
+  private updateChartData(chart: ChartComponent, data: any) {
+    if (chart != null && chart.series != null) {
+      chart.updateSeries([{
         name: "Events",
-        data: this.controlData
+        data: data
       }]);
     }
   }
@@ -215,6 +214,16 @@ export class ActivityChartDetailComponent implements OnInit {
   updateControlChartRange() {
     if (this.controlChart && this.controlChartOptions.xaxis) {
       this.updateControlOptions(this.activeOptionButton);
+    }
+  }
+  updateSecondaryChartRange() {
+    if (this.secondaryChart && this.secondaryChartOptions.xaxis) {
+      this.secondaryChart.updateOptions({
+        xaxis: {
+          min: this.secondaryDateFrom.getTime(),
+          max: this.secondaryDateTo.getTime(),
+        }
+      });
     }
   }
 
