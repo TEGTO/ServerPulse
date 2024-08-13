@@ -1,8 +1,8 @@
 ﻿using AnalyzerApi.Domain.Dtos.Wrappers;
 
-namespace AnalyzerApi.Domain.Models
+namespace AnalyzerApi.Domain.Dtos.Responses
 {
-    public class ServerLoadStatistics
+    public class ServerLoadStatisticsResponse
     {
         public int AmountOfEvents { get; set; }
         public LoadEventWrapper? LastEvent { get; set; }

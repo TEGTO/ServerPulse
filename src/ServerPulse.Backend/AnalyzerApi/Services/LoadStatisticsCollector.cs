@@ -74,7 +74,8 @@ namespace AnalyzerApi.Services
             {
                 AmountOfEvents = amountOfEvents,
                 LastEvent = lastLoadEvent,
-                CollectedDateUTC = DateTime.UtcNow
+                CollectedDateUTC = DateTime.UtcNow,
+                IsInitial = true
             };
             await statisticsSender.SendServerLoadStatisticsAsync(key, statistics);
         }

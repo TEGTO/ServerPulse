@@ -32,7 +32,7 @@ export class ActivityChartComponent implements OnInit, OnChanges {
       this.updateChartData();
     }
     if (changes['dateFrom'] || changes['dateTo']) {
-      // this.updateChartRange();
+      this.updateChartRange();
     }
   }
 

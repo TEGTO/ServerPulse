@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, Input, OnDestroy } from '@angular/core';
 import { ServerStatisticsService } from '../..';
 import { ServerLoadStatisticsResponse, ServerSlot, TimeSpan } from '../../../shared';
 
@@ -7,14 +7,13 @@ import { ServerLoadStatisticsResponse, ServerSlot, TimeSpan } from '../../../sha
   templateUrl: './server-slot-preview-activity-chart.component.html',
   styleUrl: './server-slot-preview-activity-chart.component.scss'
 })
-export class ServerSlotDailyChartComponent implements OnInit, OnDestroy {
+export class ServerSlotDailyChartComponent implements AfterViewInit, OnDestroy {
   @Input({ required: true }) serverSlot!: ServerSlot;
   dateFrom: Date = new Date(Date.now() - this.hour);
   dateTo: Date = new Date();
   chartData: Array<[number, number]> = [];
   private statisticsSet: Map<number, number> = new Map();
   private updateTimeIntervalId?: ReturnType<typeof setInterval>;
-  private isInitStatistics = true;
 
   get fiveMinutes() { return 5 * 60 * 1000; }
   get hour() { return 60 * 60 * 1000; }
@@ -24,7 +23,7 @@ export class ServerSlotDailyChartComponent implements OnInit, OnDestroy {
     private readonly statisticsService: ServerStatisticsService
   ) { }
 
-  ngOnInit(): void {
+  ngAfterViewInit(): void {
     this.setUpdateTimeInterval();
 
     const timeSpan = new TimeSpan(0, 0, 0, this.fiveMinutes);
@@ -86,14 +85,10 @@ export class ServerSlotDailyChartComponent implements OnInit, OnDestroy {
   }
 
   private handleLoadStatisticsMessage(message: { key: string; statistics: ServerLoadStatisticsResponse; } | null): void {
-    if (!message) {
+    if (!message || message.statistics.isInitial || message.key !== this.serverSlot.slotKey) {
       return;
     }
-    if (message.key !== this.serverSlot.slotKey || this.isInitStatistics) {
-      this.isInitStatistics = false;
-      return;
-    }
-    const loadTime = new Date(message.statistics.collectedDateUTC).getTime();
+    const loadTime = new Date(message.statistics.lastEvent?.creationDateUTC!).getTime();
     this.updateTime();
     this.updateChartData(loadTime);
     this.cdr.detectChanges();
@@ -101,7 +96,6 @@ export class ServerSlotDailyChartComponent implements OnInit, OnDestroy {
 
   private updateChartData(loadTime: number): void {
     let isPlaceFound = false;
-
     for (let item of this.chartData) {
       const localFrom = item[0];
       const localTo = localFrom + this.fiveMinutes;
@@ -112,7 +106,6 @@ export class ServerSlotDailyChartComponent implements OnInit, OnDestroy {
         break;
       }
     }
-
     if (!isPlaceFound) {
       this.chartData.push([loadTime, 1]);
     }

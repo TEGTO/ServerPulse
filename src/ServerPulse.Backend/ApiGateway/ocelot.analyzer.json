@@ -25,6 +25,30 @@
       }
     },
     {
+      "Key": "Analyzer_GetSomeLoadEvents",
+      "ServiceName": "analyzer",
+      "UpstreamPathTemplate": "/analyze/someevents",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamPathTemplate": "/analyze/someevents",
+      "DownstreamScheme": "http",
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToRequest": {
+        "Authorization": "Bearer {token}"
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 5,
+        "Limit": 3
+      }
+    },
+    {
       "Key": "Analyzer_GetLoadStatisticsPerDay",
       "ServiceName": "analyzer",
       "UpstreamPathTemplate": "/analyze/perday/{key}",
@@ -69,7 +93,7 @@
         "EnableRateLimiting": true,
         "Period": "1s",
         "PeriodTimespan": 2,
-        "Limit": 1
+        "Limit": 3
       }
     },
     {

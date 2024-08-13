@@ -1,9 +1,7 @@
-﻿namespace AnalyzerApi.Domain.Dtos
+﻿namespace AnalyzerApi.Domain.Dtos.Wrappers
 {
-    public class ServerLoadResponse
+    public class LoadEventWrapper : BaseEventWrapper
     {
-        public string Id { get; set; }
-        public DateTime CreationDateUTC { get; set; }
         public string Endpoint { get; set; }
         public string Method { get; set; }
         public int StatusCode { get; set; }

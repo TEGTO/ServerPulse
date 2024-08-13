@@ -4,6 +4,7 @@ export interface ServerLoadStatisticsResponse {
     amountOfEvents: number;
     lastEvent: ServerLoadResponse | null;
     collectedDateUTC: Date;
+    isInitial: boolean;
 }
 
 export function convertToServerLoadStatisticsResponse(data: any): ServerLoadStatisticsResponse {
@@ -11,5 +12,6 @@ export function convertToServerLoadStatisticsResponse(data: any): ServerLoadStat
         amountOfEvents: data?.AmountOfEvents,
         lastEvent: convertToServerLoadResponse(data?.LastEvent),
         collectedDateUTC: data?.CollectedDateUTC,
+        isInitial: data?.IsInitial
     };
 }

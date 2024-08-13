@@ -1,71 +1,73 @@
-﻿using AnalyzerApi.Domain.Models;
+﻿using AnalyzerApi.Domain.Dtos.Wrappers;
+using AnalyzerApi.Domain.Models;
 using AnalyzerApi.Services.Interfaces;
+using AutoMapper;
 using Confluent.Kafka;
 using MessageBus.Interfaces;
-using MessageBus.Kafka;
 using ServerPulse.EventCommunication.Events;
-using Shared;
 using System.Runtime.CompilerServices;
 
 namespace AnalyzerApi.Services
 {
     public record InRangeQueryOptions(string Key, DateTime From, DateTime To);
+    public record ReadCertainMessageNumberOptions(string Key, int NumberOfMessages, DateTime StartDate, bool ReadNew);
 
     public class ServerLoadReceiver : IServerLoadReceiver
     {
         private readonly IMessageConsumer messageConsumer;
         private readonly ILogger<ServerLoadReceiver> logger;
+        private readonly IMapper mapper;
         private readonly string loadTopic;
         private readonly int timeoutInMilliseconds;
         private readonly int statisticsSaveDataInDays;
 
-        public ServerLoadReceiver(IMessageConsumer messageConsumer, ILogger<ServerLoadReceiver> logger, IConfiguration configuration)
+        public ServerLoadReceiver(IMessageConsumer messageConsumer, ILogger<ServerLoadReceiver> logger, IMapper mapper, IConfiguration configuration)
         {
             this.messageConsumer = messageConsumer;
+            this.logger = logger;
+            this.mapper = mapper;
             loadTopic = configuration[Configuration.KAFKA_LOAD_TOPIC]!;
             timeoutInMilliseconds = int.Parse(configuration[Configuration.KAFKA_TIMEOUT_IN_MILLISECONDS]!);
             statisticsSaveDataInDays = int.Parse(configuration[Configuration.KAFKA_TOPIC_DATA_SAVE_IN_DAYS]!);
-            this.logger = logger;
         }
 
-        public async IAsyncEnumerable<LoadEvent> ConsumeLoadEventAsync(string key, [EnumeratorCancellation] CancellationToken cancellationToken)
+        public async IAsyncEnumerable<LoadEventWrapper> ConsumeLoadEventAsync(string key, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             string topic = GetLoadTopic(key);
 
-            await foreach (var message in messageConsumer.ConsumeAsync(topic, timeoutInMilliseconds, Offset.End, cancellationToken))
+            await foreach (var response in messageConsumer.ConsumeAsync(topic, timeoutInMilliseconds, Offset.End, cancellationToken))
             {
-                if (message.TryToDeserialize(out LoadEvent loadEvent))
+                if (response.TryDeserializeEventWrapper<LoadEvent, LoadEventWrapper>(mapper, out LoadEventWrapper ev))
                 {
-                    yield return loadEvent;
+                    yield return ev;
                 }
             }
         }
-        public async Task<IEnumerable<LoadEvent>> ReceiveEventsInRangeAsync(InRangeQueryOptions options, CancellationToken cancellationToken)
+        public async Task<IEnumerable<LoadEventWrapper>> ReceiveEventsInRangeAsync(InRangeQueryOptions options, CancellationToken cancellationToken)
         {
             string topic = GetLoadTopic(options.Key);
             var messageOptions = new MessageInRangeQueryOptions(topic, timeoutInMilliseconds, options.From, options.To);
-            List<string> events = await messageConsumer.ReadMessagesInDateRangeAsync(messageOptions, cancellationToken);
-            List<LoadEvent> loadEvents = new List<LoadEvent>();
-            foreach (var eventString in events)
-            {
-                if (eventString.TryToDeserialize(out LoadEvent loadEvent))
-                {
-                    loadEvents.Add(loadEvent);
-                }
-            }
-            return loadEvents;
+            List<ConsumeResponse> responses = await messageConsumer.ReadMessagesInDateRangeAsync(messageOptions, cancellationToken);
+            return ConvertToLoadEventWrappers(responses);
         }
-        public async Task<LoadEvent?> ReceiveLastLoadEventByKeyAsync(string key, CancellationToken cancellationToken)
+        public async Task<IEnumerable<LoadEventWrapper>> GetCertainAmountOfEvents(ReadCertainMessageNumberOptions options, CancellationToken cancellationToken)
+        {
+            string topic = GetLoadTopic(options.Key);
+            var messageOptions = new ReadSomeMessagesOptions(topic, timeoutInMilliseconds, options.NumberOfMessages, options.StartDate, options.ReadNew);
+            List<ConsumeResponse> responses = await messageConsumer.ReadSomeMessagesAsync(messageOptions, cancellationToken);
+            return ConvertToLoadEventWrappers(responses);
+        }
+        public async Task<LoadEventWrapper?> ReceiveLastLoadEventByKeyAsync(string key, CancellationToken cancellationToken)
         {
             string topic = GetLoadTopic(key);
-            return await TaskGetLastEventFromTopic<LoadEvent>(topic, cancellationToken);
+            return await TaskGetLastEventFromTopic<LoadEvent, LoadEventWrapper>(topic, cancellationToken);
         }
-        private async Task<T?> TaskGetLastEventFromTopic<T>(string topic, CancellationToken cancellationToken) where T : BaseEvent
+        private async Task<Y?> TaskGetLastEventFromTopic<T, Y>(string topic, CancellationToken cancellationToken) where T : BaseEvent where Y : BaseEventWrapper
         {
-            string? message = await messageConsumer.ReadLastTopicMessageAsync(topic, timeoutInMilliseconds, cancellationToken);
-            if (!string.IsNullOrEmpty(message))
+            ConsumeResponse? response = await messageConsumer.ReadLastTopicMessageAsync(topic, timeoutInMilliseconds, cancellationToken);
+            if (response != null)
             {
-                if (message.TryToDeserialize(out T? ev))
+                if (response.TryDeserializeEventWrapper<T, Y>(mapper, out Y ev))
                 {
                     return ev;
                 }
@@ -86,11 +88,6 @@ namespace AnalyzerApi.Services
             var timeSpan = TimeSpan.FromDays(1);
             var options = new MessageInRangeQueryOptions(topic, timeoutInMilliseconds, start, end);
             var messagesPerDay = await messageConsumer.GetMessageAmountPerTimespanAsync(options, timeSpan, cancellationToken);
-            foreach (var message in messagesPerDay)
-            {
-                Console.WriteLine(message);
-            }
-
             return ConvertToAmountStatistics(messagesPerDay);
         }
         public async Task<IEnumerable<LoadAmountStatistics>> GetAmountStatisticsLastDayAsync(string key, CancellationToken cancellationToken)
@@ -120,6 +117,18 @@ namespace AnalyzerApi.Services
                     Date = kv.Key
                 })
                 .OrderByDescending(ls => ls.Date);
+        }
+        private IEnumerable<LoadEventWrapper> ConvertToLoadEventWrappers(List<ConsumeResponse> reponses)
+        {
+            List<LoadEventWrapper> events = new List<LoadEventWrapper>();
+            foreach (var response in reponses)
+            {
+                if (response.TryDeserializeEventWrapper<LoadEvent, LoadEventWrapper>(mapper, out LoadEventWrapper ev))
+                {
+                    events.Add(ev);
+                }
+            }
+            return events;
         }
         private string GetLoadTopic(string key)
         {

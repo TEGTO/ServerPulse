@@ -1,14 +1,14 @@
-﻿using AnalyzerApi.Domain.Models;
+﻿using AnalyzerApi.Domain.Dtos.Wrappers;
+using AnalyzerApi.Domain.Models;
 using AnalyzerApi.Services.Interfaces;
-using ServerPulse.EventCommunication.Events;
 using System.Collections.Concurrent;
 
 namespace AnalyzerApi.Services
 {
     public class ServerStatisticsCollector : IStatisticsCollector
     {
-        private readonly ConcurrentDictionary<string, ConfigurationEvent> Configurations = new();
-        private readonly ConcurrentDictionary<string, PulseEvent> LastPulseEvents = new();
+        private readonly ConcurrentDictionary<string, ConfigurationEventWrapper> Configurations = new();
+        private readonly ConcurrentDictionary<string, PulseEventWrapper> LastPulseEvents = new();
         private readonly ConcurrentDictionary<string, CancellationTokenSource> StatisticsListeners = new();
         private readonly IServerStatusReceiver messageReceiver;
         private readonly IStatisticsSender statisticsSender;
@@ -108,6 +108,8 @@ namespace AnalyzerApi.Services
             }
 
             var statistics = CollectServerStatistics(key, cancellationToken);
+            statistics.IsInitial = true;
+
             if (!statistics.IsAlive)
             {
                 LastPulseEvents.TryRemove(key, out var lastPulse);
@@ -149,7 +151,7 @@ namespace AnalyzerApi.Services
                 CollectedDateUTC = DateTime.UtcNow
             };
         }
-        private static bool CalculateIsServerAlive(PulseEvent? pulseEvent, ConfigurationEvent? configurationEvent)
+        private static bool CalculateIsServerAlive(PulseEventWrapper? pulseEvent, ConfigurationEventWrapper? configurationEvent)
         {
             if (pulseEvent != null && configurationEvent != null)
             {
@@ -158,7 +160,7 @@ namespace AnalyzerApi.Services
             }
             return false;
         }
-        private static TimeSpan? CalculateServerUptime(ConfigurationEvent? configurationEvent, bool isServerAlive)
+        private static TimeSpan? CalculateServerUptime(ConfigurationEventWrapper? configurationEvent, bool isServerAlive)
         {
             if (configurationEvent != null && isServerAlive)
             {
@@ -166,7 +168,7 @@ namespace AnalyzerApi.Services
             }
             return null;
         }
-        private static TimeSpan? CalculateServerLastUptime(PulseEvent? pulseEvent, ConfigurationEvent? configurationEvent)
+        private static TimeSpan? CalculateServerLastUptime(PulseEventWrapper? pulseEvent, ConfigurationEventWrapper? configurationEvent)
         {
             if (pulseEvent != null && configurationEvent != null)
             {

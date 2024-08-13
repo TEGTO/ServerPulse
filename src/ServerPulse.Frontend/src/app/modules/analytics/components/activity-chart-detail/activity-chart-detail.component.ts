@@ -218,12 +218,16 @@ export class ActivityChartDetailComponent implements OnInit {
   }
   updateSecondaryChartRange() {
     if (this.secondaryChart && this.secondaryChartOptions.xaxis) {
-      this.secondaryChart.updateOptions({
-        xaxis: {
-          min: this.secondaryDateFrom.getTime(),
-          max: this.secondaryDateTo.getTime(),
-        }
-      });
+      try {
+        this.secondaryChart.updateOptions({
+          xaxis: {
+            min: this.secondaryDateFrom.getTime(),
+            max: this.secondaryDateTo.getTime(),
+          }
+        });
+      } catch (error) {
+
+      }
     }
   }
 

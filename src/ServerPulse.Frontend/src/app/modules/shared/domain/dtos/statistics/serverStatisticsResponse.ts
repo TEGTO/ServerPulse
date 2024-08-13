@@ -8,6 +8,7 @@ export interface ServerStatisticsResponse {
     lastServerUptime: TimeSpan | null;
     lastPulseDateTimeUTC: Date | null;
     collectedDateUTC: Date,
+    isInitial: boolean;
 }
 
 export function convertToServerStatisticsResponse(data: any): ServerStatisticsResponse {
@@ -19,5 +20,6 @@ export function convertToServerStatisticsResponse(data: any): ServerStatisticsRe
         lastServerUptime: data.LastServerUptime ? TimeSpan.fromString(data.LastServerUptime) : null,
         lastPulseDateTimeUTC: data.LastPulseDateTimeUTC ? new Date(data.LastPulseDateTimeUTC) : null,
         collectedDateUTC: data?.CollectedDateUTC,
+        isInitial: data?.IsInitial
     };
 }

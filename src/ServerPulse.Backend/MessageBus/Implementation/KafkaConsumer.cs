@@ -4,9 +4,6 @@ using System.Runtime.CompilerServices;
 
 namespace MessageBus.Kafka
 {
-    public record MessageInRangeQueryOptions(string TopicName, int TimeoutInMilliseconds, DateTime From, DateTime To);
-    public record ReadSomeMessagesOptions(string TopicName, int TimeoutInMilliseconds, int NumberOfMessages, DateTime StartDate, bool ReadNew = false);
-
     public class KafkaConsumer : IMessageConsumer
     {
         private readonly IAdminClient adminClient;
@@ -18,7 +15,7 @@ namespace MessageBus.Kafka
             this.consumerFactory = consumerFactory;
         }
 
-        public async IAsyncEnumerable<string> ConsumeAsync(string topic, int timeoutInMilliseconds, Offset consumeFrom, [EnumeratorCancellation] CancellationToken cancellationToken)
+        public async IAsyncEnumerable<ConsumeResponse> ConsumeAsync(string topic, int timeoutInMilliseconds, Offset consumeFrom, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             using (var consumer = consumerFactory.CreateConsumer())
             {
@@ -29,7 +26,7 @@ namespace MessageBus.Kafka
                     var consumeResult = consumer.Consume(TimeSpan.FromMilliseconds(timeoutInMilliseconds));
                     if (IsValidMessage(consumeResult))
                     {
-                        yield return consumeResult.Message.Value;
+                        yield return new ConsumeResponse(consumeResult.Message.Value, consumeResult.Message.Timestamp.UtcDateTime);
                     }
                     await Task.Yield();
                 }
@@ -45,7 +42,7 @@ namespace MessageBus.Kafka
             }
             return partitions;
         }
-        public async Task<string?> ReadLastTopicMessageAsync(string topicName, int timeoutInMilliseconds, CancellationToken cancellationToken)
+        public async Task<ConsumeResponse?> ReadLastTopicMessageAsync(string topicName, int timeoutInMilliseconds, CancellationToken cancellationToken)
         {
             var val = await Task.Run(() =>
             {
@@ -69,8 +66,14 @@ namespace MessageBus.Kafka
                     .OrderByDescending(result => result.Message.Timestamp.UtcDateTime)
                     .FirstOrDefault();
 
-                return latestMessage?.Message.Value;
+                if (latestMessage == null)
+                {
+                    return null;
+                }
+
+                return new ConsumeResponse(latestMessage.Message.Value, latestMessage.Message.Timestamp.UtcDateTime);
             });
+
             return val;
         }
         private ConsumeResult<string, string>? ReadPartitionLatestMessage(string topicName, int partitionId, int timeoutInMilliseconds, CancellationToken cancellationToken)
@@ -93,7 +96,7 @@ namespace MessageBus.Kafka
                 return consumeResult;
             }
         }
-        public async Task<List<string>> ReadMessagesInDateRangeAsync(MessageInRangeQueryOptions options, CancellationToken cancellationToken)
+        public async Task<List<ConsumeResponse>> ReadMessagesInDateRangeAsync(MessageInRangeQueryOptions options, CancellationToken cancellationToken)
         {
             var startDate = options.From.ToUniversalTime();
             var endDate = options.To.ToUniversalTime();
@@ -103,7 +106,7 @@ namespace MessageBus.Kafka
                 throw new ArgumentException("Invalid Start Date! Must be less or equal than now (UTC) and End Date!");
             }
 
-            var threadResults = new List<List<string>>();
+            var threadResults = new List<List<ConsumeResponse>>();
 
             using (var consumer = consumerFactory.CreateConsumer())
             {
@@ -123,7 +126,7 @@ namespace MessageBus.Kafka
                 var consumeTasks = startOffsets.Select(startOffset =>
                 {
                     var endOffset = endOffsets.First(e => e.TopicPartition == startOffset.TopicPartition);
-                    var partitionMessages = new List<string>();
+                    var partitionMessages = new List<ConsumeResponse>();
 
                     return Task.Run(() =>
                     {
@@ -135,12 +138,14 @@ namespace MessageBus.Kafka
                             if (consumeResult == null || consumeResult.Message == null || string.IsNullOrEmpty(consumeResult.Message.Value))
                                 break;
 
-                            if (consumeResult.Message.Timestamp.UtcDateTime > endDate)
+                            var messageTimestamp = consumeResult.Message.Timestamp.UtcDateTime;
+
+                            if (messageTimestamp > endDate)
                                 break;
 
-                            if (consumeResult.Message.Timestamp.UtcDateTime >= startDate && consumeResult.Message.Timestamp.UtcDateTime <= endDate)
+                            if (messageTimestamp >= startDate && messageTimestamp <= endDate)
                             {
-                                partitionMessages.Add(consumeResult.Message.Value);
+                                partitionMessages.Add(new ConsumeResponse(consumeResult.Message.Value, messageTimestamp));
                             }
 
                             if (consumeResult.Offset >= endOffset.Offset && endOffset.Offset != Offset.End)
@@ -159,7 +164,9 @@ namespace MessageBus.Kafka
                 await Task.WhenAll(consumeTasks);
             }
 
-            return threadResults.SelectMany(x => x).ToList();
+            return threadResults.SelectMany(x => x)
+                                .OrderByDescending(x => x.CreationTimeUTC)
+                                .ToList();
         }
         private bool IsValidMessage(ConsumeResult<string, string> consumeResult)
         {
@@ -281,55 +288,77 @@ namespace MessageBus.Kafka
                 return finalResult;
             }
         }
-
-        public async Task<List<string>> ReadSomeMessagesAsync(ReadSomeMessagesOptions options, CancellationToken cancellationToken)
+        public async Task<List<ConsumeResponse>> ReadSomeMessagesAsync(ReadSomeMessagesOptions options, CancellationToken cancellationToken)
         {
             var startDate = options.StartDate.ToUniversalTime();
-
-            var threadResults = new List<List<string>>();
+            var partitionMessagesList = new List<List<ConsumeResponse>>();
 
             using (var consumer = consumerFactory.CreateConsumer())
             {
                 var topicMetadata = adminClient.GetMetadata(options.TopicName, TimeSpan.FromMilliseconds(options.TimeoutInMilliseconds));
                 var partitions = topicMetadata.Topics.First(x => x.Topic == options.TopicName).Partitions.Select(p => p.PartitionId).ToList();
 
-                var startOffsets = consumer.OffsetsForTimes(partitions.Select(p =>
-                    new TopicPartitionTimestamp(new TopicPartition(options.TopicName, p), new Timestamp(startDate))),
+                var startOffsets = consumer.OffsetsForTimes(
+                    partitions.Select(p => new TopicPartitionTimestamp(new TopicPartition(options.TopicName, p), new Timestamp(startDate))),
                     TimeSpan.FromMilliseconds(options.TimeoutInMilliseconds)).ToList();
 
                 consumer.Assign(startOffsets);
 
-                int messageAmount = 0;
+                int totalMessagesRead = 0;
 
                 var consumeTasks = startOffsets.Select(startOffset =>
                 {
-                    var partitionMessages = new List<string>();
+                    var partitionMessages = new List<ConsumeResponse>();
 
                     return Task.Run(() =>
                     {
+                        var watermarks = consumer.QueryWatermarkOffsets(startOffset.TopicPartition, TimeSpan.FromMilliseconds(options.TimeoutInMilliseconds));
+                        var lowWatermark = watermarks.Low;
+                        var highWatermark = watermarks.High;
+
+                        if (startOffset.Offset == Offset.End)
+                        {
+                            startOffset = new TopicPartitionOffset(startOffset.TopicPartition, highWatermark - 1);
+                        }
+
                         consumer.Seek(startOffset);
 
                         while (!cancellationToken.IsCancellationRequested)
                         {
-
-                            if (messageAmount >= options.NumberOfMessages)
+                            if (totalMessagesRead >= options.NumberOfMessages)
                                 break;
 
                             var consumeResult = consumer.Consume(options.TimeoutInMilliseconds);
                             if (consumeResult == null || consumeResult.Message == null || string.IsNullOrEmpty(consumeResult.Message.Value))
                                 break;
 
-                            if ((consumeResult.Message.Timestamp.UtcDateTime >= startDate && options.ReadNew) ||
-                            (consumeResult.Message.Timestamp.UtcDateTime <= startDate && !options.ReadNew))
+                            var messageTimestamp = consumeResult.Message.Timestamp.UtcDateTime;
+
+                            if ((messageTimestamp >= startDate && options.ReadNew) ||
+                                (messageTimestamp <= startDate && !options.ReadNew))
                             {
-                                partitionMessages.Add(consumeResult.Message.Value);
-                                Interlocked.Increment(ref messageAmount);
+                                if (totalMessagesRead < options.NumberOfMessages)
+                                {
+                                    partitionMessages.Add(new ConsumeResponse(consumeResult.Message.Value, messageTimestamp));
+                                    Interlocked.Increment(ref totalMessagesRead);
+                                }
+                            }
+
+                            if (!options.ReadNew)
+                            {
+                                var currentOffset = consumeResult.Offset;
+                                var nextOffset = new Offset(currentOffset - 1);
+
+                                if (nextOffset < lowWatermark)
+                                    break;
+
+                                consumer.Seek(new TopicPartitionOffset(consumeResult.TopicPartition, nextOffset));
                             }
                         }
 
-                        lock (threadResults)
+                        lock (partitionMessagesList)
                         {
-                            threadResults.Add(partitionMessages);
+                            partitionMessagesList.Add(partitionMessages);
                         }
 
                     }, cancellationToken);
@@ -339,8 +368,9 @@ namespace MessageBus.Kafka
                 await Task.WhenAll(consumeTasks);
             }
 
-            return threadResults.SelectMany(x => x).ToList();
+            return partitionMessagesList.SelectMany(x => x)
+                                        .OrderByDescending(x => x.CreationTimeUTC)
+                                        .ToList();
         }
-
     }
 }

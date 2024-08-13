@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { ServerStatisticsService } from '../..';
 import { ActivityChartDetailComponent } from '../../../analytics';
 import { ServerLoadStatisticsResponse, TimeSpan } from '../../../shared';
@@ -8,7 +8,7 @@ import { ServerLoadStatisticsResponse, TimeSpan } from '../../../shared';
   templateUrl: './server-slot-info-charts.component.html',
   styleUrls: ['./server-slot-info-charts.component.scss']
 })
-export class ServerSlotInfoChartsComponent implements OnInit, OnDestroy {
+export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
   @Input({ required: true }) slotKey!: string;
   @ViewChild('charts') charts!: ActivityChartDetailComponent;
 
@@ -23,7 +23,6 @@ export class ServerSlotInfoChartsComponent implements OnInit, OnDestroy {
 
   private controlStatisticsSet: Map<number, number> = new Map();
   private cachedDateSetStatistics: Map<number, Map<number, number>> = new Map();
-  private isInitStatistics = true;
   private currentSelectedDate: Date = new Date();
   private controlUpdateTimeIntervalId?: ReturnType<typeof setInterval>;
   private secondaryUpdateTimeIntervalId?: ReturnType<typeof setInterval>;
@@ -40,7 +39,7 @@ export class ServerSlotInfoChartsComponent implements OnInit, OnDestroy {
     private readonly statisticsService: ServerStatisticsService
   ) { }
 
-  ngOnInit(): void {
+  ngAfterViewInit(): void {
     this.setUpdateTimeIntervals();
 
     this.statisticsService.getWholeAmountStatisticsInDays(this.slotKey).subscribe(statistics => {
@@ -115,15 +114,11 @@ export class ServerSlotInfoChartsComponent implements OnInit, OnDestroy {
   }
 
   private handleLoadStatisticsMessage(message: { key: string; statistics: ServerLoadStatisticsResponse; } | null): void {
-    if (!message) {
-      return;
-    }
-    if (message.key !== this.slotKey || this.isInitStatistics) {
-      this.isInitStatistics = false;
+    if (!message || message.statistics.isInitial || message.key !== this.slotKey) {
       return;
     }
 
-    const loadTime = new Date(message.statistics.collectedDateUTC).getTime();
+    const loadTime = new Date(message.statistics.lastEvent?.creationDateUTC!).getTime();
     this.updateControlTime();
     this.updateSecondaryTime();
     this.addEventToChartData(loadTime, this.controlChartData, this.controlIntervalTime, 1, this.charts.updateControlChartData.bind(this.charts));
@@ -161,8 +156,10 @@ export class ServerSlotInfoChartsComponent implements OnInit, OnDestroy {
 
   private updateSecondaryTime() {
     if (this.isSelectedDateToday()) {
-      this.secondaryDateFrom = new Date(new Date().setMinutes(0, 0, 0) - this.secondaryIntervalStartTime + this.secondaryIntervalTime);
-      this.secondaryDateTo = new Date(new Date().setMinutes(0, 0, 0) + this.secondaryIntervalTime);
+      this.secondaryDateFrom = new Date(new Date().setMinutes(0, new Date().getSeconds(), new Date().getMilliseconds())
+        - this.secondaryIntervalStartTime + this.secondaryIntervalTime);
+      this.secondaryDateTo = new Date(new Date().setMinutes(0, new Date().getSeconds(), new Date().getMilliseconds())
+        + this.secondaryIntervalTime);
     } else {
       this.secondaryDateFrom = this.selectedDate;
       this.secondaryDateTo = new Date(this.selectedDate.getTime() + this.secondaryIntervalStartTime);

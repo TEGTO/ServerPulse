@@ -1,4 +1,4 @@
-﻿using AnalyzerApi.Domain.Dtos;
+﻿using AnalyzerApi.Domain.Dtos.Responses;
 using AnalyzerApi.Domain.Models;
 using AuthenticationApi;
 using AutoMapper;

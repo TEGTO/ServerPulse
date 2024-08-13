@@ -1,12 +1,12 @@
-﻿using ServerPulse.EventCommunication.Events;
+﻿using AnalyzerApi.Domain.Dtos.Wrappers;
 
 namespace AnalyzerApi.Services.Interfaces
 {
     public interface IServerStatusReceiver
     {
-        public IAsyncEnumerable<PulseEvent> ConsumePulseEventAsync(string key, CancellationToken cancellationToken);
-        public IAsyncEnumerable<ConfigurationEvent> ConsumeConfigurationEventAsync(string key, CancellationToken cancellationToken);
-        public Task<PulseEvent?> ReceiveLastPulseEventByKeyAsync(string key, CancellationToken cancellationToken);
-        public Task<ConfigurationEvent?> ReceiveLastConfigurationEventByKeyAsync(string key, CancellationToken cancellationToken);
+        public IAsyncEnumerable<PulseEventWrapper> ConsumePulseEventAsync(string key, CancellationToken cancellationToken);
+        public IAsyncEnumerable<ConfigurationEventWrapper> ConsumeConfigurationEventAsync(string key, CancellationToken cancellationToken);
+        public Task<PulseEventWrapper?> ReceiveLastPulseEventByKeyAsync(string key, CancellationToken cancellationToken);
+        public Task<ConfigurationEventWrapper?> ReceiveLastConfigurationEventByKeyAsync(string key, CancellationToken cancellationToken);
     }
 }

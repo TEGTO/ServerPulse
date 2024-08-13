@@ -1,4 +1,4 @@
-﻿namespace AnalyzerApi.Domain.Dtos
+﻿namespace AnalyzerApi.Domain.Dtos.Responses
 {
     public class ServerStatisticsResponse
     {
@@ -9,5 +9,6 @@
         public TimeSpan? LastServerUptime { get; set; }
         public DateTime? LastPulseDateTimeUTC { get; set; }
         public DateTime CollectedDateUTC { get; set; }
+        public bool IsInitial { get; set; }
     }
 }

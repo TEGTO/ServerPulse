@@ -1,4 +1,4 @@
-﻿namespace AnalyzerApi.Domain.Dtos
+﻿namespace AnalyzerApi.Domain.Dtos.Requests
 {
     public class LoadAmountStatisticsInRangeRequest
     {

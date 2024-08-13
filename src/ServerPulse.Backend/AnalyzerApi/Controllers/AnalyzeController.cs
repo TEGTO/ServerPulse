@@ -1,4 +1,6 @@
-﻿using AnalyzerApi.Domain.Dtos;
+﻿using AnalyzerApi.Domain.Dtos.Requests;
+using AnalyzerApi.Domain.Dtos.Responses;
+using AnalyzerApi.Domain.Dtos.Wrappers;
 using AnalyzerApi.Domain.Models;
 using AnalyzerApi.Services;
 using AnalyzerApi.Services.Interfaces;
@@ -31,11 +33,20 @@ namespace AnalyzerApi.Controllers
 
         [Route("daterange")]
         [HttpPost]
-        public async Task<ActionResult<IEnumerable<ServerLoadResponse>>> GetLoadEventsInDataRange([FromBody] LoadEventsRangeRequest request, CancellationToken cancellationToken)
+        public async Task<ActionResult<IEnumerable<LoadEventWrapper>>> GetLoadEventsInDataRange([FromBody] LoadEventsRangeRequest request, CancellationToken cancellationToken)
         {
-            var options = new InRangeQueryOptions(request.Key, request.From.ToUniversalTime(), request.To.ToUniversalTime());
-            var events = await serverLoadReceiver.ReceiveEventsInRangeAsync(options, cancellationToken);
-            return Ok(events.Select(mapper.Map<ServerLoadResponse>));
+            var cacheKey = $"{cacheStatisticsKey}-{request.From}-{request.To}-daterange";
+            IEnumerable<LoadEventWrapper>? events = await GetInCacheAsync<IEnumerable<LoadEventWrapper>>(cacheKey);
+
+            if (events == null)
+            {
+                var options = new InRangeQueryOptions(request.Key, request.From.ToUniversalTime(), request.To.ToUniversalTime());
+                events = await serverLoadReceiver.ReceiveEventsInRangeAsync(options, cancellationToken);
+            }
+
+            await cacheService.SetValueAsync(cacheKey, JsonSerializer.Serialize(events.ToList()), cacheExpiryInMinutes);
+
+            return Ok(events.Select(mapper.Map<LoadEventWrapper>));
         }
         [Route("perday/{key}")]
         [HttpGet]
@@ -43,11 +54,11 @@ namespace AnalyzerApi.Controllers
         {
             var cacheKey = $"{cacheStatisticsKey}{key}-perday";
 
-            List<LoadAmountStatistics>? statistics = await GetStatisticsInCacheAsync(cacheKey);
+            IEnumerable<LoadAmountStatistics>? statistics = await GetInCacheAsync<IEnumerable<LoadAmountStatistics>>(cacheKey);
 
             if (statistics == null)
             {
-                statistics = (await serverLoadReceiver.GetAmountStatisticsInDaysAsync(key, cancellationToken)).ToList();
+                statistics = await serverLoadReceiver.GetAmountStatisticsInDaysAsync(key, cancellationToken);
             }
             var todayStatistics = await serverLoadReceiver.GetAmountStatisticsLastDayAsync(key, cancellationToken);
 
@@ -62,29 +73,47 @@ namespace AnalyzerApi.Controllers
         [HttpPost]
         public async Task<ActionResult<IEnumerable<LoadAmountStatisticsResponse>>> GetAmountStatisticsInRange([FromBody] LoadAmountStatisticsInRangeRequest request, CancellationToken cancellationToken)
         {
-            var cacheKey = $"{cacheStatisticsKey}-amountrange-{request.From.ToUniversalTime()}-{request.To.ToUniversalTime()}";
+            var cacheKey = $"{cacheStatisticsKey}-amountrange-{request.From.ToUniversalTime()}-{request.To.ToUniversalTime()}-{request.TimeSpan}";
 
-            List<LoadAmountStatistics>? statistics = await GetStatisticsInCacheAsync(cacheKey);
+            IEnumerable<LoadAmountStatistics>? statistics = await GetInCacheAsync<IEnumerable<LoadAmountStatistics>>(cacheKey);
 
             if (statistics == null)
             {
                 var options = new InRangeQueryOptions(request.Key, request.From.ToUniversalTime(), request.To.ToUniversalTime());
-                statistics = (await serverLoadReceiver.GetAmountStatisticsInRangeAsync(options, request.TimeSpan, cancellationToken)).ToList();
+                statistics = await serverLoadReceiver.GetAmountStatisticsInRangeAsync(options, request.TimeSpan, cancellationToken);
             }
 
             await cacheService.SetValueAsync(cacheKey, JsonSerializer.Serialize(statistics), cacheExpiryInMinutes);
 
             return Ok(statistics.Select(mapper.Map<LoadAmountStatisticsResponse>));
         }
+        [Route("someevents")]
+        [HttpPost]
+        public async Task<ActionResult<IEnumerable<LoadEventWrapper>>> GetSomeLoadEvents([FromBody] GetSomeLoadEventsRequest request, CancellationToken cancellationToken)
+        {
+            var cacheKey = $"{cacheStatisticsKey}-someevents-{request.StartDate}-{request.NumberOfMessages}";
 
-        private async Task<List<LoadAmountStatistics>?> GetStatisticsInCacheAsync(string key)
+            IEnumerable<LoadEventWrapper>? events = null /*await GetInCacheAsync<IEnumerable<LoadEvent>>(cacheKey)*/;
+
+            if (events == null)
+            {
+                var options = new ReadCertainMessageNumberOptions(request.Key, request.NumberOfMessages, request.StartDate.ToUniversalTime(), request.ReadNew);
+                events = await serverLoadReceiver.GetCertainAmountOfEvents(options, cancellationToken);
+            }
+
+            await cacheService.SetValueAsync(cacheKey, JsonSerializer.Serialize(events), cacheExpiryInMinutes);
+
+            return Ok(events.Select(mapper.Map<LoadEventWrapper>));
+        }
+
+        private async Task<T?> GetInCacheAsync<T>(string key) where T : class
         {
             var json = await cacheService.GetValueAsync(key);
             if (string.IsNullOrEmpty(json))
             {
                 return null;
             }
-            if (json.TryToDeserialize(out List<LoadAmountStatistics> response))
+            if (json.TryToDeserialize(out T response))
             {
                 return response;
             }

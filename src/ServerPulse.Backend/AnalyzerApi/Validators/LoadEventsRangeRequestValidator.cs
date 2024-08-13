@@ -1,4 +1,4 @@
-﻿using AnalyzerApi.Domain.Dtos;
+﻿using AnalyzerApi.Domain.Dtos.Requests;
 using FluentValidation;
 
 namespace AnalyzerApi.Validators

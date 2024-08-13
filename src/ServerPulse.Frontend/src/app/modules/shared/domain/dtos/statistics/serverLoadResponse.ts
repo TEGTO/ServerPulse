@@ -2,6 +2,7 @@ import { TimeSpan } from "../../..";
 
 export interface ServerLoadResponse {
     id: string;
+    key: string;
     creationDateUTC: Date;
     endpoint: string;
     method: string;
@@ -12,6 +13,7 @@ export interface ServerLoadResponse {
 export function convertToServerLoadResponse(data: any): ServerLoadResponse {
     return {
         id: data?.Id,
+        key: data?.Key,
         creationDateUTC: data?.CreationDateUTC,
         endpoint: data?.Endpoint,
         method: data?.Method,
