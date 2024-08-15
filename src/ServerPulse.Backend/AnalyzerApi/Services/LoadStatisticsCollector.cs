@@ -77,7 +77,7 @@ namespace AnalyzerApi.Services
                 CollectedDateUTC = DateTime.UtcNow,
                 IsInitial = true
             };
-            await statisticsSender.SendServerLoadStatisticsAsync(key, statistics);
+            await statisticsSender.SendServerLoadStatisticsAsync(key, statistics, cancellationToken);
         }
         private async Task SubscribeToPulseEventsAsync(string key, CancellationToken cancellationToken)
         {
@@ -90,7 +90,7 @@ namespace AnalyzerApi.Services
                     LastEvent = load,
                     CollectedDateUTC = DateTime.UtcNow
                 };
-                await statisticsSender.SendServerLoadStatisticsAsync(key, statistics);
+                await statisticsSender.SendServerLoadStatisticsAsync(key, statistics, cancellationToken);
             }
         }
     }

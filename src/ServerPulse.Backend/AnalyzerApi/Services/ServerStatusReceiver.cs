@@ -1,9 +1,11 @@
 ﻿using AnalyzerApi.Domain.Dtos.Wrappers;
+using AnalyzerApi.Domain.Models;
 using AnalyzerApi.Services.Interfaces;
 using AutoMapper;
 using Confluent.Kafka;
 using MessageBus.Interfaces;
 using ServerPulse.EventCommunication.Events;
+using Shared;
 using System.Runtime.CompilerServices;
 
 namespace AnalyzerApi.Services
@@ -14,6 +16,7 @@ namespace AnalyzerApi.Services
         private readonly IMapper mapper;
         private readonly string aliveTopic;
         private readonly string configurationTopic;
+        private readonly string serverStatisticsTopic;
         private readonly int timeoutInMilliseconds;
 
         public ServerStatusReceiver(IMessageConsumer messageConsumer, IMapper mapper, IConfiguration configuration)
@@ -22,6 +25,7 @@ namespace AnalyzerApi.Services
             this.mapper = mapper;
             aliveTopic = configuration[Configuration.KAFKA_ALIVE_TOPIC]!;
             configurationTopic = configuration[Configuration.KAFKA_CONFIGURATION_TOPIC]!;
+            serverStatisticsTopic = configuration[Configuration.KAFKA_SERVER_STATISTICS_TOPIC]!;
             timeoutInMilliseconds = int.Parse(configuration[Configuration.KAFKA_TIMEOUT_IN_MILLISECONDS]!);
         }
 
@@ -46,6 +50,16 @@ namespace AnalyzerApi.Services
                     yield return ev;
                 }
             }
+        }
+        public async Task<ServerStatistics?> ReceiveLastServerStatisticsByKeyAsync(string key, CancellationToken cancellationToken)
+        {
+            string topic = GetServerStatisticsTopic(key);
+            ConsumeResponse? response = await messageConsumer.ReadLastTopicMessageAsync(topic, timeoutInMilliseconds, cancellationToken);
+            if (response != null && response.Message.TryToDeserialize(out ServerStatistics stat))
+            {
+                return stat;
+            }
+            return null;
         }
         public async Task<PulseEventWrapper?> ReceiveLastPulseEventByKeyAsync(string key, CancellationToken cancellationToken)
         {
@@ -77,6 +91,10 @@ namespace AnalyzerApi.Services
         private string GetConfigurationTopic(string key)
         {
             return configurationTopic + key;
+        }
+        private string GetServerStatisticsTopic(string key)
+        {
+            return serverStatisticsTopic + key;
         }
     }
 }

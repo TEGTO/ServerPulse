@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-import { selectCurrentDate, selectDate, selectLastLoadStatistics, selectLastStatistics, subscribeToLoadStatistics, subscribeToSlotStatistics } from '../..';
-import { LoadAmountStatisticsInRangeRequest, LoadAmountStatisticsResponse, LoadEventsRangeRequest, ServerLoadResponse, StatisticsApiService, TimeSpan } from '../../../shared';
+import { GetSomeLoadEventsRequest, LoadAmountStatisticsInRangeRequest, LoadAmountStatisticsResponse, LoadEventsRangeRequest, ServerLoadResponse, StatisticsApiService, TimeSpan } from '../../../shared';
+import { selectCurrentDate, selectDate, selectLastLoadStatistics, selectLastStatistics, subscribeToLoadStatistics, subscribeToSlotStatistics } from '../../index';
 import { ServerStatisticsService } from './server-statistics-service';
 
 @Injectable({
@@ -15,13 +15,22 @@ export class ServerStatisticsControllerService implements ServerStatisticsServic
     private readonly store: Store
   ) { }
 
-  getStatisticsInDateRange(key: string, from: Date, to: Date): Observable<ServerLoadResponse[]> {
+  getLoadEventsInDateRange(key: string, from: Date, to: Date): Observable<ServerLoadResponse[]> {
     let request: LoadEventsRangeRequest = {
       key: key,
       from: from,
       to: to
     }
     return this.apiService.getLoadEventsInDataRange(request);
+  }
+  getSomeLoadEventsFromDate(key: string, numberOfMessages: number, from: Date, readNew: boolean = false): Observable<ServerLoadResponse[]> {
+    let request: GetSomeLoadEventsRequest = {
+      key: key,
+      numberOfMessages: numberOfMessages,
+      startDate: from,
+      readNew: readNew
+    }
+    return this.apiService.getSomeEventsAfterDate(request);
   }
   getWholeAmountStatisticsInDays(key: string): Observable<LoadAmountStatisticsResponse[]> {
     return this.apiService.getWholeAmountStatisticsInDays(key);

@@ -1,3 +1,4 @@
-<activity-chart-detail #charts [chartUniqueId]="slotKey!" [controlData]="controlChartData"
-    (onControlSelect)="controlOnSelect($event)" [secondaryData]="secondaryChartData"
-    [secondaryDateFrom]="secondaryDateFrom" [secondaryDateTo]="chartSecondaryDateTo"></activity-chart-detail>
+<activity-chart-detail #charts [chartUniqueId]="slotKey!" (onControlSelect)="controlOnSelect($event)"
+    [controlDateFrom$]="controlDateFrom$" [controlDateTo$]="controlDateTo$" [controlData$]="controlChartData$"
+    [secondaryDateFrom$]="secondaryDateFrom$" [secondaryDateTo$]="secondaryDateTo$"
+    [secondaryData$]="secondaryChartData$"></activity-chart-detail>

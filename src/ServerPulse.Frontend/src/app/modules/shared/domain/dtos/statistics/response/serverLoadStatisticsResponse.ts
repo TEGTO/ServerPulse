@@ -1,4 +1,4 @@
-import { convertToServerLoadResponse, ServerLoadResponse } from "../../..";
+import { convertToServerLoadResponse, ServerLoadResponse } from "../../../../index";
 
 export interface ServerLoadStatisticsResponse {
     amountOfEvents: number;

@@ -32,6 +32,13 @@ var adminConfig = new AdminClientConfig
 {
     BootstrapServers = builder.Configuration[Configuration.KAFKA_BOOTSTRAP_SERVERS]
 };
+var producerConfig = new ProducerConfig
+{
+    BootstrapServers = builder.Configuration[Configuration.KAFKA_BOOTSTRAP_SERVERS],
+    ClientId = builder.Configuration[Configuration.KAFKA_CLIENT_ID],
+    EnableIdempotence = true,
+};
+builder.Services.AddKafkaProducer(producerConfig, adminConfig);
 builder.Services.AddKafkaConsumer(consumerConfig, adminConfig);
 
 builder.Services.AddCache(builder.Configuration);

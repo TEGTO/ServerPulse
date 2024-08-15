@@ -35,7 +35,7 @@ namespace AnalyzerApi.Controllers
         [HttpPost]
         public async Task<ActionResult<IEnumerable<LoadEventWrapper>>> GetLoadEventsInDataRange([FromBody] LoadEventsRangeRequest request, CancellationToken cancellationToken)
         {
-            var cacheKey = $"{cacheStatisticsKey}-{request.From}-{request.To}-daterange";
+            var cacheKey = $"{cacheStatisticsKey}-{request.Key}-{request.From.ToUniversalTime()}-{request.To.ToUniversalTime()}-daterange";
             IEnumerable<LoadEventWrapper>? events = await GetInCacheAsync<IEnumerable<LoadEventWrapper>>(cacheKey);
 
             if (events == null)
@@ -52,7 +52,7 @@ namespace AnalyzerApi.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<LoadAmountStatisticsResponse>>> GetWholeAmountStatisticsInDays(string key, CancellationToken cancellationToken)
         {
-            var cacheKey = $"{cacheStatisticsKey}{key}-perday";
+            var cacheKey = $"{cacheStatisticsKey}-{key}-perday";
 
             IEnumerable<LoadAmountStatistics>? statistics = await GetInCacheAsync<IEnumerable<LoadAmountStatistics>>(cacheKey);
 
@@ -73,7 +73,7 @@ namespace AnalyzerApi.Controllers
         [HttpPost]
         public async Task<ActionResult<IEnumerable<LoadAmountStatisticsResponse>>> GetAmountStatisticsInRange([FromBody] LoadAmountStatisticsInRangeRequest request, CancellationToken cancellationToken)
         {
-            var cacheKey = $"{cacheStatisticsKey}-amountrange-{request.From.ToUniversalTime()}-{request.To.ToUniversalTime()}-{request.TimeSpan}";
+            var cacheKey = $"{cacheStatisticsKey}-{request.Key}-{request.From.ToUniversalTime()}-{request.To.ToUniversalTime()}-{request.TimeSpan}-amountrange";
 
             IEnumerable<LoadAmountStatistics>? statistics = await GetInCacheAsync<IEnumerable<LoadAmountStatistics>>(cacheKey);
 
@@ -91,9 +91,9 @@ namespace AnalyzerApi.Controllers
         [HttpPost]
         public async Task<ActionResult<IEnumerable<LoadEventWrapper>>> GetSomeLoadEvents([FromBody] GetSomeLoadEventsRequest request, CancellationToken cancellationToken)
         {
-            var cacheKey = $"{cacheStatisticsKey}-someevents-{request.StartDate}-{request.NumberOfMessages}";
+            var cacheKey = $"{cacheStatisticsKey}-{request.Key}-{request.StartDate.ToUniversalTime()}-{request.NumberOfMessages}-someevents";
 
-            IEnumerable<LoadEventWrapper>? events = null /*await GetInCacheAsync<IEnumerable<LoadEvent>>(cacheKey)*/;
+            IEnumerable<LoadEventWrapper>? events = await GetInCacheAsync<IEnumerable<LoadEventWrapper>>(cacheKey);
 
             if (events == null)
             {

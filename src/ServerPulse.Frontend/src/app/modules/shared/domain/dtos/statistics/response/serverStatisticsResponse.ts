@@ -1,4 +1,4 @@
-import { TimeSpan } from "../../..";
+import { TimeSpan } from "../../../../index";
 
 export interface ServerStatisticsResponse {
     isAlive: boolean;

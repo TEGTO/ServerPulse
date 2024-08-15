@@ -4,6 +4,5 @@
     {
         public string Id { get; set; }
         public bool IsAlive { get; set; }
-        public DateTime CreationDateUTC { get; set; }
     }
 }

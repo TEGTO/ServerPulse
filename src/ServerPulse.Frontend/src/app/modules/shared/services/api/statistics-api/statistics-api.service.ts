@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { catchError, map, Observable } from 'rxjs';
-import { LoadAmountStatisticsInRangeRequest, LoadAmountStatisticsResponse, LoadEventsRangeRequest, ServerLoadResponse } from '../../..';
+import { GetSomeLoadEventsRequest, LoadAmountStatisticsInRangeRequest, LoadAmountStatisticsResponse, LoadEventsRangeRequest, ServerLoadResponse } from '../../../index';
 import { BaseApiService } from '../base-api/base-api.service';
 
 @Injectable({
@@ -31,6 +31,10 @@ export class StatisticsApiService extends BaseApiService {
       }))),
       catchError((resp) => this.handleError(resp))
     );
+  }
+
+  getSomeEventsAfterDate(request: GetSomeLoadEventsRequest): Observable<ServerLoadResponse[]> {
+    return this.httpClient.post<ServerLoadResponse[]>(this.combinePathWithStatisticsApiUrl(`/someevents`), request);
   }
 
   private combinePathWithStatisticsApiUrl(subpath: string) {

@@ -7,9 +7,10 @@ namespace AnalyzerApi.Services
 {
     public class ServerStatisticsCollector : IStatisticsCollector
     {
-        private readonly ConcurrentDictionary<string, ConfigurationEventWrapper> Configurations = new();
-        private readonly ConcurrentDictionary<string, PulseEventWrapper> LastPulseEvents = new();
-        private readonly ConcurrentDictionary<string, CancellationTokenSource> StatisticsListeners = new();
+        private readonly ConcurrentDictionary<string, ConfigurationEventWrapper> configurations = new();
+        private readonly ConcurrentDictionary<string, PulseEventWrapper> lastPulseEvents = new();
+        private readonly ConcurrentDictionary<string, ServerStatistics> lastServerStatistics = new();
+        private readonly ConcurrentDictionary<string, CancellationTokenSource> statisticsListeners = new();
         private readonly IServerStatusReceiver messageReceiver;
         private readonly IStatisticsSender statisticsSender;
         private readonly PeriodicTimer periodicTimer;
@@ -40,7 +41,7 @@ namespace AnalyzerApi.Services
 
                 await SendInitialStatisticsAsync(key, cancellationToken);
 
-                if (StatisticsListeners.TryAdd(key, cancellationTokenSource))
+                if (statisticsListeners.TryAdd(key, cancellationTokenSource))
                 {
                     var tasks = new[]
                     {
@@ -62,8 +63,12 @@ namespace AnalyzerApi.Services
         }
         public void StopConsumingStatistics(string key)
         {
-            if (StatisticsListeners.TryRemove(key, out var tokenSource))
+            if (statisticsListeners.TryRemove(key, out var tokenSource))
             {
+                configurations.TryRemove(key, out var configuration);
+                lastPulseEvents.TryRemove(key, out var pulse);
+                lastServerStatistics.TryRemove(key, out var statistics);
+
                 tokenSource.Cancel();
                 tokenSource.Dispose();
             }
@@ -72,16 +77,16 @@ namespace AnalyzerApi.Services
         {
             while (await periodicTimer.WaitForNextTickAsync(cancellationToken))
             {
-                if (LastPulseEvents.TryGetValue(key, out var lastPulse))
+                if (lastPulseEvents.TryGetValue(key, out var lastPulse))
                 {
-                    var statistics = CollectServerStatistics(key, cancellationToken);
+                    var statistics = CollectServerStatistics(key, false, cancellationToken);
                     if (!statistics.IsAlive)
                     {
-                        LastPulseEvents.TryRemove(key, out lastPulse);
+                        lastPulseEvents.TryRemove(key, out lastPulse);
                     }
-                    await statisticsSender.SendServerStatisticsAsync(key, statistics);
+                    await statisticsSender.SendServerStatisticsAsync(key, statistics, cancellationToken);
                 }
-                if (Configurations.TryGetValue(key, out var lastConfiguration))
+                if (configurations.TryGetValue(key, out var lastConfiguration))
                 {
                     int waitTime = (int)lastConfiguration.ServerKeepAliveInterval.TotalMilliseconds;
                     await Task.Delay(waitTime);
@@ -92,55 +97,64 @@ namespace AnalyzerApi.Services
         {
             var configurationTask = messageReceiver.ReceiveLastConfigurationEventByKeyAsync(key, cancellationToken);
             var pulseTask = messageReceiver.ReceiveLastPulseEventByKeyAsync(key, cancellationToken);
+            var statisticsTask = messageReceiver.ReceiveLastServerStatisticsByKeyAsync(key, cancellationToken);
 
-            await Task.WhenAll(configurationTask, pulseTask);
+            await Task.WhenAll(configurationTask, pulseTask, statisticsTask);
 
             var configurationEvent = await configurationTask;
             if (configurationEvent != null)
             {
-                Configurations.TryAdd(key, configurationEvent);
+                configurations.TryAdd(key, configurationEvent);
             }
 
             var pulseEvent = await pulseTask;
             if (pulseEvent != null)
             {
-                LastPulseEvents.TryAdd(key, pulseEvent);
+                lastPulseEvents.TryAdd(key, pulseEvent);
             }
 
-            var statistics = CollectServerStatistics(key, cancellationToken);
+            var lastStatistics = await statisticsTask;
+            if (lastStatistics != null)
+            {
+                lastServerStatistics.TryAdd(key, lastStatistics);
+            }
+
+            var statistics = CollectServerStatistics(key, true, cancellationToken);
             statistics.IsInitial = true;
 
             if (!statistics.IsAlive)
             {
-                LastPulseEvents.TryRemove(key, out var lastPulse);
+                lastPulseEvents.TryRemove(key, out var lastPulse);
             }
 
-            await statisticsSender.SendServerStatisticsAsync(key, statistics);
+            await statisticsSender.SendServerStatisticsAsync(key, statistics, cancellationToken);
         }
         private async Task SubscribeToPulseEventsAsync(string key, CancellationToken cancellationToken)
         {
             await foreach (var pulse in messageReceiver.ConsumePulseEventAsync(key, cancellationToken))
             {
-                LastPulseEvents.AddOrUpdate(key, pulse, (k, p) => pulse);
+                lastPulseEvents.AddOrUpdate(key, pulse, (k, p) => pulse);
             }
         }
         private async Task SubscribeToConfigurationEventsAsync(string key, CancellationToken cancellationToken)
         {
             await foreach (var configuration in messageReceiver.ConsumeConfigurationEventAsync(key, cancellationToken))
             {
-                Configurations.AddOrUpdate(key, configuration, (k, c) => configuration);
+                configurations.AddOrUpdate(key, configuration, (k, c) => configuration);
             }
         }
-        private ServerStatistics CollectServerStatistics(string key, CancellationToken cancellationToken)
+        private ServerStatistics CollectServerStatistics(string key, bool isInitial, CancellationToken cancellationToken)
         {
-            LastPulseEvents.TryGetValue(key, out var lastPulse);
-            Configurations.TryGetValue(key, out var lastConfiguration);
+            lastPulseEvents.TryGetValue(key, out var lastPulse);
+            configurations.TryGetValue(key, out var lastConfiguration);
+            lastServerStatistics.TryGetValue(key, out var lastStatistics);
 
             bool isAlive = CalculateIsServerAlive(lastPulse, lastConfiguration);
-            TimeSpan? uptime = CalculateServerUptime(lastConfiguration, isAlive);
-            TimeSpan? lastUptime = CalculateServerLastUptime(lastPulse, lastConfiguration);
 
-            return new ServerStatistics
+            TimeSpan? uptime = isAlive ? CalculateServerUptime(lastStatistics) : null;
+            TimeSpan? lastUptime = CalculateLastUptime(isAlive, lastStatistics, uptime);
+
+            var statistics = new ServerStatistics
             {
                 IsAlive = isAlive,
                 DataExists = lastConfiguration != null,
@@ -148,8 +162,13 @@ namespace AnalyzerApi.Services
                 ServerUptime = uptime,
                 LastServerUptime = lastUptime,
                 LastPulseDateTimeUTC = lastPulse?.CreationDateUTC,
-                CollectedDateUTC = DateTime.UtcNow
+                CollectedDateUTC = DateTime.UtcNow,
+                IsInitial = isInitial,
             };
+
+            lastServerStatistics.AddOrUpdate(key, statistics, (k, s) => statistics);
+
+            return statistics;
         }
         private static bool CalculateIsServerAlive(PulseEventWrapper? pulseEvent, ConfigurationEventWrapper? configurationEvent)
         {
@@ -160,21 +179,31 @@ namespace AnalyzerApi.Services
             }
             return false;
         }
-        private static TimeSpan? CalculateServerUptime(ConfigurationEventWrapper? configurationEvent, bool isServerAlive)
+        private static TimeSpan? CalculateServerUptime(ServerStatistics? lastStatistics)
         {
-            if (configurationEvent != null && isServerAlive)
+            if (lastStatistics != null && lastStatistics.IsAlive)
             {
-                return DateTime.UtcNow - configurationEvent.CreationDateUTC;
+                return lastStatistics.ServerUptime + (DateTime.UtcNow - lastStatistics.LastPulseDateTimeUTC);
             }
-            return null;
+            else
+            {
+                return TimeSpan.Zero;
+            }
         }
-        private static TimeSpan? CalculateServerLastUptime(PulseEventWrapper? pulseEvent, ConfigurationEventWrapper? configurationEvent)
+        private TimeSpan? CalculateLastUptime(bool isAlive, ServerStatistics? lastStatistics, TimeSpan? currentUptime)
         {
-            if (pulseEvent != null && configurationEvent != null)
+            if (isAlive)
             {
-                return pulseEvent.CreationDateUTC - configurationEvent.CreationDateUTC;
+                return currentUptime;
             }
-            return null;
+            else if (lastStatistics?.IsAlive == true)
+            {
+                return CalculateServerUptime(lastStatistics);
+            }
+            else
+            {
+                return lastStatistics?.LastServerUptime;
+            }
         }
     }
 }

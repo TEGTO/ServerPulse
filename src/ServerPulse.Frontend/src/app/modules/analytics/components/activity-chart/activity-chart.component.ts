@@ -1,18 +1,18 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
 import { ChartComponent } from 'ng-apexcharts';
+import { combineLatest, Observable } from 'rxjs';
 import { ChartOptions } from '../..';
 
 @Component({
   selector: 'activity-chart',
   templateUrl: './activity-chart.component.html',
   styleUrls: ['./activity-chart.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ActivityChartComponent implements OnInit, OnChanges {
+export class ActivityChartComponent implements OnInit, AfterViewInit {
   @Input({ required: true }) chartUniqueId!: string;
-  @Input({ required: true }) dateFrom!: Date;
-  @Input({ required: true }) dateTo!: Date;
-  @Input({ required: true }) data!: any[];
+  @Input({ required: true }) dateFrom$!: Observable<Date>;
+  @Input({ required: true }) dateTo$!: Observable<Date>;
+  @Input({ required: true }) data$!: Observable<any[]>;
   @ViewChild('chart') chart!: ChartComponent;
 
   chartOptions!: Partial<ChartOptions>;
@@ -20,20 +20,20 @@ export class ActivityChartComponent implements OnInit, OnChanges {
   get chartId() { return `chart-${this.chartUniqueId}`; }
 
   constructor(
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
   ) { }
+
+  ngAfterViewInit(): void {
+    combineLatest([this.dateFrom$, this.dateTo$]).subscribe(
+      ([dateFrom, dateTo]) => this.updateChartRange(dateFrom, dateTo)
+    );
+    this.data$.subscribe(
+      (data) => this.updateChartData(data)
+    );
+  }
 
   ngOnInit(): void {
     this.initChartOptions();
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['data']) {
-      this.updateChartData();
-    }
-    if (changes['dateFrom'] || changes['dateTo']) {
-      this.updateChartRange();
-    }
   }
 
   private initChartOptions() {
@@ -41,7 +41,7 @@ export class ActivityChartComponent implements OnInit, OnChanges {
       series: [
         {
           name: "Events",
-          data: this.data
+          data: []
         }
       ],
       chart: {
@@ -77,8 +77,8 @@ export class ActivityChartComponent implements OnInit, OnChanges {
       },
       xaxis: {
         type: "datetime",
-        min: this.dateFrom.getTime(),
-        max: this.dateTo.getTime(),
+        min: new Date().getTime(),
+        max: new Date().getTime(),
         labels: {
           datetimeUTC: false,
           format: 'HH:mm'
@@ -115,20 +115,36 @@ export class ActivityChartComponent implements OnInit, OnChanges {
     };
   }
 
-  private updateChartData() {
+  private updateChartData(data: any[]) {
     if (this.chart && this.chartOptions.series) {
-      this.chartOptions.series[0].data = this.data;
+      this.chartOptions.series =
+        [
+          {
+            name: "Events",
+            data: data
+          }
+        ];
+      this.cdr.detectChanges();
     }
   }
 
-  private updateChartRange() {
+  private updateChartRange(dateFrom: Date, dateTo: Date) {
     if (this.chart && this.chartOptions.xaxis) {
-      this.chart.updateOptions({
-        xaxis: {
-          min: this.dateFrom.getTime(),
-          max: this.dateTo.getTime(),
+      this.chartOptions.xaxis =
+      {
+        type: "datetime",
+        min: dateFrom.getTime(),
+        max: dateTo.getTime(),
+        labels: {
+          datetimeUTC: false,
+          format: 'HH:mm'
+        },
+        tickAmount: 12,
+        tooltip: {
+          enabled: false
         }
-      });
+      };
+      this.cdr.detectChanges();
     }
   }
 }

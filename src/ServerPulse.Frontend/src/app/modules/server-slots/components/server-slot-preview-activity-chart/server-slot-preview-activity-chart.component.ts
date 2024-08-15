@@ -1,4 +1,5 @@
-import { AfterViewInit, ChangeDetectorRef, Component, Input, OnDestroy } from '@angular/core';
+import { AfterViewInit, Component, Input, OnDestroy } from '@angular/core';
+import { BehaviorSubject, interval, map, Subject, takeUntil } from 'rxjs';
 import { ServerStatisticsService } from '../..';
 import { ServerLoadStatisticsResponse, ServerSlot, TimeSpan } from '../../../shared';
 
@@ -9,17 +10,21 @@ import { ServerLoadStatisticsResponse, ServerSlot, TimeSpan } from '../../../sha
 })
 export class ServerSlotDailyChartComponent implements AfterViewInit, OnDestroy {
   @Input({ required: true }) serverSlot!: ServerSlot;
-  dateFrom: Date = new Date(Date.now() - this.hour);
-  dateTo: Date = new Date();
-  chartData: Array<[number, number]> = [];
-  private statisticsSet: Map<number, number> = new Map();
-  private updateTimeIntervalId?: ReturnType<typeof setInterval>;
+  private dateFromSubject$ = new BehaviorSubject<Date>(new Date(Date.now() - this.hour));
+  private dateToSubject$ = new BehaviorSubject<Date>(new Date());
+  private statisticsSetSubject$ = new BehaviorSubject<Map<number, number>>(new Map());
+  private chartDataSubject$ = new BehaviorSubject<Array<[number, number]>>([]);
+  private destroy$ = new Subject<void>();
+
+  dateFrom$ = this.dateFromSubject$.asObservable();
+  dateTo$ = this.dateToSubject$.asObservable();
+  statisticsSet$ = this.statisticsSetSubject$.asObservable();
+  chartData$ = this.chartDataSubject$.asObservable();
 
   get fiveMinutes() { return 5 * 60 * 1000; }
   get hour() { return 60 * 60 * 1000; }
 
   constructor(
-    private readonly cdr: ChangeDetectorRef,
     private readonly statisticsService: ServerStatisticsService
   ) { }
 
@@ -28,45 +33,73 @@ export class ServerSlotDailyChartComponent implements AfterViewInit, OnDestroy {
 
     const timeSpan = new TimeSpan(0, 0, 0, this.fiveMinutes);
 
-    this.statisticsService.getAmountStatisticsInRange(this.serverSlot.slotKey, this.dateFrom, this.dateTo, timeSpan).subscribe(statistics => {
-      this.updateStatisticsSet(statistics);
-      this.chartData = this.generate5MinutesTimeSeries();
-      this.cdr.detectChanges();
+    this.statisticsService.getAmountStatisticsInRange(this.serverSlot.slotKey, this.dateFromSubject$.value, this.dateToSubject$.value, timeSpan)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(statistics => {
+        const set = this.statisticsSetSubject$.value;
+        this.statisticsSetSubject$.next(this.updateStatisticsSet(set, statistics));
+      });
+
+    this.statisticsSet$.pipe(
+      map(statisticsSet => {
+        this.updateTime();
+        return this.generate5MinutesTimeSeries(this.dateFromSubject$.value, this.dateToSubject$.value, statisticsSet);
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe(chartData => {
+      this.chartDataSubject$.next(chartData);
     });
 
-    this.initializeLoadStatisticsSubscription();
+    this.statisticsService.getLastServerLoadStatistics(this.serverSlot.slotKey).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(message => {
+      if (this.validateMessage(message)) {
+        const loadTime = new Date(message!.statistics.lastEvent?.creationDateUTC!).getTime();
+        this.chartDataSubject$.next(this.addEventToChartData(loadTime));
+      }
+    });
+
+    this.chartData$.pipe(map(() => {
+      this.updateTime();
+    }));
   }
 
   ngOnDestroy(): void {
-    if (this.updateTimeIntervalId) {
-      clearInterval(this.updateTimeIntervalId);
-    }
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private setUpdateTimeInterval() {
-    this.updateTimeIntervalId = setInterval(() => {
-      this.updateTime();
-      this.cdr.detectChanges();
-    }, this.fiveMinutes);
+    interval(this.fiveMinutes).pipe(takeUntil(this.destroy$)).subscribe(() => this.updateTime());
   }
 
   private updateTime() {
     const now = Date.now();
-    this.dateFrom = new Date(now - this.hour);
-    this.dateTo = new Date(now);
+    this.dateFromSubject$.next(new Date(now - this.hour));
+    this.dateToSubject$.next(new Date(now));
   }
 
-  private generate5MinutesTimeSeries(): Array<[number, number]> {
+  private updateStatisticsSet(set: Map<number, number>, statistics: { date: Date, amountOfEvents: number }[]) {
+    for (const stat of statistics) {
+      const timestamp = stat.date.getTime();
+      if (!set.has(timestamp)) {
+        set.set(timestamp, stat.amountOfEvents);
+      }
+    }
+    return set;
+  }
+
+  private generate5MinutesTimeSeries(dateFrom: Date, dateTo: Date, statisticsSet: Map<number, number>): Array<[number, number]> {
     const series: Array<[number, number]> = [];
-    const startTime = this.dateFrom.getTime();
-    const periods = Math.ceil((this.dateTo.getTime() - startTime) / this.fiveMinutes);
+    const startTime = dateFrom.getTime();
+    const periods = Math.ceil((dateTo.getTime() - startTime) / this.fiveMinutes);
 
     for (let i = 0; i <= periods; i++) {
       const localFrom = startTime + i * this.fiveMinutes;
       const localTo = localFrom + this.fiveMinutes;
       let count = 0;
 
-      for (const [timestamp, amount] of this.statisticsSet) {
+      for (const [timestamp, amount] of statisticsSet) {
         if (timestamp >= localFrom && timestamp < localTo) {
           count += amount;
         }
@@ -74,29 +107,13 @@ export class ServerSlotDailyChartComponent implements AfterViewInit, OnDestroy {
 
       series.push([localFrom, count]);
     }
-
     return series;
   }
 
-  private initializeLoadStatisticsSubscription(): void {
-    this.statisticsService.getLastServerLoadStatistics(this.serverSlot.slotKey).subscribe(message => {
-      this.handleLoadStatisticsMessage(message);
-    });
-  }
-
-  private handleLoadStatisticsMessage(message: { key: string; statistics: ServerLoadStatisticsResponse; } | null): void {
-    if (!message || message.statistics.isInitial || message.key !== this.serverSlot.slotKey) {
-      return;
-    }
-    const loadTime = new Date(message.statistics.lastEvent?.creationDateUTC!).getTime();
-    this.updateTime();
-    this.updateChartData(loadTime);
-    this.cdr.detectChanges();
-  }
-
-  private updateChartData(loadTime: number): void {
+  private addEventToChartData(loadTime: number) {
+    let chartData = this.chartDataSubject$.value;
     let isPlaceFound = false;
-    for (let item of this.chartData) {
+    for (let item of chartData) {
       const localFrom = item[0];
       const localTo = localFrom + this.fiveMinutes;
 
@@ -107,17 +124,12 @@ export class ServerSlotDailyChartComponent implements AfterViewInit, OnDestroy {
       }
     }
     if (!isPlaceFound) {
-      this.chartData.push([loadTime, 1]);
+      chartData.push([loadTime, 1]);
     }
+    return chartData;
   }
 
-  private updateStatisticsSet(statistics: { date: Date, amountOfEvents: number }[]): void {
-    for (const stat of statistics) {
-      const timestamp = stat.date.getTime();
-      if (!this.statisticsSet.has(timestamp)) {
-        this.statisticsSet.set(timestamp, stat.amountOfEvents);
-      }
-    }
+  private validateMessage(message: { key: string; statistics: ServerLoadStatisticsResponse; } | null) {
+    return message && !message.statistics.isInitial && message.key === this.serverSlot.slotKey;
   }
-
 }

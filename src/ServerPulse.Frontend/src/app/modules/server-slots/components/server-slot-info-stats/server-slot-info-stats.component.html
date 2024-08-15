@@ -2,77 +2,75 @@
     <section class="content__left child:border-b border-gray-200 dark:border-gray-600">
         <div class="left__status">
             Status:
-            {{serverStatus}}
+            {{ serverStatus$ | async }}
             <div class="status__illumination">
                 <span [ngClass]="{
-                    'green': serverStatus === 'Online',
-                    'red': serverStatus === 'Offline',
-                    'grey': serverStatus === 'No Data'
-                }" class="illumination__indicator"></span>
+            'green': (serverStatus$ | async) === 'Online',
+            'red': (serverStatus$ | async) === 'Offline',
+            'grey': (serverStatus$ | async) === 'No Data'
+          }" class="illumination__indicator"></span>
             </div>
         </div>
         <div class="left__uptime">
             Last start:
-            {{ serverLastStartDateTime ? (serverLastStartDateTime | date:'dd/MM/yy HH:mm:ss') : '—' }}
+            {{ (serverLastStartDateTime$ | async) ? (serverLastStartDateTime$ | async | date:'dd/MM/yy HH:mm:ss') : '—'
+            }}
         </div>
         <div class="left__uptime">
             Uptime:
-            {{ currentServerSlotStatistics?.serverUptime ?? "—" }}
+            {{ (currentServerSlotStatistics$ | async)?.serverUptime ?? "—" }}
         </div>
         <div class="left__last-uptime">
             Last uptime:
-            {{ currentServerSlotStatistics?.lastServerUptime ?? "—" }}
+            {{ (currentServerSlotStatistics$ | async)?.lastServerUptime ?? "—" }}
         </div>
         <div class="left__last-uptime">
             Last pulse:
-            {{ lastPulseDateTime ? (lastPulseDateTime | date:'dd/MM/yy HH:mm:ss') : '—' }}
+            {{ (lastPulseDateTime$ | async) ? (lastPulseDateTime$ | async | date:'dd/MM/yy HH:mm:ss') : '—' }}
         </div>
         <div class="left__last-load-amount">
             Load amount:
         </div>
     </section>
-    <section class="content__right">
+    <cdk-virtual-scroll-viewport #scroller class="content__right" [itemSize]="tablePageAmount">
         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
-                    <th scope="col" class="px-6 py-3">
-                        Endpoint
-                    </th>
-                    <th scope="col" class="px-6 py-3">
-                        Method
-                    </th>
-                    <th scope="col" class="px-6 py-3">
-                        Status code
-                    </th>
-                    <th scope="col" class="px-6 py-3">
-                        Duration
-                    </th>
-                    <th scope="col" class="px-6 py-3">
-                        Timestamp
-                    </th>
+                    <th scope="col" class="px-4 py-4">Endpoint</th>
+                    <th scope="col" class="px-4 py-4">Method</th>
+                    <th scope="col" class="px-5 py-4">Status code</th>
+                    <th scope="col" class="px-4 py-4">Duration</th>
+                    <th scope="col" class="px-4 py-4">Timestamp</th>
+                    <th scope="col" class="px-4 py-4">Creation Date</th>
                 </tr>
             </thead>
             <tbody>
-                @for (item of [1,2,3,4,5,6,7]; track $index) {
-                <tr class="border-b dark:border-gray-700">
-                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                        /example
+                <!-- Example rows, replace with actual data -->
+                <tr *cdkVirtualFor="let item of dataSource$ | async"
+                    class="border-b dark:bg-gray-800 dark:border-gray-700 px-4 py-4">
+                    <th scope="row" class="px-4 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                        {{item.endpoint}}
                     </th>
-                    <td class="px-6 py-4">
-                        'GET'
+                    <td class="px-4 py-3">
+                        {{item.method}}
                     </td>
-                    <td class="px-6 py-4">
-                        404 (Not Found)
+                    <td class="px-4 py-3">
+                        {{item.statusCode}}
                     </td>
-                    <td class="px-6 py-4">
-                        00:00:10
+                    <td class="px-4 py-3">
+                        {{item.duration}}
                     </td>
-                    <td class="px-6 py-4">
-                        05.08.2024 15:31
+                    <td class="px-4 py-3">
+                        {{item.timestampUTC | date:'dd.MM.yyyy HH:mm'}}
+                    </td>
+                    <td class="px-4 py-3">
+                        {{item.creationDateUTC | date:'dd.MM.yyyy HH:mm'}}
                     </td>
                 </tr>
-                }
             </tbody>
         </table>
-    </section>
+        <div class="flex justify-center py-3" *ngIf="areTableItemsLoading">
+            <mat-progress-spinner [mode]="'indeterminate'" diameter="50"></mat-progress-spinner>
+        </div>
+    </cdk-virtual-scroll-viewport>
 </div>

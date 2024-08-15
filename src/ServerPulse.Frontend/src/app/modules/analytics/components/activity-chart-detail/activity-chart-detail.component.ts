@@ -1,5 +1,6 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { ChartComponent } from 'ng-apexcharts';
+import { combineLatest, Observable } from 'rxjs';
 import { ChartOptions } from '../..';
 
 type TimeRange = "1w" | "1m" | "3m" | "6m" | "all";
@@ -8,12 +9,14 @@ type TimeRange = "1w" | "1m" | "3m" | "6m" | "all";
   templateUrl: './activity-chart-detail.component.html',
   styleUrl: './activity-chart-detail.component.scss'
 })
-export class ActivityChartDetailComponent implements OnInit {
+export class ActivityChartDetailComponent implements OnInit, AfterViewInit {
   @Input({ required: true }) chartUniqueId!: string;
-  @Input({ required: true }) controlData!: any[];
-  @Input({ required: true }) secondaryDateFrom!: Date;
-  @Input({ required: true }) secondaryDateTo!: Date;
-  @Input({ required: true }) secondaryData!: any[];
+  @Input({ required: true }) controlDateFrom$!: Observable<Date>;
+  @Input({ required: true }) controlDateTo$!: Observable<Date>;
+  @Input({ required: true }) controlData$!: Observable<any[]>;
+  @Input({ required: true }) secondaryDateFrom$!: Observable<Date>;
+  @Input({ required: true }) secondaryDateTo$!: Observable<Date>;
+  @Input({ required: true }) secondaryData$!: Observable<any[]>;
   @Output() onControlSelect = new EventEmitter<any>();
   @ViewChild('controlChart') controlChart!: ChartComponent;
   @ViewChild('secondaryChart') secondaryChart!: ChartComponent;
@@ -38,21 +41,26 @@ export class ActivityChartDetailComponent implements OnInit {
   };
 
   constructor(
+    private readonly cdr: ChangeDetectorRef,
   ) { }
+
+  ngAfterViewInit(): void {
+    combineLatest([this.secondaryDateFrom$, this.secondaryDateTo$]).subscribe(
+      ([dateFrom, dateTo]) => this.updateSecondaryChartRange(dateFrom, dateTo)
+    );
+    this.secondaryData$.subscribe(
+      (data) => this.updateChartData(this.secondaryChartOptions, data)
+    );
+    this.controlData$.subscribe(
+      (data) => this.updateChartData(this.controlChartOptions, data)
+    );
+    combineLatest([this.controlDateFrom$, this.controlDateTo$]).subscribe(
+      ([dateFrom, dateTo]) => this.updateControlChartRange(dateFrom, dateTo)
+    );
+  }
 
   ngOnInit(): void {
     this.initChartOptions();
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['controlData']) {
-      this.updateControlChartRange();
-      this.updateControlChartData();
-    }
-    if (changes['secondaryData']) {
-      this.updateSecondaryChartRange();
-      this.updateSecondaryChartData();
-    }
   }
 
   initChartOptions(): void {
@@ -60,7 +68,7 @@ export class ActivityChartDetailComponent implements OnInit {
       series: [
         {
           name: "Events",
-          data: this.controlData
+          data: []
         }
       ],
       chart: {
@@ -131,7 +139,7 @@ export class ActivityChartDetailComponent implements OnInit {
       series: [
         {
           name: "Event",
-          data: this.secondaryData
+          data: []
         }
       ],
       chart: {
@@ -169,8 +177,8 @@ export class ActivityChartDetailComponent implements OnInit {
       },
       xaxis: {
         type: "datetime",
-        min: this.secondaryDateFrom.getTime(),
-        max: this.secondaryDateTo.getTime(),
+        min: new Date().getTime(),
+        max: new Date().getTime(),
         labels: {
           datetimeUTC: false,
           format: 'HH'
@@ -196,43 +204,56 @@ export class ActivityChartDetailComponent implements OnInit {
     };
   }
 
-  updateControlChartData() {
-    this.updateChartData(this.controlChart, this.controlData);
-  }
-  updateSecondaryChartData() {
-    this.updateChartData(this.secondaryChart, this.secondaryData);
-  }
-  private updateChartData(chart: ChartComponent, data: any) {
-    if (chart != null && chart.series != null) {
-      chart.updateSeries([{
-        name: "Events",
-        data: data
-      }]);
+  private updateChartData(chartOptions: Partial<ChartOptions>, data: any) {
+    if (chartOptions != null && chartOptions.series != null) {
+      chartOptions.series =
+        [
+          {
+            name: "Events",
+            data: data
+          }
+        ];
+      this.cdr.detectChanges();
     }
   }
 
-  updateControlChartRange() {
+  private updateControlChartRange(dateFrom: Date, dateTo: Date) {
     if (this.controlChart && this.controlChartOptions.xaxis) {
       this.updateControlOptions(this.activeOptionButton);
+      this.cdr.detectChanges();
     }
   }
-  updateSecondaryChartRange() {
+  private updateSecondaryChartRange(dateFrom: Date, dateTo: Date) {
     if (this.secondaryChart && this.secondaryChartOptions.xaxis) {
-      try {
-        this.secondaryChart.updateOptions({
-          xaxis: {
-            min: this.secondaryDateFrom.getTime(),
-            max: this.secondaryDateTo.getTime(),
-          }
-        });
-      } catch (error) {
-
-      }
+      this.secondaryChartOptions.xaxis =
+      {
+        type: "datetime",
+        min: dateFrom.getTime(),
+        max: dateTo.getTime(),
+        labels: {
+          datetimeUTC: false,
+          format: 'HH'
+        },
+        tickAmount: 23,
+        tooltip: {
+          enabled: false
+        }
+      };
+      this.cdr.detectChanges();
     }
   }
 
   updateControlOptions(option: TimeRange): void {
     this.activeOptionButton = option;
-    this.controlChart.updateOptions(this.updateOptionsData[option], false, true, true);
+    this.controlChartOptions.xaxis =
+    {
+      type: "datetime",
+      min: this.updateOptionsData[option].xaxis.min,
+      max: this.updateOptionsData[option].xaxis.max,
+      tooltip: {
+        enabled: false,
+      }
+    };
+    this.cdr.detectChanges();
   }
 }
