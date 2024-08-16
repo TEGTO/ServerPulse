@@ -1,95 +1,131 @@
-import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { BehaviorSubject, debounceTime, Subject, takeUntil, tap } from 'rxjs';
 import { ServerSlotDialogManager, ServerSlotService, ServerStatisticsService } from '../..';
-import { ServerSlot, SnackbarManager, UpdateServerSlotRequest } from '../../../shared';
+import { RedirectorService, ServerSlot, SnackbarManager, UpdateServerSlotRequest } from '../../../shared';
 
 @Component({
   selector: 'app-server-slot-info',
   templateUrl: './server-slot-info.component.html',
-  styleUrl: './server-slot-info.component.scss',
+  styleUrls: ['./server-slot-info.component.scss'],
 })
-export class ServerSlotInfoComponent implements OnInit {
+export class ServerSlotInfoComponent implements OnInit, OnDestroy {
   @ViewChild('textSizer', { static: false }) textSizer!: ElementRef;
-  @ViewChild('nameInput', { static: false }) nameInput!: ElementRef<HTMLInputElement>;
-  slotId: string | null = null;
-  serverSlot!: ServerSlot;
-  inputIsEditable: boolean = false;
-  inputWidth: number = 120;
-  inputValue: string = "";
+
+  slotId$ = new BehaviorSubject<string | null>(null);
+  serverSlot$ = new BehaviorSubject<ServerSlot | null>(null);
+  inputIsEditable$ = new BehaviorSubject<boolean>(false);
+  inputWidth$ = new BehaviorSubject<number>(120);
+  inputControl = new FormControl('');
+  private destroy$ = new Subject<void>();
 
   constructor(
     private readonly serverSlotService: ServerSlotService,
     private readonly statisticsService: ServerStatisticsService,
-    private readonly cdr: ChangeDetectorRef,
     private readonly snackBarManager: SnackbarManager,
     private readonly dialogManager: ServerSlotDialogManager,
-    private route: ActivatedRoute
+    private readonly redirector: RedirectorService,
+    private readonly route: ActivatedRoute
   ) { }
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe(params => {
-      this.slotId = params.get('id');
-      if (this.slotId) {
-        this.serverSlotService.getServerSlotById(this.slotId).subscribe(slot => {
-          if (slot) {
-            this.serverSlot = slot;
-            this.inputValue = this.serverSlot.name;
-            this.cdr.detectChanges();
-            this.adjustInputWidth();
-          }
-        });
+    this.route.paramMap
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
+        const slotId = params.get('id');
+        this.slotId$.next(slotId);
 
-        this.statisticsService.setCurrentLoadStatisticsDate(new Date());
-      }
-    });
+        if (slotId) {
+          this.serverSlotService.getServerSlotById(slotId)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(slot => {
+              if (slot) {
+                this.serverSlot$.next(slot);
+                this.inputControl.setValue(slot.name);
+                this.adjustInputWidth();
+              }
+            });
+
+          this.statisticsService.setCurrentLoadStatisticsDate(new Date());
+        }
+      });
+
+    this.inputControl.valueChanges.pipe(
+      debounceTime(300),
+      tap(() => this.adjustInputWidth()),
+      takeUntil(this.destroy$)
+    ).subscribe();
   }
 
-  onInputChange() {
-    this.adjustInputWidth();
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
+
   onBlur() {
-    if (this.inputIsEditable) {
+    if (this.inputIsEditable$.getValue()) {
       this.checkEmptyInput();
       this.makeInputNonEditable();
       this.updateServerSlotName();
     }
   }
+
   showKey() {
-    this.snackBarManager.openInfoSnackbar(`🔑: ${this.serverSlot.slotKey}`, 10);
+    const slot = this.serverSlot$.getValue();
+    if (slot) {
+      this.snackBarManager.openInfoSnackbar(`🔑: ${slot.slotKey}`, 10);
+    }
   }
 
   private adjustInputWidth() {
-    const sizer = this.textSizer.nativeElement;
-    this.inputWidth = Math.min(sizer.scrollWidth, 300);
+    if (this.textSizer) {
+      const sizer = this.textSizer?.nativeElement;
+      this.inputWidth$.next(Math.min(sizer.scrollWidth + 1, 300));
+    }
   }
+
   private checkEmptyInput() {
-    if (!this.inputValue.trim()) {
-      this.inputValue = 'New slot';
+    if (!this.inputControl.value?.trim()) {
+      this.inputControl.setValue('New slot');
       this.adjustInputWidth();
     }
   }
+
   makeInputEditable() {
-    this.inputIsEditable = true;
+    this.inputIsEditable$.next(true);
     setTimeout(() => {
-      this.nameInput.nativeElement.focus();
+      const inputElement = document.querySelector('input[name="slotName"]') as HTMLInputElement;
+      inputElement.focus();
     });
   }
+
   private makeInputNonEditable() {
-    this.inputIsEditable = false;
+    this.inputIsEditable$.next(false);
   }
+
   openConfirmDeletion() {
-    this.dialogManager.openDeleteSlotConfirmMenu().afterClosed().subscribe(result => {
-      if (result === true) {
-        this.serverSlotService.deleteServerSlot(this.serverSlot.id);
-      }
-    });
+    this.dialogManager.openDeleteSlotConfirmMenu().afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(result => {
+        if (result === true) {
+          const slot = this.serverSlot$.getValue();
+          if (slot) {
+            this.serverSlotService.deleteServerSlot(slot.id);
+            this.redirector.redirectToHome();
+          }
+        }
+      });
   }
+
   private updateServerSlotName() {
-    let request: UpdateServerSlotRequest =
-    {
-      id: this.serverSlot.id,
-      name: this.inputValue
+    const slot = this.serverSlot$.getValue();
+    if (slot) {
+      const request: UpdateServerSlotRequest = {
+        id: slot.id,
+        name: this.inputControl.value || '',
+      };
+      this.serverSlotService.updateServerSlot(request);
     }
-    this.serverSlotService.updateServerSlot(request);
   }
 }

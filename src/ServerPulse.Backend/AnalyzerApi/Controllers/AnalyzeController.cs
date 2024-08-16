@@ -91,7 +91,7 @@ namespace AnalyzerApi.Controllers
         [HttpPost]
         public async Task<ActionResult<IEnumerable<LoadEventWrapper>>> GetSomeLoadEvents([FromBody] GetSomeLoadEventsRequest request, CancellationToken cancellationToken)
         {
-            var cacheKey = $"{cacheStatisticsKey}-{request.Key}-{request.StartDate.ToUniversalTime()}-{request.NumberOfMessages}-someevents";
+            var cacheKey = $"{cacheStatisticsKey}-{request.Key}-{request.StartDate.ToUniversalTime()}-{request.NumberOfMessages}-{request.ReadNew}-someevents";
 
             IEnumerable<LoadEventWrapper>? events = await GetInCacheAsync<IEnumerable<LoadEventWrapper>>(cacheKey);
 

@@ -43,7 +43,7 @@
         "EnableRateLimiting": true,
         "Period": "1s",
         "PeriodTimespan": 5,
-        "Limit": 3
+        "Limit": 10
       }
     },
     {
@@ -69,7 +69,7 @@
         "EnableRateLimiting": true,
         "Period": "1s",
         "PeriodTimespan": 5,
-        "Limit": 3
+        "Limit": 10
       }
     },
     {
@@ -121,7 +121,7 @@
         "EnableRateLimiting": true,
         "Period": "1s",
         "PeriodTimespan": 2,
-        "Limit": 3
+        "Limit": 10
       }
     },
     {

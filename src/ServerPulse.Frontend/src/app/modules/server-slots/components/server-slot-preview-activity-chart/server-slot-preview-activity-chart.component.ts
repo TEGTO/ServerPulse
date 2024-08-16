@@ -10,7 +10,8 @@ import { ServerLoadStatisticsResponse, ServerSlot, TimeSpan } from '../../../sha
 })
 export class ServerSlotDailyChartComponent implements AfterViewInit, OnDestroy {
   @Input({ required: true }) serverSlot!: ServerSlot;
-  private dateFromSubject$ = new BehaviorSubject<Date>(new Date(Date.now() - this.hour));
+
+  private dateFromSubject$ = new BehaviorSubject<Date>(this.getDateFrom());
   private dateToSubject$ = new BehaviorSubject<Date>(new Date());
   private statisticsSetSubject$ = new BehaviorSubject<Map<number, number>>(new Map());
   private chartDataSubject$ = new BehaviorSubject<Array<[number, number]>>([]);
@@ -69,14 +70,20 @@ export class ServerSlotDailyChartComponent implements AfterViewInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private setUpdateTimeInterval() {
-    interval(this.fiveMinutes).pipe(takeUntil(this.destroy$)).subscribe(() => this.updateTime());
+  private setUpdateTimeInterval(): void {
+    interval(this.fiveMinutes).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(() => this.updateTime());
   }
 
-  private updateTime() {
+  private updateTime(): void {
     const now = Date.now();
-    this.dateFromSubject$.next(new Date(now - this.hour));
+    this.dateFromSubject$.next(this.getDateFrom());
     this.dateToSubject$.next(new Date(now));
+  }
+
+  private getDateFrom(): Date {
+    return new Date(Date.now() - this.hour);
   }
 
   private updateStatisticsSet(set: Map<number, number>, statistics: { date: Date, amountOfEvents: number }[]) {

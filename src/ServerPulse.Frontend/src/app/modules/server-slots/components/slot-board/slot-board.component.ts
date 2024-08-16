@@ -1,54 +1,58 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { debounceTime, Subject } from 'rxjs';
-import { ServerSlotService } from '../..';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { FormControl } from '@angular/forms';
+import { BehaviorSubject, debounceTime, map, Observable, of, startWith, switchMap } from 'rxjs';
 import { environment } from '../../../../../environment/environment';
 import { CreateServerSlotRequest, ServerSlot } from '../../../shared';
+import { ServerSlotService } from '../../index';
 
 @Component({
   selector: 'app-slot-board',
   templateUrl: './slot-board.component.html',
-  styleUrl: './slot-board.component.scss',
+  styleUrls: ['./slot-board.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SlotBoardComponent implements OnInit {
-  serverSlots: ServerSlot[] = [];
-  private inputSubject: Subject<string> = new Subject<string>();
 
-  get slotAmount() { return this.serverSlots.length; }
-  get maxAmountOfSlots() { return environment.maxAmountOfSlotsPerUser; }
+  private slotAmountSubject$ = new BehaviorSubject<number>(0);
+
+  serverSlots$: Observable<ServerSlot[]> = of([]);
+  slotAmount$: Observable<number> = this.slotAmountSubject$.asObservable();
+  inputControl: FormControl = new FormControl('');
+
+  get maxAmountOfSlots(): number {
+    return environment.maxAmountOfSlotsPerUser;
+  }
 
   constructor(
     private readonly serverSlotService: ServerSlotService,
-    private readonly cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
-    this.serverSlotService.getServerSlots().subscribe(slots => {
-      this.serverSlots = slots;
-      this.cdr.markForCheck();
-    });
-    this.inputSubject.pipe(
-      debounceTime(500)
-    ).subscribe(str => {
-      this.serverSlotService.getServerSlotsWithString(str).subscribe(slots => {
-        this.serverSlots = slots;
-        this.cdr.markForCheck();
-      });
-    });
+    this.serverSlots$ = this.inputControl.valueChanges.pipe(
+      startWith(''),
+      debounceTime(300),
+      switchMap(searchString => {
+        if (searchString) {
+          return this.serverSlotService.getServerSlotsWithString(searchString);
+        }
+        else {
+          return this.serverSlotService.getServerSlots();
+        }
+      }),
+      map(slots => {
+        this.slotAmountSubject$.next(slots.length);
+        return slots;
+      }),
+    );
   }
 
-  addServerSlot() {
-    if (this.slotAmount < this.maxAmountOfSlots) {
-      let newServerSlot: CreateServerSlotRequest = {
-        name: "New Slot"
+  addServerSlot(): void {
+    if (this.slotAmountSubject$.value < this.maxAmountOfSlots) {
+      const newServerSlot: CreateServerSlotRequest = {
+        name: 'New Slot'
       };
       this.serverSlotService.createServerSlot(newServerSlot);
+      this.inputControl.setValue('');
     }
-  }
-
-  onInputChange(event: Event) {
-    const inputElement = event.target as HTMLInputElement;
-    let str = inputElement.value;
-    this.inputSubject.next(str);
   }
 }

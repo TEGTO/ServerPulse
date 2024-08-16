@@ -30,9 +30,11 @@
         </div>
         <div class="left__last-load-amount">
             Load amount:
+            {{ (loadStatistics$ | async)?.amountOfEvents ?? "—" }}
         </div>
     </section>
-    <cdk-virtual-scroll-viewport #scroller class="content__right" [itemSize]="tablePageAmount">
+
+    <cdk-virtual-scroll-viewport #scroller class="content__right" [itemSize]="tableItemHeight">
         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
@@ -45,8 +47,7 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Example rows, replace with actual data -->
-                <tr *cdkVirtualFor="let item of dataSource$ | async"
+                <tr *cdkVirtualFor="let item of (dataSource$ | async) trackBy: trackById"
                     class="border-b dark:bg-gray-800 dark:border-gray-700 px-4 py-4">
                     <th scope="row" class="px-4 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                         {{item.endpoint}}
@@ -69,7 +70,7 @@
                 </tr>
             </tbody>
         </table>
-        <div class="flex justify-center py-3" *ngIf="areTableItemsLoading">
+        <div class="flex justify-center py-3" *ngIf="(areTableItemsLoading$ | async)">
             <mat-progress-spinner [mode]="'indeterminate'" diameter="50"></mat-progress-spinner>
         </div>
     </cdk-virtual-scroll-viewport>

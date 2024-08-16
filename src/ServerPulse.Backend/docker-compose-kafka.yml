@@ -30,8 +30,13 @@ services:
       KAFKA_NUM_PARTITIONS: ${Kafka__PartitionsAmount}
       # KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
       # KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+    volumes:
+        - serverpulse-kafka:/var/lib/kafka/data
     networks:
       - backend-net
+
+volumes:
+  serverpulse-kafka:
 
 networks:
   backend-net:

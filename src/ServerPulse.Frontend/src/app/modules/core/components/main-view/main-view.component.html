@@ -1,41 +1,42 @@
-@if(isAuthenticated){
-<div class="root">
-    <header class="root__header">
-        <nav class="bg-white dark:bg-gray-900 w-full border-b border-gray-200 dark:border-gray-600">
-            <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-                <a href="" class="flex items-center space-x-3 rtl:space-x-reverse">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="40px" viewBox="0 -960 960 960" width="40px"
-                        fill="#EA3323">
-                        <path
-                            d="M480-480Zm0 360q-18 0-34.5-6.5T416-146L148-415q-35-35-51.5-80T80-589q0-103 67-177t167-74q48 0 90.5 19t75.5 53q32-34 74.5-53t90.5-19q100 0 167.5 74T880-590q0 49-17 94t-51 80L543-146q-13 13-29 19.5t-34 6.5Zm40.19-513.33q8.48 0 15.48 4.33t12 11l70 104.67h180.75q7.62-18.62 11.44-37.79 3.81-19.17 3.81-38.88-.67-74.33-48.63-128.5-47.97-54.17-119.91-54.17-33.8 0-64.96 13.67Q549-745.33 526-720.33l-27 29q-3.67 4-8.33 6.5-4.67 2.5-10.67 2.5t-11.09-2.43q-5.09-2.42-8.91-6.57l-27-29q-23.18-24.88-54.09-38.94Q348-773.33 314-773.33q-71.71 0-119.52 54.46T146.67-590q0 19.81 3.66 39.07 3.67 19.26 11.1 37.6H360q8.38 0 15.93 4.07 7.54 4.07 11.74 10.59l42.33 64L488-610q3.39-10 12.28-16.67 8.9-6.66 19.91-6.66Zm9.81 108L471.33-350q-3.31 10-12.43 16.67-9.12 6.66-19.9 6.66-8.67 0-15.67-4.33T412-342l-70-104.67H210.67l253 253q4 4 7.7 5.5t8.63 1.5q4.93 0 8.63-1.5 3.7-1.5 7.7-5.5l252-253H600q-8.67 0-15.67-4.33T572-462l-42-63.33Z" />
-                    </svg>
-                    <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Server
-                        Pulse</span>
-                </a>
-                <div class="root__toolbar-buttons flex gap-1">
-                    <a mat-icon-button [href]="projectUrl">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                            style="width: 28px; height: 28px; left:10px; top: 11px; position: absolute;">
+<ng-container *ngIf="isAuthenticated$ | async; else unauthenticatedView">
+    <div class="root">
+        <header class="root__header">
+            <nav class="bg-white dark:bg-gray-900 w-full border-b border-gray-200 dark:border-gray-600">
+                <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+                    <a href="" class="flex items-center space-x-3 rtl:space-x-reverse">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="40px" viewBox="0 -960 960 960" width="40px"
+                            fill="#EA3323">
                             <path
-                                d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                                d="M480-480Zm0 360q-18 0-34.5-6.5T416-146L148-415q-35-35-51.5-80T80-589q0-103 67-177t167-74q48 0 90.5 19t75.5 53q32-34 74.5-53t90.5-19q100 0 167.5 74T880-590q0 49-17 94t-51 80L543-146q-13 13-29 19.5t-34 6.5Zm40.19-513.33q8.48 0 15.48 4.33t12 11l70 104.67h180.75q7.62-18.62 11.44-37.79 3.81-19.17 3.81-38.88-.67-74.33-48.63-128.5-47.97-54.17-119.91-54.17-33.8 0-64.96 13.67Q549-745.33 526-720.33l-27 29q-3.67 4-8.33 6.5-4.67 2.5-10.67 2.5t-11.09-2.43q-5.09-2.42-8.91-6.57l-27-29q-23.18-24.88-54.09-38.94Q348-773.33 314-773.33q-71.71 0-119.52 54.46T146.67-590q0 19.81 3.66 39.07 3.67 19.26 11.1 37.6H360q8.38 0 15.93 4.07 7.54 4.07 11.74 10.59l42.33 64L488-610q3.39-10 12.28-16.67 8.9-6.66 19.91-6.66Zm9.81 108L471.33-350q-3.31 10-12.43 16.67-9.12 6.66-19.9 6.66-8.67 0-15.67-4.33T412-342l-70-104.67H210.67l253 253q4 4 7.7 5.5t8.63 1.5q4.93 0 8.63-1.5 3.7-1.5 7.7-5.5l252-253H600q-8.67 0-15.67-4.33T572-462l-42-63.33Z" />
                         </svg>
+                        <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Server
+                            Pulse</span>
                     </a>
-                    <a mat-icon-button>
-                        <span class="icon__material-icons material-icons">import_contacts</span>
-                    </a>
-                    <button mat-icon-button (click)="openLoginMenu()">
-                        <span class="icon__material-icons material-icons">person</span>
-                    </button>
+                    <div class="root__toolbar-buttons flex gap-1">
+                        <a mat-icon-button [href]="projectUrl">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                style="width: 28px; height: 28px;">
+                                <path
+                                    d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                            </svg>
+                        </a>
+                        <a mat-icon-button>
+                            <span class="icon__material-icons material-icons">import_contacts</span>
+                        </a>
+                        <button mat-icon-button (click)="openLoginMenu()">
+                            <span class="icon__material-icons material-icons">person</span>
+                        </button>
+                    </div>
                 </div>
-            </div>
-        </nav>
-    </header>
+            </nav>
+        </header>
 
-    <body class="root__body-wrapper m-5">
-        <router-outlet></router-outlet>
-    </body>
-</div>
-}
-@else {
-<auth-unauthenticated></auth-unauthenticated>
-}
+        <body class="root__body-wrapper m-5">
+            <router-outlet></router-outlet>
+        </body>
+    </div>
+</ng-container>
+
+<ng-template #unauthenticatedView>
+    <auth-unauthenticated></auth-unauthenticated>
+</ng-template>

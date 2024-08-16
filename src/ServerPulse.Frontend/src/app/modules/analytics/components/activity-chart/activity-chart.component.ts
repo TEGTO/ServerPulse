@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
 import { ChartComponent } from 'ng-apexcharts';
 import { combineLatest, Observable } from 'rxjs';
 import { ChartOptions } from '../..';
@@ -7,6 +7,7 @@ import { ChartOptions } from '../..';
   selector: 'activity-chart',
   templateUrl: './activity-chart.component.html',
   styleUrls: ['./activity-chart.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ActivityChartComponent implements OnInit, AfterViewInit {
   @Input({ required: true }) chartUniqueId!: string;

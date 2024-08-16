@@ -1,31 +1,30 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { map, Observable } from 'rxjs';
 import { environment } from '../../../../../environment/environment';
 import { AuthenticationDialogManager, AuthenticationService } from '../../../authentication';
 
 @Component({
   selector: 'app-main-view',
   templateUrl: './main-view.component.html',
-  styleUrl: './main-view.component.scss',
+  styleUrls: ['./main-view.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MainViewComponent implements OnInit {
-  isAuthenticated: boolean = false;
+  isAuthenticated$!: Observable<boolean>;
   projectUrl = environment.projectUrl;
 
   constructor(
     private readonly authService: AuthenticationService,
-    private readonly authDialogManager: AuthenticationDialogManager,
-    private readonly cdr: ChangeDetectorRef
+    private readonly authDialogManager: AuthenticationDialogManager
   ) { }
 
   openLoginMenu() {
-    const dialogRef = this.authDialogManager.openLoginMenu();
+    this.authDialogManager.openLoginMenu();
   }
 
   ngOnInit(): void {
-    this.authService.getAuthData().subscribe(data => {
-      this.isAuthenticated = data.isAuthenticated;
-      this.cdr.detectChanges();
-    })
+    this.isAuthenticated$ = this.authService.getAuthData().pipe(
+      map(data => data.isAuthenticated)
+    );
   }
 }

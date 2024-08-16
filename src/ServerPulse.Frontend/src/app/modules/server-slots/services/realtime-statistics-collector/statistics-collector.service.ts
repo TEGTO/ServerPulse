@@ -85,14 +85,12 @@ export class StatisticsCollector implements OnDestroy, RealTimeStatisticsCollect
         const newConnection = this.createNewHubConnection(hubUrl);
         if (entry.connection.state === signalR.HubConnectionState.Connected) {
           entry.connection.stop().then(() => {
-            entry.connection = newConnection;
-            this.setConnectionPromise(hubUrl, entry.connection.start());
+            this.setConnectionPromise(hubUrl, newConnection.start());
           }).catch(err => this.errorHandler.handleHubError(err));
         }
         else (entry.connection.state === signalR.HubConnectionState.Disconnected)
         {
-          entry.connection = newConnection;
-          this.setConnectionPromise(hubUrl, entry.connection.start());
+          this.setConnectionPromise(hubUrl, newConnection.start());
         }
         this.getConnectionPromise(hubUrl).catch((error) => { this.errorHandler.handleHubError(error); });
       });

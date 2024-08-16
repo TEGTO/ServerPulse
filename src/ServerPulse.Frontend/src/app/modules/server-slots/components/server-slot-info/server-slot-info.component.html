@@ -1,4 +1,4 @@
-<ng-container *ngIf="serverSlot !== undefined; else loading">
+<ng-container *ngIf="serverSlot$ | async as serverSlot; else loading">
 
     <nav class="slot-info-wrapper bg-white dark:bg-gray-900">
         <div
@@ -12,13 +12,13 @@
                         <button mat-menu-item (click)="showKey()">
                             <div class="flex gap-2 items-center justify-between">
                                 <span class="text-base">Key</span>
-                                <span class="material-icons ">key</span>
+                                <span class="material-icons">key</span>
                             </div>
                         </button>
                         <button mat-menu-item (click)="makeInputEditable()">
                             <div class="flex gap-2 items-center justify-between">
                                 <span class="text-base">Rename</span>
-                                <span class="material-icons ">edit</span>
+                                <span class="material-icons">edit</span>
                             </div>
                         </button>
                         <button mat-menu-item (click)="openConfirmDeletion()">
@@ -30,12 +30,12 @@
                     </mat-menu>
                     <div class="header__center-group">
                         <div class="center-group__name">
-                            <input #nameInput [ngStyle]="{'width': inputWidth + 'px'}" [(ngModel)]="inputValue"
-                                class="name__input"
-                                [ngClass]="{'editable': inputIsEditable, 'non-editable': !inputIsEditable}"
-                                (input)="onInputChange()" (blur)="onBlur();" [readonly]="!inputIsEditable"
+                            <input name="slotName" [ngStyle]="{ 'width': (inputWidth$ | async) + 'px' }"
+                                [formControl]="inputControl" class="name__input"
+                                [ngClass]="{ 'editable': inputIsEditable$ | async, 'non-editable': !(inputIsEditable$ | async) }"
+                                (blur)="onBlur()" [readonly]="!(inputIsEditable$ | async)"
                                 (dblclick)="makeInputEditable()" placeholder="Enter slot name" />
-                            <span #textSizer class="name__input-sizer">{{ inputValue }}</span>
+                            <span #textSizer class="name__input-sizer">{{ inputControl.value }}</span>
                         </div>
                     </div>
                     <button mat-icon-button>
@@ -49,8 +49,6 @@
             </section>
         </div>
     </nav>
-
-
 
 </ng-container>
 

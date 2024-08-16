@@ -1,9 +1,7 @@
 <div
     class="server-slot w-full bg-white border border-gray-200 rounded-lg shadow md:flex-row dark:border-gray-700 dark:bg-gray-800">
-
     <header
         class="server-slot__header bg-white dark:bg-gray-900 w-full border-b border-gray-200 dark:border-gray-600 pb-1.5">
-
         <button mat-icon-button [matMenuTriggerFor]="serverSlotMoreOptions">
             <span class="material-icons">more_vert</span>
         </button>
@@ -11,13 +9,13 @@
             <button mat-menu-item (click)="redirectToInfo()">
                 <div class="flex gap-2 items-center justify-between">
                     <span class="text-base">Info</span>
-                    <span class="material-icons ">info</span>
+                    <span class="material-icons">info</span>
                 </div>
             </button>
             <button mat-menu-item (click)="makeInputEditable()">
                 <div class="flex gap-2 items-center justify-between">
                     <span class="text-base">Rename</span>
-                    <span class="material-icons ">edit</span>
+                    <span class="material-icons">edit</span>
                 </div>
             </button>
             <button mat-menu-item (click)="openConfirmDeletion()">
@@ -31,23 +29,26 @@
         <div class="header__center-group">
             <div class="center-group__server-status">
                 <span [ngClass]="{
-                  'green': serverStatus === 'Online',
-                   'red': serverStatus === 'Offline',
-                   'grey': serverStatus === 'No Data'
-                }" class="server-status__indicator"></span>
+          'green': (serverStatus$ | async) === 'Online',
+          'red': (serverStatus$ | async) === 'Offline',
+          'grey': (serverStatus$ | async) === 'No Data'
+        }" class="server-status__indicator"></span>
             </div>
             <div class="center-group__name">
-                <input #nameInput [ngStyle]="{'width': inputWidth + 'px'}" [(ngModel)]="inputValue" class="name__input"
-                    [ngClass]="{'editable': inputIsEditable, 'non-editable': !inputIsEditable}"
-                    (input)="onInputChange()" (blur)="onBlur();" [readonly]="!inputIsEditable"
-                    (dblclick)="makeInputEditable()" placeholder="Enter slot name" />
-                <span #textSizer class="name__input-sizer">{{ inputValue }}</span>
+                <input name="slotName" [ngStyle]="{'width': (inputWidth$ | async) + 'px'}" [formControl]="inputControl"
+                    (blur)="onBlur()" class="name__input"
+                    [ngClass]="{'editable': (inputIsEditable$ | async), 'non-editable': !(inputIsEditable$ | async)}"
+                    [readonly]="!(inputIsEditable$ | async)" (dblclick)="makeInputEditable()"
+                    placeholder="Enter slot name" />
+                <span #textSizer class="name__input-sizer">{{ inputControl.value }}</span>
             </div>
         </div>
+
         <button mat-button color="primary" (click)="redirectToInfo()">
             <span class="material-icons">bar_chart</span>
         </button>
     </header>
+
     <div class="server-slot__body bg-white dark:bg-gray-900">
         <div class="body__activity-chart w-full h-5/6">
             <server-slot-daily-chart [serverSlot]="serverSlot"></server-slot-daily-chart>
