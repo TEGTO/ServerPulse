@@ -18,6 +18,7 @@ namespace ServerMonitorApiTests.Services
         {
             mockTopicManager = new Mock<ITopicManager>();
             mockConfiguration = new Mock<IConfiguration>();
+            mockConfiguration.Setup(c => c[Configuration.KAFKA_CONFIGURATION_TOPIC]).Returns("conf-topic");
             mockConfiguration.Setup(c => c[Configuration.KAFKA_LOAD_TOPIC]).Returns("load-topic");
             mockConfiguration.Setup(c => c[Configuration.KAFKA_ALIVE_TOPIC]).Returns("alive-topic");
 
@@ -27,8 +28,8 @@ namespace ServerMonitorApiTests.Services
         public async Task DeleteStatisticsByKeyAsync_ShouldCallDeleteTopicsAsync()
         {
             // Arrange
-            var key = "some-key"; // The key is not used in this method, but it's part of the signature
-            var topics = new List<string> { "load-topic", "alive-topic" };
+            var key = "-some-key";
+            var topics = new List<string> { "conf-topic-some-key", "alive-topic-some-key", "load-topic-some-key" };
             // Act
             await service.DeleteStatisticsByKeyAsync(key);
             // Assert

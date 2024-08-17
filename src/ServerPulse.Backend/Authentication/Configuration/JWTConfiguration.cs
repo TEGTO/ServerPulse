@@ -1,4 +1,8 @@
-﻿namespace Authentication.Configuration
+﻿using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("AuthenticationTests")]
+
+namespace Authentication.Configuration
 {
     internal class JwtConfiguration
     {

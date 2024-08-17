@@ -11,7 +11,7 @@ namespace ServerPulse.ClientTests.Services
     {
         private Mock<IMessageSender> mockMessageSender;
         private ServerLoadSender serverLoadSender;
-        private Configuration configuration;
+        private ServerPulseSettings configuration;
         private CancellationTokenSource cancellationTokenSource;
         private Mock<ILogger<ServerLoadSender>> mockLogger;
 
@@ -20,7 +20,7 @@ namespace ServerPulse.ClientTests.Services
         {
             mockMessageSender = new Mock<IMessageSender>();
             mockLogger = new Mock<ILogger<ServerLoadSender>>();
-            configuration = new Configuration()
+            configuration = new ServerPulseSettings()
             {
                 Key = "example",
                 EventController = "http://localhost",

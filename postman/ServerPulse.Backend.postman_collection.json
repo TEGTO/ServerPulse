@@ -62,7 +62,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"userName\": \"example\",\r\n  \"email\": \"example@gmail.com\",\r\n  \"password\": \"123456QWERTY\",\r\n   \"confirmPassword\": \"123456QWERTY\"\r\n}",
+							"raw": "{\r\n  \"userName\": \"example\",\r\n  \"email\": \"example@gmail.com\",\r\n  \"password\": \"123456QWERTY\",\r\n  \"confirmPassword\": \"123456QWERTY\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -319,14 +319,7 @@
 					],
 					"request": {
 						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJleGFtcGxlMTBAZ21haWwuY29tIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6ImV4YW1wbGUiLCJleHAiOjE3MjEzNzk1MjgsImlzcyI6Imh0dHBzOi8vdG9rZW4uaXNzdWVyLmV4YW1wbGUuY29tIiwiYXVkIjoiaHR0cHM6Ly9hcGkuZXhhbXBsZS5jb20ifQ.FtaW3GcrRPD9OGsBus0HHDvjHhp2xUsIUig-ZRjiP7M",
-									"type": "string"
-								}
-							]
+							"type": "noauth"
 						},
 						"method": "POST",
 						"header": [],
@@ -361,6 +354,20 @@
 			"item": [
 				{
 					"name": "server-slot-get",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get slot correct data\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
@@ -370,7 +377,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJleGFtcGxlQGdtYWlsLmNvbSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiJleGFtcGxlIiwiZXhwIjoxNzIxMDU2MjE2LCJpc3MiOiJodHRwczovL3Rva2VuLmlzc3Vlci5leGFtcGxlLmNvbSIsImF1ZCI6Imh0dHBzOi8vYXBpLmV4YW1wbGUuY29tIn0.BOkinw7PeAy5CmOmJatY1WzWIDwRNhnltmE-a_cR1uQ",
+									"value": "{{accessToken}}",
 									"type": "string"
 								}
 							]
@@ -401,7 +408,76 @@
 					"response": []
 				},
 				{
+					"name": "server-slot-get-id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get by id status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"    var jsonResponse = pm.response.json();\r",
+									"\r",
+									"    var expectedSlotId = pm.environment.get(\"serverslot_id\");\r",
+									"    var expectedSloName = pm.environment.get(\"serverslot_name\");\r",
+									"    var expectedSlotKey = pm.environment.get(\"serverslot_slotKey\");\r",
+									"    var expectedSlotUserEmail = pm.environment.get(\"serverslot_userEmail\");\r",
+									"\r",
+									"    pm.expect(jsonResponse.id).to.eql(expectedSlotId);\r",
+									"    pm.expect(jsonResponse.userEmail).to.eql(expectedSlotUserEmail);\r",
+									"    pm.expect(jsonResponse.name).to.eql(expectedSloName);\r",
+									"    pm.expect(jsonResponse.slotKey).to.eql(expectedSlotKey);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7129/serverslot/{{serverslot_id}}",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7129",
+							"path": [
+								"serverslot",
+								"{{serverslot_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "server-slot-get-string",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get slot correct data\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
@@ -411,7 +487,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJleGFtcGxlQGdtYWlsLmNvbSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiJleGFtcGxlIiwiZXhwIjoxNzIxMDU2MjE2LCJpc3MiOiJodHRwczovL3Rva2VuLmlzc3Vlci5leGFtcGxlLmNvbSIsImF1ZCI6Imh0dHBzOi8vYXBpLmV4YW1wbGUuY29tIn0.BOkinw7PeAy5CmOmJatY1WzWIDwRNhnltmE-a_cR1uQ",
+									"value": "{{accessToken}}",
 									"type": "string"
 								}
 							]
@@ -428,7 +504,7 @@
 							}
 						},
 						"url": {
-							"raw": "https://localhost:7129/serverslot/example",
+							"raw": "https://localhost:7129/serverslot/contains/example",
 							"protocol": "https",
 							"host": [
 								"localhost"
@@ -436,6 +512,7 @@
 							"port": "7129",
 							"path": [
 								"serverslot",
+								"contains",
 								"example"
 							]
 						}
@@ -444,13 +521,35 @@
 				},
 				{
 					"name": "server-slot-create",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Create slot status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"if (pm.response.code === 201) {\r",
+									"    var jsonResponse = pm.response.json();\r",
+									"    pm.environment.set(\"serverslot_id\", jsonResponse.id);\r",
+									"    pm.environment.set(\"serverslot_userEmail\", jsonResponse.userEmail);\r",
+									"    pm.environment.set(\"serverslot_name\", jsonResponse.name);\r",
+									"    pm.environment.set(\"serverslot_slotKey\", jsonResponse.slotKey);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJleGFtcGxlQGdtYWlsLmNvbSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiJleGFtcGxlIiwiZXhwIjoxNzIxMDU2MjE2LCJpc3MiOiJodHRwczovL3Rva2VuLmlzc3Vlci5leGFtcGxlLmNvbSIsImF1ZCI6Imh0dHBzOi8vYXBpLmV4YW1wbGUuY29tIn0.BOkinw7PeAy5CmOmJatY1WzWIDwRNhnltmE-a_cR1uQ",
+									"value": "{{accessToken}}",
 									"type": "string"
 								}
 							]
@@ -482,13 +581,58 @@
 				},
 				{
 					"name": "server-slot-update",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Update status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"if (pm.response.code === 200) {\r",
+									"    var token = pm.environment.get(\"accessToken\"); \r",
+									"    var serverslotId = pm.environment.get(\"serverslot_id\"); \r",
+									"    var serverslotName = pm.environment.get(\"serverslot_name\");\r",
+									"    \r",
+									"    pm.sendRequest({\r",
+									"        url: 'https://localhost:7129/serverslot',\r",
+									"        method: 'PUT',\r",
+									"        header: {\r",
+									"            'Content-Type': 'application/json',\r",
+									"            'Authorization': 'Bearer ' + token \r",
+									"        },\r",
+									"        body: {\r",
+									"            mode: 'raw',\r",
+									"            raw: JSON.stringify({\r",
+									"                \"id\": serverslotId,\r",
+									"                \"name\": serverslotName,\r",
+									"            })\r",
+									"        }\r",
+									"    }, function (err, rollbackRes) {\r",
+									"        if (err) {\r",
+									"            console.error('Rollback failed:', err);\r",
+									"            return;\r",
+									"        }\r",
+									"\r",
+									"        pm.test(\"Update rollback status code is 200\", function () {\r",
+									"            pm.expect(rollbackRes).to.have.status(200);\r",
+									"        });\r",
+									"    });\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJleGFtcGxlQGdtYWlsLmNvbSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiJleGFtcGxlIiwiZXhwIjoxNzIxMDU2MjE2LCJpc3MiOiJodHRwczovL3Rva2VuLmlzc3Vlci5leGFtcGxlLmNvbSIsImF1ZCI6Imh0dHBzOi8vYXBpLmV4YW1wbGUuY29tIn0.BOkinw7PeAy5CmOmJatY1WzWIDwRNhnltmE-a_cR1uQ",
+									"value": "{{accessToken}}",
 									"type": "string"
 								}
 							]
@@ -497,7 +641,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"id\":\"b4866f68-4111-4ab6-b2fe-765acaa876a6\",\r\n    \"name\":\"newName\"\r\n}",
+							"raw": "{\r\n    \"id\":\"{{serverslot_id}}\",\r\n    \"name\":\"newName\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -520,13 +664,64 @@
 				},
 				{
 					"name": "server-slot-delete",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Delete status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"if (pm.response.code === 200) {\r",
+									"    var token = pm.environment.get(\"accessToken\");\r",
+									"    var serverslotName = pm.environment.get(\"serverslot_name\");\r",
+									"\r",
+									"    pm.sendRequest({\r",
+									"        url: 'https://localhost:7129/serverslot',\r",
+									"        method: 'POST',\r",
+									"        header: {\r",
+									"            'Content-Type': 'application/json',\r",
+									"            'Authorization': 'Bearer ' + token\r",
+									"        },\r",
+									"        body: {\r",
+									"            mode: 'raw',\r",
+									"            raw: JSON.stringify({\r",
+									"                \"name\": serverslotName\r",
+									"            })\r",
+									"        }\r",
+									"    }, function (err, rollbackRes) {\r",
+									"        if (err) {\r",
+									"            console.error('Delete rollback failed:', err);\r",
+									"            return;\r",
+									"        }\r",
+									"\r",
+									"        pm.test(\"Delete rollback status code is 201\", function () {\r",
+									"            pm.expect(rollbackRes).to.have.status(201);\r",
+									"        });\r",
+									"\r",
+									"        if (rollbackRes.status === 'Created') {\r",
+									"            var jsonResponse = rollbackRes.json();\r",
+									"            pm.environment.set(\"serverslot_id\", jsonResponse.id);\r",
+									"            pm.environment.set(\"serverslot_userEmail\", jsonResponse.userEmail);\r",
+									"            pm.environment.set(\"serverslot_name\", jsonResponse.name);\r",
+									"            pm.environment.set(\"serverslot_slotKey\", jsonResponse.slotKey);\r",
+									"        }\r",
+									"    });\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJleGFtcGxlQGdtYWlsLmNvbSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiJleGFtcGxlIiwiZXhwIjoxNzIxMDU2MjE2LCJpc3MiOiJodHRwczovL3Rva2VuLmlzc3Vlci5leGFtcGxlLmNvbSIsImF1ZCI6Imh0dHBzOi8vYXBpLmV4YW1wbGUuY29tIn0.BOkinw7PeAy5CmOmJatY1WzWIDwRNhnltmE-a_cR1uQ",
+									"value": "{{accessToken}}",
 									"type": "string"
 								}
 							]
@@ -543,7 +738,7 @@
 							}
 						},
 						"url": {
-							"raw": "https://localhost:7129/serverslot/b4866f68-4111-4ab6-b2fe-765acaa876a6",
+							"raw": "https://localhost:7129/serverslot/{{serverslot_id}}",
 							"protocol": "https",
 							"host": [
 								"localhost"
@@ -551,7 +746,7 @@
 							"port": "7129",
 							"path": [
 								"serverslot",
-								"b4866f68-4111-4ab6-b2fe-765acaa876a6"
+								"{{serverslot_id}}"
 							]
 						}
 					},
@@ -559,6 +754,26 @@
 				},
 				{
 					"name": "server-slot-check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get slot correct data\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"    var jsonResponse = pm.response.json();\r",
+									"\r",
+									"    var expectedSlotKey = pm.environment.get(\"serverslot_slotkey\");\r",
+									"\r",
+									"    pm.expect(jsonResponse.isExisting).to.eql(true);\r",
+									"    pm.expect(jsonResponse.slotKey).to.eql(expectedSlotKey);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -567,7 +782,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"SlotId\":\"1\"\r\n}",
+							"raw": "{\r\n    \"SlotKey\":\"{{serverslot_slotKey}}\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -596,12 +811,24 @@
 			"item": [
 				{
 					"name": "server-interaction-send-configuration",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"//TODO: Make test"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"Key\":\"13c3bcba-cd71-4736-9aea-774f89fe1ed2\",\r\n    \"CreationDate\":\"2024-08-04T11:51:45.4656254Z\",\r\n    \"AliveEventSendInterval\":\"00:00:03\"\r\n}",
+							"raw": "{\r\n    \"Id\":\"someid\",\r\n    \"Key\":\"{{serverslot_slotKey}}\",\r\n    \"CreationDateUTC\":\"2024-08-04T11:51:45.4656254Z\",\r\n    \"ServerKeepAliveInterval\":\"00:00:08\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -624,13 +851,25 @@
 					"response": []
 				},
 				{
-					"name": "server-interaction-send-alive",
+					"name": "server-interaction-send-pulse",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"//TODO: Make test"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"Key\":\"13c3bcba-cd71-4736-9aea-774f89fe1ed2\",\r\n    \"CreationDate\":\"2024-08-04T11:51:45.4656254Z\",\r\n    \"IsAlive\":true\r\n}",
+							"raw": "{\r\n    \"Key\":\"{{serverslot_slotKey}}\",\r\n    \"CreationDateUTC\":\"2030-09-04T11:51:45.4656254Z\",\r\n    \"IsAlive\":true\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -638,7 +877,7 @@
 							}
 						},
 						"url": {
-							"raw": "https://localhost:7129/serverinteraction/alive",
+							"raw": "https://localhost:7129/serverinteraction/pulse",
 							"protocol": "https",
 							"host": [
 								"localhost"
@@ -646,7 +885,48 @@
 							"port": "7129",
 							"path": [
 								"serverinteraction",
-								"alive"
+								"pulse"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "server-interaction-send-load",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"//TODO: Make test"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\r\n    {\r\n    \"Id\":\"someid\",\r\n    \"Key\":\"{{serverslot_slotKey}}\",\r\n    \"CreationDateUTC\":\"2024-08-07T14:30:45.4656254Z\",\r\n    \"Endpoint\": \"/api/v1/resource\",\r\n    \"Method\": \"GET\",\r\n    \"StatusCode\": 200,\r\n    \"Duration\": \"00:00:00.1500000\",\r\n    \"TimestampUTC\": \"2024-08-07T14:30:45.4656254Z\"\r\n    }\r\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7129/serverinteraction/load",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7129",
+							"path": [
+								"serverinteraction",
+								"load"
 							]
 						}
 					},
@@ -658,16 +938,35 @@
 			"name": "analyzer",
 			"item": [
 				{
-					"name": "analyzer-get-current-server-status",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
+					"name": "analyzer-load-range",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"//TODO: Make test"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
-						"method": "GET",
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "",
+							"raw": "{\r\n    \"Key\":\"{{serverslot_slotKey}}\",\r\n    \"From\":\"2024-08-03T09:45:45.4656254Z\",\r\n    \"To\":\"2024-08-25T09:45:45.4656254Z\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -675,7 +974,7 @@
 							}
 						},
 						"url": {
-							"raw": "https://localhost:7129/analyze/13c3bcba-cd71-4736-9aea-774f89fe1ed2",
+							"raw": "https://localhost:7129/analyze/daterange",
 							"protocol": "https",
 							"host": [
 								"localhost"
@@ -683,11 +982,241 @@
 							"port": "7129",
 							"path": [
 								"analyze",
-								"13c3bcba-cd71-4736-9aea-774f89fe1ed2"
+								"daterange"
 							]
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "analyzer-load-some",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"//TODO: Make test"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Key\": \"{{serverslot_slotKey}}\",\r\n    \"NumberOfMessages\" : \"10\",\r\n    \"StartDate\": \"2024-08-14T14:10:45.4656254Z\",\r\n    \"ReadNew\": false\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7129/analyze/someevents",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7129",
+							"path": [
+								"analyze",
+								"someevents"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "analyzer-load-amount-amountrange",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"//TODO: Make test"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Key\": \"{{serverslot_slotKey}}\",\r\n    \"From\": \"2024-08-10T13:10:45.4656254Z\",\r\n    \"To\": \"2024-08-10T14:00:45.4656254Z\",\r\n    \"TimeSpan\": \"00:05:00\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7129/analyze/amountrange",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7129",
+							"path": [
+								"analyze",
+								"amountrange"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "analyzer-load-amount-perday",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"//TODO: Make test"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Key\":\"{{serverslot_slotKey}}\",\r\n    \"From\":\"2024-08-03T09:45:45.4656254Z\",\r\n    \"To\":\"2024-08-25T09:45:45.4656254Z\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7129/analyze/perday/{{serverslot_slotKey}}",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7129",
+							"path": [
+								"analyze",
+								"perday",
+								"{{serverslot_slotKey}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "examples",
+			"item": [
+				{
+					"name": "use-case",
+					"item": [
+						{
+							"name": "use-case-get",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"//TODO: Make test"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7132/weatherforecast",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7132",
+									"path": [
+										"weatherforecast"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "use-case-get-manual",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"//TODO: Make test"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://localhost:7132/weatherforecast/manual",
+									"protocol": "https",
+									"host": [
+										"localhost"
+									],
+									"port": "7132",
+									"path": [
+										"weatherforecast",
+										"manual"
+									]
+								}
+							},
+							"response": []
+						}
+					]
 				}
 			]
 		}

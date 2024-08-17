@@ -15,17 +15,17 @@ namespace AnalyzerApi.Services
     public class ServerLoadReceiver : IServerLoadReceiver
     {
         private readonly IMessageConsumer messageConsumer;
-        private readonly ILogger<ServerLoadReceiver> logger;
         private readonly IMapper mapper;
+        private readonly ILogger<ServerLoadReceiver> logger;
         private readonly string loadTopic;
         private readonly int timeoutInMilliseconds;
         private readonly int statisticsSaveDataInDays;
 
-        public ServerLoadReceiver(IMessageConsumer messageConsumer, ILogger<ServerLoadReceiver> logger, IMapper mapper, IConfiguration configuration)
+        public ServerLoadReceiver(IMessageConsumer messageConsumer, IMapper mapper, ILogger<ServerLoadReceiver> logger, IConfiguration configuration)
         {
             this.messageConsumer = messageConsumer;
-            this.logger = logger;
             this.mapper = mapper;
+            this.logger = logger;
             loadTopic = configuration[Configuration.KAFKA_LOAD_TOPIC]!;
             timeoutInMilliseconds = int.Parse(configuration[Configuration.KAFKA_TIMEOUT_IN_MILLISECONDS]!);
             statisticsSaveDataInDays = int.Parse(configuration[Configuration.KAFKA_TOPIC_DATA_SAVE_IN_DAYS]!);

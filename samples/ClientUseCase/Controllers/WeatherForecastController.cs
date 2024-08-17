@@ -16,9 +16,9 @@ namespace ClientUseCase.Controllers
 
         private readonly ILogger<WeatherForecastController> logger;
         private readonly IServerLoadSender serverLoadSender;
-        private readonly Configuration configuration;
+        private readonly ServerPulseSettings configuration;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger, IServerLoadSender serverLoadSender, Configuration configuration)
+        public WeatherForecastController(ILogger<WeatherForecastController> logger, IServerLoadSender serverLoadSender, ServerPulseSettings configuration)
         {
             this.logger = logger;
             this.serverLoadSender = serverLoadSender;

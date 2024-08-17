@@ -11,7 +11,7 @@ namespace ServerPulse.Client.Middlewares
         private readonly IServerLoadSender serverLoadSender;
         private readonly string key;
 
-        public LoadMonitorMiddleware(RequestDelegate next, IServerLoadSender serverLoadSender, Configuration configuration)
+        public LoadMonitorMiddleware(RequestDelegate next, IServerLoadSender serverLoadSender, ServerPulseSettings configuration)
         {
             this.serverLoadSender = serverLoadSender;
             this.next = next;

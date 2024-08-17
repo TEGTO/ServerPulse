@@ -10,10 +10,9 @@ namespace ServerMonitorApiTests.Services
     [TestFixture]
     internal class MessageSenderTests
     {
-        private const string KAFKA_ALIVE_TOPIC = "KafkaAliveTopic_{id}";
-        private const string KAFKA_CONFIGURATION_TOPIC = "KafkaConfigurationTopic_{id}";
-        private const string KAFKA_LOAD_TOPIC = "KafkaLoadTopic_{id}";
-        private const int KAFKA_PARTITIONS_AMOUNT = 3;
+        private const string KAFKA_ALIVE_TOPIC = "KafkaAliveTopic_";
+        private const string KAFKA_CONFIGURATION_TOPIC = "KafkaConfigurationTopic_";
+        private const string KAFKA_LOAD_TOPIC = "KafkaLoadTopic_";
 
         private Mock<IMessageProducer> mockProducer;
         private Mock<IConfiguration> mockConfiguration;
@@ -27,7 +26,6 @@ namespace ServerMonitorApiTests.Services
             mockConfiguration.SetupGet(c => c[Configuration.KAFKA_ALIVE_TOPIC]).Returns(KAFKA_ALIVE_TOPIC);
             mockConfiguration.SetupGet(c => c[Configuration.KAFKA_CONFIGURATION_TOPIC]).Returns(KAFKA_CONFIGURATION_TOPIC);
             mockConfiguration.SetupGet(c => c[Configuration.KAFKA_LOAD_TOPIC]).Returns(KAFKA_LOAD_TOPIC);
-            mockConfiguration.SetupGet(c => c[Configuration.KAFKA_PARTITIONS_AMOUNT]).Returns(KAFKA_PARTITIONS_AMOUNT.ToString());
             messageSender = new MessageSender(mockProducer.Object, mockConfiguration.Object);
         }
 
@@ -36,7 +34,7 @@ namespace ServerMonitorApiTests.Services
         {
             // Arrange
             var key = "slot123";
-            var expectedTopic = KAFKA_ALIVE_TOPIC.Replace("{id}", key);
+            var expectedTopic = KAFKA_ALIVE_TOPIC + key;
             var aliveEvent = new PulseEvent(key, true);
             var cancellationToken = CancellationToken.None;
             // Act
@@ -45,7 +43,6 @@ namespace ServerMonitorApiTests.Services
             mockProducer.Verify(x => x.ProduceAsync(
                 expectedTopic,
                 It.IsAny<string>(),
-                KAFKA_PARTITIONS_AMOUNT,
                 cancellationToken
             ), Times.Once);
         }
@@ -63,7 +60,6 @@ namespace ServerMonitorApiTests.Services
             mockProducer.Verify(x => x.ProduceAsync(
                 It.IsAny<string>(),
                 expectedMessage,
-                It.IsAny<int>(),
                 cancellationToken
             ), Times.Once);
         }
@@ -80,7 +76,6 @@ namespace ServerMonitorApiTests.Services
             mockProducer.Verify(x => x.ProduceAsync(
                 It.IsAny<string>(),
                 It.IsAny<string>(),
-                KAFKA_PARTITIONS_AMOUNT,
                 cancellationToken
             ), Times.Once);
         }
@@ -89,7 +84,7 @@ namespace ServerMonitorApiTests.Services
         {
             // Arrange
             var key = "config123";
-            var expectedTopic = KAFKA_CONFIGURATION_TOPIC.Replace("{id}", key);
+            var expectedTopic = KAFKA_CONFIGURATION_TOPIC + key;
             var configurationEvent = new ConfigurationEvent(key, TimeSpan.FromMinutes(5));
             var cancellationToken = CancellationToken.None;
             // Act
@@ -98,7 +93,6 @@ namespace ServerMonitorApiTests.Services
             mockProducer.Verify(x => x.ProduceAsync(
                 expectedTopic,
                 It.IsAny<string>(),
-                KAFKA_PARTITIONS_AMOUNT,
                 cancellationToken
             ), Times.Once);
         }
@@ -116,7 +110,6 @@ namespace ServerMonitorApiTests.Services
             mockProducer.Verify(x => x.ProduceAsync(
                 It.IsAny<string>(),
                 expectedMessage,
-                It.IsAny<int>(),
                 cancellationToken
             ), Times.Once);
         }
@@ -133,7 +126,6 @@ namespace ServerMonitorApiTests.Services
             mockProducer.Verify(x => x.ProduceAsync(
                 It.IsAny<string>(),
                 It.IsAny<string>(),
-                KAFKA_PARTITIONS_AMOUNT,
                 cancellationToken
             ), Times.Once);
         }
@@ -152,12 +144,11 @@ namespace ServerMonitorApiTests.Services
             // Assert
             foreach (var loadEvent in loadEvents)
             {
-                var expectedTopic = KAFKA_LOAD_TOPIC.Replace("{id}", loadEvent.Key);
+                var expectedTopic = KAFKA_LOAD_TOPIC + loadEvent.Key;
                 var expectedMessage = loadEvent.ToString();
                 mockProducer.Verify(x => x.ProduceAsync(
                     expectedTopic,
                     expectedMessage,
-                    KAFKA_PARTITIONS_AMOUNT,
                     It.IsAny<CancellationToken>()
                 ), Times.Once);
             }
@@ -178,7 +169,6 @@ namespace ServerMonitorApiTests.Services
             mockProducer.Verify(x => x.ProduceAsync(
                 It.IsAny<string>(),
                 It.IsAny<string>(),
-                It.IsAny<int>(),
                 It.IsAny<CancellationToken>()
             ), Times.Exactly(loadEvents.Length));
         }

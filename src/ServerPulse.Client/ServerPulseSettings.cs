@@ -1,6 +1,6 @@
 ﻿namespace ServerPulse.Client
 {
-    public class Configuration
+    public class ServerPulseSettings
     {
         public required string Key { get; set; }
         /// <summary>

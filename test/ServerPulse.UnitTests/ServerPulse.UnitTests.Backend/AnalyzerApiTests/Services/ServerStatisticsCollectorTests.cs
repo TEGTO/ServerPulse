@@ -1,11 +1,13 @@
 ﻿using AnalyzerApi;
+using AnalyzerApi.Domain.Dtos.Wrappers;
 using AnalyzerApi.Domain.Models;
 using AnalyzerApi.Services;
 using AnalyzerApi.Services.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
-using ServerPulse.EventCommunication.Events;
+using System.Collections.Concurrent;
+using System.Reflection;
 
 namespace AnalyzerApiTests.Services
 {
@@ -28,7 +30,7 @@ namespace AnalyzerApiTests.Services
             mockLogger = new Mock<ILogger<ServerStatisticsCollector>>();
 
             mockConfiguration.SetupGet(c => c[Configuration.STATISTICS_COLLECT_INTERVAL_IN_MILLISECONDS])
-                .Returns(StatisticsCollectInterval.ToString());
+                             .Returns(StatisticsCollectInterval.ToString());
 
             serverStatisticsCollector = new ServerStatisticsCollector(
                 mockMessageReceiver.Object,
@@ -44,21 +46,17 @@ namespace AnalyzerApiTests.Services
             // Arrange
             var key = "testKey";
             mockMessageReceiver.Setup(m => m.ReceiveLastConfigurationEventByKeyAsync(key, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new ConfigurationEvent(key, TimeSpan.Zero));
+                               .ReturnsAsync(new ConfigurationEventWrapper { Key = key, ServerKeepAliveInterval = TimeSpan.Zero });
             mockMessageReceiver.Setup(m => m.ReceiveLastPulseEventByKeyAsync(key, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new PulseEvent(key, false));
-            mockMessageReceiver
-            .Setup(m => m.ConsumePulseEventAsync(key, It.IsAny<CancellationToken>()))
-            .Returns(AsyncEnumerable(new List<PulseEvent>()));
-            mockMessageReceiver
-             .Setup(m => m.ConsumeConfigurationEventAsync(key, It.IsAny<CancellationToken>()))
-             .Returns(AsyncEnumerable(new List<ConfigurationEvent>()));
+                               .ReturnsAsync(new PulseEventWrapper { Key = key, IsAlive = true });
+            mockMessageReceiver.Setup(m => m.ReceiveLastServerStatisticsByKeyAsync(key, It.IsAny<CancellationToken>()))
+                               .ReturnsAsync(new ServerStatistics { IsAlive = true });
             // Act
             serverStatisticsCollector.StartConsumingStatistics(key);
-            await Task.Delay(TimeSpan.FromSeconds(1));
+            await Task.Delay(500);
             serverStatisticsCollector.StopConsumingStatistics(key);
             // Assert
-            mockStatisticsSender.Verify(m => m.SendStatisticsAsync(It.IsAny<string>(), It.IsAny<ServerStatistics>()), Times.Once);
+            mockStatisticsSender.Verify(m => m.SendServerStatisticsAsync(It.IsAny<string>(), It.IsAny<ServerStatistics>(), It.IsAny<CancellationToken>()), Times.Once);
         }
         [Test]
         public async Task StartConsumingStatistics_ShouldSendMoreThanOneStatistics()
@@ -66,72 +64,110 @@ namespace AnalyzerApiTests.Services
             // Arrange
             var key = "testKey";
             mockMessageReceiver.Setup(m => m.ReceiveLastConfigurationEventByKeyAsync(key, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new ConfigurationEvent(key, TimeSpan.FromHours(1)));
+                               .ReturnsAsync(new ConfigurationEventWrapper { Key = key, ServerKeepAliveInterval = TimeSpan.FromSeconds(2) });
             mockMessageReceiver.Setup(m => m.ReceiveLastPulseEventByKeyAsync(key, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new PulseEvent(key, true));
-            mockMessageReceiver
-             .Setup(m => m.ConsumePulseEventAsync(key, It.IsAny<CancellationToken>()))
-             .Returns(AsyncEnumerable(new List<PulseEvent>()));
-            mockMessageReceiver
-             .Setup(m => m.ConsumeConfigurationEventAsync(key, It.IsAny<CancellationToken>()))
-             .Returns(AsyncEnumerable(new List<ConfigurationEvent>()));
+                               .ReturnsAsync(new PulseEventWrapper { Key = key, IsAlive = true, CreationDateUTC = DateTime.MaxValue });
+            mockMessageReceiver.Setup(m => m.ReceiveLastServerStatisticsByKeyAsync(key, It.IsAny<CancellationToken>()))
+                               .ReturnsAsync(new ServerStatistics { IsAlive = true });
             // Act
             serverStatisticsCollector.StartConsumingStatistics(key);
-            await Task.Delay(TimeSpan.FromSeconds(1));
+            await Task.Delay(3000);
             serverStatisticsCollector.StopConsumingStatistics(key);
             // Assert
-            mockStatisticsSender.Verify(m => m.SendStatisticsAsync(It.IsAny<string>(), It.IsAny<ServerStatistics>()), Times.AtLeast(2));
+            mockStatisticsSender.Verify(m => m.SendServerStatisticsAsync(It.IsAny<string>(), It.IsAny<ServerStatistics>(), It.IsAny<CancellationToken>()), Times.AtLeast(2));
         }
         [Test]
-        public async Task StartConsumingStatistics_ShouldSendMoreThanTwoStatistics()
+        public async Task StopConsumingStatistics_ShouldLogWhenCanceled()
         {
             // Arrange
             var key = "testKey";
             mockMessageReceiver.Setup(m => m.ReceiveLastConfigurationEventByKeyAsync(key, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new ConfigurationEvent(key, TimeSpan.FromHours(1)));
+                               .ReturnsAsync(new ConfigurationEventWrapper { Key = key, ServerKeepAliveInterval = TimeSpan.FromHours(1) });
             mockMessageReceiver.Setup(m => m.ReceiveLastPulseEventByKeyAsync(key, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new PulseEvent(key, true));
-            mockMessageReceiver
-             .Setup(m => m.ConsumePulseEventAsync(key, It.IsAny<CancellationToken>()))
-             .Returns(AsyncEnumerable(new List<PulseEvent>() { new PulseEvent(key, true) }));
-            mockMessageReceiver
-             .Setup(m => m.ConsumeConfigurationEventAsync(key, It.IsAny<CancellationToken>()))
-             .Returns(AsyncEnumerable(new List<ConfigurationEvent>() { new ConfigurationEvent(key, TimeSpan.FromSeconds(2)) }));
+                               .ReturnsAsync(new PulseEventWrapper { Key = key, IsAlive = true });
+            mockMessageReceiver.Setup(m => m.ReceiveLastServerStatisticsByKeyAsync(key, It.IsAny<CancellationToken>()))
+                               .ReturnsAsync(new ServerStatistics { IsAlive = true });
+            mockMessageReceiver.Setup(m => m.ConsumePulseEventAsync(key, It.IsAny<CancellationToken>()))
+                      .Returns(AsyncEnumerable(new List<PulseEventWrapper>()));
+            mockMessageReceiver.Setup(m => m.ConsumeConfigurationEventAsync(key, It.IsAny<CancellationToken>()))
+                  .Returns(AsyncEnumerable(new List<ConfigurationEventWrapper>()));
             // Act
             serverStatisticsCollector.StartConsumingStatistics(key);
-            await Task.Delay(TimeSpan.FromSeconds(4));
+            await Task.Delay(500);
             serverStatisticsCollector.StopConsumingStatistics(key);
             // Assert
-            mockStatisticsSender.Verify(m => m.SendStatisticsAsync(It.IsAny<string>(), It.IsAny<ServerStatistics>()), Times.AtLeast(3));
-        }
-        [Test]
-        public async Task StopConsumingStatistics_ShouldLogInformationWhenCanceled()
-        {
-            // Arrange
-            var key = "testKey";
-            mockMessageReceiver.Setup(m => m.ReceiveLastConfigurationEventByKeyAsync(key, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new ConfigurationEvent(key, TimeSpan.Zero));
-            mockMessageReceiver.Setup(m => m.ReceiveLastPulseEventByKeyAsync(key, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new PulseEvent(key, false));
-            mockMessageReceiver
-            .Setup(m => m.ConsumePulseEventAsync(key, It.IsAny<CancellationToken>()))
-            .Returns(AsyncEnumerable(new List<PulseEvent>() { new PulseEvent(key, true) }));
-            mockMessageReceiver
-             .Setup(m => m.ConsumeConfigurationEventAsync(key, It.IsAny<CancellationToken>()))
-             .Returns(AsyncEnumerable(new List<ConfigurationEvent>()));
-            // Act
-            serverStatisticsCollector.StartConsumingStatistics(key);
-            await Task.Delay(TimeSpan.FromSeconds(1));
-            serverStatisticsCollector.StopConsumingStatistics(key);
-            // Assert
-
             mockLogger.Verify(
-              x => x.Log(
-                  It.IsAny<LogLevel>(),
-                  It.IsAny<EventId>(),
-                  It.Is<It.IsAnyType>((v, t) => true),
-                  It.IsAny<Exception>(),
-                  It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)));
+                x => x.Log(
+                    LogLevel.Information,
+                    It.IsAny<EventId>(),
+                    It.IsAny<It.IsAnyType>(),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                Times.Once);
+        }
+        [Test]
+        public async Task PeriodicallySendStatisticsAsync_ShouldSendStatisticsAtInterval()
+        {
+            // Arrange
+            var key = "testKey";
+            var cancellationTokenSource = new CancellationTokenSource();
+            mockMessageReceiver.Setup(m => m.ReceiveLastConfigurationEventByKeyAsync(key, It.IsAny<CancellationToken>()))
+                               .ReturnsAsync(new ConfigurationEventWrapper { Key = key, ServerKeepAliveInterval = TimeSpan.FromHours(1) });
+            mockMessageReceiver.Setup(m => m.ReceiveLastPulseEventByKeyAsync(key, It.IsAny<CancellationToken>()))
+                               .ReturnsAsync(new PulseEventWrapper { Key = key, IsAlive = true });
+            mockMessageReceiver.Setup(m => m.ReceiveLastServerStatisticsByKeyAsync(key, It.IsAny<CancellationToken>()))
+                               .ReturnsAsync(new ServerStatistics { IsAlive = true });
+            mockMessageReceiver.Setup(m => m.ConsumePulseEventAsync(key, It.IsAny<CancellationToken>()))
+                    .Returns(AsyncEnumerable(new List<PulseEventWrapper> { new PulseEventWrapper { Key = key, IsAlive = true, CreationDateUTC = DateTime.MaxValue } }));
+            // Act
+            serverStatisticsCollector.StartConsumingStatistics(key);
+            await Task.Delay(3000);
+            serverStatisticsCollector.StopConsumingStatistics(key);
+            // Assert
+            mockStatisticsSender.Verify(m => m.SendServerStatisticsAsync(It.IsAny<string>(), It.IsAny<ServerStatistics>(), It.IsAny<CancellationToken>()), Times.AtLeast(2));
+        }
+        [Test]
+        public async Task StartConsumingStatistics_ShouldChangeConfiguration()
+        {
+            // Arrange
+            var key = "testKey";
+            var cancellationTokenSource = new CancellationTokenSource();
+            mockMessageReceiver.Setup(m => m.ReceiveLastConfigurationEventByKeyAsync(key, It.IsAny<CancellationToken>()))
+                               .ReturnsAsync(new ConfigurationEventWrapper { Key = key, ServerKeepAliveInterval = TimeSpan.FromHours(1) });
+            mockMessageReceiver.Setup(m => m.ReceiveLastPulseEventByKeyAsync(key, It.IsAny<CancellationToken>()))
+                               .ReturnsAsync(new PulseEventWrapper { Key = key, IsAlive = true });
+            mockMessageReceiver.Setup(m => m.ConsumePulseEventAsync(key, It.IsAny<CancellationToken>()))
+                        .Returns(AsyncEnumerable(new List<PulseEventWrapper>()));
+            mockMessageReceiver.Setup(m => m.ConsumeConfigurationEventAsync(key, It.IsAny<CancellationToken>()))
+                  .Returns(AsyncEnumerable(new List<ConfigurationEventWrapper> { new ConfigurationEventWrapper { Key = key, ServerKeepAliveInterval = TimeSpan.FromHours(2) } }));
+            // Act + Assert
+            serverStatisticsCollector.StartConsumingStatistics(key);
+            await Task.Delay(3000);
+            var fieldInfo = serverStatisticsCollector.GetType().GetField("configurations", BindingFlags.NonPublic | BindingFlags.Instance);
+            var configurations = fieldInfo?.GetValue(serverStatisticsCollector) as ConcurrentDictionary<string, ConfigurationEventWrapper>;
+            configurations.TryGetValue(key, out ConfigurationEventWrapper conf);
+            Assert.That(conf.ServerKeepAliveInterval, Is.EqualTo(TimeSpan.FromHours(2)));
+            serverStatisticsCollector.StopConsumingStatistics(key);
+        }
+        [Test]
+        public async Task StartConsumingStatistics_ShouldNotSendStatisticsAfterStop()
+        {
+            // Arrange
+            var key = "testKey";
+            mockMessageReceiver.Setup(m => m.ReceiveLastConfigurationEventByKeyAsync(key, It.IsAny<CancellationToken>()))
+                               .ReturnsAsync(new ConfigurationEventWrapper { Key = key, ServerKeepAliveInterval = TimeSpan.FromSeconds(2) });
+            mockMessageReceiver.Setup(m => m.ReceiveLastPulseEventByKeyAsync(key, It.IsAny<CancellationToken>()))
+                               .ReturnsAsync(new PulseEventWrapper { Key = key, IsAlive = true });
+            mockMessageReceiver.Setup(m => m.ReceiveLastServerStatisticsByKeyAsync(key, It.IsAny<CancellationToken>()))
+                               .ReturnsAsync(new ServerStatistics { IsAlive = true });
+            // Act
+            serverStatisticsCollector.StartConsumingStatistics(key);
+            await Task.Delay(1500);
+            serverStatisticsCollector.StopConsumingStatistics(key);
+            await Task.Delay(3000);
+
+            // Assert
+            mockStatisticsSender.Verify(m => m.SendServerStatisticsAsync(It.IsAny<string>(), It.IsAny<ServerStatistics>(), It.IsAny<CancellationToken>()), Times.AtMost(2));
         }
         private static async IAsyncEnumerable<T> AsyncEnumerable<T>(IEnumerable<T> items)
         {

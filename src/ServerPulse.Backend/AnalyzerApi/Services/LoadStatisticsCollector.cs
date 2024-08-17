@@ -8,10 +8,10 @@ namespace AnalyzerApi.Services
     {
         private readonly IServerLoadReceiver loadReceiver;
         private readonly IStatisticsSender statisticsSender;
-        private readonly ILogger<ServerStatisticsCollector> logger;
+        private readonly ILogger<LoadStatisticsCollector> logger;
         private readonly ConcurrentDictionary<string, CancellationTokenSource> StatisticsListeners = new();
 
-        public LoadStatisticsCollector(IServerLoadReceiver loadReceiver, IStatisticsSender statisticsSender, ILogger<ServerStatisticsCollector> logger)
+        public LoadStatisticsCollector(IServerLoadReceiver loadReceiver, IStatisticsSender statisticsSender, ILogger<LoadStatisticsCollector> logger)
         {
             this.loadReceiver = loadReceiver;
             this.statisticsSender = statisticsSender;

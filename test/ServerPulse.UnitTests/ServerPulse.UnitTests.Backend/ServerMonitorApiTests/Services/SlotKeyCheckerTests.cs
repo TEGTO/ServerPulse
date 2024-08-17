@@ -17,7 +17,7 @@ namespace ServerMonitorApiTests.Services
         private const double RedisExpiryInMinutes = 60;
 
         private Mock<IHttpClientFactory> httpClientFactoryMock;
-        private Mock<IRedisService> redisServiceMock;
+        private Mock<ICacheService> cacheServiceMock;
         private Mock<IConfiguration> configurationMock;
         private SlotKeyChecker slotKeyChecker;
 
@@ -25,13 +25,13 @@ namespace ServerMonitorApiTests.Services
         public void SetUp()
         {
             httpClientFactoryMock = new Mock<IHttpClientFactory>();
-            redisServiceMock = new Mock<IRedisService>();
+            cacheServiceMock = new Mock<ICacheService>();
             configurationMock = new Mock<IConfiguration>();
 
             configurationMock.Setup(config => config[Configuration.SERVER_SLOT_ALIVE_CHECKER]).Returns(ServerSlotApiUrl);
             configurationMock.Setup(config => config[Configuration.CACHE_SERVER_SLOT_EXPIRY_IN_MINUTES]).Returns(RedisExpiryInMinutes.ToString());
 
-            slotKeyChecker = new SlotKeyChecker(httpClientFactoryMock.Object, redisServiceMock.Object, configurationMock.Object);
+            slotKeyChecker = new SlotKeyChecker(httpClientFactoryMock.Object, cacheServiceMock.Object, configurationMock.Object);
         }
 
         [Test]
@@ -41,12 +41,12 @@ namespace ServerMonitorApiTests.Services
             var slotKey = "existing-slot-key";
             var redisResponse = new CheckSlotKeyResponse { IsExisting = true };
             var redisJson = JsonSerializer.Serialize(redisResponse);
-            redisServiceMock.Setup(service => service.GetValueAsync(slotKey)).ReturnsAsync(redisJson);
+            cacheServiceMock.Setup(service => service.GetValueAsync(slotKey)).ReturnsAsync(redisJson);
             // Act
             var result = await slotKeyChecker.CheckSlotKeyAsync(slotKey, CancellationToken.None);
             // Assert
             Assert.IsTrue(result);
-            redisServiceMock.Verify(service => service.GetValueAsync(slotKey), Times.Once);
+            cacheServiceMock.Verify(service => service.GetValueAsync(slotKey), Times.Once);
         }
         [Test]
         public async Task CheckSlotKeyAsync_SlotKeyNotInRedisButExistsInServer_ReturnsTrue()
@@ -55,8 +55,8 @@ namespace ServerMonitorApiTests.Services
             var slotKey = "new-slot-key";
             var checkSlotKeyResponse = new CheckSlotKeyResponse { IsExisting = true };
             var responseJson = JsonSerializer.Serialize(checkSlotKeyResponse);
-            redisServiceMock.Setup(service => service.GetValueAsync(slotKey)).ReturnsAsync(string.Empty);
-            redisServiceMock.Setup(service => service.SetValueAsync(slotKey, It.IsAny<string>(), RedisExpiryInMinutes))
+            cacheServiceMock.Setup(service => service.GetValueAsync(slotKey)).ReturnsAsync(string.Empty);
+            cacheServiceMock.Setup(service => service.SetValueAsync(slotKey, It.IsAny<string>(), RedisExpiryInMinutes))
                 .Returns(Task.CompletedTask);
             var httpClientHandlerMock = new Mock<HttpMessageHandler>();
             httpClientHandlerMock.Protected()
@@ -77,15 +77,15 @@ namespace ServerMonitorApiTests.Services
             var result = await slotKeyChecker.CheckSlotKeyAsync(slotKey, CancellationToken.None);
             // Assert
             Assert.IsTrue(result);
-            redisServiceMock.Verify(service => service.GetValueAsync(slotKey), Times.Once);
-            redisServiceMock.Verify(service => service.SetValueAsync(slotKey, It.IsAny<string>(), RedisExpiryInMinutes), Times.Once);
+            cacheServiceMock.Verify(service => service.GetValueAsync(slotKey), Times.Once);
+            cacheServiceMock.Verify(service => service.SetValueAsync(slotKey, It.IsAny<string>(), RedisExpiryInMinutes), Times.Once);
         }
         [Test]
         public async Task CheckSlotKeyAsync_SlotKeyNotFound_ReturnsFalse()
         {
             // Arrange
             var slotKey = "non-existing-slot-key";
-            redisServiceMock.Setup(service => service.GetValueAsync(slotKey)).ReturnsAsync(string.Empty);
+            cacheServiceMock.Setup(service => service.GetValueAsync(slotKey)).ReturnsAsync(string.Empty);
             var httpClientHandlerMock = new Mock<HttpMessageHandler>();
             httpClientHandlerMock.Protected()
                 .Setup<Task<HttpResponseMessage>>(
@@ -104,8 +104,8 @@ namespace ServerMonitorApiTests.Services
             var result = await slotKeyChecker.CheckSlotKeyAsync(slotKey, CancellationToken.None);
             // Assert
             Assert.IsFalse(result);
-            redisServiceMock.Verify(service => service.GetValueAsync(slotKey), Times.Once);
-            redisServiceMock.Verify(service => service.SetValueAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<double>()), Times.Never);
+            cacheServiceMock.Verify(service => service.GetValueAsync(slotKey), Times.Once);
+            cacheServiceMock.Verify(service => service.SetValueAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<double>()), Times.Never);
         }
     }
 }

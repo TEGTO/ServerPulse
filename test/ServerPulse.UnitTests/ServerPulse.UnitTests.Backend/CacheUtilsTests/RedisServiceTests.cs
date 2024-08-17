@@ -2,7 +2,7 @@
 using ServerMonitorApi.Services;
 using StackExchange.Redis;
 
-namespace ServerMonitorApiTests.Services
+namespace CacheUtilsTests
 {
     [TestFixture]
     internal class RedisServiceTests

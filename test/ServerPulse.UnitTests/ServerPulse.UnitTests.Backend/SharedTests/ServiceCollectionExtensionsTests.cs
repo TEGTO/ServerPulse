@@ -37,7 +37,7 @@ namespace SharedTests
         [Test]
         public void AddSharedFluentValidation_ShouldRegisterFluentValidationServices()
         {
-            services.AddSharedFluentValidation();
+            services.AddSharedFluentValidation(typeof(ServiceCollectionExtensionsTests));
             var serviceProvider = services.BuildServiceProvider();
             var validatorFactory = serviceProvider.GetService<IValidatorFactory>();
             Assert.NotNull(validatorFactory);

@@ -46,7 +46,7 @@ namespace AnalyzerApi.Controllers
 
             await cacheService.SetValueAsync(cacheKey, JsonSerializer.Serialize(events.ToList()), cacheExpiryInMinutes);
 
-            return Ok(events.Select(mapper.Map<LoadEventWrapper>));
+            return Ok(events);
         }
         [Route("perday/{key}")]
         [HttpGet]
@@ -103,7 +103,7 @@ namespace AnalyzerApi.Controllers
 
             await cacheService.SetValueAsync(cacheKey, JsonSerializer.Serialize(events), cacheExpiryInMinutes);
 
-            return Ok(events.Select(mapper.Map<LoadEventWrapper>));
+            return Ok(events);
         }
 
         private async Task<T?> GetInCacheAsync<T>(string key) where T : class

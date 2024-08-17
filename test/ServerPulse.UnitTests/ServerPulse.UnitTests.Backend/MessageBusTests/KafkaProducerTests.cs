@@ -27,10 +27,9 @@ namespace MessageBusTests
             // Arrange
             var topic = "test-topic";
             var message = "test-message";
-            var partitionAmount = 0;
             var cancellationToken = CancellationToken.None;
             // Act
-            await kafkaProducer.ProduceAsync(topic, message, partitionAmount, cancellationToken);
+            await kafkaProducer.ProduceAsync(topic, message, cancellationToken);
             // Assert
             mockProducer.Verify(x => x.ProduceAsync(
                 topic,
@@ -47,7 +46,7 @@ namespace MessageBusTests
             var partitionAmount = 1;
             var cancellationToken = CancellationToken.None;
             // Act
-            await kafkaProducer.ProduceAsync(topic, message, partitionAmount, cancellationToken);
+            await kafkaProducer.ProduceAsync(topic, message, cancellationToken);
             // Assert
             mockProducer.Verify(x => x.ProduceAsync(
                 topic,
@@ -64,7 +63,7 @@ namespace MessageBusTests
             var partitionAmount = 0;
             var cancellationToken = CancellationToken.None;
             // Act
-            await kafkaProducer.ProduceAsync(topic, message, partitionAmount, cancellationToken);
+            await kafkaProducer.ProduceAsync(topic, message, cancellationToken);
             // Assert
             mockProducerFactory.Verify(x => x.CreateProducer(), Times.Once);
         }

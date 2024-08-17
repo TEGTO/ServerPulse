@@ -213,12 +213,12 @@ namespace MessageBus.Kafka
 
                 var fromOffsets = consumer.OffsetsForTimes(new[]
                 {
-                        new TopicPartitionTimestamp(partition, new Timestamp(fromDate)),
+                   new TopicPartitionTimestamp(partition, new Timestamp(fromDate)),
                 }, TimeSpan.FromMilliseconds(options.TimeoutInMilliseconds));
 
                 var toOffsets = consumer.OffsetsForTimes(new[]
                 {
-                        new TopicPartitionTimestamp(partition, new Timestamp(toDate)),
+                   new TopicPartitionTimestamp(partition, new Timestamp(toDate)),
                 }, TimeSpan.FromMilliseconds(options.TimeoutInMilliseconds));
 
                 var fromOffset = fromOffsets.FirstOrDefault();
@@ -235,7 +235,7 @@ namespace MessageBus.Kafka
                         var nextDate = currentDate.Add(timeSpan);
                         var nextOffsets = consumer.OffsetsForTimes(new[]
                         {
-                                new TopicPartitionTimestamp(partition, new Timestamp(nextDate))
+                            new TopicPartitionTimestamp(partition, new Timestamp(nextDate))
                         }, TimeSpan.FromMilliseconds(options.TimeoutInMilliseconds));
                         var nextOffset = nextOffsets.FirstOrDefault();
                         if (nextOffset != null && nextOffset.Offset != Offset.End && nextOffset.Offset != Offset.Unset && nextOffset.Offset < lastOffset)

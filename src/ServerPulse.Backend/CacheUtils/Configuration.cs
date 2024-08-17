@@ -1,4 +1,7 @@
-﻿namespace CacheUtils
+﻿using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("CacheUtilsTests")]
+namespace CacheUtils
 {
     internal class Configuration
     {

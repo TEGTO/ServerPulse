@@ -13,7 +13,7 @@ namespace ServerPulse.Client.Services
         private readonly double sendingInterval;
         private readonly ILogger<ServerLoadSender> logger;
 
-        public ServerStatusSender(IMessageSender messageSender, Configuration configuration, ILogger<ServerLoadSender> logger)
+        public ServerStatusSender(IMessageSender messageSender, ServerPulseSettings configuration, ILogger<ServerLoadSender> logger)
         {
             this.messageSender = messageSender;
             pulseUrl = configuration.EventController + $"/serverinteraction/pulse";

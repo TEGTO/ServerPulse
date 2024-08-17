@@ -22,7 +22,7 @@ namespace ServerPulse.ClientTests.Middlewares
         {
             mockServerLoadSender = new Mock<IServerLoadSender>();
             next = async context => await Task.CompletedTask;
-            var configuration = new Configuration { Key = "testKey", EventController = "http://example.com" };
+            var configuration = new ServerPulseSettings { Key = "testKey", EventController = "http://example.com" };
             middleware = new LoadMonitorMiddleware(next, mockServerLoadSender.Object, configuration);
 
             httpContext = new DefaultHttpContext();
@@ -75,7 +75,7 @@ namespace ServerPulse.ClientTests.Middlewares
             // Arrange
             var services = new ServiceCollection();
             services.AddSingleton<IServerLoadSender>(mockServerLoadSender.Object);
-            services.AddSingleton(new Configuration { Key = "testKey", EventController = "http://example.com" });
+            services.AddSingleton(new ServerPulseSettings { Key = "testKey", EventController = "http://example.com" });
             var serviceProvider = services.BuildServiceProvider();
             // Act
             var appBuilder = new ApplicationBuilder(serviceProvider);

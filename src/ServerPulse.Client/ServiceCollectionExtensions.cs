@@ -5,10 +5,10 @@ namespace ServerPulse.Client
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddServerPulseClient(this IServiceCollection services, Configuration configuration)
+        public static IServiceCollection AddServerPulseClient(this IServiceCollection services, ServerPulseSettings settings)
         {
             services.AddHttpClient();
-            services.AddSingleton(configuration);
+            services.AddSingleton(settings);
             services.AddSingleton<IMessageSender, MessageSender>();
 
             services.AddSingleton<ServerLoadSender>();

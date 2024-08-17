@@ -15,7 +15,7 @@ namespace ServerPulse.Client.Services
         private readonly ConcurrentQueue<LoadEvent> loadEvents = new ConcurrentQueue<LoadEvent>();
         private readonly ILogger<ServerLoadSender> logger;
 
-        public ServerLoadSender(IMessageSender eventSender, Configuration configuration, ILogger<ServerLoadSender> logger)
+        public ServerLoadSender(IMessageSender eventSender, ServerPulseSettings configuration, ILogger<ServerLoadSender> logger)
         {
             this.messageSender = eventSender;
             this.sendingUrl = configuration.EventController + $"/serverinteraction/load";

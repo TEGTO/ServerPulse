@@ -1,4 +1,7 @@
-﻿namespace ConsulUtils.Configuration
+﻿using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("ConsulUtilsTests")]
+namespace ConsulUtils.Configuration
 {
     internal static class ConsulConfiguration
     {

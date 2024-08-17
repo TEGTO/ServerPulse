@@ -3,81 +3,127 @@ using AnalyzerApi.Services.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Moq;
+using System.Collections.Concurrent;
+using System.Reflection;
 
 namespace AnalyzerApiTests.Hubs
 {
     [TestFixture]
     internal class StatisticsHubTests
     {
-        private Mock<IStatisticsCollector> mockServerStatisticsCollector;
-        private Mock<ILogger<StatisticsHub>> mockLogger;
-        private Mock<IHubCallerClients<IStatisticsHubClient>> mockClients;
-        private Mock<IGroupManager> mockGroups;
+        private Mock<IStatisticsCollector> mockStatisticsCollector;
+        private Mock<ILogger<StatisticsHub<IStatisticsCollector>>> mockLogger;
         private Mock<HubCallerContext> mockContext;
-        private StatisticsHub hub;
+        private Mock<IGroupManager> mockGroups;
+        private StatisticsHub<IStatisticsCollector> statisticsHub;
 
         [SetUp]
-        public void SetUp()
+        public void Setup()
         {
-            mockServerStatisticsCollector = new Mock<IStatisticsCollector>();
-            mockLogger = new Mock<ILogger<StatisticsHub>>();
-            mockClients = new Mock<IHubCallerClients<IStatisticsHubClient>>();
-            mockGroups = new Mock<IGroupManager>();
+            mockStatisticsCollector = new Mock<IStatisticsCollector>();
+            mockLogger = new Mock<ILogger<StatisticsHub<IStatisticsCollector>>>();
             mockContext = new Mock<HubCallerContext>();
+            mockGroups = new Mock<IGroupManager>();
 
-            mockContext.SetupGet(c => c.ConnectionId).Returns("connectionId");
+            statisticsHub = new StatisticsHub<IStatisticsCollector>(mockStatisticsCollector.Object, mockLogger.Object)
+            {
+                Context = mockContext.Object,
+                Groups = mockGroups.Object
+            };
         }
         [TearDown]
         public void TearDown()
         {
-            hub.Dispose();
-        }
-        private StatisticsHub GetHub()
-        {
-            return new StatisticsHub(mockServerStatisticsCollector.Object, mockLogger.Object)
-            {
-                Clients = mockClients.Object,
-                Groups = mockGroups.Object,
-                Context = mockContext.Object,
-            };
+            statisticsHub.Dispose();
         }
 
         [Test]
-        public async Task StartListenPulse_AddsClientToGroupAndStartsConsuming()
+        public async Task StartListen_ShouldAddClientToGroupAndStartListening()
         {
             // Arrange
-            hub = GetHub();
-            var key = "test-key";
+            var key = "testKey";
+            var connectionId = "testConnectionId";
+            mockContext.SetupGet(c => c.ConnectionId).Returns(connectionId);
             // Act
-            await hub.StartListen(key);
-            await hub.StartListen(key);
+            await statisticsHub.StartListen(key);
             // Assert
-            mockGroups.Verify(g => g.AddToGroupAsync("connectionId", key, It.IsAny<CancellationToken>()), Times.Exactly(2));
+            mockGroups.Verify(g => g.AddToGroupAsync(connectionId, key, default), Times.Once);
+            mockStatisticsCollector.Verify(s => s.StartConsumingStatistics(key), Times.Once);
             mockLogger.Verify(l => l.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString().Contains($"Start listening pulse with key '{key}'")),
+                It.Is<It.IsAnyType>((v, t) => v.ToString().Contains($"Start listening key '{key}'")),
                 null,
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()), Times.Exactly(2));
-            mockServerStatisticsCollector.Verify(s => s.StartConsumingStatistics(key), Times.Exactly(2));
+                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                Times.Once);
         }
-
         [Test]
-        public async Task OnDisconnectedAsync_RemovesClientFromGroups()
+        public async Task OnDisconnectedAsync_ShouldRemoveClientFromGroupAndStopListening()
         {
             // Arrange
-            hub = GetHub();
-
-            var keys = new List<string> { "key1", "key2" };
-            await hub.StartListen(keys[0]);
-            await hub.StartListen(keys[1]);
+            var connectionId = "testConnectionId";
+            var key = "testKey";
+            var connectedClients = GetConnectedClients();
+            var listenerAmount = GetListenerAmount();
+            connectedClients[connectionId] = new List<string> { key };
+            listenerAmount[key] = 1;
+            mockContext.SetupGet(c => c.ConnectionId).Returns(connectionId);
             // Act
-            await hub.OnDisconnectedAsync(null);
+            await statisticsHub.OnDisconnectedAsync(null);
             // Assert
-            mockGroups.Verify(g => g.RemoveFromGroupAsync("connectionId", keys[0], It.IsAny<CancellationToken>()), Times.Once);
-            mockGroups.Verify(g => g.RemoveFromGroupAsync("connectionId", keys[1], It.IsAny<CancellationToken>()), Times.Once);
-            mockServerStatisticsCollector.Verify(s => s.StopConsumingStatistics(keys[0]), Times.Once);
-            mockServerStatisticsCollector.Verify(s => s.StopConsumingStatistics(keys[1]), Times.Once);
+            mockGroups.Verify(g => g.RemoveFromGroupAsync(connectionId, key, default), Times.Once);
+            mockStatisticsCollector.Verify(s => s.StopConsumingStatistics(key), Times.Once);
+            mockLogger.Verify(l => l.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString().Contains($"Stop listening key '{key}'")),
+                null,
+                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                Times.Once);
+        }
+        [Test]
+        public async Task RemoveClientFromGroupAsync_ShouldNotStopListeningIfOtherListenersExist()
+        {
+            // Arrange
+            var connectionId = "testConnectionId";
+            var key = "testKey";
+            var connectedClients = GetConnectedClients();
+            var listenerAmount = GetListenerAmount();
+            connectedClients[connectionId] = new List<string> { key };
+            listenerAmount[key] = 2;
+            mockContext.SetupGet(c => c.ConnectionId).Returns(connectionId);
+
+            // Act
+            await InvokePrivateMethodAsync(statisticsHub, "RemoveClientFromGroupAsync", new List<string> { key });
+
+            // Assert
+            mockGroups.Verify(g => g.RemoveFromGroupAsync(connectionId, key, default), Times.Once);
+            Assert.That(listenerAmount[key], Is.EqualTo(1));
+            mockStatisticsCollector.Verify(s => s.StopConsumingStatistics(key), Times.Never);
+        }
+
+        private async Task InvokePrivateMethodAsync(object obj, string methodName, params object[] parameters)
+        {
+            var method = obj.GetType().GetMethod(methodName, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (method != null)
+            {
+                var task = (Task)method.Invoke(obj, parameters);
+                await task;
+            }
+        }
+        private ConcurrentDictionary<string, List<string>> GetConnectedClients()
+        {
+            Type type = typeof(StatisticsHub<IStatisticsCollector>);
+            FieldInfo info = type.GetField("ConnectedClients", BindingFlags.NonPublic | BindingFlags.Static);
+            object value = info.GetValue(null);
+            return value as ConcurrentDictionary<string, List<string>>;
+        }
+        private ConcurrentDictionary<string, int> GetListenerAmount()
+        {
+            Type type = typeof(StatisticsHub<IStatisticsCollector>);
+            FieldInfo info = type.GetField("ListenerAmount", BindingFlags.NonPublic | BindingFlags.Static);
+            object value = info.GetValue(null);
+            return value as ConcurrentDictionary<string, int>;
         }
     }
 }

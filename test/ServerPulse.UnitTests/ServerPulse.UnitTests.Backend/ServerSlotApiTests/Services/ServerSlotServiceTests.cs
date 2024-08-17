@@ -180,7 +180,7 @@ namespace ServerSlotApiTests.Services
             dbContextMock.Setup(x => x.ServerSlots).Returns(dbSetMock.Object);
             repositoryMock.Setup(x => x.CreateDbContextAsync(cancellationToken)).ReturnsAsync(dbContextMock.Object);
             // Act
-            await serverSlotService.DeleteSlotByIdAsync(serverSlot.UserEmail, serverSlot.Id, cancellationToken);
+            await serverSlotService.DeleteSlotByIdAsync(serverSlot.Id, cancellationToken);
             // Assert
             dbSetMock.Verify(x => x.Remove(serverSlot), Times.Once);
             dbContextMock.Verify(x => x.SaveChangesAsync(cancellationToken), Times.Once);

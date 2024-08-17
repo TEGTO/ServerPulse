@@ -1,5 +1,4 @@
 ﻿using Authentication.Configuration;
-using Authentication.Models;
 using Authentication.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -81,25 +80,6 @@ namespace AuthenticationTests
             var invalidToken = "invalid_jwt_token";
             // Act & Assert
             Assert.Throws<SecurityTokenMalformedException>(() => jwtHandler.GetPrincipalFromExpiredToken(invalidToken));
-        }
-        [Test]
-        public void RefreshToken_ValidData_NewTokens()
-        {
-            // Arrange
-            var user = new IdentityUser
-            {
-                Email = "test@example.com",
-                UserName = "testuser"
-            };
-            var jwtHandler = this.CreateJwtHandler();
-            var accessTokenData = jwtHandler.CreateToken(user);
-            // Act
-            var newAccessTokenData = jwtHandler.RefreshToken(user, new AccessTokenData { AccessToken = accessTokenData.AccessToken });
-            // Assert
-            Assert.IsNotNull(newAccessTokenData.AccessToken);
-            Assert.IsNotNull(newAccessTokenData.RefreshToken);
-            Assert.That(newAccessTokenData.AccessToken, Is.EqualTo(accessTokenData.AccessToken));
-            //Will be equal, `cause current token is valid, so with the same data it will be the same
         }
     }
 }

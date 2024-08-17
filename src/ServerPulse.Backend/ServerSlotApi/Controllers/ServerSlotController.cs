@@ -39,6 +39,10 @@ namespace ServerSlotApi.Controllers
         public async Task<ActionResult<ServerSlotResponse>> GetSlotById(string id, CancellationToken cancellationToken)
         {
             var serverSlot = await serverSlotService.GetSlotByIdAsync(id, cancellationToken);
+            if (serverSlot == null)
+            {
+                return NotFound();
+            }
             var response = mapper.Map<ServerSlotResponse>(serverSlot);
             return Ok(response);
         }
