@@ -11,6 +11,8 @@ services:
       KAFKA_CONTROLLER_QUORUM_VOTERS: "1@controller-1:9093"
       KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
       CLUSTER_ID: "GLZOVd8vSKuXdgAApudsAg"
+    volumes:
+        - kafka-controller-1:/var/lib/kafka/data
     networks:
       - backend-net
 
@@ -31,12 +33,13 @@ services:
       # KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
       # KAFKA_DEFAULT_REPLICATION_FACTOR: 3
     volumes:
-        - serverpulse-kafka:/var/lib/kafka/data
+        - kafka-broker-1:/var/lib/kafka/data
     networks:
       - backend-net
 
 volumes:
-  serverpulse-kafka:
+  kafka-controller-1:
+  kafka-broker-1:
 
 networks:
   backend-net:

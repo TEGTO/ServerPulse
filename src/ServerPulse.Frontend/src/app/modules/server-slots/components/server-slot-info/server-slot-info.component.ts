@@ -2,8 +2,8 @@ import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/co
 import { FormControl } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject, debounceTime, Subject, takeUntil, tap } from 'rxjs';
-import { ServerSlotDialogManager, ServerSlotService, ServerStatisticsService } from '../..';
 import { RedirectorService, ServerSlot, SnackbarManager, UpdateServerSlotRequest } from '../../../shared';
+import { ServerSlotDialogManager, ServerSlotService, ServerStatisticsService } from '../../index';
 
 @Component({
   selector: 'app-server-slot-info',
@@ -64,11 +64,9 @@ export class ServerSlotInfoComponent implements OnInit, OnDestroy {
   }
 
   onBlur() {
-    if (this.inputIsEditable$.getValue()) {
-      this.checkEmptyInput();
-      this.makeInputNonEditable();
-      this.updateServerSlotName();
-    }
+    this.checkEmptyInput();
+    this.makeInputNonEditable();
+    this.updateServerSlotName();
   }
 
   showKey() {

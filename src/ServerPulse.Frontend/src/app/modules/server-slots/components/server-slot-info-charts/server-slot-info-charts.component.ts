@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, Input, OnDestroy } from '@angular/core';
 import { BehaviorSubject, interval, map, of, Subject, switchMap, takeUntil } from 'rxjs';
-import { ServerStatisticsService } from '../..';
 import { ServerLoadStatisticsResponse, TimeSpan } from '../../../shared';
+import { ServerStatisticsService } from '../../index';
 
 @Component({
   selector: 'server-slot-info-charts',
@@ -218,6 +218,6 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
   }
 
   private validateMessage(message: { key: string; statistics: ServerLoadStatisticsResponse; } | null): boolean {
-    return !!(message && !message.statistics.isInitial && message.key === this.slotKey);
+    return !!(message && message.statistics && !message.statistics.isInitial && message.key === this.slotKey);
   }
 }

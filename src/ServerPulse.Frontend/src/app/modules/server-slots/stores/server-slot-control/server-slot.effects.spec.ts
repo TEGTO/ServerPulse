@@ -3,7 +3,7 @@ import { TestBed } from "@angular/core/testing";
 import { provideMockActions } from "@ngrx/effects/testing";
 import { Observable, of, throwError } from "rxjs";
 import { CreateServerSlotRequest, ServerSlotApiService, ServerSlotResponse, serverSlotResponseToServerSlot, UpdateServerSlotRequest } from "../../../shared";
-import { createServerSlot, createServerSlotFailure, createServerSlotSuccess, deleteServerSlot, deleteServerSlotFailure, deleteServerSlotSuccess, getServerSlots, getServerSlotsFailure, getServerSlotsSuccess, getServerSlotsWithString, getServerSlotsWithStringFailure, getServerSlotsWithStringSuccess, updateServerSlot, updateServerSlotFailure, updateServerSlotSuccess } from "./server-slot.actions";
+import { createServerSlot, createServerSlotFailure, createServerSlotSuccess, deleteServerSlot, deleteServerSlotFailure, deleteServerSlotSuccess, getServerSlots, getServerSlotsFailure, getServerSlotsSuccess, getServerSlotsWithString, getServerSlotsWithStringFailure, getServerSlotsWithStringSuccess, updateServerSlot, updateServerSlotFailure, updateServerSlotSuccess } from "../../index";
 import { ServerSlotEffects } from "./server-slot.effects";
 
 describe('ServerSlotEffects', () => {

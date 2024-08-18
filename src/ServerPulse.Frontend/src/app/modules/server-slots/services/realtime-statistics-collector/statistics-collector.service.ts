@@ -1,6 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
-import { Observable } from 'rxjs';
+import { Observable, Subject, takeUntil } from 'rxjs';
 import { AuthenticationService } from '../../../authentication';
 import { CustomErrorHandler } from '../../../shared';
 import { RealTimeStatisticsCollector } from './realtime-statistics-collector';
@@ -9,44 +9,44 @@ import { RealTimeStatisticsCollector } from './realtime-statistics-collector';
   providedIn: 'root',
 })
 export class StatisticsCollector implements OnDestroy, RealTimeStatisticsCollector {
-  private static hubConnections: Map<string, { connection: signalR.HubConnection, promise: Promise<void> }> = new Map();
+  private hubConnections: Map<string, { connection: signalR.HubConnection, promise: Promise<void> }> = new Map();
   private authToken: string | null = null;
-  private refreshSubscription: any;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private readonly errorHandler: CustomErrorHandler,
     private readonly authService: AuthenticationService
   ) {
-    this.refreshSubscription = this.authService.getAuthData().subscribe(data => {
-      this.authToken = data.accessToken;
-      if (this.authToken) {
-        this.refreshTokenAndReconnect();
-      }
-    });
+    this.authService.getAuthData()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(data => {
+        if (this.authToken !== data.accessToken && data.accessToken) {
+          this.authToken = data.accessToken;
+          this.deleteOldConnections();
+        }
+      });
   }
 
   startConnection(hubUrl: string): Observable<void> {
     return new Observable<void>((observer) => {
-      let connectionEntry = StatisticsCollector.hubConnections.get(hubUrl);
+      let connectionEntry = this.hubConnections.get(hubUrl);
       if (!connectionEntry) {
         const hubConnection = this.createNewHubConnection(hubUrl);
         connectionEntry = { connection: hubConnection, promise: Promise.resolve() };
-        StatisticsCollector.hubConnections.set(hubUrl, connectionEntry);
+        this.hubConnections.set(hubUrl, connectionEntry);
       }
 
-      const { connection, promise } = connectionEntry;
+      const { connection } = connectionEntry;
       const hubState = connection.state;
 
       if (hubState === signalR.HubConnectionState.Disconnected && this.authToken) {
-        this.setConnectionPromise(hubUrl, connection.start());
-      } else if (hubState === signalR.HubConnectionState.Connecting) {
-        // Do nothing, just wait for connection to complete
-      } else {
-        observer.next();
-        observer.complete();
-        return;
+        this.setConnectionPromise(hubUrl,
+          connection.start()
+            .catch((error) => {
+              this.errorHandler.handleHubError(error);
+              observer.error(error);
+            }));
       }
-
       this.getConnectionPromise(hubUrl)
         .then(() => {
           observer.next();
@@ -74,37 +74,27 @@ export class StatisticsCollector implements OnDestroy, RealTimeStatisticsCollect
   }
 
   ngOnDestroy() {
-    if (this.refreshSubscription) {
-      this.refreshSubscription.unsubscribe();
-    }
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  private refreshTokenAndReconnect() {
-    if (this.authToken) {
-      StatisticsCollector.hubConnections.forEach((entry, hubUrl) => {
-        const newConnection = this.createNewHubConnection(hubUrl);
-        if (entry.connection.state === signalR.HubConnectionState.Connected) {
-          entry.connection.stop().then(() => {
-            this.setConnectionPromise(hubUrl, newConnection.start());
-          }).catch(err => this.errorHandler.handleHubError(err));
-        }
-        else (entry.connection.state === signalR.HubConnectionState.Disconnected)
-        {
-          this.setConnectionPromise(hubUrl, newConnection.start());
-        }
-        this.getConnectionPromise(hubUrl).catch((error) => { this.errorHandler.handleHubError(error); });
-      });
-    }
+  private deleteOldConnections() {
+    this.hubConnections.forEach((entry, hubUrl) => {
+      const hubState = entry.connection.state;
+      if (hubState === signalR.HubConnectionState.Disconnected) {
+        this.hubConnections.delete(hubUrl);
+      }
+    });
   }
-
   private createNewHubConnection(hubUrl: string): signalR.HubConnection {
+
     return new signalR.HubConnectionBuilder()
       .withUrl(`${hubUrl}?access_token=${this.authToken || ''}`)
       .build();
   }
 
   private getHubConnection(hubUrl: string): signalR.HubConnection {
-    const connectionEntry = StatisticsCollector.hubConnections.get(hubUrl);
+    const connectionEntry = this.hubConnections.get(hubUrl);
     if (!connectionEntry) {
       throw new Error(`Hub connection for ${hubUrl} is not initialized.`);
     }
@@ -112,7 +102,7 @@ export class StatisticsCollector implements OnDestroy, RealTimeStatisticsCollect
   }
 
   private getConnectionPromise(hubUrl: string): Promise<void> {
-    const connectionEntry = StatisticsCollector.hubConnections.get(hubUrl);
+    const connectionEntry = this.hubConnections.get(hubUrl);
     if (!connectionEntry) {
       throw new Error(`Hub connection for ${hubUrl} is not initialized.`);
     }
@@ -120,7 +110,7 @@ export class StatisticsCollector implements OnDestroy, RealTimeStatisticsCollect
   }
 
   private setConnectionPromise(hubUrl: string, value: Promise<void>): void {
-    const connectionEntry = StatisticsCollector.hubConnections.get(hubUrl);
+    const connectionEntry = this.hubConnections.get(hubUrl);
     if (connectionEntry) {
       connectionEntry.promise = value;
     } else {

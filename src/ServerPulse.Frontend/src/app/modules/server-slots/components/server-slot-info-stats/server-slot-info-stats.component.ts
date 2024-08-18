@@ -1,8 +1,8 @@
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { BehaviorSubject, Observable, Subject, filter, map, pairwise, switchMap, takeUntil, tap, throttleTime } from 'rxjs';
-import { ServerStatisticsService, ServerStatus } from '../..';
 import { ServerLoadResponse, ServerLoadStatisticsResponse, ServerStatisticsResponse } from '../../../shared';
+import { ServerStatisticsService, ServerStatus } from '../../index';
 
 @Component({
   selector: 'server-slot-info-stats',

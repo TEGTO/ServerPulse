@@ -1,5 +1,5 @@
 import { createFeatureSelector, createSelector } from "@ngrx/store";
-import { SlotLoadStatisticsState, SlotStatisticsState } from "../..";
+import { SlotLoadStatisticsState, SlotStatisticsState } from "../../index";
 
 //Statistics
 export const selectSlotStatisticsState = createFeatureSelector<SlotStatisticsState>('slotstatistics');

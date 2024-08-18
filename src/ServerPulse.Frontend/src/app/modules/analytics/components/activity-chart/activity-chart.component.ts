@@ -1,7 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
 import { ChartComponent } from 'ng-apexcharts';
 import { combineLatest, Observable } from 'rxjs';
-import { ChartOptions } from '../..';
+import { ChartOptions } from '../../index';
 
 @Component({
   selector: 'activity-chart',

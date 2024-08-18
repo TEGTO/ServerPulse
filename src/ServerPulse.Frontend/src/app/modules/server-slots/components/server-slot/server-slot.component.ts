@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { BehaviorSubject, debounceTime, Subject, takeUntil, tap } from 'rxjs';
 import { RedirectorService, ServerSlot, ServerStatisticsResponse, SnackbarManager, UpdateServerSlotRequest } from '../../../shared';
@@ -15,7 +15,7 @@ export enum ServerStatus {
   templateUrl: './server-slot.component.html',
   styleUrls: ['./server-slot.component.scss'],
 })
-export class ServerSlotComponent implements AfterViewInit, OnInit, OnDestroy {
+export class ServerSlotComponent implements OnInit, OnDestroy {
   @Input({ required: true }) serverSlot!: ServerSlot;
   @ViewChild('textSizer', { static: false }) textSizer!: ElementRef;
 
@@ -42,9 +42,6 @@ export class ServerSlotComponent implements AfterViewInit, OnInit, OnDestroy {
       tap(() => this.adjustInputWidth()),
       takeUntil(this.destroy$)
     ).subscribe();
-  }
-
-  ngAfterViewInit(): void {
     this.adjustInputWidth();
   }
 
@@ -72,9 +69,7 @@ export class ServerSlotComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   onBlur(): void {
-    if (this.inputIsEditable$.getValue()) {
-      this.validateAndSaveInput();
-    }
+    this.validateAndSaveInput();
   }
 
   redirectToInfo(): void {

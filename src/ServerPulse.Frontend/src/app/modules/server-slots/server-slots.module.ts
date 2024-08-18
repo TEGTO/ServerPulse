@@ -17,7 +17,7 @@ import { AnalyticsModule } from '../analytics/analytics.module';
 import { AuthenticationModule } from '../authentication/authentication.module';
 import { ServerSlotInfoChartsComponent } from './components/server-slot-info-charts/server-slot-info-charts.component';
 import { ServerSlotInfoStatsComponent } from './components/server-slot-info-stats/server-slot-info-stats.component';
-import { ServerSlotDailyChartComponent } from './components/server-slot-preview-activity-chart/server-slot-preview-activity-chart.component';
+import { ServerSlotPreviewActivityChartComponent } from './components/server-slot-preview-activity-chart/server-slot-preview-activity-chart.component';
 
 @NgModule({
   exports: [
@@ -28,7 +28,7 @@ import { ServerSlotDailyChartComponent } from './components/server-slot-preview-
     ServerSlotComponent,
     ServerSlotInfoComponent,
     ServerSlotDeleteConfirmComponent,
-    ServerSlotDailyChartComponent,
+    ServerSlotPreviewActivityChartComponent,
     ServerSlotInfoChartsComponent,
     ServerSlotInfoStatsComponent
   ],

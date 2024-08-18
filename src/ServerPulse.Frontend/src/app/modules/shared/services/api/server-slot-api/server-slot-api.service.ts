@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { catchError, Observable } from 'rxjs';
-import { CreateServerSlotRequest, ServerSlotResponse, UpdateServerSlotRequest } from '../../..';
+import { CreateServerSlotRequest, ServerSlotResponse, UpdateServerSlotRequest } from '../../../index';
 import { BaseApiService } from '../base-api/base-api.service';
 
 @Injectable({

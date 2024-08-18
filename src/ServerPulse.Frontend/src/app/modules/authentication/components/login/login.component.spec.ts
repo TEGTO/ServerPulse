@@ -76,18 +76,18 @@ describe('LoginComponent', () => {
     fixture.detectChanges();
 
     expect(component.formGroup.valid).toBeFalse();
-    expect(component.loginInput.hasError('required')).toBeTruthy();
-    expect(component.passwordInput.hasError('minlength')).toBeTruthy();
+    expect(component.loginInput.hasError('required')).toBeTrue();
+    expect(component.passwordInput.hasError('minlength')).toBeTrue();
   });
 
   it('should call signInUser on valid form submission', () => {
-    const authData: AuthData =
-    {
+    const authData: AuthData = {
       isAuthenticated: true,
-      accessToken: "accessToken",
-      refreshToken: "refreshToken",
+      accessToken: 'accessToken',
+      refreshToken: 'refreshToken',
       refreshTokenExpiryDate: new Date()
-    }
+    };
+
     component.formGroup.setValue({
       login: 'john@example.com',
       password: 'password123'
@@ -107,13 +107,13 @@ describe('LoginComponent', () => {
   });
 
   it('should display error messages on login failure', () => {
-    const authData: AuthData =
-    {
-      isAuthenticated: true,
-      accessToken: "accessToken",
-      refreshToken: "refreshToken",
+    const authData: AuthData = {
+      isAuthenticated: false,
+      accessToken: 'accessToken',
+      refreshToken: 'refreshToken',
       refreshTokenExpiryDate: new Date()
-    }
+    };
+
     component.formGroup.setValue({
       login: 'john@example.com',
       password: 'password123'
@@ -134,13 +134,14 @@ describe('LoginComponent', () => {
       login: 'john@example.com',
       password: 'password123'
     });
-    const authData: AuthData =
-    {
+
+    const authData: AuthData = {
       isAuthenticated: false,
-      accessToken: "accessToken",
-      refreshToken: "refreshToken",
+      accessToken: 'accessToken',
+      refreshToken: 'refreshToken',
       refreshTokenExpiryDate: new Date()
-    }
+    };
+
     authService.getAuthData.and.returnValue(of(authData));
     authService.getAuthErrors.and.returnValue(of('Server error'));
 
@@ -153,5 +154,43 @@ describe('LoginComponent', () => {
   it('should open register menu on link click', () => {
     fixture.debugElement.query(By.css('a#to-register-link')).nativeElement.click();
     expect(authDialogManager.openRegisterMenu).toHaveBeenCalled();
+  });
+
+  it('should toggle password visibility', () => {
+    const passwordInput = fixture.debugElement.query(By.css('input[formControlName="password"]')).nativeElement;
+    const visibilityToggle = fixture.debugElement.query(By.css('span[matSuffix]')).nativeElement;
+
+    expect(passwordInput.type).toBe('password');
+
+    visibilityToggle.click();
+    fixture.detectChanges();
+
+    expect(passwordInput.type).toBe('text');
+
+    visibilityToggle.click();
+    fixture.detectChanges();
+
+    expect(passwordInput.type).toBe('password');
+  });
+
+  it('should clear form and open error snackbar on sign in error', () => {
+    component.formGroup.setValue({
+      login: 'test@example.com',
+      password: 'wrongpassword'
+    });
+
+    authService.getAuthData.and.returnValue(of({
+      isAuthenticated: false,
+      accessToken: "",
+      refreshToken: "",
+      refreshTokenExpiryDate: new Date()
+    }));
+    authService.getAuthErrors.and.returnValue(of('Invalid login credentials'));
+
+    component.signInUser();
+    fixture.detectChanges();
+
+    expect(component.formGroup.valid).toBeTrue();
+    expect(snackbarManager.openErrorSnackbar).toHaveBeenCalledWith(['Invalid login credentials']);
   });
 });

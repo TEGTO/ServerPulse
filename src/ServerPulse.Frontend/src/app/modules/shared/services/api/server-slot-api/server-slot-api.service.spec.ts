@@ -1,9 +1,6 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { CreateServerSlotRequest } from '../../../domain/dtos/server-slot/createServerSlotRequest';
-import { ServerSlotResponse } from '../../../domain/dtos/server-slot/serverSlotResponse';
-import { UpdateServerSlotRequest } from '../../../domain/dtos/server-slot/updateServerSlotRequest';
-import { URLDefiner } from '../../url-definer/url-definer.service';
+import { CreateServerSlotRequest, ServerSlotResponse, UpdateServerSlotRequest, URLDefiner } from '../../../index';
 import { ServerSlotApiService } from './server-slot-api.service';
 
 describe('ServerSlotApiService', () => {
@@ -51,9 +48,23 @@ describe('ServerSlotApiService', () => {
     req.flush(response);
   });
 
+  it('should get server slot by id', () => {
+    const expectedReq = `/api/server-slot/1`;
+    const response: ServerSlotResponse = { id: '1', userEmail: 'user1@example.com', name: 'Server 1', slotKey: 'key1' };
+
+    service.getServerSlotById('1').subscribe(res => {
+      expect(res).toEqual(response);
+    });
+
+    const req = httpTestingController.expectOne(expectedReq);
+    expect(req.request.method).toBe('GET');
+    expect(mockUrlDefiner.combineWithServerSlotApiUrl).toHaveBeenCalledWith('/1');
+    req.flush(response);
+  });
+
   it('should get user server slots with string', () => {
     const str = 'test';
-    const expectedReq = `/api/server-slot/${str}`;
+    const expectedReq = `/api/server-slot/contains/${str}`;
     const response: ServerSlotResponse[] = [
       { id: '1', userEmail: 'user1@example.com', name: 'Server 1', slotKey: 'key1' }
     ];
@@ -64,7 +75,7 @@ describe('ServerSlotApiService', () => {
 
     const req = httpTestingController.expectOne(expectedReq);
     expect(req.request.method).toBe('GET');
-    expect(mockUrlDefiner.combineWithServerSlotApiUrl).toHaveBeenCalledWith(`/${str}`);
+    expect(mockUrlDefiner.combineWithServerSlotApiUrl).toHaveBeenCalledWith(`/contains/${str}`);
     req.flush(response);
   });
 

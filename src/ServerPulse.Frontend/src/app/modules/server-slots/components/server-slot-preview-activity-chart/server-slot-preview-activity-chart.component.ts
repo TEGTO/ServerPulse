@@ -8,7 +8,7 @@ import { ServerLoadStatisticsResponse, ServerSlot, TimeSpan } from '../../../sha
   templateUrl: './server-slot-preview-activity-chart.component.html',
   styleUrl: './server-slot-preview-activity-chart.component.scss'
 })
-export class ServerSlotDailyChartComponent implements AfterViewInit, OnDestroy {
+export class ServerSlotPreviewActivityChartComponent implements AfterViewInit, OnDestroy {
   @Input({ required: true }) serverSlot!: ServerSlot;
 
   private dateFromSubject$ = new BehaviorSubject<Date>(this.getDateFrom());
@@ -137,6 +137,6 @@ export class ServerSlotDailyChartComponent implements AfterViewInit, OnDestroy {
   }
 
   private validateMessage(message: { key: string; statistics: ServerLoadStatisticsResponse; } | null) {
-    return message && !message.statistics.isInitial && message.key === this.serverSlot.slotKey;
+    return message && message.statistics && !message.statistics.isInitial && message.key === this.serverSlot.slotKey;
   }
 }
