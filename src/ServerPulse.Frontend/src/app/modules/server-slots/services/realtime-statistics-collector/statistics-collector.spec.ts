@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, flush, TestBed } from '@angular/core/testing';
 import { HubConnectionState } from '@microsoft/signalr';
 import { BehaviorSubject } from 'rxjs';
 import { AuthenticationService } from '../../../authentication';
@@ -6,21 +6,23 @@ import { AuthData, CustomErrorHandler } from '../../../shared';
 import { StatisticsCollector } from './statistics-collector.service';
 
 describe('StatisticsCollector', () => {
-  let service: StatisticsCollector;
-  let mockErrorHandler: jasmine.SpyObj<CustomErrorHandler>;
-  let mockAuthService: jasmine.SpyObj<AuthenticationService>;
-  let mockHubConnection: jasmine.SpyObj<signalR.HubConnection>;
-
-  const authDataSubject$: BehaviorSubject<AuthData> = new BehaviorSubject<AuthData>({
+  const mockaAuthData = {
     isAuthenticated: true,
     accessToken: "",
     refreshToken: "",
     refreshTokenExpiryDate: new Date()
-  });
+  };
+
+  let service: StatisticsCollector;
+  let mockErrorHandler: jasmine.SpyObj<CustomErrorHandler>;
+  let mockAuthService: jasmine.SpyObj<AuthenticationService>;
+  let mockHubConnection: jasmine.SpyObj<signalR.HubConnection>;
+  let authDataSubject$: BehaviorSubject<AuthData> = new BehaviorSubject<AuthData>(mockaAuthData);
 
   beforeEach(() => {
     mockErrorHandler = jasmine.createSpyObj('CustomErrorHandler', ['handleHubError']);
     mockAuthService = jasmine.createSpyObj('AuthenticationService', ['getAuthData']);
+    authDataSubject$ = new BehaviorSubject<AuthData>(mockaAuthData);
     mockAuthService.getAuthData.and.returnValue(authDataSubject$.asObservable());
 
     mockHubConnection = jasmine.createSpyObj('HubConnection', ['start', 'on', 'invoke', 'state']);
@@ -40,7 +42,8 @@ describe('StatisticsCollector', () => {
     authDataSubject$.complete();
   });
 
-  xit('should update auth token and delete old connections when auth data changes', () => {
+  it('should update auth token and delete old connections when auth data changes', () => {
+    spyOn(service as any, 'deleteOldConnections');
 
     const newToken = 'new-token';
     authDataSubject$.next({
@@ -132,4 +135,19 @@ describe('StatisticsCollector', () => {
     expect(service['hubConnections'].size).toBe(0);
   });
 
+  it('should invoke StartListen on the hub connection and handle errors', fakeAsync(() => {
+    const hubUrl = 'test-url';
+    const key = 'test-key';
+    const error = new Error('Invoke failed');
+
+    spyOn(service as any, 'getHubConnection').and.returnValue(mockHubConnection);
+    mockHubConnection.invoke.and.returnValue(Promise.reject(error));
+
+    service.startListen(hubUrl, key);
+    flush()
+
+    expect(mockHubConnection.invoke).toHaveBeenCalledWith('StartListen', key);
+    expect(mockHubConnection.invoke).toHaveBeenCalledTimes(1);
+    expect(mockErrorHandler.handleHubError).toHaveBeenCalledWith(error);
+  }));
 }); 

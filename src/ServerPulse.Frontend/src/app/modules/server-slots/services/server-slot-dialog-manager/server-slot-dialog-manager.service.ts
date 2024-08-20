@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { ServerSlotDeleteConfirmComponent } from '../..';
+import { CustomEventDetailsComponent, ServerSlotDeleteConfirmComponent } from '../../index';
 import { ServerSlotDialogManager } from './server-slot-dialog-manager';
 
 @Injectable({
@@ -17,6 +17,16 @@ export class ServerSlotDialogManagerService implements ServerSlotDialogManager {
     dialogRef = this.dialog.open(ServerSlotDeleteConfirmComponent, {
       height: '200px',
       width: '450px',
+    });
+    return dialogRef;
+  }
+
+  openCustomEventDetails(serializedEvent: string): MatDialogRef<any> {
+    var dialogRef: MatDialogRef<any, any>;
+    dialogRef = this.dialog.open(CustomEventDetailsComponent, {
+      height: '500px',
+      width: '550px',
+      data: serializedEvent
     });
     return dialogRef;
   }

@@ -48,6 +48,38 @@ describe('CustomErrorHandler', () => {
         const result = service.handleApiError(error);
         expect(result).toBe('An unknown error occurred! (Unknown Status Code)');
     });
+
+    it('should return error.message if error.message exists in handleHubError', () => {
+        const error = {
+            message: 'Hub error occurred'
+        };
+        const result = service.handleHubError(error);
+        expect(result).toBe('Hub error occurred');
+    });
+
+    it('should return default "An unknown error occurred!" if no error message exists in handleHubError', () => {
+        const error = {};
+        const result = service.handleHubError(error);
+        expect(result).toBe('An unknown error occurred!');
+    });
+
+    it('should log the error message in handleApiError', () => {
+        spyOn(console, 'error');
+        const error = {
+            message: 'An error occurred'
+        };
+        service.handleApiError(error);
+        expect(console.error).toHaveBeenCalledWith('An error occurred');
+    });
+
+    it('should log the error message in handleHubError', () => {
+        spyOn(console, 'error');
+        const error = {
+            message: 'Hub error occurred'
+        };
+        service.handleHubError(error);
+        expect(console.error).toHaveBeenCalledWith('Hub error occurred');
+    });
 });
 
 describe('getStatusCodeDescription', () => {

@@ -6,4 +6,5 @@ import { MatDialogRef } from "@angular/material/dialog";
 })
 export abstract class ServerSlotDialogManager {
     abstract openDeleteSlotConfirmMenu(): MatDialogRef<any>;
+    abstract openCustomEventDetails(serializedEvent: string): MatDialogRef<any>;
 }

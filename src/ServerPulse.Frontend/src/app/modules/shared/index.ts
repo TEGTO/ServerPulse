@@ -28,5 +28,6 @@ export * from "./services/local-storage/local-storage.service"
 export * from "./services/redirector/redirector.service"
 export * from "./services/snackbar-manager/snackbar-manager.service"
 export * from "./services/url-definer/url-definer.service"
-export * from "./util/timespan"
+export * from "./util/pipes/localizedDatePipe"
+export * from "./util/timespan/timespan"
 

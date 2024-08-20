@@ -13,8 +13,7 @@
         </div>
         <div class="left__uptime">
             Last start:
-            {{ (serverLastStartDateTime$ | async) ? (serverLastStartDateTime$ | async | date:'dd/MM/yy HH:mm:ss') : '—'
-            }}
+            {{ (serverLastStartDateTime$ | async) ? (serverLastStartDateTime$ | async | localizedDate ) : '—' }}
         </div>
         <div class="left__uptime">
             Uptime:
@@ -26,7 +25,7 @@
         </div>
         <div class="left__last-uptime">
             Last pulse:
-            {{ (lastPulseDateTime$ | async) ? (lastPulseDateTime$ | async | date:'dd/MM/yy HH:mm:ss') : '—' }}
+            {{ (lastPulseDateTime$ | async) ? (lastPulseDateTime$ | async | localizedDate ) : '—' }}
         </div>
         <div class="left__last-load-amount">
             Load amount:
@@ -62,10 +61,10 @@
                         {{item.duration}}
                     </td>
                     <td class="px-4 py-3">
-                        {{item.timestampUTC | date:'dd.MM.yyyy HH:mm'}}
+                        {{item.timestampUTC | localizedDate}}
                     </td>
                     <td class="px-4 py-3">
-                        {{item.creationDateUTC | date:'dd.MM.yyyy HH:mm'}}
+                        {{item.creationDateUTC | localizedDate}}
                     </td>
                 </tr>
             </tbody>

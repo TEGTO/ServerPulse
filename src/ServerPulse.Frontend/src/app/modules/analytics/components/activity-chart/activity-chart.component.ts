@@ -1,8 +1,12 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
-import { ChartComponent } from 'ng-apexcharts';
+import { ChartComponent, ChartType } from 'ng-apexcharts';
 import { combineLatest, Observable } from 'rxjs';
 import { ChartOptions } from '../../index';
 
+export enum ActivityChartType {
+  Line,
+  Box,
+}
 @Component({
   selector: 'activity-chart',
   templateUrl: './activity-chart.component.html',
@@ -10,19 +14,25 @@ import { ChartOptions } from '../../index';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ActivityChartComponent implements OnInit, AfterViewInit {
-  @Input({ required: true }) chartUniqueId!: string;
+  @Input({ required: true }) uniqueId!: string;
   @Input({ required: true }) dateFrom$!: Observable<Date>;
   @Input({ required: true }) dateTo$!: Observable<Date>;
   @Input({ required: true }) data$!: Observable<any[]>;
+  @Input({ required: true }) chartType?: ActivityChartType;
+  @Input({ required: true }) formatter?: (val: number, opts?: any) => string;
   @ViewChild('chart') chart!: ChartComponent;
 
   chartOptions!: Partial<ChartOptions>;
 
-  get chartId() { return `chart-${this.chartUniqueId}`; }
+  get chartId() { return `chart-${this.uniqueId}`; }
 
   constructor(
     private readonly cdr: ChangeDetectorRef,
   ) { }
+
+  ngOnInit(): void {
+    this.initChartOptions();
+  }
 
   ngAfterViewInit(): void {
     combineLatest([this.dateFrom$, this.dateTo$]).subscribe(
@@ -33,43 +43,15 @@ export class ActivityChartComponent implements OnInit, AfterViewInit {
     );
   }
 
-  ngOnInit(): void {
-    this.initChartOptions();
-  }
-
   private initChartOptions() {
     this.chartOptions = {
+      ...this.getChartTypeOptions(),
       series: [
         {
           name: "Events",
           data: []
         }
       ],
-      chart: {
-        id: this.chartId,
-        type: "bar",
-        height: 260,
-        stacked: false,
-        toolbar: {
-          autoSelected: "pan",
-          show: false
-        },
-        animations: {
-          enabled: true,
-        }
-      },
-      fill: {
-        type: "gradient",
-        gradient: {
-          shade: "light",
-          type: "horizontal",
-          shadeIntensity: 0.25,
-          inverseColors: true,
-          opacityFrom: 1,
-          opacityTo: 1,
-          stops: [50, 0, 100, 100]
-        }
-      },
       dataLabels: {
         enabled: false
       },
@@ -97,16 +79,7 @@ export class ActivityChartComponent implements OnInit, AfterViewInit {
       },
       tooltip: {
         x: {
-          formatter: function (val) {
-            let date = new Date(val);
-            let hours = date.getHours().toString().padStart(2, '0');
-            let minutes = date.getMinutes().toString().padStart(2, '0');
-            let nextDate = new Date(date);
-            nextDate.setMinutes(date.getMinutes() + 5);
-            let nextHours = nextDate.getHours().toString().padStart(2, '0');
-            let nextMinutes = nextDate.getMinutes().toString().padStart(2, '0');
-            return `${hours}:${minutes} - ${nextHours}:${nextMinutes}`;
-          }
+          formatter: this.formatter
         },
         marker: {
           show: true,
@@ -117,7 +90,7 @@ export class ActivityChartComponent implements OnInit, AfterViewInit {
   }
 
   private updateChartData(data: any[]) {
-    if (this.chart && this.chartOptions.series) {
+    if (this.chartOptions != null && this.chartOptions.series != null) {
       this.chartOptions.series =
         [
           {
@@ -146,6 +119,99 @@ export class ActivityChartComponent implements OnInit, AfterViewInit {
         }
       };
       this.cdr.detectChanges();
+    }
+  }
+
+  private getChartTypeOptions(): Partial<ChartOptions> {
+    switch (this.chartType) {
+      case ActivityChartType.Line:
+        return {
+          chart: {
+            id: this.chartId,
+            type: 'area' as ChartType,
+            height: 220,
+            stacked: false,
+            toolbar: {
+              autoSelected: 'pan',
+              show: false
+            },
+            animations: {
+              enabled: true,
+            }
+          },
+          stroke: {
+            width: [4],
+            curve: ['smooth']
+          },
+          fill: {
+            type: 'gradient',
+            gradient: {
+              shadeIntensity: 1,
+              inverseColors: false,
+              opacityFrom: 0.45,
+              opacityTo: 0.05,
+              stops: [20, 100, 100, 100]
+            }
+          }
+        };
+      case ActivityChartType.Box:
+        return {
+          chart: {
+            id: this.chartId,
+            type: 'bar' as ChartType,
+            height: 260,
+            stacked: false,
+            toolbar: {
+              autoSelected: 'pan',
+              show: false
+            },
+            animations: {
+              enabled: true,
+            }
+          },
+          fill: {
+            type: 'gradient',
+            gradient: {
+              shade: 'light',
+              type: 'horizontal',
+              shadeIntensity: 0.25,
+              inverseColors: true,
+              opacityFrom: 1,
+              opacityTo: 1,
+              stops: [50, 0, 100, 100]
+            }
+          }
+        };
+      default:
+        return {
+          chart: {
+            id: this.chartId,
+            type: 'area' as ChartType,
+            height: 220,
+            stacked: false,
+            toolbar: {
+              autoSelected: 'pan',
+              show: false
+            },
+            animations: {
+              enabled: true,
+            }
+          },
+          stroke: {
+            width: [4],
+            curve: ['smooth']
+          },
+          fill: {
+            type: 'gradient',
+            gradient: {
+              shadeIntensity: 1,
+              inverseColors: false,
+              opacityFrom: 0.45,
+              opacityTo: 0.05,
+              stops: [20, 100, 100, 100]
+            }
+          }
+        };
     }
   }
 }

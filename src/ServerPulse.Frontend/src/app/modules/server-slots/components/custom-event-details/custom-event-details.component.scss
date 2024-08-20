@@ -1,0 +1,29 @@
+.close-button {
+    position: absolute;
+    right: 10px;
+    z-index: 1;
+}
+
+.details__container {
+    overflow: auto;
+    height: 100%;
+    width: 100%;
+}
+
+.details__item {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.details__key,
+.details__value {
+    display: inline-block;
+    word-wrap: break-word;
+    max-width: 60%;
+}
+
+::-webkit-scrollbar {
+    width: 10px !important;
+    height: 10px !important;
+}

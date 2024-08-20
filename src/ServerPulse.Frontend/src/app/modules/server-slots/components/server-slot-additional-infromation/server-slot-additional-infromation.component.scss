@@ -1,0 +1,42 @@
+@mixin background-shadow-box() {
+    padding: 2rem;
+    box-shadow: 2px 2px 7px 1px rgba(0, 0, 0, 0.1);
+}
+
+.additional-info__content {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 2rem;
+
+    .content__left {
+        @include background-shadow-box();
+        padding: 0rem;
+        width: 100%;
+        max-height: 353px;
+        height: 353px;
+        overflow-y: auto;
+        overflow-x: auto;
+    }
+
+    .content__right {
+        @include background-shadow-box();
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+th,
+td {
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+::-webkit-scrollbar {
+    width: 10px !important;
+    height: 10px !important;
+}

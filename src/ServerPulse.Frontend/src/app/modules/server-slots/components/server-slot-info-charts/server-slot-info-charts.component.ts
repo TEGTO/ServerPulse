@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, Input, OnDestroy } from '@angular/core';
 import { BehaviorSubject, interval, map, of, Subject, switchMap, takeUntil } from 'rxjs';
+import { ActivityChartType } from '../../../analytics';
 import { ServerLoadStatisticsResponse, TimeSpan } from '../../../shared';
 import { ServerStatisticsService } from '../../index';
 
@@ -12,7 +13,6 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
   @Input({ required: true }) slotKey!: string;
 
   private cachedDateSetStatistics = new Map<number, Map<number, number>>();
-  private controlStatisticsSetSubject$ = new BehaviorSubject<Map<number, number>>(new Map());
   private currentSelectedDateSubject$ = new BehaviorSubject<Date>(new Date());
 
   private controlChartDataSubject$ = new BehaviorSubject<Array<[number, number]>>([]);
@@ -30,8 +30,8 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
   controlDateTo$ = this.controlDateToSubject$.asObservable();
   secondaryDateFrom$ = this.secondaryDateFromSubject$.asObservable();
   secondaryDateTo$ = this.secondaryDateToSubject$.asObservable();
-  controlStatisticsSet$ = this.controlStatisticsSetSubject$.asObservable();
   currentSelectedDate$ = this.currentSelectedDateSubject$.asObservable();
+  chartType = ActivityChartType.Line;
 
   get controlIntervalTime() { return 24 * 60 * 60 * 1000; }
   get controlIntervalStartTime() { return 364 * this.controlIntervalTime; }
@@ -47,16 +47,6 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
 
     this.fetchControlStatistics();
 
-    this.controlStatisticsSet$.pipe(
-      map(statisticsSet => this.generateTimeSeries(
-        this.controlDateFromSubject$.value,
-        this.controlDateToSubject$.value,
-        this.controlIntervalTime,
-        statisticsSet
-      )),
-      takeUntil(this.destroy$)
-    ).subscribe(chartData => this.controlChartDataSubject$.next(chartData));
-
     this.handleSelectedDateUpdates();
 
     this.handleLastServerLoadStatistics();
@@ -65,6 +55,21 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  controlFormatter(val: number) {
+    const date = new Date(val);
+    return date.toLocaleDateString(undefined, {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  }
+
+  secondaryFormatter(val: number) {
+    let date = new Date(val);
+    let localHour = date.getHours();
+    return `${localHour}:00 - ${localHour + 1}:00`;
   }
 
   private setUpdateTimeIntervals() {
@@ -82,16 +87,33 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
     this.statisticsService.getWholeAmountStatisticsInDays(this.slotKey).pipe(
       takeUntil(this.destroy$)
     ).subscribe(statistics => {
-      const updatedSet = this.updateStatisticsSet(this.controlStatisticsSetSubject$.value, statistics);
-      this.controlStatisticsSetSubject$.next(updatedSet);
+      const set = this.getStatisticsSet(statistics);
+      const series = this.generateTimeSeries(
+        this.controlDateFromSubject$.value,
+        this.controlDateToSubject$.value,
+        this.controlIntervalTime,
+        set
+      );
+      this.controlChartDataSubject$.next(series)
     });
   }
 
   private handleSelectedDateUpdates(): void {
+    this.statisticsService.getCurrentLoadStatisticsDate()
+      .pipe(
+        takeUntil(this.destroy$)
+      )
+      .subscribe(date => {
+        if (this.currentSelectedDateSubject$.value.getTime() !== date.getTime()) {
+          this.currentSelectedDateSubject$.next(date);
+        }
+      });
+
     this.currentSelectedDate$.pipe(
-      switchMap(date => this.getSecondaryChartData(date)),
+      switchMap(date => this.getSecondaryChartData(date)
+      ),
       takeUntil(this.destroy$)
-    ).subscribe(data => this.secondaryChartDataSubject$.next(data));
+    ).subscribe(data => { this.secondaryChartDataSubject$.next(data) });
   }
 
   private handleLastServerLoadStatistics(): void {
@@ -141,7 +163,8 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
     return chartData;
   }
 
-  private updateStatisticsSet(set: Map<number, number>, statistics: { date: Date, amountOfEvents: number }[]): Map<number, number> {
+  private getStatisticsSet(statistics: { date: Date, amountOfEvents: number }[]): Map<number, number> {
+    let set: Map<number, number> = new Map<number, number>();
     statistics.forEach(stat => {
       const timestamp = stat.date.getTime();
       if (!set.has(timestamp)) {
@@ -184,7 +207,7 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
         new TimeSpan(0, 0, 0, this.secondaryIntervalTime)
       ).pipe(
         map(statistics => {
-          const statisticsSet = this.updateStatisticsSet(new Map(), statistics);
+          const statisticsSet = this.getStatisticsSet(statistics);
           if (!this.isSelectedDateToday(date)) {
             this.cachedDateSetStatistics.set(date.getTime(), statisticsSet);
           }
@@ -206,7 +229,7 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
 
   private getAdjustedDateForSecondaryTo(): Date {
     const now = new Date();
-    return new Date(now.setMinutes(0, now.getSeconds(), now.getMilliseconds()) + this.secondaryIntervalTime);
+    return new Date(now.setMinutes(now.getMinutes(), now.getSeconds(), now.getMilliseconds()));
   }
 
   private isSelectedDateToday(date: Date): boolean {

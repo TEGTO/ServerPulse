@@ -15,6 +15,9 @@ import { provideState, provideStore } from '@ngrx/store';
 import { RealTimeStatisticsCollector, ServerSlotComponent, ServerSlotControllerService, ServerSlotDeleteConfirmComponent, ServerSlotDialogManager, ServerSlotDialogManagerService, ServerSlotEffects, ServerSlotInfoComponent, serverSlotReducer, ServerSlotService, ServerSlotStatisticsEffects, ServerStatisticsControllerService, ServerStatisticsService, SlotBoardComponent, slotLoadStatisticsReducer, slotstatisticsReducer, StatisticsCollector } from '.';
 import { AnalyticsModule } from '../analytics/analytics.module';
 import { AuthenticationModule } from '../authentication/authentication.module';
+import { LocalizedDatePipe } from '../shared';
+import { CustomEventDetailsComponent } from './components/custom-event-details/custom-event-details.component';
+import { ServerSlotAdditionalInfromationComponent } from './components/server-slot-additional-infromation/server-slot-additional-infromation.component';
 import { ServerSlotInfoChartsComponent } from './components/server-slot-info-charts/server-slot-info-charts.component';
 import { ServerSlotInfoStatsComponent } from './components/server-slot-info-stats/server-slot-info-stats.component';
 import { ServerSlotPreviewActivityChartComponent } from './components/server-slot-preview-activity-chart/server-slot-preview-activity-chart.component';
@@ -30,7 +33,10 @@ import { ServerSlotPreviewActivityChartComponent } from './components/server-slo
     ServerSlotDeleteConfirmComponent,
     ServerSlotPreviewActivityChartComponent,
     ServerSlotInfoChartsComponent,
-    ServerSlotInfoStatsComponent
+    ServerSlotInfoStatsComponent,
+    ServerSlotAdditionalInfromationComponent,
+    CustomEventDetailsComponent,
+    LocalizedDatePipe
   ],
   imports: [
     AuthenticationModule,

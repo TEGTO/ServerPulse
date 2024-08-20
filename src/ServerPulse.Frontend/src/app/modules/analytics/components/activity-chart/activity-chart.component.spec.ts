@@ -21,14 +21,13 @@ describe('ActivityChartComponent', () => {
     component = fixture.componentInstance;
     cdr = TestBed.inject(ChangeDetectorRef);
 
-    component.chartUniqueId = 'test-id';
+    component.uniqueId = 'test-id';
     component.dateFrom$ = of(new Date('2023-01-01T00:00:00Z'));
     component.dateTo$ = of(new Date('2023-01-01T01:00:00Z'));
     component.data$ = of([{ x: new Date().getTime(), y: 10 }]);
 
     fixture.detectChanges();
   });
-
 
   it('should create', () => {
     expect(component).toBeTruthy();
@@ -44,7 +43,7 @@ describe('ActivityChartComponent', () => {
   });
 
   it('should set the chart id based on chartUniqueId input', () => {
-    component.chartUniqueId = 'test-id';
+    component.uniqueId = 'test-id';
     component.ngOnInit();
     expect(component.chartOptions.chart!.id).toBe('chart-test-id');
   });
@@ -91,4 +90,24 @@ describe('ActivityChartComponent', () => {
     expect(updateChartRange).toHaveBeenCalled();
     expect(updateChartData).toHaveBeenCalled();
   }));
+
+  it('should format tooltip values correctly', () => {
+    const formatter = component.chartOptions.tooltip!.x!.formatter!;
+
+    const inputValue = new Date('2023-01-01T12:30:00Z').getTime();
+
+    let date = new Date(inputValue);
+    let hours = date.getHours().toString().padStart(2, '0');
+    let minutes = date.getMinutes().toString().padStart(2, '0');
+    let nextDate = new Date(date);
+    nextDate.setMinutes(date.getMinutes() + 5);
+    let nextHours = nextDate.getHours().toString().padStart(2, '0');
+    let nextMinutes = nextDate.getMinutes().toString().padStart(2, '0');
+
+    const expectedOutput = `${hours}:${minutes} - ${nextHours}:${nextMinutes}`;
+
+    const result = formatter(inputValue);
+
+    expect(result).toBe(expectedOutput);
+  });
 });

@@ -1,0 +1,12 @@
+<button mat-icon-button mat-dialog-close class="close-button">
+    <span class="material-icons">close</span>
+</button>
+<h2 mat-dialog-title>Event Details</h2>
+<mat-dialog-content>
+    <ul class="details__container p-3 divide-y divide-gray-200 dark:divide-gray-700">
+        <li *ngFor="let item of jsonData" class="details__item py-2 flex justify-between">
+            <span class="details__key font-medium text-gray-900 whitespace-nowrap dark:text-white">{{item.key}}:</span>
+            <span class="details__value text-gray-900 dark:text-white">{{ item.value }}</span>
+        </li>
+    </ul>
+</mat-dialog-content>

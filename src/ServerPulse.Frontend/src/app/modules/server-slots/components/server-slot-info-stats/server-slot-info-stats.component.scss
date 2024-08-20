@@ -78,13 +78,21 @@
 
      .content__right {
          @include background-shadow-box();
-         padding-top: 1rem;
+         padding: 0rem;
          width: 100%;
          max-height: 353px;
          height: 353px;
-         overflow-y: scroll;
+         overflow-y: auto;
          overflow-x: auto;
      }
+ }
+
+ th,
+ td {
+     max-width: 300px;
+     overflow: hidden;
+     text-overflow: ellipsis;
+     white-space: wrap;
  }
 
  ::-webkit-scrollbar {

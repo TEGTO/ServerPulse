@@ -1,3 +1,4 @@
+export * from "./components/custom-event-details/custom-event-details.component"
 export * from "./components/server-slot-delete-confirm/server-slot-delete-confirm.component"
 export * from "./components/server-slot-info-charts/server-slot-info-charts.component"
 export * from "./components/server-slot-info-stats/server-slot-info-stats.component"
@@ -21,4 +22,3 @@ export * from "./stores/slot-statistics/slot-statistics.actions"
 export * from "./stores/slot-statistics/slot-statistics.effects"
 export * from "./stores/slot-statistics/slot-statistics.reducer"
 export * from "./stores/slot-statistics/slot-statistics.selector"
-
