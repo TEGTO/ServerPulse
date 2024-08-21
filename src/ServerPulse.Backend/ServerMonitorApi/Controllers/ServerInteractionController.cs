@@ -8,13 +8,15 @@ namespace ServerMonitorApi.Controllers
     [ApiController]
     public class ServerInteractionController : ControllerBase
     {
-        private readonly IMessageSender messageSender;
+        private readonly IEventSender eventSender;
         private readonly ISlotKeyChecker serverSlotChecker;
+        private readonly IEventProcessing eventProcessing;
 
-        public ServerInteractionController(IMessageSender messageSender, ISlotKeyChecker serverSlotChecker)
+        public ServerInteractionController(IEventSender eventSender, ISlotKeyChecker serverSlotChecker, IEventProcessing eventProcessing)
         {
-            this.messageSender = messageSender;
+            this.eventSender = eventSender;
             this.serverSlotChecker = serverSlotChecker;
+            this.eventProcessing = eventProcessing;
         }
 
         [HttpPost("pulse")]
@@ -22,7 +24,7 @@ namespace ServerMonitorApi.Controllers
         {
             if (await serverSlotChecker.CheckSlotKeyAsync(pulseEvent.Key, cancellationToken))
             {
-                await messageSender.SendPulseEventAsync(pulseEvent, cancellationToken);
+                await eventSender.SendEventsAsync(new[] { pulseEvent }, cancellationToken);
                 return Ok();
             }
             return NotFound($"Server slot with key '{pulseEvent.Key}' is not found!");
@@ -32,7 +34,7 @@ namespace ServerMonitorApi.Controllers
         {
             if (await serverSlotChecker.CheckSlotKeyAsync(configurationEvent.Key, cancellationToken))
             {
-                await messageSender.SendConfigurationEventAsync(configurationEvent, cancellationToken);
+                await eventSender.SendEventsAsync(new[] { configurationEvent }, cancellationToken);
                 return Ok();
             }
             return NotFound($"Server slot with key '{configurationEvent.Key}' is not found!");
@@ -48,7 +50,8 @@ namespace ServerMonitorApi.Controllers
 
             if (await serverSlotChecker.CheckSlotKeyAsync(firstKey, cancellationToken))
             {
-                await messageSender.SendLoadEventsAsync(loadEvents, cancellationToken);
+                await eventProcessing.SendEventsForProcessingsAsync(loadEvents, cancellationToken);
+                await eventSender.SendEventsAsync(loadEvents, cancellationToken);
                 return Ok();
             }
             return NotFound($"Server slot with key '{firstKey}' is not found!");

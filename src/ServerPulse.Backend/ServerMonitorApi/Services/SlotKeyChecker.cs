@@ -9,8 +9,7 @@ namespace ServerMonitorApi.Services
     {
         private readonly IHttpClientFactory httpClientFactory;
         private readonly ICacheService cacheService;
-        private readonly string slotCheckerUrl;
-        private readonly int partitionsAmount;
+        private readonly string slotCheckerUri;
         private readonly double cacheExpiryInMinutes;
 
         public SlotKeyChecker(IHttpClientFactory httpClientFactory, ICacheService cacheService, IConfiguration configuration)
@@ -18,7 +17,7 @@ namespace ServerMonitorApi.Services
             this.httpClientFactory = httpClientFactory;
             this.cacheService = cacheService;
 
-            slotCheckerUrl = $"{configuration[Configuration.API_GATEWAY]}{configuration[Configuration.SERVER_SLOT_ALIVE_CHECKER]}";
+            slotCheckerUri = $"{configuration[Configuration.API_GATEWAY]}{configuration[Configuration.SERVER_SLOT_ALIVE_CHECKER]}";
             cacheExpiryInMinutes = double.Parse(configuration[Configuration.CACHE_SERVER_SLOT_EXPIRY_IN_MINUTES]!);
         }
 
@@ -40,7 +39,7 @@ namespace ServerMonitorApi.Services
                 Encoding.UTF8,
                 "application/json"
             );
-            var checkUrl = slotCheckerUrl;
+            var checkUrl = slotCheckerUri;
 
             var httpResponseMessage = await httpClient.PostAsync(checkUrl, jsonContent, cancellationToken);
             using var contentStream = await httpResponseMessage.Content.ReadAsStreamAsync();

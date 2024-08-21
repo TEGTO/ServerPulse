@@ -46,6 +46,7 @@ builder.Services.AddCache(builder.Configuration);
 builder.Services.AddSingleton<IServerStatusReceiver, ServerStatusReceiver>();
 builder.Services.AddSingleton<IServerLoadReceiver, ServerLoadReceiver>();
 builder.Services.AddSingleton<IStatisticsSender, StatisticsSender>();
+builder.Services.AddSingleton<IEventProcessor, EventProcessor>();
 builder.Services.AddSingleton<ServerStatisticsCollector>();
 builder.Services.AddSingleton<LoadStatisticsCollector>();
 

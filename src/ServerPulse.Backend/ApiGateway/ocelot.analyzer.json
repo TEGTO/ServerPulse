@@ -20,8 +20,8 @@
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
         "Period": "1s",
-        "PeriodTimespan": 5,
-        "Limit": 10
+        "PeriodTimespan": 1,
+        "Limit": 5
       }
     },
     {
@@ -44,8 +44,8 @@
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
         "Period": "1s",
-        "PeriodTimespan": 5,
-        "Limit": 10
+        "PeriodTimespan": 1,
+        "Limit": 5
       }
     },
     {
@@ -68,7 +68,7 @@
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
         "Period": "1s",
-        "PeriodTimespan": 2,
+        "PeriodTimespan": 1,
         "Limit": 3
       }
     },
@@ -92,8 +92,8 @@
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
         "Period": "1s",
-        "PeriodTimespan": 2,
-        "Limit": 10
+        "PeriodTimespan": 1,
+        "Limit": 5
       }
     },
     {

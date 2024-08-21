@@ -10,5 +10,6 @@
         public static string CACHE_SERVER_SLOT_EXPIRY_IN_MINUTES { get; } = "Cache:ServerSlotExpiryInMinutes";
         public static string API_GATEWAY { get; } = "ApiGateway";
         public static string SERVER_SLOT_ALIVE_CHECKER { get; } = "ServerSlotApi:Check";
+        public static string ANALYZER_LOAD_ANALYZE { get; } = "Analyzer:Load";
     }
 }

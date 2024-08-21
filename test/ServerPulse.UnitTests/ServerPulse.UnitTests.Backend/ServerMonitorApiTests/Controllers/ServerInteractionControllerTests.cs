@@ -9,14 +9,14 @@ namespace ServerMonitorApiTests.Controllers
     [TestFixture]
     internal class ServerInteractionControllerTests
     {
-        private Mock<IMessageSender> mockMessageSender;
+        private Mock<IEventSender> mockMessageSender;
         private Mock<ISlotKeyChecker> mockSlotChecker;
         private ServerInteractionController controller;
 
         [SetUp]
         public void Setup()
         {
-            mockMessageSender = new Mock<IMessageSender>();
+            mockMessageSender = new Mock<IEventSender>();
             mockSlotChecker = new Mock<ISlotKeyChecker>();
             controller = new ServerInteractionController(mockMessageSender.Object, mockSlotChecker.Object);
         }

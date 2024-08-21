@@ -1,6 +1,6 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { ChartComponent } from 'ng-apexcharts';
-import { combineLatest, Observable } from 'rxjs';
+import { combineLatest, Observable, Subject, takeUntil } from 'rxjs';
 import { ChartOptions } from '../../index';
 
 type TimeRange = "1w" | "1m" | "3m" | "6m" | "all";
@@ -10,7 +10,7 @@ type TimeRange = "1w" | "1m" | "3m" | "6m" | "all";
   styleUrl: './activity-chart-control.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ActivityChartControlComponent implements OnInit, AfterViewInit {
+export class ActivityChartControlComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input({ required: true }) uniqueId!: string;
   @Input({ required: true }) dateFrom$!: Observable<Date>;
   @Input({ required: true }) dateTo$!: Observable<Date>;
@@ -23,6 +23,7 @@ export class ActivityChartControlComponent implements OnInit, AfterViewInit {
   activeOptionButton: TimeRange = "1w";
   private dateFrom: Date = new Date(this.currentTime.getTime() - this.week);
   private dateTo: Date = this.currentTime;
+  private destroy$ = new Subject<void>();
 
   get chartId() { return `chart-${this.uniqueId}`; }
   get currentTime() { return new Date(); }
@@ -44,14 +45,18 @@ export class ActivityChartControlComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.initChartOptions();
   }
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   ngAfterViewInit(): void {
-    this.data$.subscribe(
-      (data) => this.updateChartData(this.chartOptions, data)
-    );
-    combineLatest([this.dateFrom$, this.dateTo$]).subscribe(
-      ([dateFrom, dateTo]) => this.updateChartRange(dateFrom, dateTo)
-    );
+    this.data$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((data) => this.updateChartData(this.chartOptions, data));
+    combineLatest([this.dateFrom$, this.dateTo$])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([dateFrom, dateTo]) => this.updateChartRange(dateFrom, dateTo));
   }
 
   initChartOptions(): void {

@@ -7,11 +7,11 @@ namespace ServerMonitorApi.Controllers
     [ApiController]
     public class StatisticsControlController : ControllerBase
     {
-        private readonly IMessageSender messageSender;
+        private readonly IEventSender messageSender;
         private readonly ISlotKeyChecker serverSlotChecker;
         private readonly IStatisticsControlService statisticsControlService;
 
-        public StatisticsControlController(IMessageSender messageSender, ISlotKeyChecker serverSlotChecker, IStatisticsControlService statisticsControlService)
+        public StatisticsControlController(IEventSender messageSender, ISlotKeyChecker serverSlotChecker, IStatisticsControlService statisticsControlService)
         {
             this.messageSender = messageSender;
             this.serverSlotChecker = serverSlotChecker;

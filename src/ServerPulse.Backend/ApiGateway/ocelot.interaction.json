@@ -14,7 +14,7 @@
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
         "Period": "3s",
-        "PeriodTimespan": 1,
+        "PeriodTimespan": 3,
         "Limit": 1
       }
     },
@@ -32,7 +32,7 @@
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
         "Period": "3s",
-        "PeriodTimespan": 1,
+        "PeriodTimespan": 3,
         "Limit": 1
       }
     },
@@ -50,7 +50,7 @@
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
         "Period": "3s",
-        "PeriodTimespan": 1,
+        "PeriodTimespan": 3,
         "Limit": 1
       }
     }

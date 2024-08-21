@@ -1,6 +1,6 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ChartComponent, ChartType } from 'ng-apexcharts';
-import { combineLatest, Observable } from 'rxjs';
+import { combineLatest, Observable, Subject, takeUntil } from 'rxjs';
 import { ChartOptions } from '../../index';
 
 export enum ActivityChartType {
@@ -13,7 +13,7 @@ export enum ActivityChartType {
   styleUrls: ['./activity-chart.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ActivityChartComponent implements OnInit, AfterViewInit {
+export class ActivityChartComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input({ required: true }) uniqueId!: string;
   @Input({ required: true }) dateFrom$!: Observable<Date>;
   @Input({ required: true }) dateTo$!: Observable<Date>;
@@ -23,6 +23,7 @@ export class ActivityChartComponent implements OnInit, AfterViewInit {
   @ViewChild('chart') chart!: ChartComponent;
 
   chartOptions!: Partial<ChartOptions>;
+  private destroy$ = new Subject<void>();
 
   get chartId() { return `chart-${this.uniqueId}`; }
 
@@ -33,14 +34,18 @@ export class ActivityChartComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.initChartOptions();
   }
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   ngAfterViewInit(): void {
-    combineLatest([this.dateFrom$, this.dateTo$]).subscribe(
-      ([dateFrom, dateTo]) => this.updateChartRange(dateFrom, dateTo)
-    );
-    this.data$.subscribe(
-      (data) => this.updateChartData(data)
-    );
+    combineLatest([this.dateFrom$, this.dateTo$])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([dateFrom, dateTo]) => this.updateChartRange(dateFrom, dateTo));
+    this.data$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((data) => this.updateChartData(data));
   }
 
   private initChartOptions() {

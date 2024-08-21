@@ -2,112 +2,102 @@
 using AnalyzerApi.Domain.Models;
 using AnalyzerApi.Services.Interfaces;
 using AutoMapper;
-using Confluent.Kafka;
 using MessageBus.Interfaces;
 using ServerPulse.EventCommunication.Events;
-using System.Runtime.CompilerServices;
+using Shared;
 
 namespace AnalyzerApi.Services
 {
-    public record InRangeQueryOptions(string Key, DateTime From, DateTime To);
-    public record ReadCertainMessageNumberOptions(string Key, int NumberOfMessages, DateTime StartDate, bool ReadNew);
-
-    public class ServerLoadReceiver : IServerLoadReceiver
+    public class ServerLoadReceiver : BaseEventReceiver, IServerLoadReceiver
     {
-        private readonly IMessageConsumer messageConsumer;
-        private readonly IMapper mapper;
-        private readonly ILogger<ServerLoadReceiver> logger;
         private readonly string loadTopic;
-        private readonly int timeoutInMilliseconds;
+        private readonly string loadMethodStatisticsTopic;
         private readonly int statisticsSaveDataInDays;
 
-        public ServerLoadReceiver(IMessageConsumer messageConsumer, IMapper mapper, ILogger<ServerLoadReceiver> logger, IConfiguration configuration)
+        public ServerLoadReceiver(IMessageConsumer messageConsumer, IMapper mapper, IConfiguration configuration)
+            : base(messageConsumer, mapper, configuration)
         {
-            this.messageConsumer = messageConsumer;
-            this.mapper = mapper;
-            this.logger = logger;
             loadTopic = configuration[Configuration.KAFKA_LOAD_TOPIC]!;
-            timeoutInMilliseconds = int.Parse(configuration[Configuration.KAFKA_TIMEOUT_IN_MILLISECONDS]!);
             statisticsSaveDataInDays = int.Parse(configuration[Configuration.KAFKA_TOPIC_DATA_SAVE_IN_DAYS]!);
+            loadMethodStatisticsTopic = configuration[Configuration.KAFKA_LOAD_METHOD_STATISTICS_TOPIC]!;
         }
 
-        public async IAsyncEnumerable<LoadEventWrapper> ConsumeLoadEventAsync(string key, [EnumeratorCancellation] CancellationToken cancellationToken)
+        public IAsyncEnumerable<LoadEventWrapper> ConsumeLoadEventAsync(string key, CancellationToken cancellationToken)
         {
-            string topic = GetLoadTopic(key);
-
-            await foreach (var response in messageConsumer.ConsumeAsync(topic, timeoutInMilliseconds, Offset.End, cancellationToken))
-            {
-                if (response.TryDeserializeEventWrapper<LoadEvent, LoadEventWrapper>(mapper, out LoadEventWrapper ev))
-                {
-                    yield return ev;
-                }
-            }
+            string topic = GetTopic(loadTopic, key);
+            return ConsumeEventAsync<LoadEvent, LoadEventWrapper>(topic, cancellationToken);
         }
+
         public async Task<IEnumerable<LoadEventWrapper>> ReceiveEventsInRangeAsync(InRangeQueryOptions options, CancellationToken cancellationToken)
         {
-            string topic = GetLoadTopic(options.Key);
+            string topic = GetTopic(loadTopic, options.Key);
             var messageOptions = new MessageInRangeQueryOptions(topic, timeoutInMilliseconds, options.From, options.To);
             List<ConsumeResponse> responses = await messageConsumer.ReadMessagesInDateRangeAsync(messageOptions, cancellationToken);
-            return ConvertToLoadEventWrappers(responses);
+            return LoadEventHelper.ConvertToLoadEventWrappers(responses, mapper);
         }
+
         public async Task<IEnumerable<LoadEventWrapper>> GetCertainAmountOfEvents(ReadCertainMessageNumberOptions options, CancellationToken cancellationToken)
         {
-            string topic = GetLoadTopic(options.Key);
+            string topic = GetTopic(loadTopic, options.Key);
             var messageOptions = new ReadSomeMessagesOptions(topic, timeoutInMilliseconds, options.NumberOfMessages, options.StartDate, options.ReadNew);
             List<ConsumeResponse> responses = await messageConsumer.ReadSomeMessagesAsync(messageOptions, cancellationToken);
-            return ConvertToLoadEventWrappers(responses);
+            return LoadEventHelper.ConvertToLoadEventWrappers(responses, mapper);
         }
-        public async Task<LoadEventWrapper?> ReceiveLastLoadEventByKeyAsync(string key, CancellationToken cancellationToken)
+
+        public Task<LoadEventWrapper?> ReceiveLastLoadEventByKeyAsync(string key, CancellationToken cancellationToken)
         {
-            string topic = GetLoadTopic(key);
-            return await TaskGetLastEventFromTopic<LoadEvent, LoadEventWrapper>(topic, cancellationToken);
+            string topic = GetTopic(loadTopic, key);
+            return ReceiveLastEventByKeyAsync<LoadEvent, LoadEventWrapper>(topic, cancellationToken);
         }
-        private async Task<Y?> TaskGetLastEventFromTopic<T, Y>(string topic, CancellationToken cancellationToken) where T : BaseEvent where Y : BaseEventWrapper
-        {
-            ConsumeResponse? response = await messageConsumer.ReadLastTopicMessageAsync(topic, timeoutInMilliseconds, cancellationToken);
-            if (response != null)
-            {
-                if (response.TryDeserializeEventWrapper<T, Y>(mapper, out Y ev))
-                {
-                    return ev;
-                }
-            }
-            return null;
-        }
+
         public async Task<int> ReceiveLoadEventAmountByKeyAsync(string key, CancellationToken cancellationToken)
         {
-            string topic = GetLoadTopic(key);
-            int amount = await messageConsumer.GetAmountTopicMessagesAsync(topic, timeoutInMilliseconds, cancellationToken);
-            return amount;
+            string topic = GetTopic(loadTopic, key);
+            return await messageConsumer.GetAmountTopicMessagesAsync(topic, timeoutInMilliseconds, cancellationToken);
         }
+
         public async Task<IEnumerable<LoadAmountStatistics>> GetAmountStatisticsInDaysAsync(string key, CancellationToken cancellationToken)
         {
-            string topic = GetLoadTopic(key);
-            var start = DateTime.UtcNow.Date.AddDays(-1 * statisticsSaveDataInDays);
+            string topic = GetTopic(loadTopic, key);
+            var start = DateTime.UtcNow.Date.AddDays(-statisticsSaveDataInDays);
             var end = DateTime.UtcNow.Date.AddDays(1);
             var timeSpan = TimeSpan.FromDays(1);
             var options = new MessageInRangeQueryOptions(topic, timeoutInMilliseconds, start, end);
             var messagesPerDay = await messageConsumer.GetMessageAmountPerTimespanAsync(options, timeSpan, cancellationToken);
-            return ConvertToAmountStatistics(messagesPerDay);
+            return LoadEventHelper.ConvertToAmountStatistics(messagesPerDay);
         }
+
         public async Task<IEnumerable<LoadAmountStatistics>> GetAmountStatisticsLastDayAsync(string key, CancellationToken cancellationToken)
         {
-            string topic = GetLoadTopic(key);
+            string topic = GetTopic(loadTopic, key);
             var todayStart = DateTime.UtcNow.Date;
             var todayEnd = DateTime.UtcNow.Date.AddDays(1);
             var timeSpan = TimeSpan.FromDays(1);
             var options = new MessageInRangeQueryOptions(topic, timeoutInMilliseconds, todayStart, todayEnd);
             var messagesPerDay = await messageConsumer.GetMessageAmountPerTimespanAsync(options, timeSpan, cancellationToken);
-            return ConvertToAmountStatistics(messagesPerDay);
+            return LoadEventHelper.ConvertToAmountStatistics(messagesPerDay);
         }
+
         public async Task<IEnumerable<LoadAmountStatistics>> GetAmountStatisticsInRangeAsync(InRangeQueryOptions options, TimeSpan timeSpan, CancellationToken cancellationToken)
         {
-            string topic = GetLoadTopic(options.Key);
+            string topic = GetTopic(loadTopic, options.Key);
             var messageOptions = new MessageInRangeQueryOptions(topic, timeoutInMilliseconds, options.From, options.To);
             var messagesPerDay = await messageConsumer.GetMessageAmountPerTimespanAsync(messageOptions, timeSpan, cancellationToken);
-            return ConvertToAmountStatistics(messagesPerDay);
+            return LoadEventHelper.ConvertToAmountStatistics(messagesPerDay);
         }
-        private IEnumerable<LoadAmountStatistics> ConvertToAmountStatistics(Dictionary<DateTime, int> messageAmount)
+
+        public async Task<LoadMethodStatistics?> ReceiveLastLoadMethodStatisticsByKeyAsync(string key, CancellationToken cancellationToken)
+        {
+            string topic = GetTopic(loadMethodStatisticsTopic, key);
+            var response = await ReceiveLastMessageByKeyAsync(topic, cancellationToken);
+            response.TryToDeserialize(out LoadMethodStatistics? statistics);
+            return statistics;
+        }
+    }
+
+    internal static class LoadEventHelper
+    {
+        public static IEnumerable<LoadAmountStatistics> ConvertToAmountStatistics(Dictionary<DateTime, int> messageAmount)
         {
             return messageAmount
                 .Where(kv => kv.Value > 0)
@@ -118,10 +108,11 @@ namespace AnalyzerApi.Services
                 })
                 .OrderByDescending(ls => ls.Date);
         }
-        private IEnumerable<LoadEventWrapper> ConvertToLoadEventWrappers(List<ConsumeResponse> reponses)
+
+        public static IEnumerable<LoadEventWrapper> ConvertToLoadEventWrappers(List<ConsumeResponse> responses, IMapper mapper)
         {
             List<LoadEventWrapper> events = new List<LoadEventWrapper>();
-            foreach (var response in reponses)
+            foreach (var response in responses)
             {
                 if (response.TryDeserializeEventWrapper<LoadEvent, LoadEventWrapper>(mapper, out LoadEventWrapper ev))
                 {
@@ -129,10 +120,6 @@ namespace AnalyzerApi.Services
                 }
             }
             return events;
-        }
-        private string GetLoadTopic(string key)
-        {
-            return loadTopic + key;
         }
     }
 }

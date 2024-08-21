@@ -1,0 +1,22 @@
+{
+  "Routes": [
+    {
+      "Key": "EventProcessing_ProcessLoadEvent",
+      "ServiceName": "analyzer",
+      "UpstreamPathTemplate": "/eventprocessing/load",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamPathTemplate": "/eventprocessing/load",
+      "DownstreamScheme": "http",
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [ ],
+        "EnableRateLimiting": true,
+        "Period": "3s",
+        "PeriodTimespan": 3,
+        "Limit": 1
+      }
+    }
+  ]
+}

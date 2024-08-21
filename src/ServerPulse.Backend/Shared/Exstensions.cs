@@ -7,7 +7,7 @@ namespace Shared
     {
         private static readonly ILogger logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger("Extensions");
 
-        public static bool TryToDeserialize<T>(this string? message, out T obj)
+        public static bool TryToDeserialize<T>(this string? message, out T? obj)
         {
             try
             {

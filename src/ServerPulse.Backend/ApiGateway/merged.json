@@ -42,8 +42,8 @@
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
         "Period": "1s",
-        "PeriodTimespan": 5,
-        "Limit": 10
+        "PeriodTimespan": 1,
+        "Limit": 5
       }
     },
     {
@@ -68,8 +68,8 @@
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
         "Period": "1s",
-        "PeriodTimespan": 5,
-        "Limit": 10
+        "PeriodTimespan": 1,
+        "Limit": 5
       }
     },
     {
@@ -94,7 +94,7 @@
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
         "Period": "1s",
-        "PeriodTimespan": 2,
+        "PeriodTimespan": 1,
         "Limit": 3
       }
     },
@@ -120,8 +120,8 @@
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
         "Period": "1s",
-        "PeriodTimespan": 2,
-        "Limit": 10
+        "PeriodTimespan": 1,
+        "Limit": 5
       }
     },
     {
@@ -176,6 +176,26 @@
       },
       "AddHeadersToRequest": {
         "Authorization": "Bearer {token}"
+      }
+    },
+    {
+      "Key": "EventProcessing_ProcessLoadEvent",
+      "ServiceName": "analyzer",
+      "UpstreamPathTemplate": "/eventprocessing/load",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DownstreamPathTemplate": "/eventprocessing/load",
+      "DownstreamScheme": "http",
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "3s",
+        "PeriodTimespan": 3,
+        "Limit": 1
       }
     },
     {
@@ -300,7 +320,7 @@
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
         "Period": "3s",
-        "PeriodTimespan": 1,
+        "PeriodTimespan": 3,
         "Limit": 1
       }
     },
@@ -320,7 +340,7 @@
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
         "Period": "3s",
-        "PeriodTimespan": 1,
+        "PeriodTimespan": 3,
         "Limit": 1
       }
     },
@@ -340,7 +360,7 @@
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
         "Period": "3s",
-        "PeriodTimespan": 1,
+        "PeriodTimespan": 3,
         "Limit": 1
       }
     },

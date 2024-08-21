@@ -16,7 +16,7 @@ namespace ServerMonitorApiTests.Services
 
         private Mock<IMessageProducer> mockProducer;
         private Mock<IConfiguration> mockConfiguration;
-        private MessageSender messageSender;
+        private EventSender messageSender;
 
         [SetUp]
         public void Setup()
@@ -26,7 +26,7 @@ namespace ServerMonitorApiTests.Services
             mockConfiguration.SetupGet(c => c[Configuration.KAFKA_ALIVE_TOPIC]).Returns(KAFKA_ALIVE_TOPIC);
             mockConfiguration.SetupGet(c => c[Configuration.KAFKA_CONFIGURATION_TOPIC]).Returns(KAFKA_CONFIGURATION_TOPIC);
             mockConfiguration.SetupGet(c => c[Configuration.KAFKA_LOAD_TOPIC]).Returns(KAFKA_LOAD_TOPIC);
-            messageSender = new MessageSender(mockProducer.Object, mockConfiguration.Object);
+            messageSender = new EventSender(mockProducer.Object, mockConfiguration.Object);
         }
 
         [Test]

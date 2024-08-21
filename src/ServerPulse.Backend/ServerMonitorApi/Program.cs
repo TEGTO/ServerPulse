@@ -37,8 +37,9 @@ builder.Services.AddKafkaProducer(producerConfig, adminConfig);
 
 builder.Services.AddCache(builder.Configuration);
 
-builder.Services.AddSingleton<IMessageSender, MessageSender>();
+builder.Services.AddSingleton<IEventSender, EventSender>();
 builder.Services.AddSingleton<IStatisticsControlService, StatisticsControlService>();
+builder.Services.AddSingleton<IEventProcessing, EventProcessing>();
 
 builder.Services.AddSingleton<ISlotKeyChecker, SlotKeyChecker>();
 

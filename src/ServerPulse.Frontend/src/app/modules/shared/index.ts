@@ -12,6 +12,7 @@ export * from "./domain/dtos/statistics/requests/loadAmountStatisticsInRangeRequ
 export * from "./domain/dtos/statistics/requests/loadEventsRangeRequest"
 export * from "./domain/dtos/statistics/requests/someLoadEventsRequest"
 export * from "./domain/dtos/statistics/response/loadAmountStatisticsResponse"
+export * from "./domain/dtos/statistics/response/loadMethodStatisticsResponse"
 export * from "./domain/dtos/statistics/response/serverLoadResponse"
 export * from "./domain/dtos/statistics/response/serverLoadStatisticsResponse"
 export * from "./domain/dtos/statistics/response/serverStatisticsResponse"

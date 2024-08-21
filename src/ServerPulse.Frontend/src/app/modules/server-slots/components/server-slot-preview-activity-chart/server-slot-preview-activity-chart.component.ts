@@ -1,5 +1,5 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { BehaviorSubject, interval, map, Observable, of, Subject, switchMap, takeUntil } from 'rxjs';
+import { BehaviorSubject, interval, map, Observable, of, shareReplay, Subject, switchMap, takeUntil } from 'rxjs';
 import { ServerStatisticsService } from '../..';
 import { ActivityChartType } from '../../../analytics';
 import { ServerLoadStatisticsResponse, ServerSlot, TimeSpan } from '../../../shared';
@@ -34,10 +34,14 @@ export class ServerSlotPreviewActivityChartComponent implements OnInit, OnDestro
     const timeSpan = new TimeSpan(0, 0, 0, this.fiveMinutes);
     let series: [number, number][];
 
-    this.chartData$ = this.statisticsService.getAmountStatisticsInRange(this.serverSlot.slotKey, this.dateFromSubject$.value, this.dateToSubject$.value, timeSpan).pipe(
-      switchMap((statistics) =>
-        this.statisticsService.getLastServerLoadStatistics(this.serverSlot.slotKey).pipe(
-          map(lastLoadStatistics => {
+    const statistics$ = this.statisticsService.getAmountStatisticsInRange(this.serverSlot.slotKey, this.dateFromSubject$.value, this.dateToSubject$.value, timeSpan).pipe(
+      shareReplay(1)
+    );
+
+    this.chartData$ = this.statisticsService.getLastServerLoadStatistics(this.serverSlot.slotKey).pipe(
+      switchMap(lastLoadStatistics =>
+        statistics$.pipe(
+          map(statistics => {
             if (!series) {
               const set = this.getStatisticsSet(statistics);
               series = this.generate5MinutesTimeSeries(this.dateFromSubject$.value, this.dateToSubject$.value, set);
@@ -51,8 +55,7 @@ export class ServerSlotPreviewActivityChartComponent implements OnInit, OnDestro
           })
         )
       ),
-      takeUntil(this.destroy$)
-    )
+    );
   }
 
   ngOnDestroy(): void {

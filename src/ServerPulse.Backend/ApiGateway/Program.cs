@@ -44,6 +44,7 @@ Utility.MergeJsonFiles(
     [
     "ocelot.json",
     "ocelot.analyzer.json",
+    "ocelot.eventprocessing.json",
     "ocelot.authentication.json",
     "ocelot.interaction.json",
     "ocelot.statisticscontrol.json",
