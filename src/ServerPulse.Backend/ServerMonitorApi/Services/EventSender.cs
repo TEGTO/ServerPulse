@@ -9,6 +9,7 @@ namespace ServerMonitorApi.Services
         private readonly string pulseTopic;
         private readonly string configurationTopic;
         private readonly string loadTopic;
+        private readonly string customTopic;
 
         public EventSender(IMessageProducer producer, IConfiguration configuration)
         {
@@ -16,8 +17,17 @@ namespace ServerMonitorApi.Services
             pulseTopic = configuration[Configuration.KAFKA_ALIVE_TOPIC]!;
             configurationTopic = configuration[Configuration.KAFKA_CONFIGURATION_TOPIC]!;
             loadTopic = configuration[Configuration.KAFKA_LOAD_TOPIC]!;
+            customTopic = configuration[Configuration.KAFKA_CUSTOM_TOPIC]!;
         }
 
+        public async Task SendCustomEventsAsync(string key, string[] serializedEvents, CancellationToken cancellationToken)
+        {
+            var topic = GetTopic(customTopic, key);
+            foreach (var ev in serializedEvents)
+            {
+                await producer.ProduceAsync(topic, ev, cancellationToken);
+            }
+        }
         public async Task SendEventsAsync<T>(T[] events, CancellationToken cancellationToken) where T : BaseEvent
         {
             await Parallel.ForEachAsync(events, cancellationToken, async (ev, ct) =>
@@ -33,9 +43,9 @@ namespace ServerMonitorApi.Services
         {
             return ev switch
             {
-                PulseEvent _ => GetPulseTopic(ev.Key),
-                ConfigurationEvent _ => GetConfigurationTopic(ev.Key),
-                LoadEvent _ => GetLoadTopic(ev.Key),
+                PulseEvent _ => GetTopic(pulseTopic, ev.Key),
+                ConfigurationEvent _ => GetTopic(configurationTopic, ev.Key),
+                LoadEvent _ => GetTopic(loadTopic, ev.Key),
                 _ => string.Empty
             };
         }
@@ -44,17 +54,9 @@ namespace ServerMonitorApi.Services
             var message = ev.ToString();
             await producer.ProduceAsync(topic, message, cancellationToken);
         }
-        private string GetPulseTopic(string key)
+        private string GetTopic(string topic, string key)
         {
-            return pulseTopic + key;
-        }
-        private string GetConfigurationTopic(string key)
-        {
-            return configurationTopic + key;
-        }
-        private string GetLoadTopic(string key)
-        {
-            return loadTopic + key;
+            return topic + key;
         }
     }
 }

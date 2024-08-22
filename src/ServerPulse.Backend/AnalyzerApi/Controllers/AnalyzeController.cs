@@ -2,7 +2,6 @@
 using AnalyzerApi.Domain.Dtos.Responses;
 using AnalyzerApi.Domain.Dtos.Wrappers;
 using AnalyzerApi.Domain.Models;
-using AnalyzerApi.Services;
 using AnalyzerApi.Services.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
@@ -18,14 +17,16 @@ namespace AnalyzerApi.Controllers
     {
         private readonly IMapper mapper;
         private readonly IServerLoadReceiver serverLoadReceiver;
+        private readonly ICustomReceiver customReceiver;
         private readonly ICacheService cacheService;
         private readonly double cacheExpiryInMinutes;
         private readonly string cacheStatisticsKey;
 
-        public AnalyzeController(IMapper mapper, IServerLoadReceiver serverLoadReceiver, ICacheService cacheService, IConfiguration configuration)
+        public AnalyzeController(IMapper mapper, IServerLoadReceiver serverLoadReceiver, ICustomReceiver customReceiver, ICacheService cacheService, IConfiguration configuration)
         {
             this.mapper = mapper;
             this.serverLoadReceiver = serverLoadReceiver;
+            this.customReceiver = customReceiver;
             this.cacheService = cacheService;
             cacheExpiryInMinutes = double.Parse(configuration[Configuration.CACHE_SERVER_LOAD_STATISTICS_PER_DAY_EXPIRY_IN_MINUTES]!);
             cacheStatisticsKey = configuration[Configuration.CACHE_STATISTICS_KEY]!;
@@ -33,7 +34,7 @@ namespace AnalyzerApi.Controllers
 
         [Route("daterange")]
         [HttpPost]
-        public async Task<ActionResult<IEnumerable<LoadEventWrapper>>> GetLoadEventsInDataRange([FromBody] LoadEventsRangeRequest request, CancellationToken cancellationToken)
+        public async Task<ActionResult<IEnumerable<LoadEventWrapper>>> GetLoadEventsInDataRange(LoadEventsRangeRequest request, CancellationToken cancellationToken)
         {
             var cacheKey = $"{cacheStatisticsKey}-{request.Key}-{request.From.ToUniversalTime()}-{request.To.ToUniversalTime()}-daterange";
             IEnumerable<LoadEventWrapper>? events = await GetInCacheAsync<IEnumerable<LoadEventWrapper>>(cacheKey);
@@ -71,7 +72,7 @@ namespace AnalyzerApi.Controllers
         }
         [Route("amountrange")]
         [HttpPost]
-        public async Task<ActionResult<IEnumerable<LoadAmountStatisticsResponse>>> GetAmountStatisticsInRange([FromBody] LoadAmountStatisticsInRangeRequest request, CancellationToken cancellationToken)
+        public async Task<ActionResult<IEnumerable<LoadAmountStatisticsResponse>>> GetAmountStatisticsInRange(LoadAmountStatisticsInRangeRequest request, CancellationToken cancellationToken)
         {
             var cacheKey = $"{cacheStatisticsKey}-{request.Key}-{request.From.ToUniversalTime()}-{request.To.ToUniversalTime()}-{request.TimeSpan}-amountrange";
 
@@ -89,7 +90,7 @@ namespace AnalyzerApi.Controllers
         }
         [Route("someevents")]
         [HttpPost]
-        public async Task<ActionResult<IEnumerable<LoadEventWrapper>>> GetSomeLoadEvents([FromBody] GetSomeLoadEventsRequest request, CancellationToken cancellationToken)
+        public async Task<ActionResult<IEnumerable<LoadEventWrapper>>> GetSomeLoadEvents(GetSomeMessagesRequest request, CancellationToken cancellationToken)
         {
             var cacheKey = $"{cacheStatisticsKey}-{request.Key}-{request.StartDate.ToUniversalTime()}-{request.NumberOfMessages}-{request.ReadNew}-someevents";
 
@@ -99,6 +100,24 @@ namespace AnalyzerApi.Controllers
             {
                 var options = new ReadCertainMessageNumberOptions(request.Key, request.NumberOfMessages, request.StartDate.ToUniversalTime(), request.ReadNew);
                 events = await serverLoadReceiver.GetCertainAmountOfEvents(options, cancellationToken);
+            }
+
+            await cacheService.SetValueAsync(cacheKey, JsonSerializer.Serialize(events), cacheExpiryInMinutes);
+
+            return Ok(events);
+        }
+        [Route("somecustomevents")]
+        [HttpPost]
+        public async Task<ActionResult<IEnumerable<CustomEventWrapper>>> GetSomeCustomEvents(GetSomeMessagesRequest request, CancellationToken cancellationToken)
+        {
+            var cacheKey = $"{cacheStatisticsKey}-{request.Key}-{request.StartDate.ToUniversalTime()}-{request.NumberOfMessages}-{request.ReadNew}-somecustomevents";
+
+            IEnumerable<CustomEventWrapper>? events = await GetInCacheAsync<IEnumerable<CustomEventWrapper>>(cacheKey);
+
+            if (events == null)
+            {
+                var options = new ReadCertainMessageNumberOptions(request.Key, request.NumberOfMessages, request.StartDate.ToUniversalTime(), request.ReadNew);
+                events = await customReceiver.GetCertainAmountOfEvents(options, cancellationToken);
             }
 
             await cacheService.SetValueAsync(cacheKey, JsonSerializer.Serialize(events), cacheExpiryInMinutes);

@@ -3,7 +3,7 @@ using FluentValidation;
 
 namespace AnalyzerApi.Validators
 {
-    public class GetSomeLoadEventsRequestValidator : AbstractValidator<GetSomeLoadEventsRequest>
+    public class GetSomeLoadEventsRequestValidator : AbstractValidator<GetSomeMessagesRequest>
     {
         public GetSomeLoadEventsRequestValidator()
         {

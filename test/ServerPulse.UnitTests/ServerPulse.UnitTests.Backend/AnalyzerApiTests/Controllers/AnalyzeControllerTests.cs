@@ -168,7 +168,7 @@ namespace AnalyzerApiTests.Controllers
         public async Task GetSomeLoadEvents_CacheIsAvailable_ShouldReturnCachedEvents()
         {
             // Arrange
-            var request = new GetSomeLoadEventsRequest
+            var request = new GetSomeMessagesRequest
             {
                 Key = "test-key",
                 StartDate = DateTime.MinValue,
@@ -192,7 +192,7 @@ namespace AnalyzerApiTests.Controllers
         public async Task GetSomeLoadEvents_CacheIsNotAvailable_ShouldCallServerLoadReceiverAndCacheResult()
         {
             // Arrange
-            var request = new GetSomeLoadEventsRequest
+            var request = new GetSomeMessagesRequest
             {
                 Key = "test-key",
                 StartDate = DateTime.MinValue,

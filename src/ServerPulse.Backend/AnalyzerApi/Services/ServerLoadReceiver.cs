@@ -90,8 +90,12 @@ namespace AnalyzerApi.Services
         {
             string topic = GetTopic(loadMethodStatisticsTopic, key);
             var response = await ReceiveLastMessageByKeyAsync(topic, cancellationToken);
-            response.TryToDeserialize(out LoadMethodStatistics? statistics);
-            return statistics;
+            if (response != null)
+            {
+                response.Message.TryToDeserialize(out LoadMethodStatistics? statistics);
+                return statistics;
+            }
+            return null;
         }
     }
 

@@ -6,5 +6,6 @@ namespace AnalyzerApi.Services.Interfaces
     {
         public Task SendServerStatisticsAsync(string key, ServerStatistics serverStatistics, CancellationToken cancellationToken);
         public Task SendServerLoadStatisticsAsync(string key, ServerLoadStatistics statistics, CancellationToken cancellationToken);
+        public Task SendServerCustomStatisticsAsync(string key, CustomEventStatistics statistics, CancellationToken cancellationToken);
     }
 }

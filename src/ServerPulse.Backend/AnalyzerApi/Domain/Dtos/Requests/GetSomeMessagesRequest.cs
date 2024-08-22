@@ -1,6 +1,6 @@
 ﻿namespace AnalyzerApi.Domain.Dtos.Requests
 {
-    public class GetSomeLoadEventsRequest
+    public class GetSomeMessagesRequest
     {
         public string Key { get; set; }
         public int NumberOfMessages { get; set; }

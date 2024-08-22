@@ -13,6 +13,7 @@ namespace AnalyzerApi.Services
     {
         private readonly IHubContext<StatisticsHub<ServerStatisticsCollector>, IStatisticsHubClient> hubStatistics;
         private readonly IHubContext<StatisticsHub<LoadStatisticsCollector>, IStatisticsHubClient> hubLoadStatistics;
+        private readonly IHubContext<StatisticsHub<CustomStatisticsCollector>, IStatisticsHubClient> hubCustomEventStatistics;
         private readonly IMessageProducer producer;
         private readonly IMapper mapper;
         private readonly ILogger<StatisticsSender> logger;
@@ -21,6 +22,7 @@ namespace AnalyzerApi.Services
         public StatisticsSender(
             IHubContext<StatisticsHub<ServerStatisticsCollector>, IStatisticsHubClient> hubStatistics,
             IHubContext<StatisticsHub<LoadStatisticsCollector>, IStatisticsHubClient> hubLoadStatistics,
+            IHubContext<StatisticsHub<CustomStatisticsCollector>, IStatisticsHubClient> hubCustomEventStatistics,
             IMessageProducer producer,
             IMapper mapper,
             IConfiguration configuration,
@@ -31,12 +33,13 @@ namespace AnalyzerApi.Services
             this.producer = producer;
             this.hubStatistics = hubStatistics;
             this.hubLoadStatistics = hubLoadStatistics;
+            this.hubCustomEventStatistics = hubCustomEventStatistics;
             serverStatisticsTopic = configuration[Configuration.KAFKA_SERVER_STATISTICS_TOPIC]!;
         }
 
         public async Task SendServerStatisticsAsync(string key, ServerStatistics serverStatistics, CancellationToken cancellationToken)
         {
-            var topic = GetServerStatisticsTopic(key);
+            var topic = GetTopic(serverStatisticsTopic, key);
             await producer.ProduceAsync(topic, JsonSerializer.Serialize(serverStatistics), cancellationToken);
 
             var resposnse = mapper.Map<ServerStatisticsResponse>(serverStatistics);
@@ -49,9 +52,15 @@ namespace AnalyzerApi.Services
             var serializedData = JsonSerializer.Serialize(response);
             await hubLoadStatistics.Clients.Group(key).ReceiveStatistics(key, serializedData);
         }
-        private string GetServerStatisticsTopic(string key)
+        public async Task SendServerCustomStatisticsAsync(string key, CustomEventStatistics statistics, CancellationToken cancellationToken)
         {
-            return serverStatisticsTopic + key;
+            var response = mapper.Map<CustomEventStatisticsResponse>(statistics);
+            var serializedData = JsonSerializer.Serialize(response);
+            await hubCustomEventStatistics.Clients.Group(key).ReceiveStatistics(key, serializedData);
+        }
+        private string GetTopic(string topic, string key)
+        {
+            return topic + key;
         }
     }
 }

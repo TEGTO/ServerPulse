@@ -23,12 +23,20 @@ namespace AnalyzerApi.Services
             where TEvent : BaseEvent
             where TWrapper : BaseEventWrapper
         {
-            await foreach (var response in messageConsumer.ConsumeAsync(topic, timeoutInMilliseconds, Offset.End, cancellationToken))
+            await foreach (var response in ConsumMessageAsync(topic, cancellationToken))
             {
                 if (response.TryDeserializeEventWrapper<TEvent, TWrapper>(mapper, out TWrapper ev))
                 {
                     yield return ev;
                 }
+            }
+        }
+
+        protected async IAsyncEnumerable<ConsumeResponse> ConsumMessageAsync(string topic, CancellationToken cancellationToken)
+        {
+            await foreach (var response in messageConsumer.ConsumeAsync(topic, timeoutInMilliseconds, Offset.End, cancellationToken))
+            {
+                yield return response;
             }
         }
 
@@ -44,14 +52,9 @@ namespace AnalyzerApi.Services
             return null;
         }
 
-        protected async Task<string?> ReceiveLastMessageByKeyAsync(string topic, CancellationToken cancellationToken)
+        protected async Task<ConsumeResponse?> ReceiveLastMessageByKeyAsync(string topic, CancellationToken cancellationToken)
         {
-            ConsumeResponse? response = await messageConsumer.ReadLastTopicMessageAsync(topic, timeoutInMilliseconds, cancellationToken);
-            if (response != null)
-            {
-                return response.Message;
-            }
-            return null;
+            return await messageConsumer.ReadLastTopicMessageAsync(topic, timeoutInMilliseconds, cancellationToken);
         }
 
         protected string GetTopic(string baseTopic, string key)

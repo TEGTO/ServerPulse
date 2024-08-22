@@ -45,10 +45,12 @@ builder.Services.AddCache(builder.Configuration);
 
 builder.Services.AddSingleton<IServerStatusReceiver, ServerStatusReceiver>();
 builder.Services.AddSingleton<IServerLoadReceiver, ServerLoadReceiver>();
+builder.Services.AddSingleton<ICustomReceiver, CustomReceiver>();
 builder.Services.AddSingleton<IStatisticsSender, StatisticsSender>();
 builder.Services.AddSingleton<IEventProcessor, EventProcessor>();
 builder.Services.AddSingleton<ServerStatisticsCollector>();
 builder.Services.AddSingleton<LoadStatisticsCollector>();
+builder.Services.AddSingleton<CustomStatisticsCollector>();
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
@@ -70,5 +72,6 @@ app.MapControllers();
 
 app.MapHub<StatisticsHub<ServerStatisticsCollector>>("/statisticshub");
 app.MapHub<StatisticsHub<LoadStatisticsCollector>>("/loadstatisticshub");
+app.MapHub<StatisticsHub<CustomStatisticsCollector>>("/customstatisticshub");
 
 app.Run();

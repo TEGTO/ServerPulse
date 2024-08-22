@@ -10,6 +10,7 @@
         public static string KAFKA_LOAD_TOPIC { get; } = "Kafka:LoadTopic";
         public static string KAFKA_CONFIGURATION_TOPIC { get; } = "Kafka:ConfigurationTopic";
         public static string KAFKA_SERVER_STATISTICS_TOPIC { get; } = "Kafka:ServerStatisticsTopic";
+        public static string KAFKA_CUSTOM_TOPIC { get; } = "Kafka:CustomTopic";
         public static string KAFKA_LOAD_METHOD_STATISTICS_TOPIC { get; } = "Kafka:LoadMethodStatisticsTopic";
         public static string KAFKA_TOPIC_DATA_SAVE_IN_DAYS { get; } = "Kafka:TopicDataSaveInDays";
         public static string STATISTICS_COLLECT_INTERVAL_IN_MILLISECONDS { get; } = "StatisticsCollectIntervalInMilliseconds";

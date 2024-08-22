@@ -37,7 +37,6 @@ export class ServerSlotAdditionalInfromationComponent implements OnInit {
   private generateChartSeries(statistics: ServerLoadStatisticsResponse | undefined): Map<string, number> {
     let data = new Map<string, number>();
     if (statistics && statistics.loadMethodStatistics) {
-      console.log(statistics!.loadMethodStatistics);
       let methodStatistics = statistics.loadMethodStatistics;
       data.set("GET", methodStatistics.getAmount);
       data.set("POST", methodStatistics.postAmount);

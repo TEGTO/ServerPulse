@@ -25,6 +25,30 @@
       }
     },
     {
+      "Key": "Analyzer_GetLoadStatisticsPerDay",
+      "ServiceName": "analyzer",
+      "UpstreamPathTemplate": "/analyze/perday/{key}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "DownstreamPathTemplate": "/analyze/perday/{key}",
+      "DownstreamScheme": "http",
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToRequest": {
+        "Authorization": "Bearer {token}"
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 3
+      }
+    },
+    {
       "Key": "Analyzer_GetSomeLoadEvents",
       "ServiceName": "analyzer",
       "UpstreamPathTemplate": "/analyze/someevents",
@@ -49,11 +73,11 @@
       }
     },
     {
-      "Key": "Analyzer_GetLoadStatisticsPerDay",
+      "Key": "Analyzer_GetSomeCustomEvents",
       "ServiceName": "analyzer",
-      "UpstreamPathTemplate": "/analyze/perday/{key}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/analyze/perday/{key}",
+      "UpstreamPathTemplate": "/analyze/somecustomevents",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamPathTemplate": "/analyze/somecustomevents",
       "DownstreamScheme": "http",
       "LoadBalancerOptions": {
         "Type": "LeastConnection"
@@ -69,7 +93,7 @@
         "EnableRateLimiting": true,
         "Period": "1s",
         "PeriodTimespan": 1,
-        "Limit": 3
+        "Limit": 5
       }
     },
     {
@@ -121,6 +145,26 @@
       "ServiceName": "analyzer",
       "UpstreamPathTemplate": "/loadstatisticshub/{path}",
       "DownstreamPathTemplate": "/loadstatisticshub/{path}",
+      "DownstreamScheme": "ws",
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "OPTIONS", "CONNECT" ],
+      "QoSOptions": {
+        "TimeoutValue": 320000
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToRequest": {
+        "Authorization": "Bearer {token}"
+      }
+    },
+    {
+      "Key": "Analyzer_GetCustomStatistics",
+      "ServiceName": "analyzer",
+      "UpstreamPathTemplate": "/customstatisticshub/{path}",
+      "DownstreamPathTemplate": "/customstatisticshub/{path}",
       "DownstreamScheme": "ws",
       "LoadBalancerOptions": {
         "Type": "LeastConnection"
