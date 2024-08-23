@@ -8,21 +8,21 @@ using Moq;
 namespace AnalyzerApiTests.Services
 {
     [TestFixture]
-    internal class LoadStatisticsCollectorTests
+    internal class LoadStatisticsCollectorTests : BaseStatisticsCollectorTests
     {
         private Mock<IServerLoadReceiver> mockLoadReceiver;
-        private Mock<IStatisticsSender> mockStatisticsSender;
         private Mock<ILogger<LoadStatisticsCollector>> mockLogger;
-        private LoadStatisticsCollector loadStatisticsCollector;
+        private LoadStatisticsCollector collector;
 
         [SetUp]
-        public void Setup()
+        public override void Setup()
         {
+            base.Setup();
+
             mockLoadReceiver = new Mock<IServerLoadReceiver>();
-            mockStatisticsSender = new Mock<IStatisticsSender>();
             mockLogger = new Mock<ILogger<LoadStatisticsCollector>>();
 
-            loadStatisticsCollector = new LoadStatisticsCollector(
+            collector = new LoadStatisticsCollector(
                 mockLoadReceiver.Object,
                 mockStatisticsSender.Object,
                 mockLogger.Object
@@ -39,9 +39,9 @@ namespace AnalyzerApiTests.Services
             mockLoadReceiver.Setup(m => m.ReceiveLastLoadEventByKeyAsync(key, It.IsAny<CancellationToken>()))
                             .ReturnsAsync(new LoadEventWrapper());
             // Act
-            loadStatisticsCollector.StartConsumingStatistics(key);
+            collector.StartConsumingStatistics(key);
             await Task.Delay(500);
-            loadStatisticsCollector.StopConsumingStatistics(key);
+            collector.StopConsumingStatistics(key);
             // Assert
             mockStatisticsSender.Verify(m => m.SendServerLoadStatisticsAsync(It.IsAny<string>(), It.IsAny<ServerLoadStatistics>(), It.IsAny<CancellationToken>()), Times.Once);
         }
@@ -57,9 +57,9 @@ namespace AnalyzerApiTests.Services
             mockLoadReceiver.Setup(m => m.ConsumeLoadEventAsync(key, It.IsAny<CancellationToken>()))
                             .Returns(AsyncEnumerable(new List<LoadEventWrapper> { new LoadEventWrapper() }));
             // Act
-            loadStatisticsCollector.StartConsumingStatistics(key);
+            collector.StartConsumingStatistics(key);
             await Task.Delay(2000);
-            loadStatisticsCollector.StopConsumingStatistics(key);
+            collector.StopConsumingStatistics(key);
             // Assert
             mockStatisticsSender.Verify(m => m.SendServerLoadStatisticsAsync(It.IsAny<string>(), It.IsAny<ServerLoadStatistics>(), It.IsAny<CancellationToken>()), Times.AtLeast(2));
         }
@@ -73,15 +73,15 @@ namespace AnalyzerApiTests.Services
             mockLoadReceiver.Setup(m => m.ReceiveLastLoadEventByKeyAsync(key, It.IsAny<CancellationToken>()))
                             .ReturnsAsync(new LoadEventWrapper());
             // Act
-            loadStatisticsCollector.StartConsumingStatistics(key);
+            collector.StartConsumingStatistics(key);
             await Task.Delay(1500);
-            loadStatisticsCollector.StopConsumingStatistics(key);
+            collector.StopConsumingStatistics(key);
             await Task.Delay(1500);
             // Assert
             mockStatisticsSender.Verify(m => m.SendServerLoadStatisticsAsync(It.IsAny<string>(), It.IsAny<ServerLoadStatistics>(), It.IsAny<CancellationToken>()), Times.AtMost(2));
         }
         [Test]
-        public async Task SubscribeToPulseEventsAsync_ShouldSendStatisticsOnNewEvent()
+        public async Task SubscribeToLoadEventsAsync_ShouldSendStatisticsOnNewEvent()
         {
             // Arrange
             var key = "testKey";
@@ -91,20 +91,11 @@ namespace AnalyzerApiTests.Services
             mockLoadReceiver.Setup(m => m.ReceiveLoadEventAmountByKeyAsync(key, It.IsAny<CancellationToken>()))
                             .ReturnsAsync(100);
             // Act
-            loadStatisticsCollector.StartConsumingStatistics(key);
+            collector.StartConsumingStatistics(key);
             await Task.Delay(2000);
-            loadStatisticsCollector.StopConsumingStatistics(key);
+            collector.StopConsumingStatistics(key);
             // Assert
             mockStatisticsSender.Verify(m => m.SendServerLoadStatisticsAsync(It.IsAny<string>(), It.Is<ServerLoadStatistics>(s => s.LastEvent == loadEvent), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
-        }
-
-        private static async IAsyncEnumerable<T> AsyncEnumerable<T>(IEnumerable<T> items)
-        {
-            foreach (var item in items)
-            {
-                yield return item;
-                await Task.Yield();
-            }
         }
     }
 }

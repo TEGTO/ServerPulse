@@ -18,6 +18,7 @@ namespace AnalyzerApiTests.Services
     {
         private Mock<IHubContext<StatisticsHub<ServerStatisticsCollector>, IStatisticsHubClient>> mockHubStatisticsContext;
         private Mock<IHubContext<StatisticsHub<LoadStatisticsCollector>, IStatisticsHubClient>> mockHubLoadStatisticsContext;
+        private Mock<IHubContext<StatisticsHub<CustomStatisticsCollector>, IStatisticsHubClient>> mockHubCustomEventStatisticsContext;
         private Mock<IMessageProducer> mockProducer;
         private Mock<IMapper> mockMapper;
         private Mock<ILogger<StatisticsSender>> mockLogger;
@@ -29,6 +30,7 @@ namespace AnalyzerApiTests.Services
         {
             mockHubStatisticsContext = new Mock<IHubContext<StatisticsHub<ServerStatisticsCollector>, IStatisticsHubClient>>();
             mockHubLoadStatisticsContext = new Mock<IHubContext<StatisticsHub<LoadStatisticsCollector>, IStatisticsHubClient>>();
+            mockHubCustomEventStatisticsContext = new Mock<IHubContext<StatisticsHub<CustomStatisticsCollector>, IStatisticsHubClient>>();
             mockProducer = new Mock<IMessageProducer>();
             mockMapper = new Mock<IMapper>();
             mockLogger = new Mock<ILogger<StatisticsSender>>();
@@ -41,6 +43,7 @@ namespace AnalyzerApiTests.Services
             statisticsSender = new StatisticsSender(
                 mockHubStatisticsContext.Object,
                 mockHubLoadStatisticsContext.Object,
+                mockHubCustomEventStatisticsContext.Object,
                 mockProducer.Object,
                 mockMapper.Object,
                 mockConfiguration.Object,
@@ -82,7 +85,6 @@ namespace AnalyzerApiTests.Services
             mockProducer.Verify(p => p.ProduceAsync(topic, expectedSerializedStatistics, It.IsAny<CancellationToken>()), Times.Once);
             mockClientProxy.Verify(x => x.ReceiveStatistics(key, expectedSerializedData), Times.Once);
         }
-
         [Test]
         public async Task SendServerLoadStatisticsAsync_SendsStatisticsToHub()
         {
@@ -101,10 +103,29 @@ namespace AnalyzerApiTests.Services
             mockHubLoadStatisticsContext
                 .Setup(hub => hub.Clients.Group(key))
                 .Returns(mockClientProxy.Object);
-
             // Act
             await statisticsSender.SendServerLoadStatisticsAsync(key, serverLoadStatistics, CancellationToken.None);
+            // Assert
+            mockClientProxy.Verify(x => x.ReceiveStatistics(key, expectedSerializedData), Times.Once);
+        }
+        [Test]
+        public async Task SendServerCustomStatisticsAsync_SendsStatisticsToHub()
+        {
+            // Arrange
+            var key = "test-key";
+            var statistics = new CustomEventStatistics();
+            var expectedResponse = new CustomEventStatisticsResponse();
+            var expectedSerializedData = JsonSerializer.Serialize(expectedResponse);
 
+            mockMapper.Setup(m => m.Map<CustomEventStatisticsResponse>(statistics))
+                .Returns(expectedResponse);
+
+            var mockClientProxy = new Mock<IStatisticsHubClient>();
+            mockHubCustomEventStatisticsContext
+                .Setup(hub => hub.Clients.Group(key))
+                .Returns(mockClientProxy.Object);
+            // Act
+            await statisticsSender.SendServerCustomStatisticsAsync(key, statistics, CancellationToken.None);
             // Assert
             mockClientProxy.Verify(x => x.ReceiveStatistics(key, expectedSerializedData), Times.Once);
         }

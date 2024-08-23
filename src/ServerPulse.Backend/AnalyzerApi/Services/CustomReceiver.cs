@@ -16,13 +16,15 @@ namespace AnalyzerApi.Services
             customEventTopic = configuration[Configuration.KAFKA_CUSTOM_TOPIC]!;
         }
 
+        #region ICustomReceiver Members
+
         public async IAsyncEnumerable<CustomEventWrapper> ConsumeCustomEventAsync(string key, CancellationToken cancellationToken)
         {
             string topic = GetTopic(customEventTopic, key);
 
             await foreach (var response in ConsumMessageAsync(topic, cancellationToken))
             {
-                var ev = CustomEventHelper.ConvertCustomEventWrapper(response, mapper);
+                var ev = ConvertCustomEventWrapper(response, mapper);
                 if (ev != null)
                 {
                     yield return ev;
@@ -35,7 +37,15 @@ namespace AnalyzerApi.Services
             string topic = GetTopic(customEventTopic, options.Key);
             var messageOptions = new MessageInRangeQueryOptions(topic, timeoutInMilliseconds, options.From, options.To);
             List<ConsumeResponse> responses = await messageConsumer.ReadMessagesInDateRangeAsync(messageOptions, cancellationToken);
-            return CustomEventHelper.ConvertCustomEventWrappers(responses, mapper);
+            return ConvertCustomEventWrappers(responses, mapper);
+        }
+
+        public async Task<IEnumerable<CustomEventWrapper>> GetCertainAmountOfEvents(ReadCertainMessageNumberOptions options, CancellationToken cancellationToken)
+        {
+            string topic = GetTopic(customEventTopic, options.Key);
+            var messageOptions = new ReadSomeMessagesOptions(topic, timeoutInMilliseconds, options.NumberOfMessages, options.StartDate, options.ReadNew);
+            List<ConsumeResponse> responses = await messageConsumer.ReadSomeMessagesAsync(messageOptions, cancellationToken);
+            return ConvertCustomEventWrappers(responses, mapper);
         }
 
         public async Task<CustomEventWrapper?> ReceiveLastCustomEventByKeyAsync(string key, CancellationToken cancellationToken)
@@ -44,23 +54,16 @@ namespace AnalyzerApi.Services
             var response = await ReceiveLastMessageByKeyAsync(topic, cancellationToken);
             if (response != null)
             {
-                return CustomEventHelper.ConvertCustomEventWrapper(response, mapper);
+                return ConvertCustomEventWrapper(response, mapper);
             }
             return null;
         }
 
-        public async Task<IEnumerable<CustomEventWrapper>> GetCertainAmountOfEvents(ReadCertainMessageNumberOptions options, CancellationToken cancellationToken)
-        {
-            string topic = GetTopic(customEventTopic, options.Key);
-            var messageOptions = new ReadSomeMessagesOptions(topic, timeoutInMilliseconds, options.NumberOfMessages, options.StartDate, options.ReadNew);
-            List<ConsumeResponse> responses = await messageConsumer.ReadSomeMessagesAsync(messageOptions, cancellationToken);
-            return CustomEventHelper.ConvertCustomEventWrappers(responses, mapper);
-        }
-    }
+        #endregion
 
-    internal static class CustomEventHelper
-    {
-        public static IEnumerable<CustomEventWrapper> ConvertCustomEventWrappers(List<ConsumeResponse> responses, IMapper mapper)
+        #region Private Helpers
+
+        private IEnumerable<CustomEventWrapper> ConvertCustomEventWrappers(List<ConsumeResponse> responses, IMapper mapper)
         {
             List<CustomEventWrapper> events = new List<CustomEventWrapper>();
             foreach (var response in responses)
@@ -74,7 +77,7 @@ namespace AnalyzerApi.Services
             return events;
         }
 
-        public static CustomEventWrapper? ConvertCustomEventWrapper(ConsumeResponse response, IMapper mapper)
+        private CustomEventWrapper? ConvertCustomEventWrapper(ConsumeResponse response, IMapper mapper)
         {
             if (response.TryDeserializeEventWrapper<CustomEvent, CustomEventWrapper>(mapper, out CustomEventWrapper ev))
             {
@@ -83,5 +86,7 @@ namespace AnalyzerApi.Services
             }
             return null;
         }
+
+        #endregion
     }
 }

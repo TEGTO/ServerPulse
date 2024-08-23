@@ -11,14 +11,20 @@ using Shared.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
+#region Consul
+
 string environmentName = builder.Environment.EnvironmentName;
 builder.Services.AddHealthChecks();
 var consulSettings = ConsulExtension.GetConsulSettings(builder.Configuration);
 builder.Services.AddConsulService(consulSettings);
 builder.Configuration.ConfigureConsul(consulSettings, environmentName);
 
+#endregion 
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+#region Kafka
 
 var consumerConfig = new ConsumerConfig
 {
@@ -41,7 +47,11 @@ var producerConfig = new ProducerConfig
 builder.Services.AddKafkaProducer(producerConfig, adminConfig);
 builder.Services.AddKafkaConsumer(consumerConfig, adminConfig);
 
+#endregion 
+
 builder.Services.AddCache(builder.Configuration);
+
+#region Project Services
 
 builder.Services.AddSingleton<IServerStatusReceiver, ServerStatusReceiver>();
 builder.Services.AddSingleton<IServerLoadReceiver, ServerLoadReceiver>();
@@ -51,6 +61,8 @@ builder.Services.AddSingleton<IEventProcessor, EventProcessor>();
 builder.Services.AddSingleton<ServerStatisticsCollector>();
 builder.Services.AddSingleton<LoadStatisticsCollector>();
 builder.Services.AddSingleton<CustomStatisticsCollector>();
+
+#endregion
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
@@ -70,8 +82,12 @@ app.UseAuthorization();
 app.MapHealthChecks("/health");
 app.MapControllers();
 
+#region Hubs
+
 app.MapHub<StatisticsHub<ServerStatisticsCollector>>("/statisticshub");
 app.MapHub<StatisticsHub<LoadStatisticsCollector>>("/loadstatisticshub");
 app.MapHub<StatisticsHub<CustomStatisticsCollector>>("/customstatisticshub");
+
+#endregion
 
 app.Run();

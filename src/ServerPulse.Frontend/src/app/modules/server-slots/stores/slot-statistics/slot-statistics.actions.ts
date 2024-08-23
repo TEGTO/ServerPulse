@@ -32,3 +32,17 @@ export const subscribeToLoadStatisticsFailure = createAction(
     '[Slot Load Statistics] Subscribe To Load Statistics Failure',
     props<{ error: any }>()
 );
+
+//Custom Statistics
+export const subscribeToCustomStatistics = createAction(
+    '[Custom Statistics] Subscribe To Custom Statistics',
+    props<{ slotKey: string }>()
+);
+export const subscribeToCustomStatisticsSuccess = createAction(
+    '[Custom Statistics] Subscribe To Custom Statistics Success',
+    props<{ lastStatistics: { key: string; data: string; } }>()
+);
+export const subscribeToCustomStatisticsFailure = createAction(
+    '[Custom Statistics] Subscribe To Custom Statistics Failure',
+    props<{ error: any }>()
+);

@@ -44,7 +44,7 @@ describe('ServerSlotPreviewActivityChartComponent', () => {
     component = fixture.componentInstance;
     component.serverSlot = mockServerSlot;
 
-    mockStatisticsService.getAmountStatisticsInRange.and.returnValue(of([]));
+    mockStatisticsService.getLoadAmountStatisticsInRange.and.returnValue(of([]));
     mockStatisticsService.getLastServerLoadStatistics.and.returnValue(of({ key: "", statistics: mockLoadStatisticsResponse }));
 
     fixture.detectChanges();
@@ -63,7 +63,7 @@ describe('ServerSlotPreviewActivityChartComponent', () => {
     const statistics = [{ date: new Date(), amountOfEvents: 5 }];
     const updateStatisticsSetSpy = spyOn(component as any, 'updateStatisticsSet').and.callThrough();
 
-    mockStatisticsService.getAmountStatisticsInRange.and.returnValue(of(statistics));
+    mockStatisticsService.getLoadAmountStatisticsInRange.and.returnValue(of(statistics));
 
     component.ngAfterViewInit();
 

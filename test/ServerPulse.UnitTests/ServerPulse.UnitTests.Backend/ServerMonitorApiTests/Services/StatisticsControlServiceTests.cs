@@ -21,6 +21,7 @@ namespace ServerMonitorApiTests.Services
             mockConfiguration.Setup(c => c[Configuration.KAFKA_CONFIGURATION_TOPIC]).Returns("conf-topic");
             mockConfiguration.Setup(c => c[Configuration.KAFKA_LOAD_TOPIC]).Returns("load-topic");
             mockConfiguration.Setup(c => c[Configuration.KAFKA_ALIVE_TOPIC]).Returns("alive-topic");
+            mockConfiguration.Setup(c => c[Configuration.KAFKA_CUSTOM_TOPIC]).Returns("custom-topic");
 
             service = new StatisticsControlService(mockTopicManager.Object, mockConfiguration.Object);
         }
@@ -29,7 +30,7 @@ namespace ServerMonitorApiTests.Services
         {
             // Arrange
             var key = "-some-key";
-            var topics = new List<string> { "conf-topic-some-key", "alive-topic-some-key", "load-topic-some-key" };
+            var topics = new List<string> { "conf-topic-some-key", "alive-topic-some-key", "load-topic-some-key", "custom-topic-some-key" };
             // Act
             await service.DeleteStatisticsByKeyAsync(key);
             // Assert

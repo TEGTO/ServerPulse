@@ -315,6 +315,51 @@ namespace MessageBusTests
             Assert.That(result[4].Message, Is.EqualTo("message5"));
         }
         [Test]
+        public async Task ReadSomeMessagesAsync_ReturnsRequestedNumberOfMessagesOrderedFromOldest()
+        {
+            // Arrange
+            var options = new ReadSomeMessagesOptions("test-topic", 1000, 5, DateTime.MinValue, true);
+            var cancellationToken = CancellationToken.None;
+            var partitions = new List<int> { 0, 1 };
+            var topicMetadata = new Metadata(
+                new List<BrokerMetadata>(),
+                new List<TopicMetadata> { new TopicMetadata(options.TopicName, partitions.Select(p => new PartitionMetadata(p, 0, new int[0], new int[0], null)).ToList(), null) },
+                0,
+                "cluster-id"
+            );
+            mockAdminClient.Setup(x => x.GetMetadata(options.TopicName, It.IsAny<TimeSpan>())).Returns(topicMetadata);
+            mockConsumer.Setup(x => x.OffsetsForTimes(It.IsAny<IEnumerable<TopicPartitionTimestamp>>(), It.IsAny<TimeSpan>()))
+                .Returns(partitions.Select(p => new TopicPartitionOffset(new TopicPartition(options.TopicName, p), 0)).ToList());
+            mockConsumer.Setup(x => x.QueryWatermarkOffsets(It.IsAny<TopicPartition>(), It.IsAny<TimeSpan>()))
+                .Returns(new WatermarkOffsets(0, 10));
+            var messageList = new List<ConsumeResult<string, string>>
+            {
+                new ConsumeResult<string, string> { Message = new Message<string, string> { Value = "message1", Timestamp = new Timestamp(DateTime.MinValue.AddDays(5)) }, TopicPartitionOffset = new TopicPartitionOffset(options.TopicName, 0, 1) },
+                new ConsumeResult<string, string> { Message = new Message<string, string> { Value = "message2", Timestamp = new Timestamp(DateTime.MinValue.AddDays(4))}, TopicPartitionOffset = new TopicPartitionOffset(options.TopicName, 0, 2) },
+                new ConsumeResult<string, string> { Message = new Message<string, string> { Value = "message3", Timestamp = new Timestamp(DateTime.MinValue.AddDays(3)) }, TopicPartitionOffset = new TopicPartitionOffset(options.TopicName, 0, 3) },
+                new ConsumeResult<string, string> { Message = new Message<string, string> { Value = "message4", Timestamp = new Timestamp(DateTime.MinValue.AddDays(2)) }, TopicPartitionOffset = new TopicPartitionOffset(options.TopicName, 0, 4) },
+                new ConsumeResult<string, string> { Message = new Message<string, string> { Value = "message5", Timestamp = new Timestamp(DateTime.MinValue.AddDays(1)) }, TopicPartitionOffset = new TopicPartitionOffset(options.TopicName, 0, 5) }
+            };
+            var messageIndex = 0;
+            mockConsumer.Setup(x => x.Consume(It.IsAny<int>())).Returns(() =>
+            {
+                if (messageIndex < messageList.Count)
+                {
+                    return messageList[messageIndex++];
+                }
+                return null;
+            });
+            // Act
+            var result = await kafkaConsumer.ReadSomeMessagesAsync(options, cancellationToken);
+            // Assert
+            Assert.That(result.Count, Is.EqualTo(5));
+            Assert.That(result[4].Message, Is.EqualTo("message1"));
+            Assert.That(result[3].Message, Is.EqualTo("message2"));
+            Assert.That(result[2].Message, Is.EqualTo("message3"));
+            Assert.That(result[1].Message, Is.EqualTo("message4"));
+            Assert.That(result[0].Message, Is.EqualTo("message5"));
+        }
+        [Test]
         public async Task ReadSomeMessagesAsync_ReturnsFewerMessagesThanRequested()
         {
             // Arrange

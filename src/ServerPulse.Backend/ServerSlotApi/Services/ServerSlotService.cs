@@ -16,6 +16,8 @@ namespace ServerSlotApi.Services
             slotsPerUser = int.Parse(configuration[Configuration.SERVER_SLOTS_PER_USER]!);
         }
 
+        #region IServerSlotService Members
+
         public async Task<ServerSlot?> GetSlotByIdAsync(string id, CancellationToken cancellationToken)
         {
             ServerSlot? serverSlot = null;
@@ -90,9 +92,16 @@ namespace ServerSlotApi.Services
                 await dbContext.SaveChangesAsync(cancellationToken);
             }
         }
+
+        #endregion
+
+        #region Private Helpers
+
         private async Task<ServerDataDbContext> CreateDbContextAsync(CancellationToken cancellationToken)
         {
             return await repository.CreateDbContextAsync(cancellationToken);
         }
+
+        #endregion
     }
 }

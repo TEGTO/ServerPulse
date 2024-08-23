@@ -1,0 +1,76 @@
+<div class="statistics__content">
+    <section class="content__left child:border-b border-gray-200 dark:border-gray-600">
+        <div class="left__status">
+            Status:
+            {{ serverStatus$ | async }}
+            <div class="status__illumination">
+                <span [ngClass]="{
+            'green': (serverStatus$ | async) === 'Online',
+            'red': (serverStatus$ | async) === 'Offline',
+            'grey': (serverStatus$ | async) === 'No Data'
+          }" class="illumination__indicator"></span>
+            </div>
+        </div>
+        <div class="left__uptime">
+            Last start:
+            {{ (serverLastStartDateTime$ | async) ? (serverLastStartDateTime$ | async | localizedDate ) : '—' }}
+        </div>
+        <div class="left__uptime">
+            Uptime:
+            {{ (currentServerSlotStatistics$ | async)?.serverUptime ?? "—" }}
+        </div>
+        <div class="left__last-uptime">
+            Last uptime:
+            {{ (currentServerSlotStatistics$ | async)?.lastServerUptime ?? "—" }}
+        </div>
+        <div class="left__last-uptime">
+            Last pulse:
+            {{ (lastPulseDateTime$ | async) ? (lastPulseDateTime$ | async | localizedDate ) : '—' }}
+        </div>
+        <div class="left__last-load-amount">
+            Load amount:
+            {{ (loadStatistics$ | async)?.amountOfEvents ?? "—" }}
+        </div>
+    </section>
+
+    <cdk-virtual-scroll-viewport #scroller class="content__right" [itemSize]="tableItemHeight">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                <tr>
+                    <th scope="col" class="px-4 py-4">Endpoint</th>
+                    <th scope="col" class="px-4 py-4">Method</th>
+                    <th scope="col" class="px-5 py-4">Status code</th>
+                    <th scope="col" class="px-4 py-4">Duration</th>
+                    <th scope="col" class="px-4 py-4">Timestamp</th>
+                    <th scope="col" class="px-4 py-4">Creation Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *cdkVirtualFor="let item of (dataSource$ | async)"
+                    class="border-b dark:bg-gray-800 dark:border-gray-700 px-4 py-4">
+                    <th scope="row" class="px-4 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                        {{item.endpoint}}
+                    </th>
+                    <td class="px-4 py-3">
+                        {{item.method}}
+                    </td>
+                    <td class="px-4 py-3">
+                        {{item.statusCode}}
+                    </td>
+                    <td class="px-4 py-3">
+                        {{item.duration}}
+                    </td>
+                    <td class="px-4 py-3">
+                        {{item.timestampUTC | localizedDate}}
+                    </td>
+                    <td class="px-4 py-3">
+                        {{item.creationDateUTC | localizedDate}}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="flex justify-center py-3" *ngIf="(areTableItemsLoading$ | async)">
+            <mat-progress-spinner [mode]="'indeterminate'" diameter="50"></mat-progress-spinner>
+        </div>
+    </cdk-virtual-scroll-viewport>
+</div>

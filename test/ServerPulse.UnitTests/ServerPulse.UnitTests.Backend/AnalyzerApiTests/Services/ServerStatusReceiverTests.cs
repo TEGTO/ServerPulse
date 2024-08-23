@@ -2,10 +2,8 @@
 using AnalyzerApi.Domain.Dtos.Wrappers;
 using AnalyzerApi.Domain.Models;
 using AnalyzerApi.Services;
-using AutoMapper;
 using Confluent.Kafka;
 using MessageBus.Interfaces;
-using Microsoft.Extensions.Configuration;
 using Moq;
 using ServerPulse.EventCommunication.Events;
 using System.Text.Json;
@@ -13,35 +11,28 @@ using System.Text.Json;
 namespace AnalyzerApiTests.Services
 {
     [TestFixture]
-    internal class ServerStatusReceiverTests
+    internal class ServerStatusReceiverTests : BaseEventReceiverTests
     {
         private const string KAFKA_ALIVE_TOPIC = "KafkaPulseTopic_";
         private const string KAFKA_CONFIGURATION_TOPIC = "KafkaConfigurationTopic_";
         private const string KAFKA_SERVER_STATISTICS_TOPIC = "KafkaServerStatisticsTopic_";
-        private const int KAFKA_TIMEOUT_IN_MILLISECONDS = 5000;
 
-        private Mock<IMessageConsumer> mockMessageConsumer;
-        private Mock<IMapper> mockMapper;
-        private Mock<IConfiguration> mockConfiguration;
         private ServerStatusReceiver serverStatusReceiver;
 
         [SetUp]
-        public void Setup()
+        public override void Setup()
         {
-            mockMessageConsumer = new Mock<IMessageConsumer>();
-            mockMapper = new Mock<IMapper>();
-            mockConfiguration = new Mock<IConfiguration>();
+            base.Setup();
 
             mockConfiguration.SetupGet(c => c[Configuration.KAFKA_ALIVE_TOPIC]).Returns(KAFKA_ALIVE_TOPIC);
             mockConfiguration.SetupGet(c => c[Configuration.KAFKA_CONFIGURATION_TOPIC]).Returns(KAFKA_CONFIGURATION_TOPIC);
             mockConfiguration.SetupGet(c => c[Configuration.KAFKA_SERVER_STATISTICS_TOPIC]).Returns(KAFKA_SERVER_STATISTICS_TOPIC);
-            mockConfiguration.SetupGet(c => c[Configuration.KAFKA_TIMEOUT_IN_MILLISECONDS]).Returns(KAFKA_TIMEOUT_IN_MILLISECONDS.ToString());
 
             serverStatusReceiver = new ServerStatusReceiver(mockMessageConsumer.Object, mockMapper.Object, mockConfiguration.Object);
         }
 
         [Test]
-        public async Task ConsumePulseEventAsync_ValidMessages_YieldsPulseEvents()
+        public async Task ConsumeAsync_ValidMessages_YieldsPulseEvents()
         {
             // Arrange
             var key = "validSlotKey";
@@ -69,7 +60,7 @@ namespace AnalyzerApiTests.Services
             Assert.That(receivedEvents[1].IsAlive, Is.False);
         }
         [Test]
-        public async Task ConsumeConfigurationEventAsync_ValidMessages_YieldsConfigurationEvents()
+        public async Task ConsumeAsync_ValidMessages_YieldsConfigurationEvents()
         {
             // Arrange
             var key = "validSlotKey";

@@ -1,6 +1,6 @@
 ﻿namespace AnalyzerApi.Domain.Models
 {
-    public class LoadMethodStatistics
+    public class LoadMethodStatistics : BaseStatistics
     {
         public int GetAmount { get; set; }
         public int PostAmount { get; set; }

@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
-import { GetSomeLoadEventsRequest, LoadAmountStatisticsInRangeRequest, LoadEventsRangeRequest, StatisticsApiService, TimeSpan } from '../../../shared';
+import { GetSomeMessagesRequest, MessageAmountInRangeRequest, MessagesInRangeRangeRequest, StatisticsApiService, TimeSpan } from '../../../shared';
 import { selectDate, subscribeToLoadStatistics, subscribeToSlotStatistics } from '../../index';
 import { ServerStatisticsControllerService } from './server-statistics-controller.service';
 
@@ -58,7 +58,7 @@ describe('ServerStatisticsControllerService', () => {
       expect(response).toEqual(mockResponse);
     });
 
-    const expectedRequest: LoadEventsRangeRequest = { key, from, to };
+    const expectedRequest: MessagesInRangeRangeRequest = { key, from, to };
     expect(apiService.getLoadEventsInDataRange).toHaveBeenCalledWith(expectedRequest);
   });
 
@@ -78,14 +78,14 @@ describe('ServerStatisticsControllerService', () => {
       timestampUTC: new Date(),
     }];
 
-    apiService.getSomeEventsAfterDate.and.returnValue(of(mockResponse));
+    apiService.getSomeCustomEvents.and.returnValue(of(mockResponse));
 
     service.getSomeLoadEventsFromDate(key, numberOfMessages, from, readNew).subscribe(response => {
       expect(response).toEqual(mockResponse);
     });
 
-    const expectedRequest: GetSomeLoadEventsRequest = { key, numberOfMessages, startDate: from, readNew };
-    expect(apiService.getSomeEventsAfterDate).toHaveBeenCalledWith(expectedRequest);
+    const expectedRequest: GetSomeMessagesRequest = { key, numberOfMessages, startDate: from, readNew };
+    expect(apiService.getSomeCustomEvents).toHaveBeenCalledWith(expectedRequest);
   });
 
   it('should call apiService.getWholeAmountStatisticsInDays with correct key in getWholeAmountStatisticsInDays', () => {
@@ -95,13 +95,13 @@ describe('ServerStatisticsControllerService', () => {
       date: new Date(),
     }];
 
-    apiService.getWholeAmountStatisticsInDays.and.returnValue(of(mockResponse));
+    apiService.getWholeLoadAmountStatisticsInDays.and.returnValue(of(mockResponse));
 
-    service.getWholeAmountStatisticsInDays(key).subscribe(response => {
+    service.getWholeLoadAmountStatisticsInDays(key).subscribe(response => {
       expect(response).toEqual(mockResponse);
     });
 
-    expect(apiService.getWholeAmountStatisticsInDays).toHaveBeenCalledWith(key);
+    expect(apiService.getWholeLoadAmountStatisticsInDays).toHaveBeenCalledWith(key);
   });
 
   it('should call apiService.getAmountStatisticsInRange with correct request in getAmountStatisticsInRange', () => {
@@ -114,13 +114,13 @@ describe('ServerStatisticsControllerService', () => {
       date: new Date(),
     }];
 
-    apiService.getAmountStatisticsInRange.and.returnValue(of(mockResponse));
+    apiService.getLoadAmountStatisticsInRange.and.returnValue(of(mockResponse));
 
-    service.getAmountStatisticsInRange(key, from, to, timeSpan).subscribe(response => {
+    service.getLoadAmountStatisticsInRange(key, from, to, timeSpan).subscribe(response => {
       expect(response).toEqual(mockResponse);
     });
-    const expectedRequest: LoadAmountStatisticsInRangeRequest = { key, from, to, timeSpan: timeSpan.toString() };
-    expect(apiService.getAmountStatisticsInRange).toHaveBeenCalledWith(expectedRequest);
+    const expectedRequest: MessageAmountInRangeRequest = { key, from, to, timeSpan: timeSpan.toString() };
+    expect(apiService.getLoadAmountStatisticsInRange).toHaveBeenCalledWith(expectedRequest);
   });
 
   it('should dispatch subscribeToSlotStatistics and select selectLastStatistics in getLastServerStatistics', () => {

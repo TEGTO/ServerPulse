@@ -32,9 +32,11 @@ namespace AnalyzerApi.Controllers
             cacheStatisticsKey = configuration[Configuration.CACHE_STATISTICS_KEY]!;
         }
 
+        #region Endpoints
+
         [Route("daterange")]
         [HttpPost]
-        public async Task<ActionResult<IEnumerable<LoadEventWrapper>>> GetLoadEventsInDataRange(LoadEventsRangeRequest request, CancellationToken cancellationToken)
+        public async Task<ActionResult<IEnumerable<LoadEventWrapper>>> GetLoadEventsInDataRange(MessagesInRangeRangeRequest request, CancellationToken cancellationToken)
         {
             var cacheKey = $"{cacheStatisticsKey}-{request.Key}-{request.From.ToUniversalTime()}-{request.To.ToUniversalTime()}-daterange";
             IEnumerable<LoadEventWrapper>? events = await GetInCacheAsync<IEnumerable<LoadEventWrapper>>(cacheKey);
@@ -72,7 +74,7 @@ namespace AnalyzerApi.Controllers
         }
         [Route("amountrange")]
         [HttpPost]
-        public async Task<ActionResult<IEnumerable<LoadAmountStatisticsResponse>>> GetAmountStatisticsInRange(LoadAmountStatisticsInRangeRequest request, CancellationToken cancellationToken)
+        public async Task<ActionResult<IEnumerable<LoadAmountStatisticsResponse>>> GetAmountStatisticsInRange(MessageAmountInRangeRequest request, CancellationToken cancellationToken)
         {
             var cacheKey = $"{cacheStatisticsKey}-{request.Key}-{request.From.ToUniversalTime()}-{request.To.ToUniversalTime()}-{request.TimeSpan}-amountrange";
 
@@ -92,17 +94,8 @@ namespace AnalyzerApi.Controllers
         [HttpPost]
         public async Task<ActionResult<IEnumerable<LoadEventWrapper>>> GetSomeLoadEvents(GetSomeMessagesRequest request, CancellationToken cancellationToken)
         {
-            var cacheKey = $"{cacheStatisticsKey}-{request.Key}-{request.StartDate.ToUniversalTime()}-{request.NumberOfMessages}-{request.ReadNew}-someevents";
-
-            IEnumerable<LoadEventWrapper>? events = await GetInCacheAsync<IEnumerable<LoadEventWrapper>>(cacheKey);
-
-            if (events == null)
-            {
-                var options = new ReadCertainMessageNumberOptions(request.Key, request.NumberOfMessages, request.StartDate.ToUniversalTime(), request.ReadNew);
-                events = await serverLoadReceiver.GetCertainAmountOfEvents(options, cancellationToken);
-            }
-
-            await cacheService.SetValueAsync(cacheKey, JsonSerializer.Serialize(events), cacheExpiryInMinutes);
+            var options = new ReadCertainMessageNumberOptions(request.Key, request.NumberOfMessages, request.StartDate.ToUniversalTime(), request.ReadNew);
+            IEnumerable<LoadEventWrapper>? events = await serverLoadReceiver.GetCertainAmountOfEvents(options, cancellationToken);
 
             return Ok(events);
         }
@@ -110,20 +103,15 @@ namespace AnalyzerApi.Controllers
         [HttpPost]
         public async Task<ActionResult<IEnumerable<CustomEventWrapper>>> GetSomeCustomEvents(GetSomeMessagesRequest request, CancellationToken cancellationToken)
         {
-            var cacheKey = $"{cacheStatisticsKey}-{request.Key}-{request.StartDate.ToUniversalTime()}-{request.NumberOfMessages}-{request.ReadNew}-somecustomevents";
-
-            IEnumerable<CustomEventWrapper>? events = await GetInCacheAsync<IEnumerable<CustomEventWrapper>>(cacheKey);
-
-            if (events == null)
-            {
-                var options = new ReadCertainMessageNumberOptions(request.Key, request.NumberOfMessages, request.StartDate.ToUniversalTime(), request.ReadNew);
-                events = await customReceiver.GetCertainAmountOfEvents(options, cancellationToken);
-            }
-
-            await cacheService.SetValueAsync(cacheKey, JsonSerializer.Serialize(events), cacheExpiryInMinutes);
+            var options = new ReadCertainMessageNumberOptions(request.Key, request.NumberOfMessages, request.StartDate.ToUniversalTime(), request.ReadNew);
+            IEnumerable<CustomEventWrapper>? events = await customReceiver.GetCertainAmountOfEvents(options, cancellationToken);
 
             return Ok(events);
         }
+
+        #endregion
+
+        #region Private Helpers
 
         private async Task<T?> GetInCacheAsync<T>(string key) where T : class
         {
@@ -138,5 +126,7 @@ namespace AnalyzerApi.Controllers
             }
             return null;
         }
+
+        #endregion
     }
 }

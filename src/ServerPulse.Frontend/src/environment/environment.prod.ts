@@ -6,5 +6,6 @@ export const environment =
   ecryptionSecretKey: "encryption-secret-key",
   projectUrl: "https://github.com/TEGTO/ServerPulse",
   statisticsHub: "https://localhost:7129/statisticshub",
-  loadStatisticsHub: "https://localhost:7129/loadstatisticshub"
+  loadStatisticsHub: "https://localhost:7129/loadstatisticshub",
+  customStatisticsHub: "https://localhost:7129/customstatisticshub"
 };

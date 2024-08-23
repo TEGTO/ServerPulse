@@ -1,39 +1,33 @@
 ﻿using AnalyzerApi.Domain.Dtos.Wrappers;
-using AutoMapper;
+using AnalyzerApi.Domain.Models;
+using AnalyzerApi.Services.Interfaces;
+using AnalyzerApiTests.Services;
 using Confluent.Kafka;
 using MessageBus.Interfaces;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Moq;
 using ServerPulse.EventCommunication.Events;
 using System.Text.Json;
 
 namespace AnalyzerApi.Services.Tests
 {
-    [TestFixture()]
-    internal class ServerLoadReceiverTests
+    [TestFixture]
+    internal class ServerLoadReceiverTests : BaseEventReceiverTests
     {
         private const string KAFKA_LOAD_TOPIC = "KafkaLoadTopic_";
-        private const int KAFKA_TIMEOUT_IN_MILLISECONDS = 5000;
         private const int STATISTICS_SAVE_DATA_IN_DAYS = 30;
 
-        private Mock<IMessageConsumer> mockMessageConsumer;
-        private Mock<IMapper> mockMapper;
-        private Mock<IConfiguration> mockConfiguration;
         private ServerLoadReceiver serverLoadReceiver;
 
         [SetUp]
-        public void Setup()
+        public override void Setup()
         {
-            mockMessageConsumer = new Mock<IMessageConsumer>();
-            mockMapper = new Mock<IMapper>();
-            mockConfiguration = new Mock<IConfiguration>();
+            base.Setup();
 
             mockConfiguration.SetupGet(c => c[Configuration.KAFKA_LOAD_TOPIC]).Returns(KAFKA_LOAD_TOPIC);
-            mockConfiguration.SetupGet(c => c[Configuration.KAFKA_TIMEOUT_IN_MILLISECONDS]).Returns(KAFKA_TIMEOUT_IN_MILLISECONDS.ToString());
             mockConfiguration.SetupGet(c => c[Configuration.KAFKA_TOPIC_DATA_SAVE_IN_DAYS]).Returns(STATISTICS_SAVE_DATA_IN_DAYS.ToString());
+            mockConfiguration.SetupGet(c => c[Configuration.KAFKA_LOAD_METHOD_STATISTICS_TOPIC]).Returns("KafkaLoadMethodStatisticsTopic_");
 
-            serverLoadReceiver = new ServerLoadReceiver(mockMessageConsumer.Object, mockMapper.Object, Mock.Of<ILogger<ServerLoadReceiver>>(), mockConfiguration.Object);
+            serverLoadReceiver = new ServerLoadReceiver(mockMessageConsumer.Object, mockMapper.Object, mockConfiguration.Object);
         }
 
         [Test]
@@ -153,6 +147,23 @@ namespace AnalyzerApi.Services.Tests
             Assert.That(result.Last().AmountOfEvents, Is.EqualTo(5));
         }
         [Test]
+        public async Task GetAmountStatisticsInDaysAsync_NoMessages_ReturnsEmptyStatistics()
+        {
+            // Arrange
+            var key = "validSlotKey";
+            var topic = KAFKA_LOAD_TOPIC + key;
+            var timeSpan = TimeSpan.FromDays(1);
+            var messageAmounts = new Dictionary<DateTime, int>();
+
+            mockMessageConsumer
+                .Setup(x => x.GetMessageAmountPerTimespanAsync(It.IsAny<MessageInRangeQueryOptions>(), timeSpan, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(messageAmounts);
+            // Act
+            var result = await serverLoadReceiver.GetAmountStatisticsInDaysAsync(key, CancellationToken.None);
+            // Assert
+            Assert.That(result.Count(), Is.EqualTo(0));
+        }
+        [Test]
         public async Task GetAmountStatisticsLastDayAsync_ValidTopic_ReturnsStatistics()
         {
             // Arrange
@@ -212,6 +223,39 @@ namespace AnalyzerApi.Services.Tests
             // Assert
             Assert.IsNotNull(result);
             Assert.That(result.Key, Is.EqualTo(key));
+        }
+        [Test]
+        public async Task ReceiveLastLoadMethodStatisticsByKeyAsync_ValidMessage_ReturnsDeserializedStatistics()
+        {
+            // Arrange
+            var key = "validSlotKey";
+            var topic = "KafkaLoadMethodStatisticsTopic_" + key;
+            var message = JsonSerializer.Serialize(new LoadMethodStatistics { GetAmount = 10, PostAmount = 5 });
+            mockMessageConsumer
+                .Setup(x => x.ReadLastTopicMessageAsync(topic, KAFKA_TIMEOUT_IN_MILLISECONDS, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ConsumeResponse(message, DateTime.UtcNow));
+            // Act
+            var result = await serverLoadReceiver.ReceiveLastLoadMethodStatisticsByKeyAsync(key, CancellationToken.None);
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.That(result.GetAmount, Is.EqualTo(10));
+            Assert.That(result.PostAmount, Is.EqualTo(5));
+        }
+        [Test]
+        public async Task GetAmountStatisticsInRangeAsync_NoMessages_ReturnsEmptyStatistics()
+        {
+            // Arrange
+            var options = new InRangeQueryOptions("validSlotKey", DateTime.UtcNow.AddDays(-10), DateTime.UtcNow);
+            var topic = KAFKA_LOAD_TOPIC + options.Key;
+            var timeSpan = TimeSpan.FromDays(1);
+            var messageAmounts = new Dictionary<DateTime, int>();
+            mockMessageConsumer
+                .Setup(x => x.GetMessageAmountPerTimespanAsync(It.IsAny<MessageInRangeQueryOptions>(), timeSpan, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(messageAmounts);
+            // Act
+            var result = await serverLoadReceiver.GetAmountStatisticsInRangeAsync(options, timeSpan, CancellationToken.None);
+            // Assert
+            Assert.That(result.Count(), Is.EqualTo(0));
         }
         private static async IAsyncEnumerable<ConsumeResponse> AsyncEnumerable(IEnumerable<string> items)
         {

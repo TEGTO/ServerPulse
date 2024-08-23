@@ -1,6 +1,6 @@
 import { ServerLoadStatisticsResponse, ServerStatisticsResponse, TimeSpan, convertToServerLoadStatisticsResponse, convertToServerStatisticsResponse } from "../../../shared";
 import { selectDate, subscribeToLoadStatisticsFailure, subscribeToLoadStatisticsSuccess, subscribeToSlotStatisticsFailure, subscribeToSlotStatisticsSuccess } from "../../index";
-import { SlotLoadStatisticsState, SlotStatisticsState, slotLoadStatisticsReducer, slotstatisticsReducer } from "./slot-statistics.reducer";
+import { SlotLoadStatisticsState, SlotStatisticsState, slotLoadStatisticsReducer, slotStatisticsReducer } from "./slot-statistics.reducer";
 
 describe('SlotStatistics Reducer', () => {
     const initialSlotStatisticsState: SlotStatisticsState = {
@@ -23,13 +23,13 @@ describe('SlotStatistics Reducer', () => {
 
     it('should return the initial state', () => {
         const action = { type: 'Unknown' } as any;
-        const state = slotstatisticsReducer(initialSlotStatisticsState, action);
+        const state = slotStatisticsReducer(initialSlotStatisticsState, action);
         expect(state).toBe(initialSlotStatisticsState);
     });
 
     it('should handle subscribeToSlotStatisticsSuccess', () => {
         const action = subscribeToSlotStatisticsSuccess({ lastStatistics: mockLastStatistics });
-        const state = slotstatisticsReducer(initialSlotStatisticsState, action);
+        const state = slotStatisticsReducer(initialSlotStatisticsState, action);
         expect(state.lastStatistics?.key).toBe(mockLastStatistics.key);
         expect(state.lastStatistics?.statistics).toEqual(convertToServerStatisticsResponse(mockStatisticsResponse));
         expect(state.error).toBeNull();
@@ -38,7 +38,7 @@ describe('SlotStatistics Reducer', () => {
     it('should handle subscribeToSlotStatisticsFailure', () => {
         const error = 'Error';
         const action = subscribeToSlotStatisticsFailure({ error });
-        const state = slotstatisticsReducer(initialSlotStatisticsState, action);
+        const state = slotStatisticsReducer(initialSlotStatisticsState, action);
         expect(state.error).toEqual(error);
     });
 });

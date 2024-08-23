@@ -7,19 +7,19 @@ namespace AnalyzerApiTests.Validators
     [TestFixture]
     internal class LoadEventsRangeRequestValidatorTests
     {
-        private LoadEventsRangeRequestValidator validator;
+        private MessagesInRangeRangeRequestValidator validator;
 
         [SetUp]
         public void Setup()
         {
-            validator = new LoadEventsRangeRequestValidator();
+            validator = new MessagesInRangeRangeRequestValidator();
         }
 
         [Test]
         public void Validator_ValidInput_PassesValidation()
         {
             // Arrange
-            var request = new LoadEventsRangeRequest
+            var request = new MessagesInRangeRangeRequest
             {
                 Key = "validKey",
                 From = DateTime.UtcNow.AddDays(-1),
@@ -33,7 +33,7 @@ namespace AnalyzerApiTests.Validators
         public void Validator_InvalidKey_Null_FailsValidation()
         {
             // Arrange
-            var request = new LoadEventsRangeRequest
+            var request = new MessagesInRangeRangeRequest
             {
                 Key = null,
                 From = DateTime.UtcNow.AddDays(-1),
@@ -47,7 +47,7 @@ namespace AnalyzerApiTests.Validators
         public void Validator_InvalidKey_Empty_FailsValidation()
         {
             // Arrange
-            var request = new LoadEventsRangeRequest
+            var request = new MessagesInRangeRangeRequest
             {
                 Key = string.Empty,
                 From = DateTime.UtcNow.AddDays(-1),
@@ -61,7 +61,7 @@ namespace AnalyzerApiTests.Validators
         public void Validator_InvalidKey_ExceedsMaxLength_FailsValidation()
         {
             // Arrange
-            var request = new LoadEventsRangeRequest
+            var request = new MessagesInRangeRangeRequest
             {
                 Key = new string('a', 257), // Key exceeds 256 characters
                 From = DateTime.UtcNow.AddDays(-1),
@@ -75,7 +75,7 @@ namespace AnalyzerApiTests.Validators
         public void Validator_InvalidFromAndToDate_FromIsAfterTo_FailsValidation()
         {
             // Arrange
-            var request = new LoadEventsRangeRequest
+            var request = new MessagesInRangeRangeRequest
             {
                 Key = "validKey",
                 From = DateTime.UtcNow,
@@ -90,7 +90,7 @@ namespace AnalyzerApiTests.Validators
         public void Validator_InvalidToDate_ToIsBeforeFrom_FailsValidation()
         {
             // Arrange
-            var request = new LoadEventsRangeRequest
+            var request = new MessagesInRangeRangeRequest
             {
                 Key = "validKey",
                 From = DateTime.UtcNow.AddDays(-1),

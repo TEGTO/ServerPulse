@@ -3,7 +3,6 @@ using AnalyzerApi.Domain.Dtos.Wrappers;
 using AnalyzerApi.Domain.Models;
 using AnalyzerApi.Services;
 using AnalyzerApi.Services.Interfaces;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System.Collections.Concurrent;
@@ -12,27 +11,26 @@ using System.Reflection;
 namespace AnalyzerApiTests.Services
 {
     [TestFixture]
-    internal class ServerStatisticsCollectorTests
+    internal class ServerStatisticsCollectorTests : BaseStatisticsCollectorTests
     {
+        private const int STATISTICS_COLLECT_INTERVAL = 1000;
+
         private Mock<IServerStatusReceiver> mockMessageReceiver;
-        private Mock<IStatisticsSender> mockStatisticsSender;
-        private Mock<IConfiguration> mockConfiguration;
         private Mock<ILogger<ServerStatisticsCollector>> mockLogger;
-        private ServerStatisticsCollector serverStatisticsCollector;
-        private const int StatisticsCollectInterval = 1000;
+        private ServerStatisticsCollector collector;
 
         [SetUp]
-        public void Setup()
+        public override void Setup()
         {
+            base.Setup();
+
             mockMessageReceiver = new Mock<IServerStatusReceiver>();
-            mockStatisticsSender = new Mock<IStatisticsSender>();
-            mockConfiguration = new Mock<IConfiguration>();
             mockLogger = new Mock<ILogger<ServerStatisticsCollector>>();
 
             mockConfiguration.SetupGet(c => c[Configuration.STATISTICS_COLLECT_INTERVAL_IN_MILLISECONDS])
-                             .Returns(StatisticsCollectInterval.ToString());
+                             .Returns(STATISTICS_COLLECT_INTERVAL.ToString());
 
-            serverStatisticsCollector = new ServerStatisticsCollector(
+            collector = new ServerStatisticsCollector(
                 mockMessageReceiver.Object,
                 mockStatisticsSender.Object,
                 mockConfiguration.Object,
@@ -52,9 +50,9 @@ namespace AnalyzerApiTests.Services
             mockMessageReceiver.Setup(m => m.ReceiveLastServerStatisticsByKeyAsync(key, It.IsAny<CancellationToken>()))
                                .ReturnsAsync(new ServerStatistics { IsAlive = true });
             // Act
-            serverStatisticsCollector.StartConsumingStatistics(key);
+            collector.StartConsumingStatistics(key);
             await Task.Delay(500);
-            serverStatisticsCollector.StopConsumingStatistics(key);
+            collector.StopConsumingStatistics(key);
             // Assert
             mockStatisticsSender.Verify(m => m.SendServerStatisticsAsync(It.IsAny<string>(), It.IsAny<ServerStatistics>(), It.IsAny<CancellationToken>()), Times.Once);
         }
@@ -70,9 +68,9 @@ namespace AnalyzerApiTests.Services
             mockMessageReceiver.Setup(m => m.ReceiveLastServerStatisticsByKeyAsync(key, It.IsAny<CancellationToken>()))
                                .ReturnsAsync(new ServerStatistics { IsAlive = true });
             // Act
-            serverStatisticsCollector.StartConsumingStatistics(key);
+            collector.StartConsumingStatistics(key);
             await Task.Delay(3000);
-            serverStatisticsCollector.StopConsumingStatistics(key);
+            collector.StopConsumingStatistics(key);
             // Assert
             mockStatisticsSender.Verify(m => m.SendServerStatisticsAsync(It.IsAny<string>(), It.IsAny<ServerStatistics>(), It.IsAny<CancellationToken>()), Times.AtLeast(2));
         }
@@ -92,9 +90,9 @@ namespace AnalyzerApiTests.Services
             mockMessageReceiver.Setup(m => m.ConsumeConfigurationEventAsync(key, It.IsAny<CancellationToken>()))
                   .Returns(AsyncEnumerable(new List<ConfigurationEventWrapper>()));
             // Act
-            serverStatisticsCollector.StartConsumingStatistics(key);
+            collector.StartConsumingStatistics(key);
             await Task.Delay(500);
-            serverStatisticsCollector.StopConsumingStatistics(key);
+            collector.StopConsumingStatistics(key);
             // Assert
             mockLogger.Verify(
                 x => x.Log(
@@ -120,9 +118,9 @@ namespace AnalyzerApiTests.Services
             mockMessageReceiver.Setup(m => m.ConsumePulseEventAsync(key, It.IsAny<CancellationToken>()))
                     .Returns(AsyncEnumerable(new List<PulseEventWrapper> { new PulseEventWrapper { Key = key, IsAlive = true, CreationDateUTC = DateTime.MaxValue } }));
             // Act
-            serverStatisticsCollector.StartConsumingStatistics(key);
+            collector.StartConsumingStatistics(key);
             await Task.Delay(3000);
-            serverStatisticsCollector.StopConsumingStatistics(key);
+            collector.StopConsumingStatistics(key);
             // Assert
             mockStatisticsSender.Verify(m => m.SendServerStatisticsAsync(It.IsAny<string>(), It.IsAny<ServerStatistics>(), It.IsAny<CancellationToken>()), Times.AtLeast(2));
         }
@@ -141,13 +139,13 @@ namespace AnalyzerApiTests.Services
             mockMessageReceiver.Setup(m => m.ConsumeConfigurationEventAsync(key, It.IsAny<CancellationToken>()))
                   .Returns(AsyncEnumerable(new List<ConfigurationEventWrapper> { new ConfigurationEventWrapper { Key = key, ServerKeepAliveInterval = TimeSpan.FromHours(2) } }));
             // Act + Assert
-            serverStatisticsCollector.StartConsumingStatistics(key);
+            collector.StartConsumingStatistics(key);
             await Task.Delay(3000);
-            var fieldInfo = serverStatisticsCollector.GetType().GetField("configurations", BindingFlags.NonPublic | BindingFlags.Instance);
-            var configurations = fieldInfo?.GetValue(serverStatisticsCollector) as ConcurrentDictionary<string, ConfigurationEventWrapper>;
+            var fieldInfo = collector.GetType().GetField("configurations", BindingFlags.NonPublic | BindingFlags.Instance);
+            var configurations = fieldInfo?.GetValue(collector) as ConcurrentDictionary<string, ConfigurationEventWrapper>;
             configurations.TryGetValue(key, out ConfigurationEventWrapper conf);
             Assert.That(conf.ServerKeepAliveInterval, Is.EqualTo(TimeSpan.FromHours(2)));
-            serverStatisticsCollector.StopConsumingStatistics(key);
+            collector.StopConsumingStatistics(key);
         }
         [Test]
         public async Task StartConsumingStatistics_ShouldNotSendStatisticsAfterStop()
@@ -161,9 +159,9 @@ namespace AnalyzerApiTests.Services
             mockMessageReceiver.Setup(m => m.ReceiveLastServerStatisticsByKeyAsync(key, It.IsAny<CancellationToken>()))
                                .ReturnsAsync(new ServerStatistics { IsAlive = true });
             // Act
-            serverStatisticsCollector.StartConsumingStatistics(key);
+            collector.StartConsumingStatistics(key);
             await Task.Delay(1500);
-            serverStatisticsCollector.StopConsumingStatistics(key);
+            collector.StopConsumingStatistics(key);
             await Task.Delay(3000);
 
             // Assert

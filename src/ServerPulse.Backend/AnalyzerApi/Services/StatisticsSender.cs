@@ -11,6 +11,8 @@ namespace AnalyzerApi.Services
 {
     public class StatisticsSender : IStatisticsSender
     {
+        #region Fields
+
         private readonly IHubContext<StatisticsHub<ServerStatisticsCollector>, IStatisticsHubClient> hubStatistics;
         private readonly IHubContext<StatisticsHub<LoadStatisticsCollector>, IStatisticsHubClient> hubLoadStatistics;
         private readonly IHubContext<StatisticsHub<CustomStatisticsCollector>, IStatisticsHubClient> hubCustomEventStatistics;
@@ -18,6 +20,8 @@ namespace AnalyzerApi.Services
         private readonly IMapper mapper;
         private readonly ILogger<StatisticsSender> logger;
         private readonly string serverStatisticsTopic;
+
+        #endregion
 
         public StatisticsSender(
             IHubContext<StatisticsHub<ServerStatisticsCollector>, IStatisticsHubClient> hubStatistics,
@@ -36,6 +40,8 @@ namespace AnalyzerApi.Services
             this.hubCustomEventStatistics = hubCustomEventStatistics;
             serverStatisticsTopic = configuration[Configuration.KAFKA_SERVER_STATISTICS_TOPIC]!;
         }
+
+        #region IStatisticsSender Members
 
         public async Task SendServerStatisticsAsync(string key, ServerStatistics serverStatistics, CancellationToken cancellationToken)
         {
@@ -58,9 +64,16 @@ namespace AnalyzerApi.Services
             var serializedData = JsonSerializer.Serialize(response);
             await hubCustomEventStatistics.Clients.Group(key).ReceiveStatistics(key, serializedData);
         }
+
+        #endregion
+
+        #region Private Members
+
         private string GetTopic(string topic, string key)
         {
             return topic + key;
         }
+
+        #endregion
     }
 }

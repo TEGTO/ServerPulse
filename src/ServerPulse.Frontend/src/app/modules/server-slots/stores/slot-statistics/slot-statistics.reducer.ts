@@ -1,6 +1,6 @@
 import { createReducer, on } from "@ngrx/store";
-import { selectDate, subscribeToLoadStatisticsFailure, subscribeToLoadStatisticsSuccess, subscribeToSlotStatisticsFailure, subscribeToSlotStatisticsSuccess } from "../..";
-import { convertToServerLoadStatisticsResponse, convertToServerStatisticsResponse, ServerLoadStatisticsResponse, ServerStatisticsResponse } from "../../../shared";
+import { convertToCustomEventStatisticsResponse, convertToServerLoadStatisticsResponse, convertToServerStatisticsResponse, CustomEventStatisticsResponse, ServerLoadStatisticsResponse, ServerStatisticsResponse } from "../../../shared";
+import { selectDate, subscribeToCustomStatisticsFailure, subscribeToCustomStatisticsSuccess, subscribeToLoadStatisticsFailure, subscribeToLoadStatisticsSuccess, subscribeToSlotStatisticsFailure, subscribeToSlotStatisticsSuccess } from "../../index";
 
 export interface SlotStatisticsState {
     lastStatistics: { key: string; statistics: ServerStatisticsResponse; } | null,
@@ -10,7 +10,7 @@ const initialSlotStatisticsState: SlotStatisticsState = {
     lastStatistics: null,
     error: null
 };
-export const slotstatisticsReducer = createReducer(
+export const slotStatisticsReducer = createReducer(
     initialSlotStatisticsState,
 
     on(subscribeToSlotStatisticsSuccess, (state, { lastStatistics }) => {
@@ -55,6 +55,32 @@ export const slotLoadStatisticsReducer = createReducer(
         };
     }),
     on(subscribeToLoadStatisticsFailure, (state, { error }) => ({
+        ...state,
+        error,
+    }))
+);
+
+export interface SlotCustomStatisticsState {
+    lastStatistics: { key: string; statistics: CustomEventStatisticsResponse; } | null,
+    error: any
+}
+const initialSlotCustomStatisticsState: SlotCustomStatisticsState = {
+    lastStatistics: null,
+    error: null
+};
+export const slotCustomStatisticsReducer = createReducer(
+    initialSlotCustomStatisticsState,
+
+    on(subscribeToCustomStatisticsSuccess, (state, { lastStatistics }) => {
+        const statistics = convertToCustomEventStatisticsResponse(JSON.parse(lastStatistics.data));
+        const key = lastStatistics.key;
+        return {
+            ...state,
+            lastStatistics: { key: key, statistics: statistics },
+            error: null,
+        };
+    }),
+    on(subscribeToCustomStatisticsFailure, (state, { error }) => ({
         ...state,
         error,
     }))

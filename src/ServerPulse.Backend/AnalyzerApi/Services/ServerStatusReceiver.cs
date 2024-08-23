@@ -10,9 +10,13 @@ namespace AnalyzerApi.Services
 {
     public class ServerStatusReceiver : BaseEventReceiver, IServerStatusReceiver
     {
+        #region Fields
+
         private readonly string aliveTopic;
         private readonly string configurationTopic;
         private readonly string serverStatisticsTopic;
+
+        #endregion
 
         public ServerStatusReceiver(IMessageConsumer messageConsumer, IMapper mapper, IConfiguration configuration)
             : base(messageConsumer, mapper, configuration)
@@ -21,6 +25,8 @@ namespace AnalyzerApi.Services
             configurationTopic = configuration[Configuration.KAFKA_CONFIGURATION_TOPIC]!;
             serverStatisticsTopic = configuration[Configuration.KAFKA_SERVER_STATISTICS_TOPIC]!;
         }
+
+        #region IServerStatusReceiver Members
 
         public IAsyncEnumerable<PulseEventWrapper> ConsumePulseEventAsync(string key, CancellationToken cancellationToken)
         {
@@ -52,6 +58,10 @@ namespace AnalyzerApi.Services
             return ReceiveLastEventByKeyAsync<ConfigurationEvent, ConfigurationEventWrapper>(topic, cancellationToken);
         }
 
+        #endregion
+
+        #region Private Helpers
+
         private async Task<ServerStatistics?> ReceiveLastServerStatisticsAsync(string topic, CancellationToken cancellationToken)
         {
             ConsumeResponse? response = await messageConsumer.ReadLastTopicMessageAsync(topic, timeoutInMilliseconds, cancellationToken);
@@ -61,5 +71,7 @@ namespace AnalyzerApi.Services
             }
             return null;
         }
+
+        #endregion
     }
 }

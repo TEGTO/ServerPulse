@@ -3,7 +3,7 @@ import { Actions, createEffect, ofType } from "@ngrx/effects";
 import { catchError, map, of, switchMap, tap } from "rxjs";
 import { environment } from "../../../../../environment/environment";
 import { StatisticsApiService } from "../../../shared";
-import { RealTimeStatisticsCollector, subscribeToLoadStatistics, subscribeToLoadStatisticsFailure, subscribeToLoadStatisticsSuccess, subscribeToSlotStatistics, subscribeToSlotStatisticsFailure, subscribeToSlotStatisticsSuccess } from "../../index";
+import { RealTimeStatisticsCollector, subscribeToCustomStatistics, subscribeToCustomStatisticsFailure, subscribeToCustomStatisticsSuccess, subscribeToLoadStatistics, subscribeToLoadStatisticsFailure, subscribeToLoadStatisticsSuccess, subscribeToSlotStatistics, subscribeToSlotStatisticsFailure, subscribeToSlotStatisticsSuccess } from "../../index";
 
 @Injectable()
 export class ServerSlotStatisticsEffects {
@@ -56,6 +56,30 @@ export class ServerSlotStatisticsEffects {
                         )
                     ),
                     catchError((error) => of(subscribeToLoadStatisticsFailure({ error })))
+                )
+            )
+        )
+    );
+
+    //Custom Statistics
+    subscribeToCustomStatistics$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(subscribeToCustomStatistics),
+            switchMap((action) =>
+                this.statisticsCollector.startConnection(environment.customStatisticsHub).pipe(
+                    tap(() => {
+                        this.statisticsCollector.startListen(environment.customStatisticsHub, action.slotKey);
+                    }),
+                    switchMap(() =>
+                        this.statisticsCollector.receiveStatistics(environment.customStatisticsHub).pipe(
+                            map((receiveStatistics) =>
+                                subscribeToCustomStatisticsSuccess({
+                                    lastStatistics: receiveStatistics
+                                })
+                            )
+                        )
+                    ),
+                    catchError((error) => of(subscribeToCustomStatisticsFailure({ error })))
                 )
             )
         )

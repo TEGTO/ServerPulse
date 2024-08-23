@@ -10,7 +10,7 @@ namespace AnalyzerApiTests.Validators
     [TestFixture]
     internal class LoadAmountStatisticsInRangeRequestValidatorTests
     {
-        private LoadAmountStatisticsInRangeRequestValidator validator;
+        private MessageAmountInRangeRequestValidator validator;
         private Mock<IConfiguration> mockConfiguration;
         private const int MIN_STATISTICS_TIMESPAN_IN_SECONDS = 60;
 
@@ -21,14 +21,14 @@ namespace AnalyzerApiTests.Validators
             mockConfiguration.SetupGet(c => c[Configuration.MIN_STATISTICS_TIMESPAN_IN_SECONDS])
                 .Returns(MIN_STATISTICS_TIMESPAN_IN_SECONDS.ToString());
 
-            validator = new LoadAmountStatisticsInRangeRequestValidator(mockConfiguration.Object);
+            validator = new MessageAmountInRangeRequestValidator(mockConfiguration.Object);
         }
 
         [Test]
         public void Validator_ValidInput_PassesValidation()
         {
             // Arrange
-            var request = new LoadAmountStatisticsInRangeRequest
+            var request = new MessageAmountInRangeRequest
             {
                 Key = "validKey",
                 From = DateTime.UtcNow.AddDays(-1),
@@ -43,7 +43,7 @@ namespace AnalyzerApiTests.Validators
         public void Validator_InvalidKey_Null_FailsValidation()
         {
             // Arrange
-            var request = new LoadAmountStatisticsInRangeRequest
+            var request = new MessageAmountInRangeRequest
             {
                 Key = null,
                 From = DateTime.UtcNow.AddDays(-1),
@@ -58,7 +58,7 @@ namespace AnalyzerApiTests.Validators
         public void Validator_InvalidKey_Empty_FailsValidation()
         {
             // Arrange
-            var request = new LoadAmountStatisticsInRangeRequest
+            var request = new MessageAmountInRangeRequest
             {
                 Key = string.Empty,
                 From = DateTime.UtcNow.AddDays(-1),
@@ -73,7 +73,7 @@ namespace AnalyzerApiTests.Validators
         public void Validator_InvalidKey_ExceedsMaxLength_FailsValidation()
         {
             // Arrange
-            var request = new LoadAmountStatisticsInRangeRequest
+            var request = new MessageAmountInRangeRequest
             {
                 Key = new string('a', 257),
                 From = DateTime.UtcNow.AddDays(-1),
@@ -88,7 +88,7 @@ namespace AnalyzerApiTests.Validators
         public void Validator_InvalidFromAndToDate_FromIsAfterTo_FailsValidation()
         {
             // Arrange
-            var request = new LoadAmountStatisticsInRangeRequest
+            var request = new MessageAmountInRangeRequest
             {
                 Key = "validKey",
                 From = DateTime.UtcNow,
@@ -103,7 +103,7 @@ namespace AnalyzerApiTests.Validators
         public void Validator_InvalidToDate_ToIsBeforeFrom_FailsValidation()
         {
             // Arrange
-            var request = new LoadAmountStatisticsInRangeRequest
+            var request = new MessageAmountInRangeRequest
             {
                 Key = "validKey",
                 From = DateTime.UtcNow.AddDays(-1),
@@ -118,7 +118,7 @@ namespace AnalyzerApiTests.Validators
         public void Validator_InvalidTimeSpan_TooShort_FailsValidation()
         {
             // Arrange
-            var request = new LoadAmountStatisticsInRangeRequest
+            var request = new MessageAmountInRangeRequest
             {
                 Key = "validKey",
                 From = DateTime.UtcNow.AddDays(-1),

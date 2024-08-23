@@ -1,5 +1,5 @@
 import { createFeatureSelector, createSelector } from "@ngrx/store";
-import { SlotLoadStatisticsState, SlotStatisticsState } from "../../index";
+import { SlotCustomStatisticsState, SlotLoadStatisticsState, SlotStatisticsState } from "../../index";
 
 //Statistics
 export const selectSlotStatisticsState = createFeatureSelector<SlotStatisticsState>('slotstatistics');
@@ -17,4 +17,11 @@ export const selectCurrentDate = createSelector(
 export const selectLastLoadStatistics = createSelector(
     selectSlotLoadStatisticsState,
     (state: SlotLoadStatisticsState) => state.lastLoadStatistics
+);
+
+//Custom Statistics
+export const selectSlotCustomStatisticsState = createFeatureSelector<SlotCustomStatisticsState>('customstatistics');
+export const selectLastCustomStatistics = createSelector(
+    selectSlotCustomStatisticsState,
+    (state: SlotCustomStatisticsState) => state.lastStatistics
 );

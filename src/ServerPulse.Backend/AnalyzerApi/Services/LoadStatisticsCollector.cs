@@ -30,7 +30,6 @@ namespace AnalyzerApi.Services
                 AmountOfEvents = amountOfEvents,
                 LastEvent = lastLoadEvent,
                 LoadMethodStatistics = methodStatistics,
-                CollectedDateUTC = DateTime.UtcNow,
                 IsInitial = true
             };
             await statisticsSender.SendServerLoadStatisticsAsync(key, statistics, cancellationToken);
@@ -61,7 +60,6 @@ namespace AnalyzerApi.Services
                     AmountOfEvents = amountOfEvents,
                     LastEvent = load,
                     LoadMethodStatistics = methodStatistics,
-                    CollectedDateUTC = DateTime.UtcNow
                 };
                 await statisticsSender.SendServerLoadStatisticsAsync(key, statistics, cancellationToken);
             }

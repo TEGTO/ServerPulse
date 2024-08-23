@@ -34,7 +34,7 @@ export class ServerSlotPreviewActivityChartComponent implements OnInit, OnDestro
     const timeSpan = new TimeSpan(0, 0, 0, this.fiveMinutes);
     let series: [number, number][];
 
-    const statistics$ = this.statisticsService.getAmountStatisticsInRange(this.serverSlot.slotKey, this.dateFromSubject$.value, this.dateToSubject$.value, timeSpan).pipe(
+    const statistics$ = this.statisticsService.getLoadAmountStatisticsInRange(this.serverSlot.slotKey, this.dateFromSubject$.value, this.dateToSubject$.value, timeSpan).pipe(
       shareReplay(1)
     );
 

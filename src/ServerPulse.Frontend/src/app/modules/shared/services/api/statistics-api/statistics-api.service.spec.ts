@@ -1,6 +1,6 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { GetSomeLoadEventsRequest, LoadAmountStatisticsInRangeRequest, LoadAmountStatisticsResponse, LoadEventsRangeRequest, ServerLoadResponse, TimeSpan, URLDefiner } from '../../../index';
+import { GetSomeMessagesRequest, LoadAmountStatisticsResponse, MessageAmountInRangeRequest, MessagesInRangeRangeRequest, ServerLoadResponse, TimeSpan, URLDefiner } from '../../../index';
 import { StatisticsApiService } from './statistics-api.service';
 
 describe('StatisticsApiService', () => {
@@ -29,7 +29,7 @@ describe('StatisticsApiService', () => {
   });
 
   it('should get load events in date range', () => {
-    const request: LoadEventsRangeRequest = { key: 'testKey', from: new Date(), to: new Date() };
+    const request: MessagesInRangeRangeRequest = { key: 'testKey', from: new Date(), to: new Date() };
     const expectedUrl = '/api/statistics/daterange';
     const response: ServerLoadResponse[] = [
       {
@@ -59,7 +59,7 @@ describe('StatisticsApiService', () => {
     const expectedUrl = `/api/statistics/perday/${key}`;
     const response: LoadAmountStatisticsResponse[] = [{ amountOfEvents: 10, date: new Date() }];
 
-    service.getWholeAmountStatisticsInDays(key).subscribe(res => {
+    service.getWholeLoadAmountStatisticsInDays(key).subscribe(res => {
       expect(res).toEqual(response);
       expect(res[0].date instanceof Date).toBeTrue();
     });
@@ -71,11 +71,11 @@ describe('StatisticsApiService', () => {
   });
 
   it('should get amount statistics in range', () => {
-    const request: LoadAmountStatisticsInRangeRequest = { key: 'testKey', from: new Date(), to: new Date(), timeSpan: '1d' };
+    const request: MessageAmountInRangeRequest = { key: 'testKey', from: new Date(), to: new Date(), timeSpan: '1d' };
     const expectedUrl = '/api/statistics/amountrange';
     const response: LoadAmountStatisticsResponse[] = [{ amountOfEvents: 10, date: new Date() }];
 
-    service.getAmountStatisticsInRange(request).subscribe(res => {
+    service.getLoadAmountStatisticsInRange(request).subscribe(res => {
       expect(res).toEqual(response);
       expect(res[0].date instanceof Date).toBeTrue();
     });
@@ -87,7 +87,7 @@ describe('StatisticsApiService', () => {
   });
 
   it('should get some events after a date', () => {
-    const request: GetSomeLoadEventsRequest = { key: 'testKey', numberOfMessages: 5, startDate: new Date(), readNew: false };
+    const request: GetSomeMessagesRequest = { key: 'testKey', numberOfMessages: 5, startDate: new Date(), readNew: false };
     const expectedUrl = '/api/statistics/someevents';
     const response: ServerLoadResponse[] = [
       {
@@ -102,7 +102,7 @@ describe('StatisticsApiService', () => {
       }
     ];
 
-    service.getSomeEventsAfterDate(request).subscribe(res => {
+    service.getSomeCustomEvents(request).subscribe(res => {
       expect(res).toEqual(response);
     });
 

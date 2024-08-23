@@ -13,14 +13,20 @@ using Shared.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
+#region Consul
+
 string environmentName = builder.Environment.EnvironmentName;
 builder.Services.AddHealthChecks();
 var consulSettings = ConsulExtension.GetConsulSettings(builder.Configuration);
 builder.Services.AddConsulService(consulSettings);
 builder.Configuration.ConfigureConsul(consulSettings, environmentName);
 
+#endregion
+
 builder.Services.AddDbContextFactory<AuthIdentityDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString(Configuration.AUTH_DATABASE_CONNECTION_STRING)));
+
+#region Identity 
 
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
@@ -37,8 +43,14 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 builder.Services.ConfigureIdentityServices(builder.Configuration);
 builder.Services.AddScoped<ITokenHandler, JwtHandler>();
 
+#endregion
+
+#region Project Services 
+
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddSingleton<IDatabaseRepository<AuthIdentityDbContext>, DatabaseRepository<AuthIdentityDbContext>>();
+
+#endregion
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 

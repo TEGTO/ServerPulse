@@ -2,7 +2,7 @@
 
 namespace AnalyzerApi.Domain.Models
 {
-    public class CustomEventStatistics
+    public class CustomEventStatistics : BaseStatistics
     {
         public CustomEventWrapper? LastEvent { get; set; }
     }

@@ -19,6 +19,8 @@ namespace AnalyzerApi.Services
             loadMethodStatisticsTopic = configuration[Configuration.KAFKA_LOAD_METHOD_STATISTICS_TOPIC]!;
         }
 
+        #region IEventProcessor Members
+
         public Task ProcessEventsAsync<T>(T[] events, CancellationToken cancellationToken) where T : BaseEvent
         {
             if (events == null || events.Length == 0)
@@ -37,6 +39,11 @@ namespace AnalyzerApi.Services
                 _ => Task.CompletedTask
             };
         }
+
+        #endregion
+
+        #region Private Members
+
         private async Task ProcessLoadEventsAsync(LoadEvent[] events, CancellationToken cancellationToken)
         {
             var firstKey = events.First().Key;
@@ -75,5 +82,7 @@ namespace AnalyzerApi.Services
         {
             return loadMethodStatisticsTopic + key;
         }
+
+        #endregion
     }
 }

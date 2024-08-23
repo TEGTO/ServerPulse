@@ -7,11 +7,15 @@ namespace AnalyzerApi.Services
 {
     public class ServerStatisticsCollector : BaseStatisticsCollector, IStatisticsCollector
     {
+        #region Fields
+
         private readonly IServerStatusReceiver messageReceiver;
         private readonly PeriodicTimer periodicTimer;
         private readonly ConcurrentDictionary<string, ConfigurationEventWrapper> configurations = new();
         private readonly ConcurrentDictionary<string, PulseEventWrapper> lastPulseEvents = new();
         private readonly ConcurrentDictionary<string, ServerStatistics> lastServerStatistics = new();
+
+        #endregion
 
         public ServerStatisticsCollector(IServerStatusReceiver messageReceiver, IStatisticsSender statisticsSender, IConfiguration configuration, ILogger<ServerStatisticsCollector> logger)
             : base(statisticsSender, logger)
@@ -20,6 +24,8 @@ namespace AnalyzerApi.Services
             int intervalInMilliseconds = int.Parse(configuration[Configuration.STATISTICS_COLLECT_INTERVAL_IN_MILLISECONDS]!);
             periodicTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(intervalInMilliseconds));
         }
+
+        #region BaseStatisticsCollector Members
 
         protected override async Task SendInitialStatisticsAsync(string key, CancellationToken cancellationToken)
         {
@@ -57,7 +63,6 @@ namespace AnalyzerApi.Services
 
             await statisticsSender.SendServerStatisticsAsync(key, statistics, cancellationToken);
         }
-
         protected override Task[] GetEventSubscriptionTasks(string key, CancellationToken cancellationToken)
         {
             return new[]
@@ -67,13 +72,16 @@ namespace AnalyzerApi.Services
                 PeriodicallySendStatisticsAsync(key, cancellationToken)
             };
         }
-
         protected override void OnStatisticsListenerRemoved(string key)
         {
             configurations.TryRemove(key, out _);
             lastPulseEvents.TryRemove(key, out _);
             lastServerStatistics.TryRemove(key, out _);
         }
+
+        #endregion
+
+        #region Private Helpers
 
         private async Task PeriodicallySendStatisticsAsync(string key, CancellationToken cancellationToken)
         {
@@ -96,7 +104,6 @@ namespace AnalyzerApi.Services
                 }
             }
         }
-
         private async Task SubscribeToPulseEventsAsync(string key, CancellationToken cancellationToken)
         {
             await foreach (var pulse in messageReceiver.ConsumePulseEventAsync(key, cancellationToken))
@@ -104,7 +111,6 @@ namespace AnalyzerApi.Services
                 lastPulseEvents.AddOrUpdate(key, pulse, (k, p) => pulse);
             }
         }
-
         private async Task SubscribeToConfigurationEventsAsync(string key, CancellationToken cancellationToken)
         {
             await foreach (var configuration in messageReceiver.ConsumeConfigurationEventAsync(key, cancellationToken))
@@ -112,7 +118,6 @@ namespace AnalyzerApi.Services
                 configurations.AddOrUpdate(key, configuration, (k, c) => configuration);
             }
         }
-
         private ServerStatistics CollectServerStatistics(string key, bool isInitial)
         {
             lastPulseEvents.TryGetValue(key, out var lastPulse);
@@ -132,7 +137,6 @@ namespace AnalyzerApi.Services
                 ServerUptime = uptime,
                 LastServerUptime = lastUptime,
                 LastPulseDateTimeUTC = lastPulse?.CreationDateUTC,
-                CollectedDateUTC = DateTime.UtcNow,
                 IsInitial = isInitial,
             };
 
@@ -140,7 +144,6 @@ namespace AnalyzerApi.Services
 
             return statistics;
         }
-
         private static bool CalculateIsServerAlive(PulseEventWrapper? pulseEvent, ConfigurationEventWrapper? configurationEvent)
         {
             if (pulseEvent != null && configurationEvent != null)
@@ -150,7 +153,6 @@ namespace AnalyzerApi.Services
             }
             return false;
         }
-
         private static TimeSpan? CalculateServerUptime(ServerStatistics? lastStatistics)
         {
             if (lastStatistics != null && lastStatistics.IsAlive)
@@ -162,7 +164,6 @@ namespace AnalyzerApi.Services
                 return TimeSpan.Zero;
             }
         }
-
         private TimeSpan? CalculateLastUptime(bool isAlive, ServerStatistics? lastStatistics, TimeSpan? currentUptime)
         {
             if (isAlive)
@@ -178,5 +179,7 @@ namespace AnalyzerApi.Services
                 return lastStatistics?.LastServerUptime;
             }
         }
+
+        #endregion
     }
 }

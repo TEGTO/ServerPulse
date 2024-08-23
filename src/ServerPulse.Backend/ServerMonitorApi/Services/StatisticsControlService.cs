@@ -20,6 +20,7 @@ namespace ServerMonitorApi.Services
                 configuration[Configuration.KAFKA_CONFIGURATION_TOPIC]! + key,
                 configuration[Configuration.KAFKA_ALIVE_TOPIC]! + key,
                 configuration[Configuration.KAFKA_LOAD_TOPIC]! + key,
+                configuration[Configuration.KAFKA_CUSTOM_TOPIC]! + key,
             };
             await topicManager.DeleteTopicsAsync(topics);
         }

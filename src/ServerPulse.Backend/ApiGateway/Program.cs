@@ -10,14 +10,20 @@ using Shared.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
+#region Consul
+
 string environmentName = builder.Environment.EnvironmentName;
 builder.Services.AddHealthChecks();
 var consulSettings = ConsulExtension.GetConsulSettings(builder.Configuration);
 builder.Services.AddConsulService(consulSettings);
 builder.Configuration.ConfigureConsul(consulSettings, environmentName);
 
+#endregion
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+#region Cors
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 var allowedOrigins = builder.Configuration.GetSection(Configuration.ALLOWED_CORS_ORIGINS).Get<string[]>() ?? [];
@@ -37,7 +43,12 @@ builder.Services.AddCors(options =>
     });
 });
 
+#endregion
+
+
 builder.Services.ConfigureIdentityServices(builder.Configuration);
+
+#region Ocelot
 
 var mergedPath = "merged.json";
 Utility.MergeJsonFiles(
@@ -56,6 +67,8 @@ builder.Configuration
     .AddEnvironmentVariables();
 
 builder.Services.AddOcelot(builder.Configuration).AddPolly().AddConsul();
+
+#endregion
 
 var app = builder.Build();
 

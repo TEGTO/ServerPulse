@@ -10,9 +10,13 @@ namespace AnalyzerApi.Services
 {
     public class ServerLoadReceiver : BaseEventReceiver, IServerLoadReceiver
     {
+        #region Fields
+
         private readonly string loadTopic;
         private readonly string loadMethodStatisticsTopic;
         private readonly int statisticsSaveDataInDays;
+
+        #endregion
 
         public ServerLoadReceiver(IMessageConsumer messageConsumer, IMapper mapper, IConfiguration configuration)
             : base(messageConsumer, mapper, configuration)
@@ -21,6 +25,8 @@ namespace AnalyzerApi.Services
             statisticsSaveDataInDays = int.Parse(configuration[Configuration.KAFKA_TOPIC_DATA_SAVE_IN_DAYS]!);
             loadMethodStatisticsTopic = configuration[Configuration.KAFKA_LOAD_METHOD_STATISTICS_TOPIC]!;
         }
+
+        #region IServerLoadReceiver Members
 
         public IAsyncEnumerable<LoadEventWrapper> ConsumeLoadEventAsync(string key, CancellationToken cancellationToken)
         {
@@ -33,7 +39,7 @@ namespace AnalyzerApi.Services
             string topic = GetTopic(loadTopic, options.Key);
             var messageOptions = new MessageInRangeQueryOptions(topic, timeoutInMilliseconds, options.From, options.To);
             List<ConsumeResponse> responses = await messageConsumer.ReadMessagesInDateRangeAsync(messageOptions, cancellationToken);
-            return LoadEventHelper.ConvertToLoadEventWrappers(responses, mapper);
+            return ConvertToLoadEventWrappers(responses, mapper);
         }
 
         public async Task<IEnumerable<LoadEventWrapper>> GetCertainAmountOfEvents(ReadCertainMessageNumberOptions options, CancellationToken cancellationToken)
@@ -41,7 +47,7 @@ namespace AnalyzerApi.Services
             string topic = GetTopic(loadTopic, options.Key);
             var messageOptions = new ReadSomeMessagesOptions(topic, timeoutInMilliseconds, options.NumberOfMessages, options.StartDate, options.ReadNew);
             List<ConsumeResponse> responses = await messageConsumer.ReadSomeMessagesAsync(messageOptions, cancellationToken);
-            return LoadEventHelper.ConvertToLoadEventWrappers(responses, mapper);
+            return ConvertToLoadEventWrappers(responses, mapper);
         }
 
         public Task<LoadEventWrapper?> ReceiveLastLoadEventByKeyAsync(string key, CancellationToken cancellationToken)
@@ -64,7 +70,7 @@ namespace AnalyzerApi.Services
             var timeSpan = TimeSpan.FromDays(1);
             var options = new MessageInRangeQueryOptions(topic, timeoutInMilliseconds, start, end);
             var messagesPerDay = await messageConsumer.GetMessageAmountPerTimespanAsync(options, timeSpan, cancellationToken);
-            return LoadEventHelper.ConvertToAmountStatistics(messagesPerDay);
+            return ConvertToAmountStatistics(messagesPerDay);
         }
 
         public async Task<IEnumerable<LoadAmountStatistics>> GetAmountStatisticsLastDayAsync(string key, CancellationToken cancellationToken)
@@ -75,7 +81,7 @@ namespace AnalyzerApi.Services
             var timeSpan = TimeSpan.FromDays(1);
             var options = new MessageInRangeQueryOptions(topic, timeoutInMilliseconds, todayStart, todayEnd);
             var messagesPerDay = await messageConsumer.GetMessageAmountPerTimespanAsync(options, timeSpan, cancellationToken);
-            return LoadEventHelper.ConvertToAmountStatistics(messagesPerDay);
+            return ConvertToAmountStatistics(messagesPerDay);
         }
 
         public async Task<IEnumerable<LoadAmountStatistics>> GetAmountStatisticsInRangeAsync(InRangeQueryOptions options, TimeSpan timeSpan, CancellationToken cancellationToken)
@@ -83,7 +89,7 @@ namespace AnalyzerApi.Services
             string topic = GetTopic(loadTopic, options.Key);
             var messageOptions = new MessageInRangeQueryOptions(topic, timeoutInMilliseconds, options.From, options.To);
             var messagesPerDay = await messageConsumer.GetMessageAmountPerTimespanAsync(messageOptions, timeSpan, cancellationToken);
-            return LoadEventHelper.ConvertToAmountStatistics(messagesPerDay);
+            return ConvertToAmountStatistics(messagesPerDay);
         }
 
         public async Task<LoadMethodStatistics?> ReceiveLastLoadMethodStatisticsByKeyAsync(string key, CancellationToken cancellationToken)
@@ -97,11 +103,12 @@ namespace AnalyzerApi.Services
             }
             return null;
         }
-    }
 
-    internal static class LoadEventHelper
-    {
-        public static IEnumerable<LoadAmountStatistics> ConvertToAmountStatistics(Dictionary<DateTime, int> messageAmount)
+        #endregion
+
+        #region Private Helpers
+
+        private IEnumerable<LoadAmountStatistics> ConvertToAmountStatistics(Dictionary<DateTime, int> messageAmount)
         {
             return messageAmount
                 .Where(kv => kv.Value > 0)
@@ -113,7 +120,7 @@ namespace AnalyzerApi.Services
                 .OrderByDescending(ls => ls.Date);
         }
 
-        public static IEnumerable<LoadEventWrapper> ConvertToLoadEventWrappers(List<ConsumeResponse> responses, IMapper mapper)
+        private IEnumerable<LoadEventWrapper> ConvertToLoadEventWrappers(List<ConsumeResponse> responses, IMapper mapper)
         {
             List<LoadEventWrapper> events = new List<LoadEventWrapper>();
             foreach (var response in responses)
@@ -125,5 +132,7 @@ namespace AnalyzerApi.Services
             }
             return events;
         }
+
+        #endregion
     }
 }

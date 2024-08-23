@@ -7,12 +7,12 @@ namespace AnalyzerApiTests.Validators
     [TestFixture]
     internal class GetSomeLoadEventsRequestValidatorTests
     {
-        private GetSomeLoadEventsRequestValidator validator;
+        private GetSomeMessagesRequestValidator validator;
 
         [SetUp]
         public void Setup()
         {
-            validator = new GetSomeLoadEventsRequestValidator();
+            validator = new GetSomeMessagesRequestValidator();
         }
 
         [Test]
