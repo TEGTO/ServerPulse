@@ -1,6 +1,6 @@
-import { ServerLoadStatisticsResponse, ServerStatisticsResponse, TimeSpan } from "../../../shared";
-import { SlotLoadStatisticsState, SlotStatisticsState } from "../../index";
-import { selectCurrentDate, selectLastLoadStatistics, selectLastStatistics, selectSlotLoadStatisticsState, selectSlotStatisticsState } from "./slot-statistics.selector";
+import { CustomEventResponse, CustomEventStatisticsResponse, ServerLoadStatisticsResponse, ServerStatisticsResponse, TimeSpan } from "../../../shared";
+import { SlotCustomStatisticsState, SlotLoadStatisticsState, SlotStatisticsState } from "../../index";
+import { selectCurrentDate, selectLastCustomStatistics, selectLastLoadStatistics, selectLastStatistics, selectSlotCustomStatisticsState, selectSlotLoadStatisticsState, selectSlotStatisticsState } from "./slot-statistics.selector";
 
 describe('Slot Statistics and Load Statistics Selectors', () => {
 
@@ -23,7 +23,8 @@ describe('Slot Statistics and Load Statistics Selectors', () => {
         amountOfEvents: 10,
         lastEvent: null,
         collectedDateUTC: new Date('2023-08-18T12:05:00Z'),
-        isInitial: false
+        isInitial: false,
+        loadMethodStatistics: null
     };
 
     const initialSlotLoadStatisticsState: SlotLoadStatisticsState = {
@@ -78,6 +79,48 @@ describe('Slot Statistics and Load Statistics Selectors', () => {
 
         it('should handle error in slot load statistics state', () => {
             const result = selectLastLoadStatistics.projector(errorSlotLoadStatisticsState);
+            expect(result).toBeNull();
+        });
+    });
+
+    describe('Slot Custom Statistics Selectors', () => {
+        const customEventResponse: CustomEventResponse = {
+            id: '1',
+            key: 'slot1',
+            creationDateUTC: new Date('2023-08-18T12:00:00Z'),
+            name: 'Custom Event',
+            description: 'A custom event',
+            serializedMessage: 'Message content'
+        };
+
+        const customEventStatisticsResponse: CustomEventStatisticsResponse = {
+            collectedDateUTC: new Date('2023-08-18T12:05:00Z'),
+            isInitial: false,
+            lastEvent: customEventResponse
+        };
+
+        const initialSlotCustomStatisticsState: SlotCustomStatisticsState = {
+            lastStatistics: { key: 'slot1', statistics: customEventStatisticsResponse },
+            error: null
+        };
+
+        const errorSlotCustomStatisticsState: SlotCustomStatisticsState = {
+            lastStatistics: null,
+            error: 'An error occurred'
+        };
+
+        it('should select the custom statistics state', () => {
+            const result = selectSlotCustomStatisticsState.projector(initialSlotCustomStatisticsState);
+            expect(result).toEqual(initialSlotCustomStatisticsState);
+        });
+
+        it('should select the last custom statistics', () => {
+            const result = selectLastCustomStatistics.projector(initialSlotCustomStatisticsState);
+            expect(result).toEqual(initialSlotCustomStatisticsState.lastStatistics);
+        });
+
+        it('should handle error in custom statistics state', () => {
+            const result = selectLastCustomStatistics.projector(errorSlotCustomStatisticsState);
             expect(result).toBeNull();
         });
     });

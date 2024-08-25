@@ -1,5 +1,5 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { ServerLoadStatisticsResponse, ServerSlot } from '../../../shared';
 import { ServerStatisticsService } from '../../index';
@@ -21,12 +21,13 @@ describe('ServerSlotPreviewActivityChartComponent', () => {
     isInitial: false,
     amountOfEvents: 10,
     collectedDateUTC: new Date(),
-    lastEvent: null
+    lastEvent: null,
+    loadMethodStatistics: null,
   };
 
   beforeEach(async () => {
     mockStatisticsService = jasmine.createSpyObj('ServerStatisticsService', [
-      'getAmountStatisticsInRange',
+      'getLoadAmountStatisticsInRange',
       'getLastServerLoadStatistics'
     ]);
 
@@ -45,7 +46,7 @@ describe('ServerSlotPreviewActivityChartComponent', () => {
     component.serverSlot = mockServerSlot;
 
     mockStatisticsService.getLoadAmountStatisticsInRange.and.returnValue(of([]));
-    mockStatisticsService.getLastServerLoadStatistics.and.returnValue(of({ key: "", statistics: mockLoadStatisticsResponse }));
+    mockStatisticsService.getLastServerLoadStatistics.and.returnValue(of({ key: mockServerSlot.slotKey, statistics: mockLoadStatisticsResponse }));
 
     fixture.detectChanges();
   });
@@ -59,62 +60,86 @@ describe('ServerSlotPreviewActivityChartComponent', () => {
     expect(component['dateToSubject$'].value).toBeDefined();
   });
 
-  it('should update statistics set on service data', () => {
-    const statistics = [{ date: new Date(), amountOfEvents: 5 }];
-    const updateStatisticsSetSpy = spyOn(component as any, 'updateStatisticsSet').and.callThrough();
-
-    mockStatisticsService.getLoadAmountStatisticsInRange.and.returnValue(of(statistics));
-
-    component.ngAfterViewInit();
-
-    expect(updateStatisticsSetSpy).toHaveBeenCalledWith(jasmine.any(Map), statistics);
+  it('should correctly initialize observables on init', () => {
+    spyOn(component as any, 'setUpdateTimeInterval').and.callThrough();
+    component.ngOnInit();
+    expect(component['setUpdateTimeInterval']).toHaveBeenCalled();
   });
 
-  it('should update chart data when statistics set changes', () => {
-    const generate5MinutesTimeSeriesSpy = spyOn(component as any, 'generate5MinutesTimeSeries').and.callThrough();
-
-    component.ngAfterViewInit();
-
-    component['statisticsSetSubject$'].next(new Map<number, number>());
-
-    expect(generate5MinutesTimeSeriesSpy).toHaveBeenCalled();
-  });
-
-  it('should update chart data with the last event time', () => {
+  it('should update chart data with the last event time', fakeAsync(() => {
     const addEventToChartDataSpy = spyOn(component as any, 'addEventToChartData').and.callThrough();
-    addEventToChartDataSpy.call(component, new Date().getTime());
+    mockStatisticsService.getLastServerLoadStatistics.and.returnValue(of({
+      key: mockServerSlot.slotKey,
+      statistics: mockLoadStatisticsResponse
+    }));
 
-    component.ngAfterViewInit();
+    component.ngOnInit();
 
-    component['chartDataSubject$'].next([]);
+    tick();
 
-    expect(addEventToChartDataSpy).toHaveBeenCalledWith(jasmine.any(Number));
-  });
+    component.chartData$.subscribe(data => {
+      expect(addEventToChartDataSpy).toHaveBeenCalledWith(jasmine.any(Array), jasmine.any(Number));
+    });
 
-  it('should correctly validate incoming messages', () => {
-    const validateMessageSpy = spyOn(component as any, 'validateMessage').and.callThrough();
-    validateMessageSpy.call(component, mockLoadStatisticsResponse);
+    component.ngOnDestroy();
+  }));
 
-    component.ngAfterViewInit();
+  it('should call updateTime on interval', fakeAsync(() => {
+    const updateTimeSpy = spyOn(component as any, 'updateTime').and.callThrough();
+    component.ngOnInit();
+    tick(component.fiveMinutes);
+    expect(updateTimeSpy).toHaveBeenCalled();
+    component.ngOnDestroy();
+  }));
 
-    expect(validateMessageSpy).toHaveBeenCalledWith(mockLoadStatisticsResponse);
+  it('should format dates correctly', () => {
+    const date = new Date(2023, 1, 1, 12, 0, 0); // 12:00 PM
+    const formatted = component.formatter(date.getTime());
+    expect(formatted).toBe('12:00 - 12:05');
   });
 
   it('should clean up subscriptions on destroy', () => {
     const nextSpy = spyOn(component['destroy$'], 'next').and.callThrough();
     const completeSpy = spyOn(component['destroy$'], 'complete').and.callThrough();
-
     component.ngOnDestroy();
-
     expect(nextSpy).toHaveBeenCalled();
     expect(completeSpy).toHaveBeenCalled();
   });
 
-  it('should call updateTime on interval', () => {
-    const updateTimeSpy = spyOn(component as any, 'updateTime').and.callThrough();
+  it('should update statistics set on service data', fakeAsync(() => {
+    const statistics = [{ date: new Date(), amountOfEvents: 5, collectedDateUTC: new Date(), isInitial: false }];
+    const getStatisticsSetSpy = spyOn(component as any, 'getStatisticsSet').and.callThrough();
 
-    component.ngAfterViewInit();
+    mockStatisticsService.getLoadAmountStatisticsInRange.and.returnValue(of(statistics));
 
-    expect(updateTimeSpy).toHaveBeenCalled();
+    component.ngOnInit();
+
+    tick();
+
+    component.chartData$.subscribe(data => {
+      expect(getStatisticsSetSpy).toHaveBeenCalledWith(statistics);
+    });
+
+    component.ngOnDestroy();
+  }));
+
+  it('should generate time series correctly', () => {
+    const dateFrom = new Date(Date.now() - component.hour);
+    const dateTo = new Date();
+    const statisticsSet = new Map<number, number>([[dateFrom.getTime(), 5]]);
+    const series = component['generate5MinutesTimeSeries'](dateFrom, dateTo, statisticsSet);
+
+    expect(series.length).toBeGreaterThan(0);
+    expect(series[0][1]).toBe(5);
+  });
+
+  it('should validate incoming messages correctly', () => {
+    const validMessage = { key: mockServerSlot.slotKey, statistics: mockLoadStatisticsResponse };
+    const invalidMessage = { key: 'wrongKey', statistics: mockLoadStatisticsResponse };
+    const isValid = component['validateMessage'](validMessage);
+    const isInvalid = component['validateMessage'](invalidMessage);
+
+    expect(isValid).toBeTrue();
+    expect(isInvalid).toBeFalse();
   });
 });

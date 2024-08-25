@@ -816,7 +816,9 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"//TODO: Make test"
+									"pm.test(\"Send configuration correct\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -828,7 +830,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"Id\":\"someid\",\r\n    \"Key\":\"{{serverslot_slotKey}}\",\r\n    \"CreationDateUTC\":\"2024-08-04T11:51:45.4656254Z\",\r\n    \"ServerKeepAliveInterval\":\"00:00:08\"\r\n}",
+							"raw": "{\r\n    \"Id\":\"someid\",\r\n    \"Key\":\"{{serverslot_slotKey}}\",\r\n    \"CreationDateUTC\":\"2030-09-04T11:51:45.4656254Z\",\r\n    \"ServerKeepAliveInterval\":\"01:00:08\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -857,7 +859,9 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"//TODO: Make test"
+									"pm.test(\"Send pulse correct\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -898,7 +902,9 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"//TODO: Make test"
+									"pm.test(\"Send load correct\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -910,7 +916,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\r\n    {\r\n    \"Id\":\"someid\",\r\n    \"Key\":\"{{serverslot_slotKey}}\",\r\n    \"CreationDateUTC\":\"2024-08-07T14:30:45.4656254Z\",\r\n    \"Endpoint\": \"/api/v1/resource\",\r\n    \"Method\": \"GET\",\r\n    \"StatusCode\": 200,\r\n    \"Duration\": \"00:00:00.1500000\",\r\n    \"TimestampUTC\": \"2024-08-07T14:30:45.4656254Z\"\r\n    }\r\n]",
+							"raw": "[\r\n    {\r\n        \"Id\": \"someid\",\r\n        \"Key\": \"{{serverslot_slotKey}}\",\r\n        \"CreationDateUTC\": \"2024-08-07T14:30:45.4656254Z\",\r\n        \"Endpoint\": \"/api/v1/resource\",\r\n        \"Method\": \"GET\",\r\n        \"StatusCode\": 200,\r\n        \"Duration\": \"00:00:00.1500000\",\r\n        \"TimestampUTC\": \"2024-08-07T14:30:45.4656254Z\"\r\n    }\r\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -931,6 +937,49 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "server-interaction-send-custom",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Send custom correct\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\r\n    {\r\n        \"CustomEvent\":{\r\n            \"Id\": \"someid\",\r\n            \"Key\": \"{{serverslot_slotKey}}\",\r\n            \"CreationDateUTC\": \"2024-08-07T14:30:45.4656254Z\",\r\n            \"Name\": \"CustomEvent\",\r\n            \"Description\": \"A custom test event, made for testing. Sent from postman.\"\r\n        },\r\n        \"CustomEventSerialized\": \"{\\\"Id\\\":\\\"someid\\\",\\\"Key\\\":\\\"serverslot_slotKey\\\",\\\"CreationDateUTC\\\":\\\"2024-08-07T14:30:45.4656254Z\\\",\\\"Name\\\":\\\"CustomEvent\\\",\\\"Description\\\":\\\"A custom test event, made for testing. Sent from postman.\\\",\\\"AdditionalFields\\\":\\\"Some value\\\",\\\"Number\\\":\\\"SomeNumber\\\"}\"\r\n    }\r\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7129/serverinteraction/custom",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7129",
+							"path": [
+								"serverinteraction",
+								"custom"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -944,7 +993,12 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"//TODO: Make test"
+									"pm.test(\"Get messages in date range status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"    var jsonResponse = pm.response.json();\r",
+									"    pm.expect(jsonResponse.length).to.be.above(0);\r",
+									"});\r",
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -966,7 +1020,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"Key\":\"{{serverslot_slotKey}}\",\r\n    \"From\":\"2024-08-03T09:45:45.4656254Z\",\r\n    \"To\":\"2024-08-25T09:45:45.4656254Z\"\r\n}",
+							"raw": "{\r\n    \"Key\":\"{{serverslot_slotKey}}\",\r\n    \"From\":\"2020-08-03T09:45:45.4656254Z\",\r\n    \"To\":\"2044-08-25T09:45:45.4656254Z\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -995,7 +1049,12 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"//TODO: Make test"
+									"pm.test(\"Get some messages from date status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"    var jsonResponse = pm.response.json();\r",
+									"    pm.expect(jsonResponse.length).to.be.above(0);\r",
+									"});\r",
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -1017,7 +1076,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"Key\": \"{{serverslot_slotKey}}\",\r\n    \"NumberOfMessages\" : \"10\",\r\n    \"StartDate\": \"2024-08-14T14:10:45.4656254Z\",\r\n    \"ReadNew\": false\r\n}",
+							"raw": "{\r\n    \"Key\": \"{{serverslot_slotKey}}\",\r\n    \"NumberOfMessages\" : \"1\",\r\n    \"StartDate\": \"2020-08-14T14:10:45.4656254Z\",\r\n    \"ReadNew\": true\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1040,13 +1099,18 @@
 					"response": []
 				},
 				{
-					"name": "analyzer-load-amount-amountrange",
+					"name": "analyzer-load-somecustomevents",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"//TODO: Make test"
+									"pm.test(\"Get some custom messages from date status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"    var jsonResponse = pm.response.json();\r",
+									"    pm.expect(jsonResponse.length).to.be.above(0);\r",
+									"});\r",
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -1068,7 +1132,64 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"Key\": \"{{serverslot_slotKey}}\",\r\n    \"From\": \"2024-08-10T13:10:45.4656254Z\",\r\n    \"To\": \"2024-08-10T14:00:45.4656254Z\",\r\n    \"TimeSpan\": \"00:05:00\"\r\n}",
+							"raw": "{\r\n    \"Key\": \"{{serverslot_slotKey}}\",\r\n    \"NumberOfMessages\" : \"1\",\r\n    \"StartDate\": \"2020-08-14T14:10:45.4656254Z\",\r\n    \"ReadNew\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7129/analyze/somecustomevents",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7129",
+							"path": [
+								"analyze",
+								"somecustomevents"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "analyzer-load-amount-amountrange",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get message amount from date status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"    var jsonResponse = pm.response.json();\r",
+									"    pm.expect(jsonResponse.length).to.be.above(0);\r",
+									"    pm.expect( jsonResponse[0].amountOfEvents).to.be.above(0);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Key\": \"{{serverslot_slotKey}}\",\r\n    \"From\": \"2020-08-10T13:10:45.4656254Z\",\r\n    \"To\": \"2034-08-10T14:00:45.4656254Z\",\r\n    \"TimeSpan\": \"23:00:00\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1097,7 +1218,13 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"//TODO: Make test"
+									"pm.test(\"Get message amount per day status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"    var jsonResponse = pm.response.json();\r",
+									"    pm.expect(jsonResponse.length).to.be.above(0);\r",
+									"    pm.expect( jsonResponse[0].amountOfEvents).to.be.above(0);\r",
+									"});\r",
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -1122,7 +1249,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"Key\":\"{{serverslot_slotKey}}\",\r\n    \"From\":\"2024-08-03T09:45:45.4656254Z\",\r\n    \"To\":\"2024-08-25T09:45:45.4656254Z\"\r\n}",
+							"raw": "",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1140,6 +1267,60 @@
 								"analyze",
 								"perday",
 								"{{serverslot_slotKey}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "analyzer-eventprocessing-load",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Process load event status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\r\n    {\r\n        \"Id\": \"someid\",\r\n        \"Key\": \"{{serverslot_slotKey}}\",\r\n        \"CreationDateUTC\": \"2024-08-07T14:30:45.4656254Z\",\r\n        \"Endpoint\": \"/api/v1/resource\",\r\n        \"Method\": \"GET\",\r\n        \"StatusCode\": 200,\r\n        \"Duration\": \"00:00:00.1500000\",\r\n        \"TimestampUTC\": \"2024-08-07T14:30:45.4656254Z\"\r\n    }\r\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7129/eventprocessing/load",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7129",
+							"path": [
+								"eventprocessing",
+								"load"
 							]
 						}
 					},

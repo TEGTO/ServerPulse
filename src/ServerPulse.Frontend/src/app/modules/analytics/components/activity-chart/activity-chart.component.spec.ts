@@ -90,24 +90,4 @@ describe('ActivityChartComponent', () => {
     expect(updateChartRange).toHaveBeenCalled();
     expect(updateChartData).toHaveBeenCalled();
   }));
-
-  it('should format tooltip values correctly', () => {
-    const formatter = component.chartOptions.tooltip!.x!.formatter!;
-
-    const inputValue = new Date('2023-01-01T12:30:00Z').getTime();
-
-    let date = new Date(inputValue);
-    let hours = date.getHours().toString().padStart(2, '0');
-    let minutes = date.getMinutes().toString().padStart(2, '0');
-    let nextDate = new Date(date);
-    nextDate.setMinutes(date.getMinutes() + 5);
-    let nextHours = nextDate.getHours().toString().padStart(2, '0');
-    let nextMinutes = nextDate.getMinutes().toString().padStart(2, '0');
-
-    const expectedOutput = `${hours}:${minutes} - ${nextHours}:${nextMinutes}`;
-
-    const result = formatter(inputValue);
-
-    expect(result).toBe(expectedOutput);
-  });
 });

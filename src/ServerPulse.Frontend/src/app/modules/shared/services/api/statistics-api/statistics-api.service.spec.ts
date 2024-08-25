@@ -1,6 +1,6 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { GetSomeMessagesRequest, LoadAmountStatisticsResponse, MessageAmountInRangeRequest, MessagesInRangeRangeRequest, ServerLoadResponse, TimeSpan, URLDefiner } from '../../../index';
+import { CustomEventResponse, GetSomeMessagesRequest, LoadAmountStatisticsResponse, MessageAmountInRangeRequest, MessagesInRangeRangeRequest, ServerLoadResponse, TimeSpan, URLDefiner } from '../../../index';
 import { StatisticsApiService } from './statistics-api.service';
 
 describe('StatisticsApiService', () => {
@@ -57,7 +57,7 @@ describe('StatisticsApiService', () => {
   it('should get whole amount statistics in days', () => {
     const key = 'testKey';
     const expectedUrl = `/api/statistics/perday/${key}`;
-    const response: LoadAmountStatisticsResponse[] = [{ amountOfEvents: 10, date: new Date() }];
+    const response: LoadAmountStatisticsResponse[] = [{ amountOfEvents: 10, date: new Date(), collectedDateUTC: new Date(), isInitial: false }];
 
     service.getWholeLoadAmountStatisticsInDays(key).subscribe(res => {
       expect(res).toEqual(response);
@@ -73,7 +73,7 @@ describe('StatisticsApiService', () => {
   it('should get amount statistics in range', () => {
     const request: MessageAmountInRangeRequest = { key: 'testKey', from: new Date(), to: new Date(), timeSpan: '1d' };
     const expectedUrl = '/api/statistics/amountrange';
-    const response: LoadAmountStatisticsResponse[] = [{ amountOfEvents: 10, date: new Date() }];
+    const response: LoadAmountStatisticsResponse[] = [{ amountOfEvents: 10, date: new Date(), collectedDateUTC: new Date(), isInitial: false }];
 
     service.getLoadAmountStatisticsInRange(request).subscribe(res => {
       expect(res).toEqual(response);
@@ -102,7 +102,7 @@ describe('StatisticsApiService', () => {
       }
     ];
 
-    service.getSomeCustomEvents(request).subscribe(res => {
+    service.getSomeLoadEvents(request).subscribe(res => {
       expect(res).toEqual(response);
     });
 
@@ -117,6 +117,45 @@ describe('StatisticsApiService', () => {
     const expectedUrl = `/api/statistics/daterange`;
 
     service.getLoadEventsInDataRange({ key: 'testKey', from: new Date(), to: new Date() }).subscribe(
+      () => fail('Expected an error, but got a success response'),
+      (error) => {
+        expect(error).toBeTruthy();
+      }
+    );
+
+    const req = httpTestingController.expectOne(expectedUrl);
+    req.flush('Error', errorResponse);
+  });
+
+  it('should get some custom events', () => {
+    const request: GetSomeMessagesRequest = { key: 'testKey', numberOfMessages: 5, startDate: new Date(), readNew: false };
+    const expectedUrl = '/api/statistics/somecustomevents';
+    const response: CustomEventResponse[] = [
+      {
+        id: '1',
+        key: 'testKey',
+        name: 'Custom Event',
+        description: 'Description of custom event',
+        serializedMessage: 'Serialized message',
+        creationDateUTC: new Date()
+      }
+    ];
+
+    service.getSomeCustomEvents(request).subscribe(res => {
+      expect(res).toEqual(response);
+    });
+
+    const req = httpTestingController.expectOne(expectedUrl);
+    expect(req.request.method).toBe('POST');
+    expect(mockUrlDefiner.combineWithStatisticsApiUrl).toHaveBeenCalledWith('/somecustomevents');
+    req.flush(response);
+  });
+
+  it('should handle error response in getSomeCustomEvents', () => {
+    const errorResponse = { status: 500, statusText: 'Server Error' };
+    const expectedUrl = `/api/statistics/somecustomevents`;
+
+    service.getSomeCustomEvents({ key: 'testKey', numberOfMessages: 5, startDate: new Date(), readNew: false }).subscribe(
       () => fail('Expected an error, but got a success response'),
       (error) => {
         expect(error).toBeTruthy();

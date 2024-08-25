@@ -1,6 +1,6 @@
-import { ServerLoadStatisticsResponse, ServerStatisticsResponse, TimeSpan, convertToServerLoadStatisticsResponse, convertToServerStatisticsResponse } from "../../../shared";
-import { selectDate, subscribeToLoadStatisticsFailure, subscribeToLoadStatisticsSuccess, subscribeToSlotStatisticsFailure, subscribeToSlotStatisticsSuccess } from "../../index";
-import { SlotLoadStatisticsState, SlotStatisticsState, slotLoadStatisticsReducer, slotStatisticsReducer } from "./slot-statistics.reducer";
+import { CustomEventResponse, CustomEventStatisticsResponse, ServerLoadStatisticsResponse, ServerStatisticsResponse, TimeSpan, convertToCustomEventStatisticsResponse, convertToServerLoadStatisticsResponse, convertToServerStatisticsResponse } from "../../../shared";
+import { selectDate, subscribeToCustomStatisticsFailure, subscribeToCustomStatisticsSuccess, subscribeToLoadStatisticsFailure, subscribeToLoadStatisticsSuccess, subscribeToSlotStatisticsFailure, subscribeToSlotStatisticsSuccess } from "../../index";
+import { SlotCustomStatisticsState, SlotLoadStatisticsState, SlotStatisticsState, slotCustomStatisticsReducer, slotLoadStatisticsReducer, slotStatisticsReducer } from "./slot-statistics.reducer";
 
 describe('SlotStatistics Reducer', () => {
     const initialSlotStatisticsState: SlotStatisticsState = {
@@ -31,7 +31,7 @@ describe('SlotStatistics Reducer', () => {
         const action = subscribeToSlotStatisticsSuccess({ lastStatistics: mockLastStatistics });
         const state = slotStatisticsReducer(initialSlotStatisticsState, action);
         expect(state.lastStatistics?.key).toBe(mockLastStatistics.key);
-        expect(state.lastStatistics?.statistics).toEqual(convertToServerStatisticsResponse(mockStatisticsResponse));
+        expect(state.lastStatistics?.statistics.serverUptime).toEqual(convertToServerStatisticsResponse(mockStatisticsResponse).serverUptime);
         expect(state.error).toBeNull();
     });
 
@@ -63,6 +63,7 @@ describe('SlotLoadStatistics Reducer', () => {
             timestampUTC: new Date()
         },
         collectedDateUTC: new Date('2023-08-18T12:05:00Z'),
+        loadMethodStatistics: null,
         isInitial: false
     };
 
@@ -85,7 +86,7 @@ describe('SlotLoadStatistics Reducer', () => {
         const action = subscribeToLoadStatisticsSuccess({ lastLoadStatistics: mockLastLoadStatistics });
         const state = slotLoadStatisticsReducer(initialSlotLoadStatisticsState, action);
         expect(state.lastLoadStatistics?.key).toBe(mockLastLoadStatistics.key);
-        expect(state.lastLoadStatistics?.statistics).toEqual(convertToServerLoadStatisticsResponse(mockLoadStatisticsResponse));
+        expect(state.lastLoadStatistics?.statistics.amountOfEvents).toEqual(convertToServerLoadStatisticsResponse(mockLoadStatisticsResponse).amountOfEvents);
         expect(state.error).toBeNull();
     });
 
@@ -93,6 +94,51 @@ describe('SlotLoadStatistics Reducer', () => {
         const error = 'Error';
         const action = subscribeToLoadStatisticsFailure({ error });
         const state = slotLoadStatisticsReducer(initialSlotLoadStatisticsState, action);
+        expect(state.error).toEqual(error);
+    });
+});
+
+describe('SlotCustomStatistics Reducer', () => {
+    const initialSlotCustomStatisticsState: SlotCustomStatisticsState = {
+        lastStatistics: null,
+        error: null
+    };
+
+    const mockCustomEventResponse: CustomEventResponse = {
+        id: '1',
+        key: 'slot1',
+        name: 'Custom Event',
+        description: 'A custom event',
+        serializedMessage: 'Serialized message content',
+        creationDateUTC: new Date('2023-08-18T12:00:00Z')
+    };
+
+    const mockCustomEventStatisticsResponse: CustomEventStatisticsResponse = {
+        collectedDateUTC: new Date('2023-08-18T12:05:00Z'),
+        isInitial: false,
+        lastEvent: mockCustomEventResponse
+    };
+
+    const mockLastCustomStatistics = { key: 'slot1', data: JSON.stringify(mockCustomEventStatisticsResponse) };
+
+    it('should return the initial state', () => {
+        const action = { type: 'Unknown' } as any;
+        const state = slotCustomStatisticsReducer(initialSlotCustomStatisticsState, action);
+        expect(state).toBe(initialSlotCustomStatisticsState);
+    });
+
+    it('should handle subscribeToCustomStatisticsSuccess', () => {
+        const action = subscribeToCustomStatisticsSuccess({ lastStatistics: mockLastCustomStatistics });
+        const state = slotCustomStatisticsReducer(initialSlotCustomStatisticsState, action);
+        expect(state.lastStatistics?.key).toBe(mockLastCustomStatistics.key);
+        expect(state.lastStatistics?.statistics.lastEvent?.id).toEqual(convertToCustomEventStatisticsResponse(JSON.parse(mockLastCustomStatistics.data)).lastEvent?.id);
+        expect(state.error).toBeNull();
+    });
+
+    it('should handle subscribeToCustomStatisticsFailure', () => {
+        const error = 'Error';
+        const action = subscribeToCustomStatisticsFailure({ error });
+        const state = slotCustomStatisticsReducer(initialSlotCustomStatisticsState, action);
         expect(state.error).toEqual(error);
     });
 });

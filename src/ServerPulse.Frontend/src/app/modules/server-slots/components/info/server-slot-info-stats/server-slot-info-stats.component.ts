@@ -122,6 +122,9 @@ export class ServerSlotInfoStatsComponent implements OnInit, AfterViewInit, OnDe
       ));
   }
 
+  trackById(index: number, item: ServerLoadResponse): string {
+    return item.id;
+  }
   private isSelectedDateToday(date: Date): boolean {
     return date.setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0);
   }

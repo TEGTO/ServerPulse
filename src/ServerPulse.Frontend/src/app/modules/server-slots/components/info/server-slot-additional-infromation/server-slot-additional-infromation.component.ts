@@ -80,12 +80,7 @@ export class ServerSlotAdditionalInfromationComponent implements OnInit, AfterVi
         shareReplay(1),
         switchMap(events => this.statisticsService.getLastCustomStatistics(this.slotKey).pipe(
           map(lastStatistics => {
-            let uniqueItems = getUniqueItems(this.dataSourceSubject$.value, events) as CustomEventResponse[];
-            this.dataSourceSubject$.next([...this.dataSourceSubject$.value, ...uniqueItems]);
-            if (this.validateMessage(lastStatistics)) {
-              let newEvent = lastStatistics?.statistics.lastEvent;
-              this.dataSourceSubject$.next([newEvent!, ...this.dataSourceSubject$.value]);
-            }
+            this.dataSourceSubject$.next(this.getNewItems(lastStatistics, events));
             this.areTableItemsLoadingSubject$.next(false)
             return this.dataSourceSubject$.value;
           })
@@ -96,6 +91,20 @@ export class ServerSlotAdditionalInfromationComponent implements OnInit, AfterVi
 
   openDetailMenu(serializedEvent: string) {
     this.dialogManager.openCustomEventDetails(serializedEvent);
+  }
+  trackById(index: number, item: CustomEventResponse): string {
+    return item.id;
+  }
+  private getNewItems(lastStatistics: { key: string; statistics: CustomEventStatisticsResponse; } | null, events: CustomEventResponse[]) {
+    const currentItems = this.dataSourceSubject$.value;
+    let uniqueItems = getUniqueItems(currentItems, events) as CustomEventResponse[];
+    let newItems = [...currentItems, ...uniqueItems];
+    if (this.validateMessage(lastStatistics)) {
+      const newEvent = lastStatistics?.statistics.lastEvent;
+      uniqueItems = getUniqueItems(newItems, [newEvent!]) as CustomEventResponse[];
+      newItems = [...uniqueItems, ...newItems];
+    }
+    return newItems;
   }
   private generateChartSeries(statistics: ServerLoadStatisticsResponse | undefined): Map<string, number> {
     let data = new Map<string, number>();
@@ -109,7 +118,6 @@ export class ServerSlotAdditionalInfromationComponent implements OnInit, AfterVi
     }
     return data;
   }
-
   private validateMessage(message: { key: string; statistics: CustomEventStatisticsResponse; } | null) {
     return message
       && !message.statistics.isInitial

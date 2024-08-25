@@ -1,6 +1,6 @@
-export interface LoadAmountStatisticsResponse {
+import { BaseStatisticsResponse } from "../../../../../index";
+
+export interface LoadAmountStatisticsResponse extends BaseStatisticsResponse {
     amountOfEvents: number;
     date: Date;
-    collectedDateUTC: Date;
-    isInitial: boolean;
 }

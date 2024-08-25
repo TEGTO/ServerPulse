@@ -1,12 +1,12 @@
-import { CUSTOM_ELEMENTS_SCHEMA, DebugElement } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, DebugElement, ElementRef } from '@angular/core';
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatMenuModule } from '@angular/material/menu';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
-import { RedirectorService, SnackbarManager } from '../../../shared';
-import { ServerSlotDialogManager, ServerSlotService, ServerStatisticsService } from '../../index';
+import { RedirectorService, SnackbarManager } from '../../../../shared';
+import { ServerSlotDialogManager, ServerSlotService, ServerStatisticsService } from '../../../index';
 import { ServerSlotInfoComponent } from './server-slot-info.component';
 
 describe('ServerSlotInfoComponent', () => {
@@ -81,12 +81,16 @@ describe('ServerSlotInfoComponent', () => {
     component.ngOnInit();
     fixture.detectChanges();
 
+    // Mock textSizer element with a scrollWidth
+    component.textSizer = {
+      nativeElement: { scrollWidth: 150 }
+    } as ElementRef;
+
     component.inputControl.setValue('Updated Slot Name');
     fixture.detectChanges();
     tick(300);
 
-    const sizerWidth = component.textSizer.nativeElement.scrollWidth;
-    expect(component.inputWidth$.getValue()).toBe(sizerWidth + 1);
+    expect(component.inputWidth$.getValue()).toBe(151);  // 150 (scrollWidth) + 1
   }));
 
   it('should reset input value to "New slot" if input is empty on blur', () => {
@@ -134,11 +138,25 @@ describe('ServerSlotInfoComponent', () => {
     expect(mockRedirector.redirectToHome).toHaveBeenCalled();
   });
 
-  it('should clean up subscriptions on destroy', () => {
-    spyOn(component["destroy$"], 'next');
-    spyOn(component["destroy$"], 'complete');
-    component.ngOnDestroy();
-    expect(component["destroy$"].next).toHaveBeenCalled();
-    expect(component["destroy$"].complete).toHaveBeenCalled();
+  it('should not delete server slot if dialog is closed without confirmation', () => {
+    const mockDialogRef = {
+      afterClosed: () => of(false)
+    } as any;
+
+    mockDialogManager.openDeleteSlotConfirmMenu.and.returnValue(mockDialogRef);
+    component.serverSlot$.next(mockServerSlot);
+    component.openConfirmDeletion();
+
+    expect(mockDialogManager.openDeleteSlotConfirmMenu).toHaveBeenCalled();
+    expect(mockServerSlotService.deleteServerSlot).not.toHaveBeenCalled();
+    expect(mockRedirector.redirectToHome).not.toHaveBeenCalled();
   });
-})
+
+  it('should clean up subscriptions on destroy', () => {
+    spyOn(component['destroy$'], 'next');
+    spyOn(component['destroy$'], 'complete');
+    component.ngOnDestroy();
+    expect(component['destroy$'].next).toHaveBeenCalled();
+    expect(component['destroy$'].complete).toHaveBeenCalled();
+  });
+});

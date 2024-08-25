@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgApexchartsModule } from 'ng-apexcharts';
-import { ActivityChartControlComponent } from './components/activity-chart-detail/activity-chart-control.component';
+import { ActivityChartControlComponent } from './components/activity-chart-control/activity-chart-control.component';
 import { ActivityChartComponent } from './components/activity-chart/activity-chart.component';
 import { PieChartComponent } from './components/pie-chart/pie-chart.component';
 
