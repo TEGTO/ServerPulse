@@ -15,18 +15,30 @@ namespace AnalyzerApi.Controllers
     [ApiController]
     public class AnalyzeController : ControllerBase
     {
+        #region Fields
+
         private readonly IMapper mapper;
-        private readonly IServerLoadReceiver serverLoadReceiver;
-        private readonly ICustomReceiver customReceiver;
+        private readonly IEventReceiver<LoadEventWrapper> loadEventReceiver;
+        private readonly IStatisticsReceiver<LoadAmountStatistics> loadAmountStatisticsReceiver;
+        private readonly IEventReceiver<CustomEventWrapper> customEventReceiver;
         private readonly ICacheService cacheService;
         private readonly double cacheExpiryInMinutes;
         private readonly string cacheStatisticsKey;
 
-        public AnalyzeController(IMapper mapper, IServerLoadReceiver serverLoadReceiver, ICustomReceiver customReceiver, ICacheService cacheService, IConfiguration configuration)
+        #endregion
+
+        public AnalyzeController(
+            IMapper mapper,
+            IEventReceiver<LoadEventWrapper> loadEventReceiver,
+            IStatisticsReceiver<LoadAmountStatistics> loadAmountStatisticsReceiver,
+            IEventReceiver<CustomEventWrapper> eventStatisticsReceiver,
+            ICacheService cacheService,
+            IConfiguration configuration)
         {
             this.mapper = mapper;
-            this.serverLoadReceiver = serverLoadReceiver;
-            this.customReceiver = customReceiver;
+            this.loadEventReceiver = loadEventReceiver;
+            this.loadAmountStatisticsReceiver = loadAmountStatisticsReceiver;
+            this.customEventReceiver = eventStatisticsReceiver;
             this.cacheService = cacheService;
             cacheExpiryInMinutes = double.Parse(configuration[Configuration.CACHE_SERVER_LOAD_STATISTICS_PER_DAY_EXPIRY_IN_MINUTES]!);
             cacheStatisticsKey = configuration[Configuration.CACHE_STATISTICS_KEY]!;
@@ -44,7 +56,7 @@ namespace AnalyzerApi.Controllers
             if (events == null)
             {
                 var options = new InRangeQueryOptions(request.Key, request.From.ToUniversalTime(), request.To.ToUniversalTime());
-                events = await serverLoadReceiver.ReceiveEventsInRangeAsync(options, cancellationToken);
+                events = await loadEventReceiver.ReceiveEventsInRangeAsync(options, cancellationToken);
             }
 
             await cacheService.SetValueAsync(cacheKey, JsonSerializer.Serialize(events.ToList()), cacheExpiryInMinutes);
@@ -59,11 +71,15 @@ namespace AnalyzerApi.Controllers
 
             IEnumerable<LoadAmountStatistics>? statistics = await GetInCacheAsync<IEnumerable<LoadAmountStatistics>>(cacheKey);
 
+            var timeSpan = TimeSpan.FromDays(1);
+
             if (statistics == null)
             {
-                statistics = await serverLoadReceiver.GetAmountStatisticsInDaysAsync(key, cancellationToken);
+                statistics = await loadAmountStatisticsReceiver.GetWholeStatisticsInTimeSpanAsync(key, timeSpan, cancellationToken);
             }
-            var todayStatistics = await serverLoadReceiver.GetAmountStatisticsLastDayAsync(key, cancellationToken);
+
+            var options = new InRangeQueryOptions(key, DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
+            var todayStatistics = await loadAmountStatisticsReceiver.GetStatisticsInRangeAsync(options, timeSpan, cancellationToken);
 
             var response = statistics.Where(x => !todayStatistics.Any(y => x.Date == y.Date)).ToList();
             response.AddRange(todayStatistics);
@@ -83,7 +99,7 @@ namespace AnalyzerApi.Controllers
             if (statistics == null)
             {
                 var options = new InRangeQueryOptions(request.Key, request.From.ToUniversalTime(), request.To.ToUniversalTime());
-                statistics = await serverLoadReceiver.GetAmountStatisticsInRangeAsync(options, request.TimeSpan, cancellationToken);
+                statistics = await loadAmountStatisticsReceiver.GetStatisticsInRangeAsync(options, request.TimeSpan, cancellationToken);
             }
 
             await cacheService.SetValueAsync(cacheKey, JsonSerializer.Serialize(statistics), cacheExpiryInMinutes);
@@ -95,7 +111,7 @@ namespace AnalyzerApi.Controllers
         public async Task<ActionResult<IEnumerable<LoadEventWrapper>>> GetSomeLoadEvents(GetSomeMessagesRequest request, CancellationToken cancellationToken)
         {
             var options = new ReadCertainMessageNumberOptions(request.Key, request.NumberOfMessages, request.StartDate.ToUniversalTime(), request.ReadNew);
-            IEnumerable<LoadEventWrapper>? events = await serverLoadReceiver.GetCertainAmountOfEvents(options, cancellationToken);
+            IEnumerable<LoadEventWrapper>? events = await loadEventReceiver.GetCertainAmountOfEventsAsync(options, cancellationToken);
 
             return Ok(events);
         }
@@ -104,7 +120,7 @@ namespace AnalyzerApi.Controllers
         public async Task<ActionResult<IEnumerable<CustomEventWrapper>>> GetSomeCustomEvents(GetSomeMessagesRequest request, CancellationToken cancellationToken)
         {
             var options = new ReadCertainMessageNumberOptions(request.Key, request.NumberOfMessages, request.StartDate.ToUniversalTime(), request.ReadNew);
-            IEnumerable<CustomEventWrapper>? events = await customReceiver.GetCertainAmountOfEvents(options, cancellationToken);
+            IEnumerable<CustomEventWrapper>? events = await customEventReceiver.GetCertainAmountOfEventsAsync(options, cancellationToken);
 
             return Ok(events);
         }

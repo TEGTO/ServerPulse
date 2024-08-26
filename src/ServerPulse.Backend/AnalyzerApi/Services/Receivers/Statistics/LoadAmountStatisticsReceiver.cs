@@ -5,7 +5,7 @@ using MessageBus.Interfaces;
 
 namespace AnalyzerApi.Services.Receivers.Statistics
 {
-    public class LoadAmountStatisticsReceiver : StatisticsReceiver<LoadAmountStatistics>
+    public sealed class LoadAmountStatisticsReceiver : StatisticsReceiver<LoadAmountStatistics>
     {
         private readonly int statisticsSaveDataInDays;
 

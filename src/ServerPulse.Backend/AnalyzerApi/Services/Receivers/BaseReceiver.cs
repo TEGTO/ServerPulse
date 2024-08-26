@@ -9,7 +9,7 @@ namespace AnalyzerApi.Services.Receivers
         protected readonly IMapper mapper;
         protected readonly int timeoutInMilliseconds;
 
-        protected BaseReceiver(IMessageConsumer messageConsumer, IMapper mapper, IConfiguration configuration)
+        public BaseReceiver(IMessageConsumer messageConsumer, IMapper mapper, IConfiguration configuration)
         {
             this.messageConsumer = messageConsumer;
             this.mapper = mapper;

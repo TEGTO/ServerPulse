@@ -9,13 +9,13 @@ namespace AnalyzerApi.Services
     public class EventProcessor : IEventProcessor
     {
         private readonly IMessageProducer producer;
-        private readonly IServerLoadReceiver serverLoadReceiver;
+        private readonly IStatisticsReceiver<LoadMethodStatistics> statisticsReceiver;
         private readonly string loadMethodStatisticsTopic;
 
-        public EventProcessor(IMessageProducer producer, IServerLoadReceiver serverLoadReceiver, IConfiguration configuration)
+        public EventProcessor(IMessageProducer producer, IStatisticsReceiver<LoadMethodStatistics> statisticsReceiver, IConfiguration configuration)
         {
             this.producer = producer;
-            this.serverLoadReceiver = serverLoadReceiver;
+            this.statisticsReceiver = statisticsReceiver;
             loadMethodStatisticsTopic = configuration[Configuration.KAFKA_LOAD_METHOD_STATISTICS_TOPIC]!;
         }
 
@@ -47,7 +47,7 @@ namespace AnalyzerApi.Services
         private async Task ProcessLoadEventsAsync(LoadEvent[] events, CancellationToken cancellationToken)
         {
             var firstKey = events.First().Key;
-            var statistics = await serverLoadReceiver.ReceiveLastLoadMethodStatisticsByKeyAsync(firstKey, cancellationToken);
+            var statistics = await statisticsReceiver.ReceiveLastStatisticsByKeyAsync(firstKey, cancellationToken);
 
             if (statistics == null)
             {

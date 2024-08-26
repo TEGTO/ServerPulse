@@ -5,7 +5,7 @@ using ServerPulse.EventCommunication.Events;
 
 namespace AnalyzerApi.Services.Receivers.Event
 {
-    public class CustomEventReceiver : EventReceiver<CustomEvent, CustomEventWrapper>
+    public sealed class CustomEventReceiver : EventReceiver<CustomEvent, CustomEventWrapper>
     {
         private readonly string customEventTopic;
 

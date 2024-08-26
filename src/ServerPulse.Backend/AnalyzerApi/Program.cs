@@ -81,7 +81,6 @@ builder.Services.AddSingleton<IStatisticsReceiver<LoadMethodStatistics>, Statist
 builder.Services.AddSingleton<IStatisticsReceiver<ServerLoadStatistics>, StatisticsReceiver<ServerLoadStatistics>>();
 builder.Services.AddSingleton<IStatisticsReceiver<ServerStatistics>, StatisticsReceiver<ServerStatistics>>();
 
-
 builder.Services.AddSingleton<IStatisticsSender, StatisticsSender>();
 builder.Services.AddSingleton<IEventProcessor, EventProcessor>();
 builder.Services.AddSingleton<ServerStatisticsCollector>();

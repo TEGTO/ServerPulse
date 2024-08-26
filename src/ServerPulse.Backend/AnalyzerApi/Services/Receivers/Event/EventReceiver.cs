@@ -8,12 +8,12 @@ using ServerPulse.EventCommunication.Events;
 namespace AnalyzerApi.Services.Receivers.Event
 {
     public record class EventReceiverTopicData<TWrapper>(string topicOriginName) where TWrapper : BaseEventWrapper;
-    public abstract class EventReceiver<TEvent, TWrapper> : BaseReceiver, IEventReceiver<TWrapper>
+    public class EventReceiver<TEvent, TWrapper> : BaseReceiver, IEventReceiver<TWrapper>
         where TEvent : BaseEvent where TWrapper : BaseEventWrapper
     {
         protected readonly EventReceiverTopicData<TWrapper> topicData;
 
-        protected EventReceiver(IMessageConsumer messageConsumer, IMapper mapper, IConfiguration configuration, EventReceiverTopicData<TWrapper> topicData) : base(messageConsumer, mapper, configuration)
+        public EventReceiver(IMessageConsumer messageConsumer, IMapper mapper, IConfiguration configuration, EventReceiverTopicData<TWrapper> topicData) : base(messageConsumer, mapper, configuration)
         {
             this.topicData = topicData;
         }
