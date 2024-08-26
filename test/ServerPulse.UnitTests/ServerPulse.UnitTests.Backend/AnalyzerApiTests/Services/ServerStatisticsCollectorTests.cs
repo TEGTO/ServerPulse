@@ -1,7 +1,7 @@
 ﻿using AnalyzerApi;
 using AnalyzerApi.Domain.Dtos.Wrappers;
 using AnalyzerApi.Domain.Models;
-using AnalyzerApi.Services;
+using AnalyzerApi.Services.Collectors;
 using AnalyzerApi.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using Moq;

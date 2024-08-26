@@ -3,7 +3,7 @@ using AnalyzerApi.Domain.Models;
 using AnalyzerApi.Services.Interfaces;
 using System.Collections.Concurrent;
 
-namespace AnalyzerApi.Services
+namespace AnalyzerApi.Services.Collectors
 {
     public class ServerStatisticsCollector : BaseStatisticsCollector, IStatisticsCollector
     {

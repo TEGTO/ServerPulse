@@ -3,6 +3,7 @@ using AnalyzerApi.Domain.Dtos.Responses;
 using AnalyzerApi.Domain.Models;
 using AnalyzerApi.Hubs;
 using AnalyzerApi.Services;
+using AnalyzerApi.Services.Collectors;
 using AutoMapper;
 using MessageBus.Interfaces;
 using Microsoft.AspNetCore.SignalR;

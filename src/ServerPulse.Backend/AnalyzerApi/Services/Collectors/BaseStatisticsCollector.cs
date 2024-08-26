@@ -1,7 +1,7 @@
 ﻿using AnalyzerApi.Services.Interfaces;
 using System.Collections.Concurrent;
 
-namespace AnalyzerApi.Services
+namespace AnalyzerApi.Services.Collectors
 {
     public abstract class BaseStatisticsCollector
     {

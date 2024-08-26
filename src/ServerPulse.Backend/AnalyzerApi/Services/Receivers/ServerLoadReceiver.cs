@@ -6,7 +6,7 @@ using MessageBus.Interfaces;
 using ServerPulse.EventCommunication.Events;
 using Shared;
 
-namespace AnalyzerApi.Services
+namespace AnalyzerApi.Services.Receivers
 {
     public class ServerLoadReceiver : BaseEventReceiver, IServerLoadReceiver
     {

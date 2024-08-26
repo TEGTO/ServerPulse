@@ -4,7 +4,7 @@ using AutoMapper;
 using MessageBus.Interfaces;
 using ServerPulse.EventCommunication.Events;
 
-namespace AnalyzerApi.Services
+namespace AnalyzerApi.Services.Receivers
 {
     public class CustomReceiver : BaseEventReceiver, ICustomReceiver
     {

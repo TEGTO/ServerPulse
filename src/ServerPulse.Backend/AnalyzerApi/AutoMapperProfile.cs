@@ -19,6 +19,7 @@ namespace AuthenticationApi
             CreateMap<ServerLoadStatistics, ServerLoadStatisticsResponse>();
             CreateMap<LoadAmountStatistics, LoadAmountStatisticsResponse>();
             CreateMap<CustomEventStatistics, CustomEventStatisticsResponse>();
+            CreateMap<SlotData, SlotDataResponse>();
         }
     }
 }

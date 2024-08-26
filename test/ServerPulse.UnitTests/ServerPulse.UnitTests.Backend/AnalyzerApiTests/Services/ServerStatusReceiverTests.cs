@@ -1,7 +1,7 @@
 ﻿using AnalyzerApi;
 using AnalyzerApi.Domain.Dtos.Wrappers;
 using AnalyzerApi.Domain.Models;
-using AnalyzerApi.Services;
+using AnalyzerApi.Services.Receivers;
 using Confluent.Kafka;
 using MessageBus.Interfaces;
 using Moq;

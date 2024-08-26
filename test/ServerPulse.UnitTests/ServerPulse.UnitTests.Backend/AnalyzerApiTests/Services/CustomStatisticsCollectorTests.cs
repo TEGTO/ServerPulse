@@ -1,5 +1,6 @@
 ﻿using AnalyzerApi.Domain.Dtos.Wrappers;
 using AnalyzerApi.Domain.Models;
+using AnalyzerApi.Services.Collectors;
 using AnalyzerApi.Services.Interfaces;
 using AnalyzerApiTests.Services;
 using Microsoft.Extensions.Logging;

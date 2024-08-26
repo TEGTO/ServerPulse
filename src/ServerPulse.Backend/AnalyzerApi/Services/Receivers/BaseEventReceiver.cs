@@ -4,7 +4,7 @@ using Confluent.Kafka;
 using MessageBus.Interfaces;
 using ServerPulse.EventCommunication.Events;
 
-namespace AnalyzerApi.Services
+namespace AnalyzerApi.Services.Receivers
 {
     public abstract class BaseEventReceiver
     {
@@ -16,7 +16,7 @@ namespace AnalyzerApi.Services
         {
             this.messageConsumer = messageConsumer;
             this.mapper = mapper;
-            this.timeoutInMilliseconds = int.Parse(configuration[Configuration.KAFKA_TIMEOUT_IN_MILLISECONDS]!);
+            timeoutInMilliseconds = int.Parse(configuration[Configuration.KAFKA_TIMEOUT_IN_MILLISECONDS]!);
         }
 
         protected async IAsyncEnumerable<TWrapper> ConsumeEventAsync<TEvent, TWrapper>(string topic, CancellationToken cancellationToken)

@@ -1,7 +1,7 @@
 ﻿using AnalyzerApi.Domain.Models;
 using AnalyzerApi.Services.Interfaces;
 
-namespace AnalyzerApi.Services
+namespace AnalyzerApi.Services.Collectors
 {
     public class LoadStatisticsCollector : BaseStatisticsCollector, IStatisticsCollector
     {

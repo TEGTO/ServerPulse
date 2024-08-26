@@ -1,7 +1,9 @@
 using AnalyzerApi;
 using AnalyzerApi.Hubs;
 using AnalyzerApi.Services;
+using AnalyzerApi.Services.Collectors;
 using AnalyzerApi.Services.Interfaces;
+using AnalyzerApi.Services.Receivers;
 using CacheUtils;
 using Confluent.Kafka;
 using ConsulUtils.Extension;

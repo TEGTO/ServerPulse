@@ -1,6 +1,7 @@
 ﻿using AnalyzerApi.Domain.Dtos.Responses;
 using AnalyzerApi.Domain.Models;
 using AnalyzerApi.Hubs;
+using AnalyzerApi.Services.Collectors;
 using AnalyzerApi.Services.Interfaces;
 using AutoMapper;
 using MessageBus.Interfaces;

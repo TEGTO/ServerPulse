@@ -21,7 +21,7 @@ namespace AnalyzerApi.Controllers
         {
             if (events == null || events.Length == 0 || !events.All(x => x.Key == events.First().Key))
             {
-                return Ok();
+                return BadRequest();
             }
 
             await eventProcessor.ProcessEventsAsync(events, cancellationToken);

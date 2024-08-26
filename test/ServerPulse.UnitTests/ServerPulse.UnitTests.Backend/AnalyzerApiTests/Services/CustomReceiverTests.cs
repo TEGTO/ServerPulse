@@ -1,5 +1,6 @@
 ﻿using AnalyzerApi.Domain.Dtos.Wrappers;
 using AnalyzerApi.Services.Interfaces;
+using AnalyzerApi.Services.Receivers;
 using AnalyzerApiTests.Services;
 using Confluent.Kafka;
 using MessageBus.Interfaces;
