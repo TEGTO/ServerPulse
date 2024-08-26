@@ -4,8 +4,6 @@ namespace AnalyzerApi.Services.Interfaces
 {
     public interface IStatisticsSender
     {
-        public Task SendServerStatisticsAsync(string key, ServerStatistics serverStatistics, CancellationToken cancellationToken);
-        public Task SendServerLoadStatisticsAsync(string key, ServerLoadStatistics statistics, CancellationToken cancellationToken);
-        public Task SendServerCustomStatisticsAsync(string key, CustomEventStatistics statistics, CancellationToken cancellationToken);
+        public Task SendStatisticsAsync<TStatistics>(string key, TStatistics statistics, CancellationToken cancellationToken) where TStatistics : BaseStatistics;
     }
 }

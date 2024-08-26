@@ -44,7 +44,27 @@ namespace AnalyzerApi.Services
 
         #region IStatisticsSender Members
 
-        public async Task SendServerStatisticsAsync(string key, ServerStatistics serverStatistics, CancellationToken cancellationToken)
+        public Task SendStatisticsAsync<TStatistics>(string key, TStatistics statistics, CancellationToken cancellationToken) where TStatistics : BaseStatistics
+        {
+            switch (statistics)
+            {
+                case ServerStatistics:
+                    return SendServerStatisticsAsync(key, statistics as ServerStatistics, cancellationToken);
+                case ServerLoadStatistics:
+                    return SendServerLoadStatisticsAsync(key, statistics as ServerLoadStatistics, cancellationToken);
+                case CustomEventStatistics:
+                    return SendServerCustomStatisticsAsync(key, statistics as CustomEventStatistics, cancellationToken);
+                default:
+                    return Task.CompletedTask;
+            }
+
+        }
+
+        #endregion
+
+        #region Private Helpers
+
+        private async Task SendServerStatisticsAsync(string key, ServerStatistics serverStatistics, CancellationToken cancellationToken)
         {
             var topic = GetTopic(serverStatisticsTopic, key);
             await producer.ProduceAsync(topic, JsonSerializer.Serialize(serverStatistics), cancellationToken);
@@ -53,23 +73,18 @@ namespace AnalyzerApi.Services
             var serializedData = JsonSerializer.Serialize(resposnse);
             await hubStatistics.Clients.Group(key).ReceiveStatistics(key, serializedData);
         }
-        public async Task SendServerLoadStatisticsAsync(string key, ServerLoadStatistics statistics, CancellationToken cancellationToken)
+        private async Task SendServerLoadStatisticsAsync(string key, ServerLoadStatistics statistics, CancellationToken cancellationToken)
         {
             var response = mapper.Map<ServerLoadStatisticsResponse>(statistics);
             var serializedData = JsonSerializer.Serialize(response);
             await hubLoadStatistics.Clients.Group(key).ReceiveStatistics(key, serializedData);
         }
-        public async Task SendServerCustomStatisticsAsync(string key, CustomEventStatistics statistics, CancellationToken cancellationToken)
+        private async Task SendServerCustomStatisticsAsync(string key, CustomEventStatistics statistics, CancellationToken cancellationToken)
         {
             var response = mapper.Map<CustomEventStatisticsResponse>(statistics);
             var serializedData = JsonSerializer.Serialize(response);
             await hubCustomEventStatistics.Clients.Group(key).ReceiveStatistics(key, serializedData);
         }
-
-        #endregion
-
-        #region Private Members
-
         private string GetTopic(string topic, string key)
         {
             return topic + key;

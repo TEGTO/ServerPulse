@@ -1,6 +1,6 @@
 ﻿using AnalyzerApi.Domain.Dtos.Wrappers;
 using AnalyzerApi.Services.Interfaces;
-using AnalyzerApi.Services.Receivers;
+using AnalyzerApi.Services.Receivers.Event;
 using AnalyzerApiTests.Services;
 using Confluent.Kafka;
 using MessageBus.Interfaces;
@@ -15,7 +15,7 @@ namespace AnalyzerApi.Services
     {
         private const string KAFKA_CUSTOM_TOPIC = "KafkaCustomTopic_";
 
-        private CustomReceiver customReceiver;
+        private CustomEventReceiver customReceiver;
 
         [SetUp]
         public override void Setup()
@@ -47,7 +47,7 @@ namespace AnalyzerApi.Services
                       .Returns((CustomEvent le) => new CustomEventWrapper { Key = le.Key });
             // Act
             var receivedEvents = new List<CustomEventWrapper>();
-            await foreach (var loadEvent in customReceiver.ConsumeCustomEventAsync(key, cancellationToken))
+            await foreach (var loadEvent in customReceiver.ConsumeEventAsync(key, cancellationToken))
             {
                 receivedEvents.Add(loadEvent);
             }

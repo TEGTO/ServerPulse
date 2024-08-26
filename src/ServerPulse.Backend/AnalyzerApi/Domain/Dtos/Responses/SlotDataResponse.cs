@@ -1,6 +1,6 @@
 ﻿namespace AnalyzerApi.Domain.Dtos.Responses
 {
-    public class SlotDataResponse
+    public class SlotDataResponse : BaseStatisticsResponse
     {
     }
 }

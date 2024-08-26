@@ -1,5 +1,6 @@
 ﻿using AnalyzerApi.Domain.Models;
 using AnalyzerApi.Services.Receivers;
+using AnalyzerApi.Services.Receivers.Event;
 
 namespace AnalyzerApi.Services
 {
@@ -7,9 +8,9 @@ namespace AnalyzerApi.Services
     {
         private readonly ServerStatusReceiver serverStatusReceiver;
         private readonly ServerLoadReceiver loadReceiver;
-        private readonly CustomReceiver customReceiver;
+        private readonly CustomEventReceiver customReceiver;
 
-        public SlotDataPicker(ServerStatusReceiver serverStatusReceiver, ServerLoadReceiver loadReceiver, CustomReceiver customReceiver)
+        public SlotDataPicker(ServerStatusReceiver serverStatusReceiver, ServerLoadReceiver loadReceiver, CustomEventReceiver customReceiver)
         {
             this.serverStatusReceiver = serverStatusReceiver;
             this.loadReceiver = loadReceiver;

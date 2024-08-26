@@ -1,6 +1,6 @@
-﻿namespace AnalyzerApi.Domain.Dtos.Wrappers
+﻿namespace AnalyzerApi.Domain.Dtos.Responses
 {
-    public class LoadMethodStatisticsWrapper
+    public class LoadMethodStatisticsResponse : BaseStatisticsResponse
     {
         public int GetAmount { get; set; }
         public int PostAmount { get; set; }

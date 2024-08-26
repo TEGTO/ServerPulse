@@ -59,9 +59,7 @@ namespace AnalyzerApi.Services.Collectors
         }
 
         protected abstract Task SendInitialStatisticsAsync(string key, CancellationToken cancellationToken);
-
         protected abstract Task[] GetEventSubscriptionTasks(string key, CancellationToken cancellationToken);
-
         protected virtual void OnStatisticsListenerRemoved(string key) { }
     }
 }

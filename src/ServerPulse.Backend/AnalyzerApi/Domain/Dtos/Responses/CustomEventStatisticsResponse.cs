@@ -2,7 +2,7 @@
 
 namespace AnalyzerApi.Domain.Dtos.Responses
 {
-    public class CustomEventStatisticsResponse
+    public class CustomEventStatisticsResponse : BaseStatisticsResponse
     {
         public CustomEventWrapper? LastEvent { get; set; }
     }

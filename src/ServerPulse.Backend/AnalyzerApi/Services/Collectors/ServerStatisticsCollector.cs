@@ -9,7 +9,9 @@ namespace AnalyzerApi.Services.Collectors
     {
         #region Fields
 
-        private readonly IServerStatusReceiver messageReceiver;
+        private readonly IEventReceiver<PulseEventWrapper> pulseReceiver;
+        private readonly IEventReceiver<ConfigurationEventWrapper> confReceiver;
+        private readonly IStatisticsReceiver<ServerStatistics> statisticsReceiver;
         private readonly PeriodicTimer periodicTimer;
         private readonly ConcurrentDictionary<string, ConfigurationEventWrapper> configurations = new();
         private readonly ConcurrentDictionary<string, PulseEventWrapper> lastPulseEvents = new();
@@ -17,10 +19,18 @@ namespace AnalyzerApi.Services.Collectors
 
         #endregion
 
-        public ServerStatisticsCollector(IServerStatusReceiver messageReceiver, IStatisticsSender statisticsSender, IConfiguration configuration, ILogger<ServerStatisticsCollector> logger)
+        public ServerStatisticsCollector(
+            IEventReceiver<PulseEventWrapper> pulseReceiver,
+            IEventReceiver<ConfigurationEventWrapper> confReceiver,
+            IStatisticsReceiver<ServerStatistics> statisticsReceiver,
+            IStatisticsSender statisticsSender,
+            IConfiguration configuration,
+            ILogger<ServerStatisticsCollector> logger)
             : base(statisticsSender, logger)
         {
-            this.messageReceiver = messageReceiver;
+            this.pulseReceiver = pulseReceiver;
+            this.confReceiver = confReceiver;
+            this.statisticsReceiver = statisticsReceiver;
             int intervalInMilliseconds = int.Parse(configuration[Configuration.STATISTICS_COLLECT_INTERVAL_IN_MILLISECONDS]!);
             periodicTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(intervalInMilliseconds));
         }
@@ -29,9 +39,9 @@ namespace AnalyzerApi.Services.Collectors
 
         protected override async Task SendInitialStatisticsAsync(string key, CancellationToken cancellationToken)
         {
-            var configurationTask = messageReceiver.ReceiveLastConfigurationEventByKeyAsync(key, cancellationToken);
-            var pulseTask = messageReceiver.ReceiveLastPulseEventByKeyAsync(key, cancellationToken);
-            var statisticsTask = messageReceiver.ReceiveLastServerStatisticsByKeyAsync(key, cancellationToken);
+            var configurationTask = confReceiver.ReceiveLastEventByKeyAsync(key, cancellationToken);
+            var pulseTask = pulseReceiver.ReceiveLastEventByKeyAsync(key, cancellationToken);
+            var statisticsTask = statisticsReceiver.ReceiveLastStatisticsByKeyAsync(key, cancellationToken);
 
             await Task.WhenAll(configurationTask, pulseTask, statisticsTask);
 
@@ -61,7 +71,7 @@ namespace AnalyzerApi.Services.Collectors
                 lastPulseEvents.TryRemove(key, out _);
             }
 
-            await statisticsSender.SendServerStatisticsAsync(key, statistics, cancellationToken);
+            await statisticsSender.SendStatisticsAsync(key, statistics, cancellationToken);
         }
         protected override Task[] GetEventSubscriptionTasks(string key, CancellationToken cancellationToken)
         {
@@ -94,7 +104,7 @@ namespace AnalyzerApi.Services.Collectors
                     {
                         lastPulseEvents.TryRemove(key, out _);
                     }
-                    await statisticsSender.SendServerStatisticsAsync(key, statistics, cancellationToken);
+                    await statisticsSender.SendStatisticsAsync(key, statistics, cancellationToken);
                 }
 
                 if (configurations.TryGetValue(key, out var lastConfiguration))
@@ -106,14 +116,14 @@ namespace AnalyzerApi.Services.Collectors
         }
         private async Task SubscribeToPulseEventsAsync(string key, CancellationToken cancellationToken)
         {
-            await foreach (var pulse in messageReceiver.ConsumePulseEventAsync(key, cancellationToken))
+            await foreach (var pulse in pulseReceiver.ConsumeEventAsync(key, cancellationToken))
             {
                 lastPulseEvents.AddOrUpdate(key, pulse, (k, p) => pulse);
             }
         }
         private async Task SubscribeToConfigurationEventsAsync(string key, CancellationToken cancellationToken)
         {
-            await foreach (var configuration in messageReceiver.ConsumeConfigurationEventAsync(key, cancellationToken))
+            await foreach (var configuration in confReceiver.ConsumeEventAsync(key, cancellationToken))
             {
                 configurations.AddOrUpdate(key, configuration, (k, c) => configuration);
             }

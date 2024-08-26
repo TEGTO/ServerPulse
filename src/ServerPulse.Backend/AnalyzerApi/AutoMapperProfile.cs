@@ -13,8 +13,9 @@ namespace AuthenticationApi
             CreateMap<ConfigurationEvent, ConfigurationEventWrapper>();
             CreateMap<PulseEvent, PulseEventWrapper>();
             CreateMap<LoadEvent, LoadEventWrapper>();
-            CreateMap<LoadMethodStatistics, LoadMethodStatisticsWrapper>();
+            CreateMap<LoadMethodStatistics, LoadMethodStatisticsResponse>();
             CreateMap<CustomEvent, CustomEventWrapper>();
+            CreateMap<BaseStatistics, BaseStatisticsResponse>();
             CreateMap<ServerStatistics, ServerStatisticsResponse>();
             CreateMap<ServerLoadStatistics, ServerLoadStatisticsResponse>();
             CreateMap<LoadAmountStatistics, LoadAmountStatisticsResponse>();
