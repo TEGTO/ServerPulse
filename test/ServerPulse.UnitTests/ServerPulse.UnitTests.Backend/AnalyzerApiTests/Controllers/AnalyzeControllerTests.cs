@@ -37,11 +37,11 @@ namespace AnalyzerApiTests.Controllers
             mockConfiguration = new Mock<IConfiguration>();
 
             mockConfiguration
-                .Setup(config => config[Configuration.CACHE_SERVER_LOAD_STATISTICS_PER_DAY_EXPIRY_IN_MINUTES])
+                .Setup(config => config[Configuration.CACHE_EXPIRY_IN_MINUTES])
                 .Returns(CacheExpiryInMinutes.ToString());
 
             mockConfiguration
-                .Setup(config => config[Configuration.CACHE_STATISTICS_KEY])
+                .Setup(config => config[Configuration.CACHE_KEY])
                 .Returns(CacheStatisticsKey);
 
             controller = new AnalyzeController(

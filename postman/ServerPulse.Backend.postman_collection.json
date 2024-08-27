@@ -1325,6 +1325,63 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "analyzer-load-amount-slotdata",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get message amount per day status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7129/slotdata/{{serverslot_slotKey}}",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7129",
+							"path": [
+								"slotdata",
+								"{{serverslot_slotKey}}"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},

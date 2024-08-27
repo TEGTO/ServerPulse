@@ -466,6 +466,32 @@
       }
     },
     {
+      "Key": "Analyzer_GetSlotData",
+      "ServiceName": "analyzer",
+      "UpstreamPathTemplate": "/slotdata/{key}",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DownstreamPathTemplate": "/slotdata/{key}",
+      "DownstreamScheme": "http",
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToRequest": {
+        "Authorization": "Bearer {token}"
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 5
+      }
+    },
+    {
       "Key": "ServerSlot_GetAll",
       "ServiceName": "server-slot",
       "UpstreamPathTemplate": "/serverslot",

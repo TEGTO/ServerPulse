@@ -1,4 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AnalyzerApi.Domain.Dtos.Responses;
+using AnalyzerApi.Domain.Models;
+using AnalyzerApi.Services.Interfaces;
+using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using ServerMonitorApi.Services;
+using System.Text.Json;
 
 namespace AnalyzerApi.Controllers
 {
@@ -6,19 +12,37 @@ namespace AnalyzerApi.Controllers
     [ApiController]
     public class SlotDataController : ControllerBase
     {
-        //[Route("/{key}")]
-        //[HttpGet]
-        //public async Task<ActionResult<SlotDataResponse>> GetSlotData([FromRoute] string key, CancellationToken cancellationToken)
-        //{
-        //    if (events == null)
-        //    {
-        //        var options = new InRangeQueryOptions(request.Key, request.From.ToUniversalTime(), request.To.ToUniversalTime());
-        //        events = await serverLoadReceiver.ReceiveEventsInRangeAsync(options, cancellationToken);
-        //    }
+        private readonly ISlotDataPicker dataPicker;
+        private readonly IMapper mapper;
+        private readonly ICacheService cacheService;
+        private readonly double cacheExpiryInMinutes;
+        private readonly string cacheKey;
 
-        //    await cacheService.SetValueAsync(cacheKey, JsonSerializer.Serialize(events.ToList()), cacheExpiryInMinutes);
+        public SlotDataController(ISlotDataPicker dataPicker, IMapper mapper, ICacheService cacheService, IConfiguration configuration)
+        {
+            this.dataPicker = dataPicker;
+            this.mapper = mapper;
+            this.cacheService = cacheService;
+            cacheExpiryInMinutes = configuration.GetValue<double>(Configuration.CACHE_EXPIRY_IN_MINUTES);
+            cacheKey = configuration[Configuration.CACHE_KEY]!;
+        }
 
-        //    return Ok(events);
-        //}
+        [Route("{key}")]
+        [HttpGet]
+        public async Task<ActionResult<SlotDataResponse>> GetSlotData([FromRoute] string key, CancellationToken cancellationToken)
+        {
+            SlotData? data = await cacheService.GetInCacheAsync<SlotData>(cacheKey);
+
+            if (data == null)
+            {
+                data = await dataPicker.GetSlotDataAsync(key, cancellationToken);
+            }
+
+            await cacheService.SetValueAsync(cacheKey, JsonSerializer.Serialize(data), cacheExpiryInMinutes);
+
+            var response = mapper.Map<SlotDataResponse>(data);
+
+            return Ok(response);
+        }
     }
 }

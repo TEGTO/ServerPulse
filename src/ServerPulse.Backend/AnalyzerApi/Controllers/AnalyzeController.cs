@@ -1,4 +1,5 @@
-﻿using AnalyzerApi.Domain.Dtos.Requests;
+﻿using AnalyzerApi;
+using AnalyzerApi.Domain.Dtos.Requests;
 using AnalyzerApi.Domain.Dtos.Responses;
 using AnalyzerApi.Domain.Dtos.Wrappers;
 using AnalyzerApi.Domain.Models;
@@ -6,7 +7,6 @@ using AnalyzerApi.Services.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using ServerMonitorApi.Services;
-using Shared;
 using System.Text.Json;
 
 namespace AnalyzerApi.Controllers
@@ -23,7 +23,7 @@ namespace AnalyzerApi.Controllers
         private readonly IEventReceiver<CustomEventWrapper> customEventReceiver;
         private readonly ICacheService cacheService;
         private readonly double cacheExpiryInMinutes;
-        private readonly string cacheStatisticsKey;
+        private readonly string cacheKey;
 
         #endregion
 
@@ -40,8 +40,8 @@ namespace AnalyzerApi.Controllers
             this.loadAmountStatisticsReceiver = loadAmountStatisticsReceiver;
             this.customEventReceiver = eventStatisticsReceiver;
             this.cacheService = cacheService;
-            cacheExpiryInMinutes = double.Parse(configuration[Configuration.CACHE_SERVER_LOAD_STATISTICS_PER_DAY_EXPIRY_IN_MINUTES]!);
-            cacheStatisticsKey = configuration[Configuration.CACHE_STATISTICS_KEY]!;
+            cacheExpiryInMinutes = configuration.GetValue<double>(Configuration.CACHE_EXPIRY_IN_MINUTES);
+            cacheKey = configuration[Configuration.CACHE_KEY]!;
         }
 
         #region Endpoints
@@ -50,8 +50,8 @@ namespace AnalyzerApi.Controllers
         [HttpPost]
         public async Task<ActionResult<IEnumerable<LoadEventWrapper>>> GetLoadEventsInDataRange(MessagesInRangeRangeRequest request, CancellationToken cancellationToken)
         {
-            var cacheKey = $"{cacheStatisticsKey}-{request.Key}-{request.From.ToUniversalTime()}-{request.To.ToUniversalTime()}-daterange";
-            IEnumerable<LoadEventWrapper>? events = await GetInCacheAsync<IEnumerable<LoadEventWrapper>>(cacheKey);
+            var cacheKey = $"{this.cacheKey}-{request.Key}-{request.From.ToUniversalTime()}-{request.To.ToUniversalTime()}-daterange";
+            IEnumerable<LoadEventWrapper>? events = await cacheService.GetInCacheAsync<IEnumerable<LoadEventWrapper>>(cacheKey);
 
             if (events == null)
             {
@@ -67,9 +67,9 @@ namespace AnalyzerApi.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<LoadAmountStatisticsResponse>>> GetWholeAmountStatisticsInDays(string key, CancellationToken cancellationToken)
         {
-            var cacheKey = $"{cacheStatisticsKey}-{key}-perday";
+            var cacheKey = $"{this.cacheKey}-{key}-perday";
 
-            IEnumerable<LoadAmountStatistics>? statistics = await GetInCacheAsync<IEnumerable<LoadAmountStatistics>>(cacheKey);
+            IEnumerable<LoadAmountStatistics>? statistics = await cacheService.GetInCacheAsync<IEnumerable<LoadAmountStatistics>>(cacheKey);
 
             var timeSpan = TimeSpan.FromDays(1);
 
@@ -92,9 +92,10 @@ namespace AnalyzerApi.Controllers
         [HttpPost]
         public async Task<ActionResult<IEnumerable<LoadAmountStatisticsResponse>>> GetAmountStatisticsInRange(MessageAmountInRangeRequest request, CancellationToken cancellationToken)
         {
-            var cacheKey = $"{cacheStatisticsKey}-{request.Key}-{request.From.ToUniversalTime()}-{request.To.ToUniversalTime()}-{request.TimeSpan}-amountrange";
+            var cacheKey = $"{this.cacheKey}-{request.Key}-{request.From.ToUniversalTime()}-{request.To.ToUniversalTime()}-{request.TimeSpan}-amountrange";
 
-            IEnumerable<LoadAmountStatistics>? statistics = await GetInCacheAsync<IEnumerable<LoadAmountStatistics>>(cacheKey);
+            IEnumerable<LoadAmountStatistics>? statistics =
+                await cacheService.GetInCacheAsync<IEnumerable<LoadAmountStatistics>>(cacheKey);
 
             if (statistics == null)
             {
@@ -123,24 +124,6 @@ namespace AnalyzerApi.Controllers
             IEnumerable<CustomEventWrapper>? events = await customEventReceiver.GetCertainAmountOfEventsAsync(options, cancellationToken);
 
             return Ok(events);
-        }
-
-        #endregion
-
-        #region Private Helpers
-
-        private async Task<T?> GetInCacheAsync<T>(string key) where T : class
-        {
-            var json = await cacheService.GetValueAsync(key);
-            if (string.IsNullOrEmpty(json))
-            {
-                return null;
-            }
-            if (json.TryToDeserialize(out T response))
-            {
-                return response;
-            }
-            return null;
         }
 
         #endregion
