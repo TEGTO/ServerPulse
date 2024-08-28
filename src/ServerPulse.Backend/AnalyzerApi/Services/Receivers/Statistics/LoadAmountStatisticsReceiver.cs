@@ -24,7 +24,7 @@ namespace AnalyzerApi.Services.Receivers.Statistics
             var timeSpan = TimeSpan.FromDays(1);
             var options = new MessageInRangeQueryOptions(topic, timeoutInMilliseconds, start, end);
             var messagesPerDay = await messageConsumer.GetMessageAmountPerTimespanAsync(options, timeSpan, cancellationToken);
-            return ConvertToAmountStatistics(messagesPerDay).FirstOrDefault();
+            return ConvertToAmountStatistics(messagesPerDay, timeSpan).FirstOrDefault();
         }
         public override async Task<IEnumerable<LoadAmountStatistics>> GetWholeStatisticsInTimeSpanAsync(string key, TimeSpan timeSpan, CancellationToken cancellationToken)
         {
@@ -33,30 +33,31 @@ namespace AnalyzerApi.Services.Receivers.Statistics
             var end = DateTime.UtcNow.Date.AddDays(1);
             var options = new MessageInRangeQueryOptions(topic, timeoutInMilliseconds, start, end);
             var messagesPerDay = await messageConsumer.GetMessageAmountPerTimespanAsync(options, timeSpan, cancellationToken);
-            return ConvertToAmountStatistics(messagesPerDay);
+            return ConvertToAmountStatistics(messagesPerDay, timeSpan);
         }
         public override async Task<IEnumerable<LoadAmountStatistics>> GetStatisticsInRangeAsync(InRangeQueryOptions options, TimeSpan timeSpan, CancellationToken cancellationToken)
         {
             string topic = GetTopic(topicData.topicOriginName, options.Key);
             var messageOptions = new MessageInRangeQueryOptions(topic, timeoutInMilliseconds, options.From, options.To);
             var messagesPerDay = await messageConsumer.GetMessageAmountPerTimespanAsync(messageOptions, timeSpan, cancellationToken);
-            return ConvertToAmountStatistics(messagesPerDay);
+            return ConvertToAmountStatistics(messagesPerDay, timeSpan);
         }
 
         #endregion
 
         #region Private Helpers
 
-        private IEnumerable<LoadAmountStatistics> ConvertToAmountStatistics(Dictionary<DateTime, int> messageAmount)
+        private IEnumerable<LoadAmountStatistics> ConvertToAmountStatistics(Dictionary<DateTime, int> messageAmount, TimeSpan timeSpan)
         {
             return messageAmount
                 .Where(kv => kv.Value > 0)
                 .Select(kv => new LoadAmountStatistics
                 {
                     AmountOfEvents = kv.Value,
-                    Date = kv.Key
+                    DateFrom = kv.Key,
+                    DateTo = kv.Key + timeSpan
                 })
-                .OrderByDescending(ls => ls.Date);
+                .OrderByDescending(ls => ls.DateFrom);
         }
 
         #endregion

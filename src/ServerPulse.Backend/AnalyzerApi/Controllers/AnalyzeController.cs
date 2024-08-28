@@ -39,7 +39,7 @@ namespace AnalyzerApi.Controllers
             this.loadAmountStatisticsReceiver = loadAmountStatisticsReceiver;
             this.customEventReceiver = eventStatisticsReceiver;
             this.cacheService = cacheService;
-            cacheExpiryInMinutes = configuration.GetValue<double>(Configuration.CACHE_EXPIRY_IN_MINUTES);
+            cacheExpiryInMinutes = double.Parse(configuration[Configuration.CACHE_EXPIRY_IN_MINUTES]!);
             cacheKey = configuration[Configuration.CACHE_KEY]!;
         }
 
@@ -80,7 +80,7 @@ namespace AnalyzerApi.Controllers
             var options = new InRangeQueryOptions(key, DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
             var todayStatistics = await loadAmountStatisticsReceiver.GetStatisticsInRangeAsync(options, timeSpan, cancellationToken);
 
-            var response = statistics.Where(x => !todayStatistics.Any(y => x.Date == y.Date)).ToList();
+            var response = statistics.Where(x => !todayStatistics.Any(y => x.DateFrom <= y.DateFrom && x.DateTo >= y.DateFrom)).ToList();
             response.AddRange(todayStatistics);
 
             await cacheService.SetValueAsync(cacheKey, JsonSerializer.Serialize(response), cacheExpiryInMinutes);

@@ -30,7 +30,7 @@ namespace AnalyzerApi.Services
             this.customStatisticsReceiver = customStatisticsReceiver;
             this.loadEventReceiver = loadEventReceiver;
             this.customEventReceiver = customEventReceiver;
-            maxLastEventAmount = configuration.GetValue<int>(Configuration.MAX_EVENT_AMOUNT_TO_GET_IN_SLOT_DATA);
+            maxLastEventAmount = int.Parse(configuration[Configuration.MAX_EVENT_AMOUNT_TO_GET_IN_SLOT_DATA]!);
         }
 
         public async Task<SlotData> GetSlotDataAsync(string key, CancellationToken cancellationToken)

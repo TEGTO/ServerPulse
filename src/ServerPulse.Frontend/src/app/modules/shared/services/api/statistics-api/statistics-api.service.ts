@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { catchError, map, Observable } from 'rxjs';
-import { BaseApiService, CustomEventResponse, GetSomeMessagesRequest, LoadAmountStatisticsResponse, LoadEventResponse, MessageAmountInRangeRequest, MessagesInRangeRangeRequest } from '../../../index';
+import { BaseApiService, CustomEventResponse, GetSomeMessagesRequest, LoadAmountStatisticsResponse, LoadEventResponse, MessageAmountInRangeRequest, MessagesInRangeRangeRequest, transformLoadAmountStatisticsResponseDate } from '../../../index';
 
 @Injectable({
   providedIn: 'root'
@@ -14,20 +14,14 @@ export class StatisticsApiService extends BaseApiService {
   }
   getWholeLoadAmountStatisticsInDays(key: string): Observable<LoadAmountStatisticsResponse[]> {
     return this.httpClient.get<LoadAmountStatisticsResponse[]>(this.combinePathWithStatisticsApiUrl(`/perday/${key}`)).pipe(
-      map(responses => responses.map(response => ({
-        ...response,
-        date: new Date(response.date)
-      }))),
+      map(responses => responses.map(transformLoadAmountStatisticsResponseDate)),
       catchError((resp) => this.handleError(resp))
     );
   }
 
   getLoadAmountStatisticsInRange(request: MessageAmountInRangeRequest): Observable<LoadAmountStatisticsResponse[]> {
     return this.httpClient.post<LoadAmountStatisticsResponse[]>(this.combinePathWithStatisticsApiUrl(`/amountrange`), request).pipe(
-      map(responses => responses.map(response => ({
-        ...response,
-        date: new Date(response.date)
-      }))),
+      map(responses => responses.map(transformLoadAmountStatisticsResponseDate)),
       catchError((resp) => this.handleError(resp))
     );
   }

@@ -6,7 +6,7 @@ using Shared;
 
 namespace AnalyzerApi
 {
-    public static class AnalyzerExtensions
+    public static class Extensions
     {
         public static bool TryDeserializeEventWrapper<T, Y>(this ConsumeResponse response, IMapper mapper, out Y wrapper)
             where T : BaseEvent

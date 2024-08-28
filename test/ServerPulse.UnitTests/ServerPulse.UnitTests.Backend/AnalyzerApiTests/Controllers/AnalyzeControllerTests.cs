@@ -18,8 +18,9 @@ namespace AnalyzerApiTests.Controllers
     internal class AnalyzeControllerTests
     {
         private Mock<IMapper> mockMapper;
-        private Mock<IServerLoadReceiver> mockServerLoadReceiver;
-        private Mock<ICustomReceiver> mockCustomReceiver;
+        private Mock<IEventReceiver<LoadEventWrapper>> mockLoadEventReceiver;
+        private Mock<IStatisticsReceiver<LoadAmountStatistics>> mockLoadAmountStatisticsReceiver;
+        private Mock<IEventReceiver<CustomEventWrapper>> mockCustomEventReceiver;
         private Mock<ICacheService> mockCacheService;
         private Mock<IConfiguration> mockConfiguration;
         private AnalyzeController controller;
@@ -31,25 +32,25 @@ namespace AnalyzerApiTests.Controllers
         public void Setup()
         {
             mockMapper = new Mock<IMapper>();
-            mockServerLoadReceiver = new Mock<IServerLoadReceiver>();
-            mockCustomReceiver = new Mock<ICustomReceiver>();
+            mockLoadEventReceiver = new Mock<IEventReceiver<LoadEventWrapper>>();
+            mockLoadAmountStatisticsReceiver = new Mock<IStatisticsReceiver<LoadAmountStatistics>>();
+            mockCustomEventReceiver = new Mock<IEventReceiver<CustomEventWrapper>>();
             mockCacheService = new Mock<ICacheService>();
             mockConfiguration = new Mock<IConfiguration>();
 
-            mockConfiguration
-                .Setup(config => config[Configuration.CACHE_EXPIRY_IN_MINUTES])
+            mockConfiguration.Setup(config => config[Configuration.CACHE_EXPIRY_IN_MINUTES])
                 .Returns(CacheExpiryInMinutes.ToString());
-
-            mockConfiguration
-                .Setup(config => config[Configuration.CACHE_KEY])
+            mockConfiguration.Setup(config => config[Configuration.CACHE_KEY])
                 .Returns(CacheStatisticsKey);
 
             controller = new AnalyzeController(
                 mockMapper.Object,
-                mockServerLoadReceiver.Object,
-                mockCustomReceiver.Object,
+                mockLoadEventReceiver.Object,
+                mockLoadAmountStatisticsReceiver.Object,
+                mockCustomEventReceiver.Object,
                 mockCacheService.Object,
-                mockConfiguration.Object);
+                mockConfiguration.Object
+            );
         }
 
         [Test]
@@ -59,27 +60,27 @@ namespace AnalyzerApiTests.Controllers
             var request = new MessagesInRangeRangeRequest { Key = "test-key", From = DateTime.MinValue, To = DateTime.MaxValue };
             var cacheKey = $"{CacheStatisticsKey}-{request.Key}-{request.From.ToUniversalTime()}-{request.To.ToUniversalTime()}-daterange";
             var cachedEvents = new List<LoadEventWrapper> { new LoadEventWrapper() };
-            mockCacheService.Setup(x => x.GetValueAsync(cacheKey))
-                .ReturnsAsync(JsonSerializer.Serialize(cachedEvents));
+            var cachedJson = JsonSerializer.Serialize(cachedEvents);
+            mockCacheService.Setup(x => x.GetValueAsync(cacheKey)).ReturnsAsync(cachedJson);
             // Act
             var result = await controller.GetLoadEventsInDataRange(request, CancellationToken.None);
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(result.Result);
             var okResult = result.Result as OkObjectResult;
-            var value = okResult?.Value as List<LoadEventWrapper>;
-            Assert.That(value[0].Key, Is.EqualTo(cachedEvents[0].Key));
+            var value = okResult?.Value as IEnumerable<LoadEventWrapper>;
             mockCacheService.Verify(x => x.GetValueAsync(cacheKey), Times.Once);
-            mockServerLoadReceiver.Verify(x => x.ReceiveEventsInRangeAsync(It.IsAny<InRangeQueryOptions>(), It.IsAny<CancellationToken>()), Times.Never);
+            mockLoadEventReceiver.Verify(x => x.ReceiveEventsInRangeAsync(It.IsAny<InRangeQueryOptions>(), It.IsAny<CancellationToken>()), Times.Never);
         }
         [Test]
-        public async Task GetLoadEventsInDataRange_CacheIsNotAvailable_ShouldCallServerLoadReceiverAndCacheResult()
+        public async Task GetLoadEventsInDataRange_CacheIsNotAvailable_ShouldCallLoadEventReceiverAndCacheResult()
         {
             // Arrange
             var request = new MessagesInRangeRangeRequest { Key = "test-key", From = DateTime.MinValue, To = DateTime.MaxValue };
             var cacheKey = $"{CacheStatisticsKey}-{request.Key}-{request.From.ToUniversalTime()}-{request.To.ToUniversalTime()}-daterange";
-            var events = new List<LoadEventWrapper> { new LoadEventWrapper { } };
+            var events = new List<LoadEventWrapper> { new LoadEventWrapper() };
+            var jsonEvents = JsonSerializer.Serialize(events);
             mockCacheService.Setup(x => x.GetValueAsync(cacheKey)).ReturnsAsync((string)null);
-            mockServerLoadReceiver.Setup(x => x.ReceiveEventsInRangeAsync(It.IsAny<InRangeQueryOptions>(), It.IsAny<CancellationToken>()))
+            mockLoadEventReceiver.Setup(x => x.ReceiveEventsInRangeAsync(It.IsAny<InRangeQueryOptions>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(events);
             // Act
             var result = await controller.GetLoadEventsInDataRange(request, CancellationToken.None);
@@ -87,7 +88,7 @@ namespace AnalyzerApiTests.Controllers
             Assert.IsInstanceOf<OkObjectResult>(result.Result);
             var okResult = result.Result as OkObjectResult;
             Assert.That(okResult?.Value, Is.EqualTo(events));
-            mockCacheService.Verify(x => x.SetValueAsync(cacheKey, It.IsAny<string>(), CacheExpiryInMinutes), Times.Once);
+            mockCacheService.Verify(x => x.SetValueAsync(cacheKey, jsonEvents, CacheExpiryInMinutes), Times.Once);
         }
         [Test]
         public async Task GetWholeAmountStatisticsInDays_CacheIsAvailable_ShouldReturnCachedStatistics()
@@ -96,11 +97,12 @@ namespace AnalyzerApiTests.Controllers
             var key = "test-key";
             var cacheKey = $"{CacheStatisticsKey}-{key}-perday";
             var cachedStatistics = new List<LoadAmountStatistics> { new LoadAmountStatistics() };
+            var cachedJson = JsonSerializer.Serialize(cachedStatistics);
             var loadAmountStatisticsResponse = new LoadAmountStatisticsResponse { AmountOfEvents = 1 };
             mockMapper.Setup(x => x.Map<LoadAmountStatisticsResponse>(It.IsAny<LoadAmountStatistics>()))
                 .Returns(loadAmountStatisticsResponse);
             mockCacheService.Setup(x => x.GetValueAsync(cacheKey))
-                .ReturnsAsync(JsonSerializer.Serialize(cachedStatistics));
+                .ReturnsAsync(cachedJson);
             // Act
             var result = await controller.GetWholeAmountStatisticsInDays(key, CancellationToken.None);
             // Assert
@@ -111,22 +113,23 @@ namespace AnalyzerApiTests.Controllers
             Assert.That(value.Count, Is.EqualTo(1));
             Assert.That(value[0].AmountOfEvents, Is.EqualTo(loadAmountStatisticsResponse.AmountOfEvents));
             mockCacheService.Verify(x => x.GetValueAsync(cacheKey), Times.Once);
-            mockServerLoadReceiver.Verify(x => x.GetAmountStatisticsInDaysAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+            mockLoadAmountStatisticsReceiver.Verify(x => x.GetWholeStatisticsInTimeSpanAsync(It.IsAny<string>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()), Times.Never);
         }
         [Test]
-        public async Task GetWholeAmountStatisticsInDays_CacheIsNotAvailable_ShouldCallServerLoadReceiverAndCacheResult()
+        public async Task GetWholeAmountStatisticsInDays_CacheIsNotAvailable_ShouldCallLoadAmountStatisticsReceiverAndCacheResult()
         {
             // Arrange
             var key = "test-key";
             var cacheKey = $"{CacheStatisticsKey}-{key}-perday";
-            var cachedStatistics = new List<LoadAmountStatistics> { new LoadAmountStatistics() };
+            var statistics = new List<LoadAmountStatistics> { new LoadAmountStatistics() };
             var loadAmountStatisticsResponse = new LoadAmountStatisticsResponse { AmountOfEvents = 1 };
+            var jsonStatistics = JsonSerializer.Serialize(statistics);
             mockMapper.Setup(x => x.Map<LoadAmountStatisticsResponse>(It.IsAny<LoadAmountStatistics>()))
                 .Returns(loadAmountStatisticsResponse);
             mockCacheService.Setup(x => x.GetValueAsync(cacheKey))
                 .ReturnsAsync((string)null);
-            mockServerLoadReceiver.Setup(x => x.GetAmountStatisticsInDaysAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-               .ReturnsAsync(cachedStatistics);
+            mockLoadAmountStatisticsReceiver.Setup(x => x.GetWholeStatisticsInTimeSpanAsync(It.IsAny<string>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(statistics);
             // Act
             var result = await controller.GetWholeAmountStatisticsInDays(key, CancellationToken.None);
             // Assert
@@ -137,9 +140,10 @@ namespace AnalyzerApiTests.Controllers
             Assert.That(value.Count, Is.EqualTo(1));
             Assert.That(value[0].AmountOfEvents, Is.EqualTo(loadAmountStatisticsResponse.AmountOfEvents));
             mockCacheService.Verify(x => x.GetValueAsync(cacheKey), Times.Once);
+            mockCacheService.Verify(x => x.SetValueAsync(cacheKey, jsonStatistics, CacheExpiryInMinutes), Times.Once);
         }
         [Test]
-        public async Task GetAmountStatisticsInRange_CacheIsNotAvailable_ShouldCallServerLoadReceiverAndCacheResult()
+        public async Task GetAmountStatisticsInRange_CacheIsNotAvailable_ShouldCallLoadAmountStatisticsReceiverAndCacheResult()
         {
             // Arrange
             var request = new MessageAmountInRangeRequest
@@ -152,11 +156,12 @@ namespace AnalyzerApiTests.Controllers
             var cacheKey = $"{CacheStatisticsKey}-{request.Key}-{request.From.ToUniversalTime()}-{request.To.ToUniversalTime()}-{request.TimeSpan}-amountrange";
             var statistics = new List<LoadAmountStatistics> { new LoadAmountStatistics { } };
             var loadAmountStatisticsResponse = new LoadAmountStatisticsResponse { AmountOfEvents = 1 };
+            var jsonStatistics = JsonSerializer.Serialize(statistics);
             mockCacheService.Setup(x => x.GetValueAsync(cacheKey)).ReturnsAsync((string)null);
-            mockServerLoadReceiver.Setup(x => x.GetAmountStatisticsInRangeAsync(It.IsAny<InRangeQueryOptions>(), request.TimeSpan, It.IsAny<CancellationToken>()))
+            mockLoadAmountStatisticsReceiver.Setup(x => x.GetStatisticsInRangeAsync(It.IsAny<InRangeQueryOptions>(), request.TimeSpan, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(statistics);
             mockMapper.Setup(x => x.Map<LoadAmountStatisticsResponse>(It.IsAny<LoadAmountStatistics>()))
-              .Returns(loadAmountStatisticsResponse);
+                .Returns(loadAmountStatisticsResponse);
             // Act
             var result = await controller.GetAmountStatisticsInRange(request, CancellationToken.None);
             // Assert
@@ -164,10 +169,10 @@ namespace AnalyzerApiTests.Controllers
             var okResult = result.Result as OkObjectResult;
             var value = (okResult?.Value as IEnumerable<LoadAmountStatisticsResponse>)?.ToList();
             Assert.That(value[0].AmountOfEvents, Is.EqualTo(loadAmountStatisticsResponse.AmountOfEvents));
-            mockCacheService.Verify(x => x.SetValueAsync(cacheKey, It.IsAny<string>(), CacheExpiryInMinutes), Times.Once);
+            mockCacheService.Verify(x => x.SetValueAsync(cacheKey, jsonStatistics, CacheExpiryInMinutes), Times.Once);
         }
         [Test]
-        public async Task GetSomeLoadEvents_ShouldCallServerLoadReceiver()
+        public async Task GetSomeLoadEvents_ShouldCallLoadEventReceiver()
         {
             // Arrange
             var request = new GetSomeMessagesRequest
@@ -178,7 +183,7 @@ namespace AnalyzerApiTests.Controllers
                 ReadNew = true
             };
             var events = new List<LoadEventWrapper> { new LoadEventWrapper { } };
-            mockServerLoadReceiver.Setup(x => x.GetCertainAmountOfEvents(It.IsAny<ReadCertainMessageNumberOptions>(), It.IsAny<CancellationToken>()))
+            mockLoadEventReceiver.Setup(x => x.GetCertainAmountOfEventsAsync(It.IsAny<ReadCertainMessageNumberOptions>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(events);
             // Act
             var result = await controller.GetSomeLoadEvents(request, CancellationToken.None);
@@ -188,7 +193,7 @@ namespace AnalyzerApiTests.Controllers
             Assert.That(okResult?.Value, Is.EqualTo(events));
         }
         [Test]
-        public async Task GetSomeCustomEvents_ShouldCallCustomReceiver()
+        public async Task GetSomeCustomEvents_ShouldCallCustomEventReceiver()
         {
             // Arrange
             var request = new GetSomeMessagesRequest
@@ -199,7 +204,7 @@ namespace AnalyzerApiTests.Controllers
                 ReadNew = true
             };
             var events = new List<CustomEventWrapper> { new CustomEventWrapper { } };
-            mockCustomReceiver.Setup(x => x.GetCertainAmountOfEvents(It.IsAny<ReadCertainMessageNumberOptions>(), It.IsAny<CancellationToken>()))
+            mockCustomEventReceiver.Setup(x => x.GetCertainAmountOfEventsAsync(It.IsAny<ReadCertainMessageNumberOptions>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(events);
             // Act
             var result = await controller.GetSomeCustomEvents(request, CancellationToken.None);

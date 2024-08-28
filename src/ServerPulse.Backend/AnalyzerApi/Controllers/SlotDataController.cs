@@ -23,7 +23,7 @@ namespace AnalyzerApi.Controllers
             this.dataPicker = dataPicker;
             this.mapper = mapper;
             this.cacheService = cacheService;
-            cacheExpiryInMinutes = configuration.GetValue<double>(Configuration.CACHE_EXPIRY_IN_MINUTES);
+            cacheExpiryInMinutes = double.Parse(configuration[Configuration.CACHE_EXPIRY_IN_MINUTES]!);
             cacheKey = configuration[Configuration.CACHE_KEY]!;
         }
 
@@ -31,8 +31,8 @@ namespace AnalyzerApi.Controllers
         [HttpGet]
         public async Task<ActionResult<SlotDataResponse>> GetSlotData([FromRoute] string key, CancellationToken cancellationToken)
         {
+            var cacheKey = $"{this.cacheKey}-{key}-slotdata";
             SlotData? data = await cacheService.GetInCacheAsync<SlotData>(cacheKey);
-
             if (data == null)
             {
                 data = await dataPicker.GetSlotDataAsync(key, cancellationToken);

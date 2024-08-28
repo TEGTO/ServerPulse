@@ -57,11 +57,11 @@ describe('StatisticsApiService', () => {
   it('should get whole amount statistics in days', () => {
     const key = 'testKey';
     const expectedUrl = `/api/statistics/perday/${key}`;
-    const response: LoadAmountStatisticsResponse[] = [{ amountOfEvents: 10, date: new Date(), collectedDateUTC: new Date(), isInitial: false }];
+    const response: LoadAmountStatisticsResponse[] = [{ amountOfEvents: 10, dateFrom: new Date(), collectedDateUTC: new Date(), isInitial: false }];
 
     service.getWholeLoadAmountStatisticsInDays(key).subscribe(res => {
       expect(res).toEqual(response);
-      expect(res[0].date instanceof Date).toBeTrue();
+      expect(res[0].dateFrom instanceof Date).toBeTrue();
     });
 
     const req = httpTestingController.expectOne(expectedUrl);
@@ -73,11 +73,11 @@ describe('StatisticsApiService', () => {
   it('should get amount statistics in range', () => {
     const request: MessageAmountInRangeRequest = { key: 'testKey', from: new Date(), to: new Date(), timeSpan: '1d' };
     const expectedUrl = '/api/statistics/amountrange';
-    const response: LoadAmountStatisticsResponse[] = [{ amountOfEvents: 10, date: new Date(), collectedDateUTC: new Date(), isInitial: false }];
+    const response: LoadAmountStatisticsResponse[] = [{ amountOfEvents: 10, dateFrom: new Date(), collectedDateUTC: new Date(), isInitial: false }];
 
     service.getLoadAmountStatisticsInRange(request).subscribe(res => {
       expect(res).toEqual(response);
-      expect(res[0].date instanceof Date).toBeTrue();
+      expect(res[0].dateFrom instanceof Date).toBeTrue();
     });
 
     const req = httpTestingController.expectOne(expectedUrl);

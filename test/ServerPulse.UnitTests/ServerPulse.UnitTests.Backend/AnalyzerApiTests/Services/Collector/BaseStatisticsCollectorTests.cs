@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Moq;
 
-namespace AnalyzerApiTests.Services
+namespace AnalyzerApiTests.Services.Collector
 {
     internal abstract class BaseStatisticsCollectorTests
     {

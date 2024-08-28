@@ -33,14 +33,14 @@ namespace AnalyzerApi.Controllers
             mockEventProcessor.Verify(x => x.ProcessEventsAsync(request, It.IsAny<CancellationToken>()), Times.Once);
         }
         [Test()]
-        public async Task ProcessLoadEvent_InvalidRequests_NotCallProcessor()
+        public async Task ProcessLoadEvent_InvalidRequests_BadRequest()
         {
             // Arrange
             var request = new LoadEvent[] { };
             // Act
             var result = await controller.ProcessLoadEvent(request, CancellationToken.None);
             // Assert
-            Assert.IsInstanceOf<OkResult>(result);
+            Assert.IsInstanceOf<BadRequestResult>(result);
             mockEventProcessor.Verify(x => x.ProcessEventsAsync(It.IsAny<LoadEvent[]>(), It.IsAny<CancellationToken>()), Times.Never);
         }
     }

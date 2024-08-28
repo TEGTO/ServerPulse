@@ -2,7 +2,7 @@ import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { BehaviorSubject, interval, map, Observable, of, shareReplay, Subject, switchMap, takeUntil } from 'rxjs';
 import { ServerStatisticsService } from '../..';
 import { ActivityChartType } from '../../../analytics';
-import { ServerLoadStatisticsResponse, ServerSlot, TimeSpan } from '../../../shared';
+import { LoadAmountStatisticsResponse, ServerLoadStatisticsResponse, ServerSlot, TimeSpan } from '../../../shared';
 
 @Component({
   selector: 'server-slot-daily-chart',
@@ -87,10 +87,10 @@ export class ServerSlotPreviewActivityChartComponent implements OnInit, OnDestro
     return new Date(Date.now() - this.hour);
   }
 
-  private getStatisticsSet(statistics: { date: Date, amountOfEvents: number }[]) {
+  private getStatisticsSet(statistics: LoadAmountStatisticsResponse[]) {
     let set: Map<number, number> = new Map<number, number>();
     statistics.forEach(stat => {
-      const timestamp = stat.date.getTime();
+      const timestamp = stat.dateFrom.getTime();
       if (!set.has(timestamp)) {
         set.set(timestamp, stat.amountOfEvents);
       }

@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, Input, OnDestroy } from '@angular/core';
 import { BehaviorSubject, interval, map, of, Subject, switchMap, takeUntil } from 'rxjs';
 import { ActivityChartType } from '../../../../analytics';
-import { ServerLoadStatisticsResponse, TimeSpan } from '../../../../shared';
+import { LoadAmountStatisticsResponse, ServerLoadStatisticsResponse, TimeSpan } from '../../../../shared';
 import { ServerStatisticsService } from '../../../index';
 
 @Component({
@@ -163,10 +163,10 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
     return chartData;
   }
 
-  private getStatisticsSet(statistics: { date: Date, amountOfEvents: number }[]): Map<number, number> {
+  private getStatisticsSet(statistics: LoadAmountStatisticsResponse[]): Map<number, number> {
     let set: Map<number, number> = new Map<number, number>();
     statistics.forEach(stat => {
-      const timestamp = stat.date.getTime();
+      const timestamp = stat.dateFrom.getTime();
       if (!set.has(timestamp)) {
         set.set(timestamp, stat.amountOfEvents);
       }

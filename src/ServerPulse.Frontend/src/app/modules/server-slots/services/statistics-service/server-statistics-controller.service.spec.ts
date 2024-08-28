@@ -124,7 +124,7 @@ describe('ServerStatisticsControllerService', () => {
     const mockResponse: LoadAmountStatisticsResponse[] = [
       {
         amountOfEvents: 10,
-        date: new Date(),
+        dateFrom: new Date(),
         collectedDateUTC: new Date(),
         isInitial: false
       }
@@ -147,7 +147,7 @@ describe('ServerStatisticsControllerService', () => {
     const mockResponse: LoadAmountStatisticsResponse[] = [
       {
         amountOfEvents: 10,
-        date: new Date(),
+        dateFrom: new Date(),
         collectedDateUTC: new Date(),
         isInitial: false
       }
