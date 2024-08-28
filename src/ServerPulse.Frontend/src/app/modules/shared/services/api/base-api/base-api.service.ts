@@ -6,7 +6,7 @@ import { ErrorHandler, URLDefiner } from '../../../index';
 @Injectable({
   providedIn: 'root'
 })
-export class BaseApiService {
+export abstract class BaseApiService {
 
   protected get httpClient(): HttpClient { return this._httpClient }
   protected get urlDefiner(): URLDefiner { return this._urlDefiner }

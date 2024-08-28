@@ -1,15 +1,14 @@
 import { Injectable } from '@angular/core';
 import { catchError, map, Observable } from 'rxjs';
-import { CustomEventResponse, GetSomeMessagesRequest, LoadAmountStatisticsResponse, MessageAmountInRangeRequest, MessagesInRangeRangeRequest, ServerLoadResponse } from '../../../index';
-import { BaseApiService } from '../base-api/base-api.service';
+import { BaseApiService, CustomEventResponse, GetSomeMessagesRequest, LoadAmountStatisticsResponse, LoadEventResponse, MessageAmountInRangeRequest, MessagesInRangeRangeRequest } from '../../../index';
 
 @Injectable({
   providedIn: 'root'
 })
 export class StatisticsApiService extends BaseApiService {
 
-  getLoadEventsInDataRange(request: MessagesInRangeRangeRequest): Observable<ServerLoadResponse[]> {
-    return this.httpClient.post<ServerLoadResponse[]>(this.combinePathWithStatisticsApiUrl(`/daterange`), request).pipe(
+  getLoadEventsInDataRange(request: MessagesInRangeRangeRequest): Observable<LoadEventResponse[]> {
+    return this.httpClient.post<LoadEventResponse[]>(this.combinePathWithStatisticsApiUrl(`/daterange`), request).pipe(
       catchError((resp) => this.handleError(resp))
     );
   }
@@ -33,8 +32,8 @@ export class StatisticsApiService extends BaseApiService {
     );
   }
 
-  getSomeLoadEvents(request: GetSomeMessagesRequest): Observable<ServerLoadResponse[]> {
-    return this.httpClient.post<ServerLoadResponse[]>(this.combinePathWithStatisticsApiUrl(`/someevents`), request);
+  getSomeLoadEvents(request: GetSomeMessagesRequest): Observable<LoadEventResponse[]> {
+    return this.httpClient.post<LoadEventResponse[]>(this.combinePathWithStatisticsApiUrl(`/someevents`), request);
   }
 
   getSomeCustomEvents(request: GetSomeMessagesRequest): Observable<CustomEventResponse[]> {

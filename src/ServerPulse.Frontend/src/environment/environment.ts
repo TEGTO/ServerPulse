@@ -7,5 +7,5 @@ export const environment =
   projectUrl: "https://github.com/TEGTO/ServerPulse",
   statisticsHub: "https://localhost:7129/statisticshub",
   loadStatisticsHub: "https://localhost:7129/loadstatisticshub",
-  customStatisticsHub: "https://localhost:7129/customstatisticshub"
+  customStatisticsHub: "https://localhost:7129/customstatisticshub",
 };

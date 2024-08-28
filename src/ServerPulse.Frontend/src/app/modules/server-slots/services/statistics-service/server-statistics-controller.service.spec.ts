@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
-import { CustomEventResponse, GetSomeMessagesRequest, LoadAmountStatisticsResponse, MessageAmountInRangeRequest, MessagesInRangeRangeRequest, ServerLoadResponse, StatisticsApiService, TimeSpan } from '../../../shared';
+import { CustomEventResponse, GetSomeMessagesRequest, LoadAmountStatisticsResponse, LoadEventResponse, MessageAmountInRangeRequest, MessagesInRangeRangeRequest, StatisticsApiService, TimeSpan } from '../../../shared';
 import { selectDate, subscribeToCustomStatistics, subscribeToLoadStatistics, subscribeToSlotStatistics } from '../../index';
 import { ServerStatisticsControllerService } from './server-statistics-controller.service';
 
@@ -42,7 +42,7 @@ describe('ServerStatisticsControllerService', () => {
     const key = 'testKey';
     const from = new Date('2023-01-01');
     const to = new Date('2023-01-31');
-    const mockResponse: ServerLoadResponse[] = [
+    const mockResponse: LoadEventResponse[] = [
       {
         id: "",
         key: "",
@@ -70,7 +70,7 @@ describe('ServerStatisticsControllerService', () => {
     const from = new Date('2023-01-01');
     const numberOfMessages = 5;
     const readNew = true;
-    const mockResponse: ServerLoadResponse[] = [
+    const mockResponse: LoadEventResponse[] = [
       {
         id: "",
         key: "",

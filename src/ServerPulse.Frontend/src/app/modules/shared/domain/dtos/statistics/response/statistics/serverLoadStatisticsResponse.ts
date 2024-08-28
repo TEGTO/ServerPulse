@@ -1,8 +1,8 @@
-import { BaseStatisticsResponse, convertBaseResponse, convertToLoadMethodStatisticsResponse, convertToServerLoadResponse, LoadMethodStatisticsResponse, ServerLoadResponse } from "../../../../../index";
+import { BaseStatisticsResponse, convertBaseResponse, convertToLoadMethodStatisticsResponse, convertToServerLoadResponse, LoadEventResponse, LoadMethodStatisticsResponse } from "../../../../../index";
 
 export interface ServerLoadStatisticsResponse extends BaseStatisticsResponse {
     amountOfEvents: number;
-    lastEvent: ServerLoadResponse | null;
+    lastEvent: LoadEventResponse | null;
     loadMethodStatistics: LoadMethodStatisticsResponse | null;
 }
 

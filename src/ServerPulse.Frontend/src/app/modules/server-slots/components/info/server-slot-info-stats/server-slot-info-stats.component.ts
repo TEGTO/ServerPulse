@@ -1,7 +1,7 @@
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { BehaviorSubject, Observable, Subject, filter, map, of, pairwise, shareReplay, switchMap, takeUntil, tap, throttleTime } from 'rxjs';
-import { ServerLoadResponse, ServerLoadStatisticsResponse, ServerStatisticsResponse, getUniqueItems } from '../../../../shared';
+import { LoadEventResponse, ServerLoadStatisticsResponse, ServerStatisticsResponse, getUniqueItems } from '../../../../shared';
 import { ServerStatisticsService, ServerStatus } from '../../../index';
 
 @Component({
@@ -14,11 +14,11 @@ export class ServerSlotInfoStatsComponent implements OnInit, AfterViewInit, OnDe
   @ViewChild('scroller') scroller!: CdkVirtualScrollViewport;
   @Input({ required: true }) slotKey!: string;
 
-  private dataSourceSubject$ = new BehaviorSubject<ServerLoadResponse[]>([]);
+  private dataSourceSubject$ = new BehaviorSubject<LoadEventResponse[]>([]);
   private fetchDateSubject$ = new BehaviorSubject<Date>(new Date());
   private areTableItemsLoadingSubject$ = new BehaviorSubject<boolean>(false);
 
-  dataSource$: Observable<ServerLoadResponse[]> = of([]);
+  dataSource$: Observable<LoadEventResponse[]> = of([]);
   areTableItemsLoading$ = this.areTableItemsLoadingSubject$.asObservable();
   serverStatus$!: Observable<ServerStatus>;
   serverLastStartDateTime$!: Observable<Date | null>;
@@ -108,7 +108,7 @@ export class ServerSlotInfoStatsComponent implements OnInit, AfterViewInit, OnDe
         switchMap(events => this.statisticsService.getLastServerLoadStatistics(this.slotKey).pipe(
           tap(lastStatistics => this.loadStatistics$ = of(lastStatistics?.statistics)),
           map(lastStatistics => {
-            let uniqueItems = getUniqueItems(this.dataSourceSubject$.value, events) as ServerLoadResponse[];
+            let uniqueItems = getUniqueItems(this.dataSourceSubject$.value, events) as LoadEventResponse[];
             this.dataSourceSubject$.next([...this.dataSourceSubject$.value, ...uniqueItems]);
             if (this.validateMessage(lastStatistics)) {
               let newEvent = lastStatistics?.statistics.lastEvent;
@@ -122,7 +122,7 @@ export class ServerSlotInfoStatsComponent implements OnInit, AfterViewInit, OnDe
       ));
   }
 
-  trackById(index: number, item: ServerLoadResponse): string {
+  trackById(index: number, item: LoadEventResponse): string {
     return item.id;
   }
   private isSelectedDateToday(date: Date): boolean {

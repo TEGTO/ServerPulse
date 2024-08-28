@@ -1,5 +1,4 @@
-﻿using AnalyzerApi;
-using AnalyzerApi.Domain.Dtos.Requests;
+﻿using AnalyzerApi.Domain.Dtos.Requests;
 using AnalyzerApi.Domain.Dtos.Responses;
 using AnalyzerApi.Domain.Dtos.Wrappers;
 using AnalyzerApi.Domain.Models;

@@ -1,6 +1,6 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { CustomEventResponse, GetSomeMessagesRequest, LoadAmountStatisticsResponse, MessageAmountInRangeRequest, MessagesInRangeRangeRequest, ServerLoadResponse, TimeSpan, URLDefiner } from '../../../index';
+import { CustomEventResponse, GetSomeMessagesRequest, LoadAmountStatisticsResponse, LoadEventResponse, MessageAmountInRangeRequest, MessagesInRangeRangeRequest, TimeSpan, URLDefiner } from '../../../index';
 import { StatisticsApiService } from './statistics-api.service';
 
 describe('StatisticsApiService', () => {
@@ -31,7 +31,7 @@ describe('StatisticsApiService', () => {
   it('should get load events in date range', () => {
     const request: MessagesInRangeRangeRequest = { key: 'testKey', from: new Date(), to: new Date() };
     const expectedUrl = '/api/statistics/daterange';
-    const response: ServerLoadResponse[] = [
+    const response: LoadEventResponse[] = [
       {
         id: '1',
         key: 'testKey',
@@ -89,7 +89,7 @@ describe('StatisticsApiService', () => {
   it('should get some events after a date', () => {
     const request: GetSomeMessagesRequest = { key: 'testKey', numberOfMessages: 5, startDate: new Date(), readNew: false };
     const expectedUrl = '/api/statistics/someevents';
-    const response: ServerLoadResponse[] = [
+    const response: LoadEventResponse[] = [
       {
         id: '1',
         key: 'testKey',

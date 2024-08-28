@@ -12,7 +12,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { provideEffects } from '@ngrx/effects';
 import { provideState, provideStore } from '@ngrx/store';
-import { CustomEventDetailsComponent, RealTimeStatisticsCollector, ServerSlotAdditionalInfromationComponent, ServerSlotComponent, ServerSlotControllerService, ServerSlotDeleteConfirmComponent, ServerSlotDialogManager, ServerSlotDialogManagerService, ServerSlotEffects, ServerSlotInfoChartsComponent, ServerSlotInfoComponent, ServerSlotInfoStatsComponent, ServerSlotPreviewActivityChartComponent, serverSlotReducer, ServerSlotService, ServerSlotStatisticsEffects, ServerStatisticsControllerService, ServerStatisticsService, SlotBoardComponent, slotCustomStatisticsReducer, slotLoadStatisticsReducer, slotStatisticsReducer, StatisticsCollector } from '.';
+import { CustomEventDetailsComponent, RealTimeStatisticsCollector, ServerSlotAdditionalInfromationComponent, ServerSlotComponent, ServerSlotControllerService, ServerSlotDataCollector, ServerSlotDataCollectorService, ServerSlotDeleteConfirmComponent, ServerSlotDialogManager, ServerSlotDialogManagerService, ServerSlotEffects, ServerSlotInfoChartsComponent, ServerSlotInfoComponent, ServerSlotInfoStatsComponent, ServerSlotPreviewActivityChartComponent, serverSlotReducer, ServerSlotService, ServerSlotStatisticsEffects, ServerStatisticsControllerService, ServerStatisticsService, SlotBoardComponent, slotCustomStatisticsReducer, SlotInfoDownloadButtonComponent, slotLoadStatisticsReducer, slotStatisticsReducer, StatisticsCollector } from '.';
 import { AnalyticsModule } from '../analytics/analytics.module';
 import { AuthenticationModule } from '../authentication/authentication.module';
 import { LocalizedDatePipe } from '../shared';
@@ -31,7 +31,8 @@ import { LocalizedDatePipe } from '../shared';
     ServerSlotInfoStatsComponent,
     ServerSlotAdditionalInfromationComponent,
     CustomEventDetailsComponent,
-    LocalizedDatePipe
+    LocalizedDatePipe,
+    SlotInfoDownloadButtonComponent
   ],
   imports: [
     AuthenticationModule,
@@ -54,6 +55,7 @@ import { LocalizedDatePipe } from '../shared';
     { provide: ServerSlotService, useClass: ServerSlotControllerService },
     { provide: RealTimeStatisticsCollector, useClass: StatisticsCollector },
     { provide: ServerStatisticsService, useClass: ServerStatisticsControllerService },
+    { provide: ServerSlotDataCollector, useClass: ServerSlotDataCollectorService },
     provideStore(),
     provideState({ name: "serverslot", reducer: serverSlotReducer }),
     provideState({ name: "slotstatistics", reducer: slotStatisticsReducer }),

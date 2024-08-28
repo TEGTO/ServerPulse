@@ -57,9 +57,7 @@
             <button mat-raised-button (click)="showKey()">
                 <span class="material-icons">key</span>
             </button>
-            <button mat-icon-button>
-                <span class="material-icons">download</span>
-            </button>
+            <slot-info-download-button [slotKey]="serverSlot.slotKey"></slot-info-download-button>
         </div>
     </div>
 </div>

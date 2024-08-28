@@ -11,7 +11,7 @@ import { AuthInterceptor } from '../authentication';
 import { AuthenticationModule } from '../authentication/authentication.module';
 import { ServerSlotInfoComponent, SlotBoardComponent } from '../server-slots';
 import { ServerSlotsModule } from '../server-slots/server-slots.module';
-import { CustomErrorHandler, ErrorHandler } from '../shared';
+import { CustomErrorHandler, ErrorHandler, JsonDownloader, JsonDownloaderService } from '../shared';
 import { AppComponent, MainViewComponent } from './index';
 
 const routes: Routes = [
@@ -44,6 +44,7 @@ const routes: Routes = [
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     { provide: ErrorHandler, useClass: CustomErrorHandler },
+    { provide: JsonDownloader, useClass: JsonDownloaderService },
   ],
   bootstrap: [AppComponent]
 })

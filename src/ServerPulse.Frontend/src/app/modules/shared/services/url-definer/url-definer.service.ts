@@ -14,4 +14,7 @@ export class URLDefiner {
   combineWithStatisticsApiUrl(subpath: string): string {
     return environment.api + "/analyze" + subpath;
   }
+  combineWithSlotDataApiUrl(subpath: string): string {
+    return environment.api + "/slotdata" + subpath;
+  }
 }

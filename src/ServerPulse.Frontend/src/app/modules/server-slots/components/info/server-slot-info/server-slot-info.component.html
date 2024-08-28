@@ -38,9 +38,7 @@
                             <span #textSizer class="name__input-sizer">{{ inputControl.value }}</span>
                         </div>
                     </div>
-                    <button mat-icon-button>
-                        <span class="material-icons">download</span>
-                    </button>
+                    <slot-info-download-button [slotKey]="serverSlot.slotKey"></slot-info-download-button>
                 </div>
                 <server-slot-info-stats [slotKey]="serverSlot.slotKey"></server-slot-info-stats>
             </section>
