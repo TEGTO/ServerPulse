@@ -25,11 +25,13 @@ namespace ServerSlotApi.Controllers
             this.slotStatisticsService = slotStatisticsService;
         }
 
+        #region Endpoints
+
         [Authorize]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ServerSlotResponse>>> GetSlotsByEmail(CancellationToken cancellationToken)
         {
-            var email = User.FindFirstValue(ClaimTypes.Email);
+            var email = GetUserEmail();
             var serverSlots = await serverSlotService.GetSlotsByEmailAsync(email, cancellationToken);
             return Ok(serverSlots.Select(mapper.Map<ServerSlotResponse>));
         }
@@ -38,11 +40,14 @@ namespace ServerSlotApi.Controllers
         [HttpGet]
         public async Task<ActionResult<ServerSlotResponse>> GetSlotById(string id, CancellationToken cancellationToken)
         {
-            var serverSlot = await serverSlotService.GetSlotByIdAsync(id, cancellationToken);
+            var param = new SlotParams(GetUserEmail(), id);
+
+            var serverSlot = await serverSlotService.GetSlotByIdAsync(param, cancellationToken);
             if (serverSlot == null)
             {
                 return NotFound();
             }
+
             var response = mapper.Map<ServerSlotResponse>(serverSlot);
             return Ok(response);
         }
@@ -50,7 +55,7 @@ namespace ServerSlotApi.Controllers
         [HttpGet("contains/{str}")]
         public async Task<ActionResult<IEnumerable<ServerSlotResponse>>> GerSlotsContainingString(string str, CancellationToken cancellationToken)
         {
-            var email = User.FindFirstValue(ClaimTypes.Email);
+            var email = GetUserEmail();
             var serverSlots = await serverSlotService.GerSlotsContainingStringAsync(email, str, cancellationToken);
             return Ok(serverSlots.Select(mapper.Map<ServerSlotResponse>));
         }
@@ -59,16 +64,13 @@ namespace ServerSlotApi.Controllers
         public async Task<ActionResult<CheckSlotKeyResponse>> CheckSlotKey([FromBody] CheckSlotKeyRequest request,
             CancellationToken cancellationToken)
         {
-            if (request == null)
-            {
-                return BadRequest("Invalid request");
-            }
             var result = await serverSlotService.CheckIfKeyValidAsync(request.SlotKey, cancellationToken);
             var response = new CheckSlotKeyResponse()
             {
                 SlotKey = request.SlotKey,
                 IsExisting = result
             };
+
             return Ok(response);
         }
         [Authorize]
@@ -76,17 +78,15 @@ namespace ServerSlotApi.Controllers
         public async Task<ActionResult<ServerSlotResponse>> CreateSlot([FromBody] CreateServerSlotRequest request,
             CancellationToken cancellationToken)
         {
-            if (request == null)
-            {
-                return BadRequest("Invalid request");
-            }
-            var email = User.FindFirstValue(ClaimTypes.Email);
+            var email = GetUserEmail();
             var serverSlot = new ServerSlot()
             {
                 UserEmail = email,
                 Name = request.Name
             };
+
             var result = await serverSlotService.CreateSlotAsync(serverSlot, cancellationToken);
+
             var response = mapper.Map<ServerSlotResponse>(result);
             return Created(string.Empty, response);
         }
@@ -94,28 +94,46 @@ namespace ServerSlotApi.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateSlot([FromBody] UpdateServerSlotRequest request, CancellationToken cancellationToken)
         {
+            var param = new SlotParams(GetUserEmail(), request.Id);
             var serverSlot = mapper.Map<ServerSlot>(request);
-            await serverSlotService.UpdateSlotAsync(serverSlot, cancellationToken);
+
+            await serverSlotService.UpdateSlotAsync(param, serverSlot, cancellationToken);
+
             return Ok();
         }
         [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSlot(string id, CancellationToken cancellationToken)
         {
-            var slot = await serverSlotService.GetSlotByIdAsync(id, cancellationToken);
+            var param = new SlotParams(GetUserEmail(), id);
+
+            var slot = await serverSlotService.GetSlotByIdAsync(param, cancellationToken);
+
             if (slot != null)
             {
                 string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", string.Empty);
                 if (await slotStatisticsService.DeleteSlotStatisticsAsync(slot.SlotKey, token, cancellationToken))
                 {
-                    await serverSlotService.DeleteSlotByIdAsync(id, cancellationToken);
+                    await serverSlotService.DeleteSlotByIdAsync(param, cancellationToken);
                 }
                 else
                 {
                     return StatusCode(500, "Failed to delete server slot!");
                 }
             }
+
             return Ok();
         }
+
+        #endregion
+
+        #region Private Helpers 
+
+        private string? GetUserEmail()
+        {
+            return User.FindFirstValue(ClaimTypes.Email);
+        }
+
+        #endregion
     }
 }

@@ -18,88 +18,57 @@ namespace ServerSlotApi.Services
 
         #region IServerSlotService Members
 
-        public async Task<ServerSlot?> GetSlotByIdAsync(string id, CancellationToken cancellationToken)
+        public async Task<ServerSlot?> GetSlotByIdAsync(SlotParams param, CancellationToken cancellationToken)
         {
-            ServerSlot? serverSlot = null;
-            using (var dbContext = await CreateDbContextAsync(cancellationToken))
-            {
-                serverSlot = await dbContext.ServerSlots.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-            }
-            return serverSlot;
+            var slotQueryable = (await repository.GetQueryableAsync<ServerSlot>(cancellationToken)).AsNoTracking();
+            var slot = await slotQueryable.FirstOrDefaultAsync(x =>
+            x.UserEmail == param.UserEmail &&
+            x.Id == param.SlotId,
+            cancellationToken);
+            return slot;
         }
         public async Task<IEnumerable<ServerSlot>> GetSlotsByEmailAsync(string email, CancellationToken cancellationToken)
         {
-            List<ServerSlot> serverSlots = new List<ServerSlot>();
-            using (var dbContext = await CreateDbContextAsync(cancellationToken))
-            {
-                var slots = dbContext.ServerSlots.Where(x => x.UserEmail == email)
-                    .OrderByDescending(x => x.CreationDate).AsNoTracking();
-                serverSlots.AddRange(slots);
-            }
-            return serverSlots;
+            var slotQueryable = (await repository.GetQueryableAsync<ServerSlot>(cancellationToken)).AsNoTracking();
+            var slots = await slotQueryable.Where(x => x.UserEmail == email).OrderByDescending(x => x.CreationDate).ToListAsync();
+            return slots;
         }
         public async Task<IEnumerable<ServerSlot>> GerSlotsContainingStringAsync(string email, string str, CancellationToken cancellationToken)
         {
-            List<ServerSlot> serverSlots = new List<ServerSlot>();
-            using (var dbContext = await CreateDbContextAsync(cancellationToken))
-            {
-                var slots = dbContext.ServerSlots.Where(x => x.UserEmail == email && x.Name.Contains(str))
-                    .OrderByDescending(x => x.CreationDate).AsNoTracking();
-                serverSlots.AddRange(slots);
-            }
-            return serverSlots;
+            var slotQueryable = (await repository.GetQueryableAsync<ServerSlot>(cancellationToken)).AsNoTracking();
+            var slots = await slotQueryable.Where(x =>
+            x.UserEmail == email &&
+            x.Name.Contains(str))
+            .OrderByDescending(x => x.CreationDate).ToListAsync();
+            return slots;
         }
         public async Task<bool> CheckIfKeyValidAsync(string key, CancellationToken cancellationToken)
         {
-            using (var dbContext = await CreateDbContextAsync(cancellationToken))
-            {
-                return await dbContext.ServerSlots.AnyAsync(x => x.SlotKey == key, cancellationToken);
-            }
+            var slotQueryable = (await repository.GetQueryableAsync<ServerSlot>(cancellationToken)).AsNoTracking();
+            return await slotQueryable.AnyAsync(x => x.SlotKey == key);
         }
         public async Task<ServerSlot> CreateSlotAsync(ServerSlot serverSlot, CancellationToken cancellationToken)
         {
-            using (var dbContext = await CreateDbContextAsync(cancellationToken))
-            {
-                if (await dbContext.ServerSlots.CountAsync(x => x.UserEmail == serverSlot.UserEmail) > slotsPerUser)
-                {
-                    throw new InvalidOperationException("Too many slots per user!");
-                }
-
-                await dbContext.ServerSlots.AddAsync(serverSlot, cancellationToken);
-                await dbContext.SaveChangesAsync(cancellationToken);
-            }
-            return serverSlot;
+            return await repository.AddAsync(serverSlot, cancellationToken);
         }
-        public async Task UpdateSlotAsync(ServerSlot serverSlot, CancellationToken cancellationToken)
+        public async Task UpdateSlotAsync(SlotParams param, ServerSlot serverSlot, CancellationToken cancellationToken)
         {
-            using (var dbContext = await CreateDbContextAsync(cancellationToken))
-            {
-                var serverSlotInDb = await dbContext.ServerSlots.FirstAsync(x => x.Id == serverSlot.Id, cancellationToken);
-                serverSlotInDb.Copy(serverSlot);
-                dbContext.ServerSlots.Update(serverSlotInDb);
-                await dbContext.SaveChangesAsync(cancellationToken);
-            }
+            var slotQueryable = (await repository.GetQueryableAsync<ServerSlot>(cancellationToken)).AsNoTracking();
+            var serverSlotInDb = await slotQueryable.FirstAsync(x =>
+            x.Id == param.SlotId &&
+            x.UserEmail == param.UserEmail,
+            cancellationToken);
+            serverSlotInDb.Copy(serverSlot);
+            await repository.UpdateAsync(serverSlotInDb, cancellationToken);
         }
-        public async Task DeleteSlotByIdAsync(string id, CancellationToken cancellationToken)
+        public async Task DeleteSlotByIdAsync(SlotParams param, CancellationToken cancellationToken)
         {
-            using (var dbContext = await CreateDbContextAsync(cancellationToken))
-            {
-                var serverSlot = await dbContext.ServerSlots.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-                if (serverSlot != null)
-                {
-                    dbContext.ServerSlots.Remove(serverSlot);
-                }
-                await dbContext.SaveChangesAsync(cancellationToken);
-            }
-        }
-
-        #endregion
-
-        #region Private Helpers
-
-        private async Task<ServerDataDbContext> CreateDbContextAsync(CancellationToken cancellationToken)
-        {
-            return await repository.CreateDbContextAsync(cancellationToken);
+            var slotQueryable = (await repository.GetQueryableAsync<ServerSlot>(cancellationToken)).AsNoTracking();
+            var serverSlotInDb = await slotQueryable.FirstAsync(x =>
+            x.Id == param.SlotId &&
+            x.UserEmail == param.UserEmail,
+            cancellationToken);
+            await repository.DeleteAsync(serverSlotInDb, cancellationToken);
         }
 
         #endregion
