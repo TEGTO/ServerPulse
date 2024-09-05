@@ -2,7 +2,7 @@
 
 namespace ServerPulse.EventCommunication.Events
 {
-    public record BaseEvent
+    public abstract record BaseEvent
     {
         public string Id { get; init; }
         public string Key { get; init; }

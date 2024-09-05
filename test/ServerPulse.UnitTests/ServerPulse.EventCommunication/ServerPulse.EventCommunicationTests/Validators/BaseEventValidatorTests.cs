@@ -2,8 +2,10 @@
 using FluentValidation.TestHelper;
 using ServerPulse.EventCommunication.Events;
 
-namespace ServerPulse.EventCommunicationTests.Validators
+namespace ServerPulse.EventCommunicationTests.Validators.Tests
 {
+    internal record class TestEvent(string Key) : BaseEvent(Key);
+
     [TestFixture]
     internal class BaseEventValidatorTests
     {
@@ -19,7 +21,7 @@ namespace ServerPulse.EventCommunicationTests.Validators
         public void ValidateKey_KeyIsNull_ValidationError()
         {
             // Arrange
-            var model = new BaseEvent(null);
+            var model = new TestEvent(null);
             // Act
             var result = validator.TestValidate(model);
             // Assert
@@ -29,7 +31,7 @@ namespace ServerPulse.EventCommunicationTests.Validators
         public void ValidateKey_KeyIsEmpty_ValidationError()
         {
             // Arrange
-            var model = new BaseEvent(string.Empty);
+            var model = new TestEvent(string.Empty);
             // Act
             var result = validator.TestValidate(model);
             // Assert
@@ -40,7 +42,7 @@ namespace ServerPulse.EventCommunicationTests.Validators
         {
             // Arrange
             var longKey = new string('x', 257);
-            var model = new BaseEvent(longKey);
+            var model = new TestEvent(longKey);
             // Act
             var result = validator.TestValidate(model);
             // Assert
@@ -50,7 +52,7 @@ namespace ServerPulse.EventCommunicationTests.Validators
         public void ValidateKey_KeyIsValid_NoValidationError()
         {
             // Arrange
-            var model = new BaseEvent("ValidKey");
+            var model = new TestEvent("ValidKey");
             // Act
             var result = validator.TestValidate(model);
             // Assert

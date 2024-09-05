@@ -2,7 +2,7 @@
 using ServerPulse.EventCommunication.Events;
 using ServerPulse.EventCommunication.Validators;
 
-namespace ServerPulse.EventCommunicationTests.Validators
+namespace ServerPulse.EventCommunicationTests.Validators.Tests
 {
     [TestFixture]
     internal class ConfigurationEventValidatorTests

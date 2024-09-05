@@ -3,7 +3,7 @@ using Moq.Protected;
 using ServerPulse.Client.Services;
 using System.Net;
 
-namespace ServerPulse.ClientTests.Services
+namespace ServerPulse.ClientTests.Services.Tests
 {
     [TestFixture]
     public class MessageSenderTests

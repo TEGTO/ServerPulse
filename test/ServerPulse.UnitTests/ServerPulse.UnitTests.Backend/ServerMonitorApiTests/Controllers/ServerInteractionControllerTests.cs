@@ -153,7 +153,7 @@ namespace ServerMonitorApiTests.Controllers
         public async Task SendCustomEvents_EmptyCustomEventShells_ReturnsBadRequest()
         {
             // Arrange
-            var customEventShells = new CustomEventShell[] { };
+            var customEventShells = new CustomEventWrapper[] { };
             var cancellationToken = CancellationToken.None;
             // Act
             var result = await controller.SendCustomEvents(customEventShells, cancellationToken);
@@ -168,8 +168,8 @@ namespace ServerMonitorApiTests.Controllers
             // Arrange
             var customEventShells = new[]
             {
-                new CustomEventShell(new CustomEvent("key1", "data1", "desc1")),
-                new CustomEventShell(new CustomEvent("key2", "data2",  "desc2"))
+                new CustomEventWrapper(new CustomEvent("key1", "data1", "desc1")),
+                new CustomEventWrapper(new CustomEvent("key2", "data2",  "desc2"))
             };
             var cancellationToken = CancellationToken.None;
             // Act
@@ -186,8 +186,8 @@ namespace ServerMonitorApiTests.Controllers
             var key = "validSlotKey";
             var customEventShells = new[]
             {
-                new CustomEventShell(new CustomEvent(key, "data1", "desc1")),
-                new CustomEventShell(new CustomEvent(key, "data2",  "desc2"))
+                new CustomEventWrapper(new CustomEvent(key, "data1", "desc1")),
+                new CustomEventWrapper(new CustomEvent(key, "data2",  "desc2"))
             };
             var cancellationToken = CancellationToken.None;
             mockSlotChecker.Setup(x => x.CheckSlotKeyAsync(key, cancellationToken)).ReturnsAsync(true);
@@ -205,8 +205,8 @@ namespace ServerMonitorApiTests.Controllers
             var key = "invalidSlotKey";
             var customEventShells = new[]
             {
-                new CustomEventShell(new CustomEvent(key, "data1", "desc1")),
-                new CustomEventShell(new CustomEvent(key, "data2",  "desc2"))
+                new CustomEventWrapper(new CustomEvent(key, "data1", "desc1")),
+                new CustomEventWrapper(new CustomEvent(key, "data2",  "desc2"))
             };
             var cancellationToken = CancellationToken.None;
             mockSlotChecker.Setup(x => x.CheckSlotKeyAsync(key, cancellationToken)).ReturnsAsync(false);

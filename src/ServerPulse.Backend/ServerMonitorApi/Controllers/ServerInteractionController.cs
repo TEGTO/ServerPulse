@@ -58,12 +58,12 @@ namespace ServerMonitorApi.Controllers
             return NotFound($"Server slot with key '{firstKey}' is not found!");
         }
         [HttpPost("custom")]
-        public async Task<IActionResult> SendCustomEvents(CustomEventShell[] customEventShells, CancellationToken cancellationToken)
+        public async Task<IActionResult> SendCustomEvents(CustomEventWrapper[] customEventWrappers, CancellationToken cancellationToken)
         {
-            if (customEventShells != null && customEventShells.Length > 0)
+            if (customEventWrappers != null && customEventWrappers.Length > 0)
             {
-                IEnumerable<CustomEvent> customEvents = customEventShells.Select(x => x.CustomEvent);
-                var customSerializedEvents = customEventShells.Select(x => x.CustomEventSerialized).ToArray();
+                IEnumerable<CustomEvent> customEvents = customEventWrappers.Select(x => x.CustomEvent);
+                var customSerializedEvents = customEventWrappers.Select(x => x.CustomEventSerialized).ToArray();
 
                 var firstKey = customEvents.First().Key;
                 if (!customEvents.All(x => x.Key == firstKey))

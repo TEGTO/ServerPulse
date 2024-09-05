@@ -2,7 +2,7 @@
 using FluentValidation.TestHelper;
 using ServerPulse.EventCommunication.Events;
 
-namespace ServerPulse.EventCommunicationTests.Validators
+namespace ServerPulse.EventCommunicationTests.Validators.Tests
 {
     [TestFixture]
     internal class PulseEventValidatorTests

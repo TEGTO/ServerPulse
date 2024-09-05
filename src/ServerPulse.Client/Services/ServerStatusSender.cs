@@ -4,44 +4,44 @@ using ServerPulse.EventCommunication.Events;
 
 namespace ServerPulse.Client.Services
 {
-    internal class ServerStatusSender : BackgroundService
+    internal sealed class ServerStatusSender : BackgroundService
     {
         private readonly IMessageSender messageSender;
-        private readonly string pulseUrl;
-        private readonly string confUrl;
-        private readonly string key;
-        private readonly double sendingInterval;
-        private readonly ILogger<ServerLoadSender> logger;
+        private readonly ILogger<ServerStatusSender> logger;
+        private readonly EventSendingSettings<PulseEvent> pulseSettings;
+        private readonly EventSendingSettings<ConfigurationEvent> configurationSettings;
 
-        public ServerStatusSender(IMessageSender messageSender, ServerPulseSettings configuration, ILogger<ServerLoadSender> logger)
+        public ServerStatusSender(
+            IMessageSender messageSender,
+            EventSendingSettings<PulseEvent> pulseSettings,
+            EventSendingSettings<ConfigurationEvent> configurationSettings,
+            ILogger<ServerStatusSender> logger)
         {
             this.messageSender = messageSender;
-            pulseUrl = configuration.EventController + $"/serverinteraction/pulse";
-            confUrl = configuration.EventController + $"/serverinteraction/configuration";
-            key = configuration.Key;
-            sendingInterval = configuration.ServerKeepAliveInterval;
-            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.logger = logger;
+            this.pulseSettings = pulseSettings;
+            this.configurationSettings = configurationSettings;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             try
             {
-                var confEvent = new ConfigurationEvent(key, TimeSpan.FromSeconds(sendingInterval));
-                await messageSender.SendJsonAsync(confEvent.ToString(), confUrl, stoppingToken);
+                var confEvent = new ConfigurationEvent(configurationSettings.Key, TimeSpan.FromSeconds(configurationSettings.EventSendingInterval));
+                await messageSender.SendJsonAsync(confEvent.ToString(), configurationSettings.EventController, stoppingToken);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "An error occurred while sending load events.");
             }
 
-            using PeriodicTimer timer = new(TimeSpan.FromSeconds(sendingInterval));
+            using PeriodicTimer timer = new(TimeSpan.FromSeconds(pulseSettings.EventSendingInterval));
             while (!stoppingToken.IsCancellationRequested && await timer.WaitForNextTickAsync(stoppingToken))
             {
                 try
                 {
-                    var ev = new PulseEvent(key, true);
-                    await messageSender.SendJsonAsync(ev.ToString(), pulseUrl, stoppingToken);
+                    var ev = new PulseEvent(pulseSettings.Key, true);
+                    await messageSender.SendJsonAsync(ev.ToString(), pulseSettings.EventController, stoppingToken);
                 }
                 catch (Exception ex)
                 {

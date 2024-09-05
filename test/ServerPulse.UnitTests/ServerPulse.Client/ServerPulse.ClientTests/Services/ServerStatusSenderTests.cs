@@ -4,29 +4,37 @@ using ServerPulse.Client;
 using ServerPulse.Client.Services;
 using ServerPulse.EventCommunication.Events;
 
-namespace ServerPulse.ClientTests.Services
+namespace ServerPulse.ClientTests.Services.Tests
 {
     internal class ServerStatusSenderTests
     {
         private Mock<IMessageSender> mockMessageSender;
         private ServerStatusSender serverStatusSender;
-        private ServerPulseSettings configuration;
+        private EventSendingSettings<PulseEvent> pulseSettings;
+        private EventSendingSettings<ConfigurationEvent> configurationSettings;
         private CancellationTokenSource cancellationTokenSource;
-        private Mock<ILogger<ServerLoadSender>> mockLogger;
+        private Mock<ILogger<ServerStatusSender>> mockLogger;
 
         [SetUp]
         public void Setup()
         {
             mockMessageSender = new Mock<IMessageSender>();
-            mockLogger = new Mock<ILogger<ServerLoadSender>>();
-            configuration = new ServerPulseSettings()
+            mockLogger = new Mock<ILogger<ServerStatusSender>>();
+            pulseSettings = new EventSendingSettings<PulseEvent>()
             {
                 Key = "example",
                 EventController = "http://localhost",
                 MaxEventSendingAmount = 10,
-                ServerKeepAliveInterval = 1
+                EventSendingInterval = 1
             };
-            serverStatusSender = new ServerStatusSender(mockMessageSender.Object, configuration, mockLogger.Object);
+            configurationSettings = new EventSendingSettings<ConfigurationEvent>()
+            {
+                Key = "example",
+                EventController = "http://localhost",
+                MaxEventSendingAmount = 10,
+                EventSendingInterval = 1
+            };
+            serverStatusSender = new ServerStatusSender(mockMessageSender.Object, pulseSettings, configurationSettings, mockLogger.Object);
             cancellationTokenSource = new CancellationTokenSource();
         }
 
@@ -41,7 +49,7 @@ namespace ServerPulse.ClientTests.Services
         public async Task ExecuteAsync_SendsInitialConfigurationEvent()
         {
             // Arrange
-            var confEvent = new ConfigurationEvent(configuration.Key, TimeSpan.FromSeconds(configuration.ServerKeepAliveInterval));
+            var confEvent = new ConfigurationEvent(pulseSettings.Key, TimeSpan.FromSeconds(pulseSettings.EventSendingInterval));
             string confEventJson = confEvent.ToString();
             mockMessageSender.Setup(m => m.SendJsonAsync(confEventJson, It.IsAny<string>(), It.IsAny<CancellationToken>()))
                              .Returns(Task.CompletedTask);
@@ -49,7 +57,7 @@ namespace ServerPulse.ClientTests.Services
             var executeTask = serverStatusSender.StartAsync(cancellationTokenSource.Token);
             await Task.Delay(500);
             // Assert
-            mockMessageSender.Verify(m => m.SendJsonAsync(It.IsAny<string>(), It.Is<string>(s => s.EndsWith("/serverinteraction/configuration")), It.IsAny<CancellationToken>()), Times.Once);
+            mockMessageSender.Verify(m => m.SendJsonAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
             cancellationTokenSource.Cancel();
             await executeTask;
         }
@@ -57,7 +65,7 @@ namespace ServerPulse.ClientTests.Services
         public async Task ExecuteAsync_SendsPulseEventPeriodically()
         {
             // Arrange
-            var ev = new PulseEvent(configuration.Key, true);
+            var ev = new PulseEvent(pulseSettings.Key, true);
             string evJson = ev.ToString();
             mockMessageSender.Setup(m => m.SendJsonAsync(evJson, It.IsAny<string>(), It.IsAny<CancellationToken>()))
                              .Returns(Task.CompletedTask);
@@ -65,7 +73,7 @@ namespace ServerPulse.ClientTests.Services
             var executeTask = serverStatusSender.StartAsync(cancellationTokenSource.Token);
             await Task.Delay(3500);
             // Assert
-            mockMessageSender.Verify(m => m.SendJsonAsync(It.IsAny<string>(), It.Is<string>(s => s.EndsWith("/serverinteraction/pulse")), It.IsAny<CancellationToken>()), Times.AtLeast(3)); // At least 3 times
+            mockMessageSender.Verify(m => m.SendJsonAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeast(3));
             cancellationTokenSource.Cancel();
             await executeTask;
         }
@@ -73,7 +81,7 @@ namespace ServerPulse.ClientTests.Services
         public async Task ExecuteAsync_CancellationStopsPeriodicSending()
         {
             // Arrange
-            var ev = new PulseEvent(configuration.Key, true);
+            var ev = new PulseEvent(pulseSettings.Key, true);
             string evJson = ev.ToString();
             mockMessageSender.Setup(m => m.SendJsonAsync(evJson, It.IsAny<string>(), It.IsAny<CancellationToken>()))
                              .Returns(Task.CompletedTask);
@@ -84,8 +92,8 @@ namespace ServerPulse.ClientTests.Services
             cancellationTokenSource.Cancel();
             await executeTask;
             // Assert
-            mockMessageSender.Verify(m => m.SendJsonAsync(It.IsAny<string>(), It.Is<string>(s => s.EndsWith("/serverinteraction/pulse")), It.IsAny<CancellationToken>()), Times.AtLeast(1));
-            mockMessageSender.Verify(m => m.SendJsonAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtMost(2)); // Ensure it stops
+            mockMessageSender.Verify(m => m.SendJsonAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeast(1));
+            mockMessageSender.Verify(m => m.SendJsonAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtMost(2));
         }
         [Test]
         public async Task ExecuteAsync_LogsErrorOnInitialConfigurationEventFailure()

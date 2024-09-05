@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using ServerPulse.Client.Services;
+using ServerPulse.Client.Services.Interfaces;
 using ServerPulse.EventCommunication.Events;
 
 namespace ServerPulse.Client.Middlewares
@@ -8,10 +8,10 @@ namespace ServerPulse.Client.Middlewares
     public class LoadMonitorMiddleware
     {
         private readonly RequestDelegate next;
-        private readonly IServerLoadSender serverLoadSender;
+        private readonly IQueueMessageSender<LoadEvent> serverLoadSender;
         private readonly string key;
 
-        public LoadMonitorMiddleware(RequestDelegate next, IServerLoadSender serverLoadSender, ServerPulseSettings configuration)
+        public LoadMonitorMiddleware(RequestDelegate next, IQueueMessageSender<LoadEvent> serverLoadSender, EventSendingSettings configuration)
         {
             this.serverLoadSender = serverLoadSender;
             this.next = next;

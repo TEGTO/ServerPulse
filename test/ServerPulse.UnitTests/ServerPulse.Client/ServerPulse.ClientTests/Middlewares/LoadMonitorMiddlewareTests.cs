@@ -4,15 +4,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using ServerPulse.Client;
 using ServerPulse.Client.Middlewares;
-using ServerPulse.Client.Services;
+using ServerPulse.Client.Services.Interfaces;
 using ServerPulse.EventCommunication.Events;
 
-namespace ServerPulse.ClientTests.Middlewares
+namespace ServerPulse.ClientTests.Middlewares.Tests
 {
     [TestFixture]
     internal class LoadMonitorMiddlewareTests
     {
-        private Mock<IServerLoadSender> mockServerLoadSender;
+        private Mock<IQueueMessageSender<LoadEvent>> mockServerLoadSender;
         private RequestDelegate next;
         private LoadMonitorMiddleware middleware;
         private DefaultHttpContext httpContext;
@@ -20,9 +20,9 @@ namespace ServerPulse.ClientTests.Middlewares
         [SetUp]
         public void Setup()
         {
-            mockServerLoadSender = new Mock<IServerLoadSender>();
+            mockServerLoadSender = new Mock<IQueueMessageSender<LoadEvent>>();
             next = async context => await Task.CompletedTask;
-            var configuration = new ServerPulseSettings { Key = "testKey", EventController = "http://example.com" };
+            var configuration = new EventSendingSettings { Key = "testKey", EventController = "http://example.com" };
             middleware = new LoadMonitorMiddleware(next, mockServerLoadSender.Object, configuration);
 
             httpContext = new DefaultHttpContext();
@@ -74,8 +74,8 @@ namespace ServerPulse.ClientTests.Middlewares
         {
             // Arrange
             var services = new ServiceCollection();
-            services.AddSingleton<IServerLoadSender>(mockServerLoadSender.Object);
-            services.AddSingleton(new ServerPulseSettings { Key = "testKey", EventController = "http://example.com" });
+            services.AddSingleton(mockServerLoadSender.Object);
+            services.AddSingleton(new EventSendingSettings { Key = "testKey", EventController = "http://example.com" });
             var serviceProvider = services.BuildServiceProvider();
             // Act
             var appBuilder = new ApplicationBuilder(serviceProvider);

@@ -49,7 +49,7 @@ namespace AnalyzerApiTests.Services.Receivers.Event
             var result = InvokeProtectedConvertToEventWrapper(customEventReceiver, consumeResponse, mockMapper.Object);
             // Assert
             Assert.IsNotNull(result);
-            Assert.AreEqual(consumeResponse.Message, result!.SerializedMessage);
+            Assert.That(result!.SerializedMessage, Is.EqualTo(consumeResponse.Message));
         }
         [Test]
         public void ConvertToEventWrapper_DeserializationFails_ReturnsNull()

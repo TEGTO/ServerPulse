@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-var configuration = new ServerPulseSettings
+var configuration = new EventSendingSettings
 {
     EventController = builder.Configuration["ServerPulse:EventController"],
     Key = builder.Configuration["ServerPulse:Key"],
@@ -21,7 +21,6 @@ app.UseLoadMonitor();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
-
 
 app.MapControllers();
 

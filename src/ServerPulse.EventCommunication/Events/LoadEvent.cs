@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-
-namespace ServerPulse.EventCommunication.Events
+﻿namespace ServerPulse.EventCommunication.Events
 {
     public sealed record class LoadEvent(
         string Key,
@@ -12,7 +10,7 @@ namespace ServerPulse.EventCommunication.Events
     {
         public override string ToString()
         {
-            return JsonSerializer.Serialize(this);
+            return base.ToString();
         }
     }
 }
