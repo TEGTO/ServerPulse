@@ -41,7 +41,11 @@ namespace ConsulUtils.Extension
                 }
             };
 
-            await client.Agent.ServiceDeregister(registration.ID, cancellationToken);
+            var services = await client.Agent.Services(cancellationToken);
+            if (services?.Response != null && services.Response.ContainsKey(registration.ID))
+            {
+                await client.Agent.ServiceDeregister(registration.ID, cancellationToken);
+            }
             await client.Agent.ServiceRegister(registration, cancellationToken);
             appLifetime.ApplicationStopping.Register(OnStopping);
         }

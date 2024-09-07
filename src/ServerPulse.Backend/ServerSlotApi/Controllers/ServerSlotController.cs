@@ -53,10 +53,10 @@ namespace ServerSlotApi.Controllers
         }
         [Authorize]
         [HttpGet("contains/{str}")]
-        public async Task<ActionResult<IEnumerable<ServerSlotResponse>>> GerSlotsContainingString(string str, CancellationToken cancellationToken)
+        public async Task<ActionResult<IEnumerable<ServerSlotResponse>>> GetSlotsContainingString(string str, CancellationToken cancellationToken)
         {
             var email = GetUserEmail();
-            var serverSlots = await serverSlotService.GerSlotsContainingStringAsync(email, str, cancellationToken);
+            var serverSlots = await serverSlotService.GetSlotsContainingStringAsync(email, str, cancellationToken);
             return Ok(serverSlots.Select(mapper.Map<ServerSlotResponse>));
         }
         [Route("/check")]

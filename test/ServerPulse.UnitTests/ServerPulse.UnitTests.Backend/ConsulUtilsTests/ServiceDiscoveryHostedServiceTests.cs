@@ -47,7 +47,7 @@ namespace ConsulUtilsTests
             // Act
             await hostedService.StartAsync(CancellationToken.None);
             // Assert
-            agentMock.Verify(agent => agent.ServiceDeregister(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+            agentMock.Verify(agent => agent.Services(It.IsAny<CancellationToken>()), Times.Once);
             agentMock.Verify(agent => agent.ServiceRegister(It.IsAny<AgentServiceRegistration>(), It.IsAny<CancellationToken>()), Times.Once);
         }
         [Test]

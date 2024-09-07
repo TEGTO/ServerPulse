@@ -78,10 +78,10 @@ namespace ServerSlotApiTests.Controllers
                 new ServerSlot { UserEmail = email, Name = "Slot1" },
                 new ServerSlot { UserEmail = email, Name = "Slot2" }
             };
-            serverSlotServiceMock.Setup(s => s.GerSlotsContainingStringAsync(email, searchString, cancellationToken)).ReturnsAsync(serverSlots);
+            serverSlotServiceMock.Setup(s => s.GetSlotsContainingStringAsync(email, searchString, cancellationToken)).ReturnsAsync(serverSlots);
             mapperMock.Setup(m => m.Map<ServerSlotResponse>(It.IsAny<ServerSlot>())).Returns((ServerSlot src) => new ServerSlotResponse { Name = src.Name });
             // Act
-            var result = await serverSlotController.GerSlotsContainingString(searchString, cancellationToken);
+            var result = await serverSlotController.GetSlotsContainingString(searchString, cancellationToken);
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(result.Result);
             var okResult = result.Result as OkObjectResult;
@@ -200,10 +200,10 @@ namespace ServerSlotApiTests.Controllers
                 new ServerSlot { UserEmail = email, Name = "Slot1" },
                 new ServerSlot { UserEmail = email, Name = "Slot2" }
             };
-            serverSlotServiceMock.Setup(s => s.GerSlotsContainingStringAsync(email, searchString, cancellationToken)).ReturnsAsync(serverSlots);
+            serverSlotServiceMock.Setup(s => s.GetSlotsContainingStringAsync(email, searchString, cancellationToken)).ReturnsAsync(serverSlots);
             mapperMock.Setup(m => m.Map<ServerSlotResponse>(It.IsAny<ServerSlot>())).Returns((ServerSlot src) => new ServerSlotResponse { Name = src.Name });
             // Act
-            var result = await serverSlotController.GerSlotsContainingString(searchString, cancellationToken);
+            var result = await serverSlotController.GetSlotsContainingString(searchString, cancellationToken);
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(result.Result);
             var okResult = result.Result as OkObjectResult;
@@ -216,12 +216,11 @@ namespace ServerSlotApiTests.Controllers
         {
             // Arrange
             var id = "1";
-            var slotKey = "slot-key";
-            var serverSlot = new ServerSlot { Id = id, SlotKey = slotKey };
+            var serverSlot = new ServerSlot { Id = id };
             var email = "test@example.com";
             var token = "valid-token";
             serverSlotServiceMock.Setup(s => s.GetSlotByIdAsync(It.IsAny<SlotParams>(), cancellationToken)).ReturnsAsync(serverSlot);
-            slotStatisticsServiceMock.Setup(s => s.DeleteSlotStatisticsAsync(slotKey, token, cancellationToken)).ReturnsAsync(true);
+            slotStatisticsServiceMock.Setup(s => s.DeleteSlotStatisticsAsync(serverSlot.SlotKey, token, cancellationToken)).ReturnsAsync(true);
             serverSlotServiceMock.Setup(s => s.DeleteSlotByIdAsync(It.IsAny<SlotParams>(), cancellationToken)).Returns(Task.CompletedTask);
             serverSlotController.Request.Headers["Authorization"] = $"Bearer {token}";
             // Act
@@ -229,19 +228,18 @@ namespace ServerSlotApiTests.Controllers
             // Assert
             Assert.IsInstanceOf<OkResult>(result);
             serverSlotServiceMock.Verify(s => s.DeleteSlotByIdAsync(It.IsAny<SlotParams>(), cancellationToken), Times.Once);
-            slotStatisticsServiceMock.Verify(s => s.DeleteSlotStatisticsAsync(slotKey, token, cancellationToken), Times.Once);
+            slotStatisticsServiceMock.Verify(s => s.DeleteSlotStatisticsAsync(serverSlot.SlotKey, token, cancellationToken), Times.Once);
         }
         [Test]
         public async Task DeleteSlot_StatisticsDeletionFails_ReturnsInternalServerError()
         {
             // Arrange
             var id = "1";
-            var slotKey = "slot-key";
-            var serverSlot = new ServerSlot { Id = id, SlotKey = slotKey };
+            var serverSlot = new ServerSlot { Id = id };
             var email = "test@example.com";
             var token = "valid-token";
             serverSlotServiceMock.Setup(s => s.GetSlotByIdAsync(It.IsAny<SlotParams>(), cancellationToken)).ReturnsAsync(serverSlot);
-            slotStatisticsServiceMock.Setup(s => s.DeleteSlotStatisticsAsync(slotKey, token, cancellationToken)).ReturnsAsync(false);
+            slotStatisticsServiceMock.Setup(s => s.DeleteSlotStatisticsAsync(serverSlot.SlotKey, token, cancellationToken)).ReturnsAsync(false);
             serverSlotController.Request.Headers["Authorization"] = $"Bearer {token}";
             // Act
             var result = await serverSlotController.DeleteSlot(id, cancellationToken);

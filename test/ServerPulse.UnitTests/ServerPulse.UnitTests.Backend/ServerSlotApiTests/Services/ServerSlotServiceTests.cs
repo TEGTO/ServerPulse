@@ -89,8 +89,8 @@ namespace ServerSlotApiTests.Services
             var email = "test@example.com";
             var serverSlots = new List<ServerSlot>
             {
-                new ServerSlot { UserEmail = email, Name = "Slot1", CreationDate = DateTime.UtcNow },
-                new ServerSlot { UserEmail = email, Name = "Slot2", CreationDate = DateTime.UtcNow }
+                new ServerSlot { UserEmail = email, Name = "Slot1" },
+                new ServerSlot { UserEmail = email, Name = "Slot2"}
             }.AsQueryable();
             var dbSetMock = GetDbSetMock(serverSlots);
             repositoryMock.Setup(x => x.GetQueryableAsync<ServerSlot>(cancellationToken)).ReturnsAsync(dbSetMock.Object);
@@ -111,15 +111,15 @@ namespace ServerSlotApiTests.Services
             var searchString = "Slot";
             var serverSlots = new List<ServerSlot>
             {
-                new ServerSlot { UserEmail = email, Name = "Slot1", CreationDate = DateTime.UtcNow },
-                new ServerSlot { UserEmail = email, Name = "Slot2", CreationDate = DateTime.UtcNow },
-                new ServerSlot { UserEmail = email, Name = "Another", CreationDate = DateTime.UtcNow }
+                new ServerSlot { UserEmail = email, Name = "Slot1"},
+                new ServerSlot { UserEmail = email, Name = "Slot2" },
+                new ServerSlot { UserEmail = email, Name = "Another" }
             }.AsQueryable();
 
             var dbSetMock = GetDbSetMock(serverSlots);
             repositoryMock.Setup(x => x.GetQueryableAsync<ServerSlot>(cancellationToken)).ReturnsAsync(dbSetMock.Object);
             // Act
-            var result = await serverSlotService.GerSlotsContainingStringAsync(email, searchString, cancellationToken);
+            var result = await serverSlotService.GetSlotsContainingStringAsync(email, searchString, cancellationToken);
             // Assert
             Assert.That(result.Count(), Is.EqualTo(2));
             Assert.IsTrue(result.All(x => x.Name.Contains(searchString)));
@@ -129,17 +129,17 @@ namespace ServerSlotApiTests.Services
         public async Task CheckIfKeyValidAsync_ValidKey_ReturnsTrue()
         {
             // Arrange
-            var key = "valid-key";
+            var slot = new ServerSlot();
             var serverSlots = new List<ServerSlot>
             {
-                new ServerSlot { SlotKey = key }
+               slot
             }.AsQueryable();
 
             var dbSetMock = GetDbSetMock(serverSlots);
             repositoryMock.Setup(x => x.GetQueryableAsync<ServerSlot>(cancellationToken)).ReturnsAsync(dbSetMock.Object);
 
             // Act
-            var result = await serverSlotService.CheckIfKeyValidAsync(key, cancellationToken);
+            var result = await serverSlotService.CheckIfKeyValidAsync(slot.SlotKey, cancellationToken);
 
             // Assert
             Assert.IsTrue(result);
@@ -149,17 +149,17 @@ namespace ServerSlotApiTests.Services
         public async Task CheckIfKeyValidAsync_InvalidKey_ReturnsFalse()
         {
             // Arrange
-            var key = "invalid-key";
+            var slot = new ServerSlot();
             var serverSlots = new List<ServerSlot>
             {
-                new ServerSlot { SlotKey = "some-other-key" }
+               slot
             }.AsQueryable();
 
             var dbSetMock = GetDbSetMock(serverSlots);
             repositoryMock.Setup(x => x.GetQueryableAsync<ServerSlot>(cancellationToken)).ReturnsAsync(dbSetMock.Object);
 
             // Act
-            var result = await serverSlotService.CheckIfKeyValidAsync(key, cancellationToken);
+            var result = await serverSlotService.CheckIfKeyValidAsync("invalid-key", cancellationToken);
 
             // Assert
             Assert.IsFalse(result);
@@ -168,7 +168,7 @@ namespace ServerSlotApiTests.Services
         public async Task CreateSlotAsync_ValidSlot_SlotCreated()
         {
             // Arrange
-            var serverSlot = new ServerSlot { UserEmail = "test@example.com", Name = "NewSlot", CreationDate = DateTime.UtcNow };
+            var serverSlot = new ServerSlot { UserEmail = "test@example.com", Name = "NewSlot" };
             repositoryMock.Setup(repo => repo.AddAsync(serverSlot, cancellationToken)).ReturnsAsync(serverSlot);
 
             // Act
@@ -184,8 +184,8 @@ namespace ServerSlotApiTests.Services
         {
             // Arrange
             var slotParams = new SlotParams("test@example.com", "1");
-            var serverSlot = new ServerSlot { Id = "1", UserEmail = "test@example.com", Name = "UpdatedSlot", CreationDate = DateTime.UtcNow };
-            var serverSlotInDb = new ServerSlot { Id = "1", UserEmail = "test@example.com", Name = "OldSlot", CreationDate = DateTime.UtcNow };
+            var serverSlot = new ServerSlot { Id = "1", UserEmail = "test@example.com", Name = "UpdatedSlot" };
+            var serverSlotInDb = new ServerSlot { Id = "1", UserEmail = "test@example.com", Name = "OldSlot" };
 
             var dbContextMock = CreateMockDbContext();
             var dbSetMock = GetDbSetMock(new List<ServerSlot> { serverSlotInDb }.AsQueryable());
@@ -205,7 +205,7 @@ namespace ServerSlotApiTests.Services
         {
             // Arrange
             var slotParams = new SlotParams("test@example.com", "1");
-            var serverSlot = new ServerSlot { Id = "1", UserEmail = "test@example.com", Name = "SlotToDelete", CreationDate = DateTime.UtcNow };
+            var serverSlot = new ServerSlot { Id = "1", UserEmail = "test@example.com", Name = "SlotToDelete" };
 
             var dbContextMock = CreateMockDbContext();
             var dbSetMock = GetDbSetMock(new List<ServerSlot> { serverSlot }.AsQueryable());

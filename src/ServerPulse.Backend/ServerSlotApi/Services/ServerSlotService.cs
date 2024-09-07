@@ -33,7 +33,7 @@ namespace ServerSlotApi.Services
             var slots = await slotQueryable.Where(x => x.UserEmail == email).OrderByDescending(x => x.CreationDate).ToListAsync();
             return slots;
         }
-        public async Task<IEnumerable<ServerSlot>> GerSlotsContainingStringAsync(string email, string str, CancellationToken cancellationToken)
+        public async Task<IEnumerable<ServerSlot>> GetSlotsContainingStringAsync(string email, string str, CancellationToken cancellationToken)
         {
             var slotQueryable = (await repository.GetQueryableAsync<ServerSlot>(cancellationToken)).AsNoTracking();
             var slots = await slotQueryable.Where(x =>

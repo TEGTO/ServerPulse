@@ -30,8 +30,6 @@ namespace ServerSlotApiTests
                 Id = "1",
                 UserEmail = "test@example.com",
                 Name = "SlotName",
-                SlotKey = "key123",
-                CreationDate = DateTime.UtcNow
             };
             // Act
             var result = mapper.Map<ServerSlotResponse>(serverSlot);
