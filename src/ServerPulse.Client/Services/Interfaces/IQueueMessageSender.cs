@@ -1,9 +1,7 @@
-﻿using ServerPulse.EventCommunication.Events;
-
-namespace ServerPulse.Client.Services.Interfaces
+﻿namespace ServerPulse.Client.Services.Interfaces
 {
-    public interface IQueueMessageSender<T> where T : BaseEvent
+    public interface IQueueMessageSender<T> where T : class
     {
-        public void SendEvent(T ev);
+        public void SendMessage(T ev);
     }
 }

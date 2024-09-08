@@ -2,6 +2,7 @@ using ClientUseCase.CustomEvents;
 using Microsoft.AspNetCore.Mvc;
 using ServerPulse.Client;
 using ServerPulse.Client.Services.Interfaces;
+using ServerPulse.EventCommunication;
 using ServerPulse.EventCommunication.Events;
 using System.Text.Json;
 
@@ -17,11 +18,11 @@ namespace ClientUseCase.Controllers
         };
 
         private readonly IQueueMessageSender<LoadEvent> loadSender;
-        private readonly IQueueMessageSender<CustomEvent> customSender;
-        private readonly EventSendingSettings configuration;
+        private readonly IQueueMessageSender<CustomEventWrapper> customSender;
+        private readonly SendingSettings configuration;
         private readonly ILogger<WeatherForecastController> logger;
 
-        public WeatherForecastController(IQueueMessageSender<LoadEvent> loadSender, IQueueMessageSender<CustomEvent> customSender, EventSendingSettings configuration, ILogger<WeatherForecastController> logger)
+        public WeatherForecastController(IQueueMessageSender<LoadEvent> loadSender, IQueueMessageSender<CustomEventWrapper> customSender, SendingSettings configuration, ILogger<WeatherForecastController> logger)
         {
             this.loadSender = loadSender;
             this.customSender = customSender;
@@ -48,7 +49,7 @@ namespace ClientUseCase.Controllers
                 RequestDate: DateTime.UtcNow,
                 SerializedRequest: JsonSerializer.Serialize(forecasts)
             );
-            customSender.SendEvent(weatherForecastControllerGetEvent);
+            customSender.SendMessage(new CustomEventWrapper(weatherForecastControllerGetEvent, JsonSerializer.Serialize(weatherForecastControllerGetEvent)));
 
             return forecasts;
         }
@@ -77,7 +78,7 @@ namespace ClientUseCase.Controllers
               Duration: endTime - startTime,
               TimestampUTC: startTime
             );
-            loadSender.SendEvent(loadEvent);
+            loadSender.SendMessage(loadEvent);
 
             return forecast;
         }

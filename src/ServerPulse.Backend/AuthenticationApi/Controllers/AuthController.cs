@@ -32,10 +32,6 @@ namespace AuthenticationApi.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserRegistrationRequest request)
         {
-            if (request == null)
-            {
-                return BadRequest("Invalid client request");
-            }
             var user = mapper.Map<User>(request);
             var result = await authService.RegisterUserAsync(user, request.Password);
             if (!result.Succeeded)

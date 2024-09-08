@@ -4,10 +4,24 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
-namespace ServerSlotApi.IntegrationTests.Controllers
+namespace ServerSlotApi.IntegrationTests.Controllers.ServerSlotController
 {
     internal class UpdateSlotServerSlotControllerTests : BaseServerSlotControllerTest
     {
+        [Test]
+        public async Task UpdateSlot_ValidRequest_ReturnsOk()
+        {
+            // Arrange
+            var createdSlot = await CreateSampleSlot(new CreateServerSlotRequest { Name = "OriginalSlot" });
+            var updateRequest = new UpdateServerSlotRequest { Id = createdSlot.Id, Name = "UpdatedSlot" };
+            using var request = new HttpRequestMessage(HttpMethod.Put, "/serverslot");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+            request.Content = new StringContent(JsonSerializer.Serialize(updateRequest), Encoding.UTF8, "application/json");
+            // Act
+            var response = await client.SendAsync(request);
+            // Assert
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        }
         [Test]
         public async Task UpdateSlot_UnauthorizedRequest_ReturnsUnauthorized()
         {
@@ -33,20 +47,6 @@ namespace ServerSlotApi.IntegrationTests.Controllers
             var response = await client.SendAsync(request);
             // Assert
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
-        }
-        [Test]
-        public async Task UpdateSlot_ValidRequest_ReturnsOk()
-        {
-            // Arrange
-            var createdSlot = await CreateSampleSlot(new CreateServerSlotRequest { Name = "OriginalSlot" });
-            var updateRequest = new UpdateServerSlotRequest { Id = createdSlot.Id, Name = "UpdatedSlot" };
-            using var request = new HttpRequestMessage(HttpMethod.Put, "/serverslot");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
-            request.Content = new StringContent(JsonSerializer.Serialize(updateRequest), Encoding.UTF8, "application/json");
-            // Act
-            var response = await client.SendAsync(request);
-            // Assert
-            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         }
         [Test]
         public async Task UpdateSlot_NonExistentId_ReturnsNotFound()

@@ -1,7 +1,11 @@
-﻿using System.Text.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace ServerPulse.EventCommunication.Events
 {
+    [JsonDerivedType(typeof(LoadEvent))]
+    [JsonDerivedType(typeof(PulseEvent))]
+    [JsonDerivedType(typeof(ConfigurationEvent))]
+    [JsonDerivedType(typeof(CustomEvent))]
     public abstract record BaseEvent
     {
         public string Id { get; init; }
@@ -11,11 +15,6 @@ namespace ServerPulse.EventCommunication.Events
         {
             Id = Guid.NewGuid().ToString();
             this.Key = Key;
-        }
-
-        public override string ToString()
-        {
-            return JsonSerializer.Serialize(this);
         }
     }
 }

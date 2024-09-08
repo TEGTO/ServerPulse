@@ -5,7 +5,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
-namespace ServerSlotApi.IntegrationTests.Controllers
+namespace ServerSlotApi.IntegrationTests.Controllers.ServerSlotController
 {
     internal class CheckSlotKeyServerSlotControllerTests : BaseServerSlotControllerTest
     {

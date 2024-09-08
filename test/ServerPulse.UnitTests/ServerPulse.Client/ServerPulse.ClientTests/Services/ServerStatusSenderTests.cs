@@ -10,8 +10,8 @@ namespace ServerPulse.ClientTests.Services.Tests
     {
         private Mock<IMessageSender> mockMessageSender;
         private ServerStatusSender serverStatusSender;
-        private EventSendingSettings<PulseEvent> pulseSettings;
-        private EventSendingSettings<ConfigurationEvent> configurationSettings;
+        private SendingSettings<PulseEvent> pulseSettings;
+        private SendingSettings<ConfigurationEvent> configurationSettings;
         private CancellationTokenSource cancellationTokenSource;
         private Mock<ILogger<ServerStatusSender>> mockLogger;
 
@@ -20,19 +20,19 @@ namespace ServerPulse.ClientTests.Services.Tests
         {
             mockMessageSender = new Mock<IMessageSender>();
             mockLogger = new Mock<ILogger<ServerStatusSender>>();
-            pulseSettings = new EventSendingSettings<PulseEvent>()
+            pulseSettings = new SendingSettings<PulseEvent>()
             {
                 Key = "example",
-                EventController = "http://localhost",
-                MaxEventSendingAmount = 10,
-                EventSendingInterval = 1
+                SendingEndpoint = "http://localhost",
+                MaxMessageSendingAmount = 10,
+                SendingInterval = 1
             };
-            configurationSettings = new EventSendingSettings<ConfigurationEvent>()
+            configurationSettings = new SendingSettings<ConfigurationEvent>()
             {
                 Key = "example",
-                EventController = "http://localhost",
-                MaxEventSendingAmount = 10,
-                EventSendingInterval = 1
+                SendingEndpoint = "http://localhost",
+                MaxMessageSendingAmount = 10,
+                SendingInterval = 1
             };
             serverStatusSender = new ServerStatusSender(mockMessageSender.Object, pulseSettings, configurationSettings, mockLogger.Object);
             cancellationTokenSource = new CancellationTokenSource();
@@ -49,7 +49,7 @@ namespace ServerPulse.ClientTests.Services.Tests
         public async Task ExecuteAsync_SendsInitialConfigurationEvent()
         {
             // Arrange
-            var confEvent = new ConfigurationEvent(pulseSettings.Key, TimeSpan.FromSeconds(pulseSettings.EventSendingInterval));
+            var confEvent = new ConfigurationEvent(pulseSettings.Key, TimeSpan.FromSeconds(pulseSettings.SendingInterval));
             string confEventJson = confEvent.ToString();
             mockMessageSender.Setup(m => m.SendJsonAsync(confEventJson, It.IsAny<string>(), It.IsAny<CancellationToken>()))
                              .Returns(Task.CompletedTask);

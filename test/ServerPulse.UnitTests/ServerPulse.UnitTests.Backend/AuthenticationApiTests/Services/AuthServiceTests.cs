@@ -2,12 +2,11 @@
 using Authentication.Services;
 using AuthenticationApi.Domain.Entities;
 using AuthenticationApi.Domain.Models;
-using AuthenticationApi.Services;
 using Microsoft.AspNetCore.Identity;
 using Moq;
 using System.Security.Claims;
 
-namespace AuthenticationApiTests.Services
+namespace AuthenticationApi.Services.Tests
 {
     [TestFixture]
     internal class AuthServiceTests

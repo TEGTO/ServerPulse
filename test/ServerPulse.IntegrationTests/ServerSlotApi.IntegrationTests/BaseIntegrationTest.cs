@@ -1,6 +1,10 @@
 ﻿using Authentication.Configuration;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Moq;
+using ServerSlotApi.Services;
 
 namespace ServerSlotApi.IntegrationTests
 {
@@ -9,6 +13,7 @@ namespace ServerSlotApi.IntegrationTests
     {
         protected HttpClient client;
         protected JwtSettings settings;
+        protected Mock<ISlotStatisticsService> mockSlotStatisticsService;
         private WebAppFactoryWrapper wrapper;
         private WebApplicationFactory<Program> factory;
         private IServiceScope scope;
@@ -17,7 +22,19 @@ namespace ServerSlotApi.IntegrationTests
         public async Task GlobalSetup()
         {
             wrapper = new WebAppFactoryWrapper();
-            factory = await wrapper.GetFactoryAsync();
+            factory = (await wrapper.GetFactoryAsync()).WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureTestServices(services =>
+                {
+                    services.RemoveAll(typeof(ISlotStatisticsService));
+
+                    mockSlotStatisticsService = new Mock<ISlotStatisticsService>();
+                    mockSlotStatisticsService.Setup(x => x.DeleteSlotStatisticsAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                    services.AddSingleton<ISlotStatisticsService>(mockSlotStatisticsService.Object);
+                });
+            });
             InitializeServices();
         }
         [OneTimeTearDown]
@@ -25,6 +42,7 @@ namespace ServerSlotApi.IntegrationTests
         {
             scope.Dispose();
             client.Dispose();
+            await factory.DisposeAsync();
             await wrapper.DisposeAsync();
         }
 

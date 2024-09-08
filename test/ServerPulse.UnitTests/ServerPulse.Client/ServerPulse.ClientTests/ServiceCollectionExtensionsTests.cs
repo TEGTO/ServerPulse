@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Moq;
 using ServerPulse.Client.Services;
 using ServerPulse.Client.Services.Interfaces;
+using ServerPulse.EventCommunication;
 using ServerPulse.EventCommunication.Events;
 
 namespace ServerPulse.Client.Tests
@@ -11,13 +12,13 @@ namespace ServerPulse.Client.Tests
     public class ServiceCollectionExtensionsTests
     {
         private IServiceCollection services;
-        private Mock<EventSendingSettings> settingsMock;
+        private Mock<SendingSettings> settingsMock;
 
         [SetUp]
         public void SetUp()
         {
             services = new ServiceCollection();
-            settingsMock = new Mock<EventSendingSettings>();
+            settingsMock = new Mock<SendingSettings>();
         }
 
         [Test]
@@ -48,19 +49,19 @@ namespace ServerPulse.Client.Tests
             services.AddServerPulseClient(settingsMock.Object);
             // Assert
             var serviceProvider = services.BuildServiceProvider();
-            var pulseSettings = serviceProvider.GetService<EventSendingSettings<PulseEvent>>();
-            var configSettings = serviceProvider.GetService<EventSendingSettings<ConfigurationEvent>>();
-            var loadSettings = serviceProvider.GetService<EventSendingSettings<LoadEvent>>();
-            var customSettings = serviceProvider.GetService<EventSendingSettings<CustomEvent>>();
+            var pulseSettings = serviceProvider.GetService<SendingSettings<PulseEvent>>();
+            var configSettings = serviceProvider.GetService<SendingSettings<ConfigurationEvent>>();
+            var loadSettings = serviceProvider.GetService<SendingSettings<LoadEvent>>();
+            var customSettings = serviceProvider.GetService<SendingSettings<CustomEventWrapper>>();
             Assert.IsNotNull(pulseSettings);
             Assert.IsNotNull(configSettings);
             Assert.IsNotNull(loadSettings);
             Assert.IsNotNull(customSettings);
             // Validate that the settings are correctly configured
-            Assert.That(pulseSettings.EventController, Is.EqualTo("/serverinteraction/pulse"));
-            Assert.That(configSettings.EventController, Is.EqualTo("/serverinteraction/configuration"));
-            Assert.That(loadSettings.EventController, Is.EqualTo("/serverinteraction/load"));
-            Assert.That(customSettings.EventController, Is.EqualTo("/serverinteraction/custom"));
+            Assert.That(pulseSettings.SendingEndpoint, Is.EqualTo("/serverinteraction/pulse"));
+            Assert.That(configSettings.SendingEndpoint, Is.EqualTo("/serverinteraction/configuration"));
+            Assert.That(loadSettings.SendingEndpoint, Is.EqualTo("/serverinteraction/load"));
+            Assert.That(customSettings.SendingEndpoint, Is.EqualTo("/serverinteraction/custom"));
         }
         [Test]
         public void AddServerPulseClient_RegistersQueueMessageSenders()
@@ -71,8 +72,8 @@ namespace ServerPulse.Client.Tests
             var serviceProvider = services.BuildServiceProvider();
             var loadQueueSender = serviceProvider.GetService<QueueMessageSender<LoadEvent>>();
             var loadSenderInterface = serviceProvider.GetService<IQueueMessageSender<LoadEvent>>();
-            var customQueueSender = serviceProvider.GetService<CustomEventSender>();
-            var customSenderInterface = serviceProvider.GetService<IQueueMessageSender<CustomEvent>>();
+            var customQueueSender = serviceProvider.GetService<QueueMessageSender<CustomEventWrapper>>();
+            var customSenderInterface = serviceProvider.GetService<IQueueMessageSender<CustomEventWrapper>>();
             Assert.IsNotNull(loadQueueSender);
             Assert.IsNotNull(loadSenderInterface);
             Assert.That(loadSenderInterface, Is.SameAs(loadQueueSender));
@@ -90,7 +91,7 @@ namespace ServerPulse.Client.Tests
             var hostedServices = serviceProvider.GetServices<IHostedService>();
             Assert.IsNotNull(hostedServices);
             Assert.IsTrue(hostedServices.Any(hs => hs is QueueMessageSender<LoadEvent>));
-            Assert.IsTrue(hostedServices.Any(hs => hs is CustomEventSender));
+            Assert.IsTrue(hostedServices.Any(hs => hs is QueueMessageSender<CustomEventWrapper>));
             Assert.IsTrue(hostedServices.Any(hs => hs is ServerStatusSender));
         }
     }

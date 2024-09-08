@@ -1,21 +1,12 @@
-﻿using ServerSlotApi.Domain.Dtos;
+﻿using Moq;
+using ServerSlotApi.Domain.Dtos;
 using System.Net;
 using System.Net.Http.Headers;
 
-namespace ServerSlotApi.IntegrationTests.Controllers
+namespace ServerSlotApi.IntegrationTests.Controllers.ServerSlotController
 {
     internal class DeleteSlotServerSlotControllerTests : BaseServerSlotControllerTest
     {
-        [Test]
-        public async Task DeleteSlot_UnauthorizedRequest_ReturnsUnauthorized()
-        {
-            // Arrange
-            using var request = new HttpRequestMessage(HttpMethod.Delete, $"/serverslot/validId");
-            // Act
-            var response = await client.SendAsync(request);
-            // Assert
-            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
-        }
         [Test]
         public async Task DeleteSlot_ValidId_ReturnsOk()
         {
@@ -27,7 +18,18 @@ namespace ServerSlotApi.IntegrationTests.Controllers
             var response = await client.SendAsync(request);
             // Assert
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            mockSlotStatisticsService.Verify(x => x.DeleteSlotStatisticsAsync(createdSlot.SlotKey, AccessToken, It.IsAny<CancellationToken>()), Times.Once);
             await CheckServerSlotNotFound(createdSlot.Id);
+        }
+        [Test]
+        public async Task DeleteSlot_UnauthorizedRequest_ReturnsUnauthorized()
+        {
+            // Arrange
+            using var request = new HttpRequestMessage(HttpMethod.Delete, $"/serverslot/validId");
+            // Act
+            var response = await client.SendAsync(request);
+            // Assert
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
         }
         [Test]
         public async Task DeleteSlot_NonExistentId_ReturnsOk()

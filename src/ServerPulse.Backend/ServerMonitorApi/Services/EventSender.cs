@@ -1,5 +1,6 @@
 ﻿using MessageBus.Interfaces;
 using ServerPulse.EventCommunication.Events;
+using System.Text.Json;
 
 namespace ServerMonitorApi.Services
 {
@@ -51,7 +52,7 @@ namespace ServerMonitorApi.Services
         }
         private async Task SendEvent(BaseEvent ev, string topic, CancellationToken cancellationToken)
         {
-            var message = ev.ToString();
+            var message = JsonSerializer.Serialize(ev);
             await producer.ProduceAsync(topic, message, cancellationToken);
         }
         private string GetTopic(string topic, string key)

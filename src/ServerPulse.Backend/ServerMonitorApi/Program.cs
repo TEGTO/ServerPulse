@@ -18,12 +18,12 @@ var consulSettings = ConsulExtension.GetConsulSettings(builder.Configuration);
 builder.Services.AddConsulService(consulSettings);
 builder.Configuration.ConfigureConsul(consulSettings, environmentName);
 
+#endregion
+
 builder.Services.Configure<KestrelServerOptions>(options =>
 {
     options.Limits.MaxRequestBodySize = 1 * 1024 * 1024; //1 MB
 });
-
-#endregion
 
 builder.Services.AddHttpClient();
 
@@ -43,7 +43,11 @@ builder.Services.AddKafkaProducer(producerConfig, adminConfig);
 
 #endregion
 
+#region Cache
+
 builder.Services.AddCache(builder.Configuration);
+
+#endregion
 
 #region Project Services
 
@@ -71,3 +75,5 @@ app.MapHealthChecks("/health");
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Moq;
 using ServerPulse.EventCommunication.Events;
 using System.Reflection;
+using System.Text.Json;
 
 namespace AnalyzerApiTests.Services.Receivers.Event
 {
@@ -41,7 +42,7 @@ namespace AnalyzerApiTests.Services.Receivers.Event
         public void ConvertToEventWrapper_DeserializationSucceeds_ReturnsEventWrapper()
         {
             // Arrange
-            var consumeResponse = new ConsumeResponse(new CustomEvent("", "", "").ToString(), DateTime.UtcNow);
+            var consumeResponse = new ConsumeResponse(JsonSerializer.Serialize(new CustomEvent("", "", "")), DateTime.UtcNow);
             var customEventWrapper = new CustomEventWrapper();
             mockMapper.Setup(m => m.Map<CustomEventWrapper>(It.IsAny<CustomEvent>()))
                       .Returns(customEventWrapper);

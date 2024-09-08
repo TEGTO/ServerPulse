@@ -1,5 +1,4 @@
 ﻿using Authentication.Models;
-using AuthenticationApi.Controllers;
 using AuthenticationApi.Domain.Dtos;
 using AuthenticationApi.Domain.Entities;
 using AuthenticationApi.Domain.Models;
@@ -13,7 +12,7 @@ using Shared.Dtos;
 using Shared.Dtos.Auth;
 using System.Net;
 
-namespace AuthenticationApiTests.Controllers
+namespace AuthenticationApi.Controllers.Tests
 {
     [TestFixture]
     internal class AuthControllerTests
@@ -52,20 +51,6 @@ namespace AuthenticationApiTests.Controllers
             Assert.IsInstanceOf<CreatedResult>(result);
             var createdResult = result as CreatedResult;
             Assert.That(createdResult.Location, Is.EqualTo($"/users/{user.Id}"));
-        }
-        [Test]
-        public async Task Register_InvalidRequest_ReturnsBadRequest()
-        {
-            // Arrange
-            UserRegistrationRequest registrationRequest = null;
-
-            // Act
-            var result = await authController.Register(registrationRequest);
-
-            // Assert
-            Assert.IsInstanceOf<BadRequestObjectResult>(result);
-            var badRequestResult = result as BadRequestObjectResult;
-            Assert.That(badRequestResult.Value, Is.EqualTo("Invalid client request"));
         }
         [Test]
         public async Task Register_FailedRegistration_ReturnsBadRequestWithErrors()

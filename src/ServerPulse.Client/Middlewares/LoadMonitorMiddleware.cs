@@ -11,7 +11,7 @@ namespace ServerPulse.Client.Middlewares
         private readonly IQueueMessageSender<LoadEvent> serverLoadSender;
         private readonly string key;
 
-        public LoadMonitorMiddleware(RequestDelegate next, IQueueMessageSender<LoadEvent> serverLoadSender, EventSendingSettings configuration)
+        public LoadMonitorMiddleware(RequestDelegate next, IQueueMessageSender<LoadEvent> serverLoadSender, SendingSettings configuration)
         {
             this.serverLoadSender = serverLoadSender;
             this.next = next;
@@ -36,7 +36,7 @@ namespace ServerPulse.Client.Middlewares
                 TimestampUTC: startTime
            );
 
-            serverLoadSender.SendEvent(loadEvent);
+            serverLoadSender.SendMessage(loadEvent);
         }
     }
     public static class LoadMonitorMiddlewareExtensions

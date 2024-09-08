@@ -1,11 +1,10 @@
 ﻿using Authentication.Models;
-using AuthenticationApi;
 using AuthenticationApi.Domain.Dtos;
 using AuthenticationApi.Domain.Entities;
 using AuthenticationApi.Domain.Models;
 using AutoMapper;
 
-namespace AuthenticationApiTests
+namespace AuthenticationApi.Tests
 {
     [TestFixture]
     internal class AutoMapperProfileTests

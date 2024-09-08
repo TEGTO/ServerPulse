@@ -6,9 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Moq;
 using ServerSlotApi.Data;
-using ServerSlotApi.Services;
 using System.Text;
 using System.Text.Json;
 using Testcontainers.Consul;
@@ -76,14 +74,6 @@ namespace ServerSlotApi.IntegrationTests
 
                       services.AddDbContextFactory<ServerDataDbContext>(options =>
                           options.UseNpgsql(dbContainer.GetConnectionString()));
-
-                      services.RemoveAll(typeof(ISlotStatisticsService));
-
-                      var mock = new Mock<ISlotStatisticsService>();
-                      mock.Setup(x => x.DeleteSlotStatisticsAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                      .ReturnsAsync(true);
-
-                      services.AddSingleton<ISlotStatisticsService>(mock.Object);
                   });
               });
         }

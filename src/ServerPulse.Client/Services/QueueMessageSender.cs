@@ -1,33 +1,32 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ServerPulse.Client.Services.Interfaces;
-using ServerPulse.EventCommunication.Events;
 using System.Collections.Concurrent;
 using System.Text.Json;
 
 namespace ServerPulse.Client.Services
 {
-    public class QueueMessageSender<T> : BackgroundService, IQueueMessageSender<T> where T : BaseEvent
+    public class QueueMessageSender<T> : BackgroundService, IQueueMessageSender<T> where T : class
     {
         protected readonly IMessageSender messageSender;
         protected readonly ILogger<QueueMessageSender<T>> logger;
         protected readonly ConcurrentQueue<T> eventQueue = new ConcurrentQueue<T>();
-        protected readonly EventSendingSettings<T> settings;
+        protected readonly SendingSettings<T> settings;
 
-        public QueueMessageSender(IMessageSender messageSender, EventSendingSettings<T> settings, ILogger<QueueMessageSender<T>> logger)
+        public QueueMessageSender(IMessageSender messageSender, SendingSettings<T> settings, ILogger<QueueMessageSender<T>> logger)
         {
             this.messageSender = messageSender;
             this.logger = logger;
             this.settings = settings;
         }
 
-        public virtual void SendEvent(T ev)
+        public virtual void SendMessage(T m)
         {
-            eventQueue.Enqueue(ev);
+            eventQueue.Enqueue(m);
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            using PeriodicTimer timer = new(TimeSpan.FromSeconds(settings.EventSendingInterval));
+            using PeriodicTimer timer = new(TimeSpan.FromSeconds(settings.SendingInterval));
             while (!stoppingToken.IsCancellationRequested && await timer.WaitForNextTickAsync(stoppingToken))
             {
                 try
@@ -35,7 +34,7 @@ namespace ServerPulse.Client.Services
                     if (!eventQueue.IsEmpty)
                     {
                         var json = GetEventsJson();
-                        await messageSender.SendJsonAsync(json, settings.EventController, stoppingToken);
+                        await messageSender.SendJsonAsync(json, settings.SendingEndpoint, stoppingToken);
                     }
                 }
                 catch (Exception ex)
@@ -47,7 +46,7 @@ namespace ServerPulse.Client.Services
         protected virtual string GetEventsJson()
         {
             var events = new List<T>();
-            for (int i = 0; i < settings.MaxEventSendingAmount && eventQueue.TryDequeue(out var ev); i++)
+            for (int i = 0; i < settings.MaxMessageSendingAmount && eventQueue.TryDequeue(out var ev); i++)
             {
                 events.Add(ev);
             }

@@ -6,9 +6,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-var configuration = new EventSendingSettings
+var configuration = new SendingSettings
 {
-    EventController = builder.Configuration["ServerPulse:EventController"],
+    EventServer = builder.Configuration["ServerPulse:EventController"],
     Key = builder.Configuration["ServerPulse:Key"],
 };
 builder.Services.AddServerPulseClient(configuration);

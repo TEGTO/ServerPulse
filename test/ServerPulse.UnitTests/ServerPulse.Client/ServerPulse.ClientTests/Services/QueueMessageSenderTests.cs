@@ -13,7 +13,7 @@ namespace ServerPulse.ClientTests.Services.Tests
     {
         private Mock<IMessageSender> mockMessageSender;
         private QueueMessageSender<TestEvent> queueMessageSender;
-        private EventSendingSettings<TestEvent> configuration;
+        private SendingSettings<TestEvent> configuration;
         private CancellationTokenSource cancellationTokenSource;
         private Mock<ILogger<QueueMessageSender<TestEvent>>> mockLogger;
 
@@ -22,12 +22,12 @@ namespace ServerPulse.ClientTests.Services.Tests
         {
             mockMessageSender = new Mock<IMessageSender>();
             mockLogger = new Mock<ILogger<QueueMessageSender<TestEvent>>>();
-            configuration = new EventSendingSettings<TestEvent>
+            configuration = new SendingSettings<TestEvent>
             {
                 Key = "example",
-                EventController = "http://localhost",
-                MaxEventSendingAmount = 10,
-                EventSendingInterval = 1
+                SendingEndpoint = "http://localhost",
+                MaxMessageSendingAmount = 10,
+                SendingInterval = 1
             };
             queueMessageSender = new QueueMessageSender<TestEvent>(mockMessageSender.Object, configuration, mockLogger.Object);
             cancellationTokenSource = new CancellationTokenSource();
@@ -44,7 +44,7 @@ namespace ServerPulse.ClientTests.Services.Tests
         {
             // Arrange
             var testEvent = new TestEvent("key1");
-            queueMessageSender.SendEvent(testEvent);
+            queueMessageSender.SendMessage(testEvent);
             // Act
             var executeTask = queueMessageSender.StartAsync(cancellationTokenSource.Token);
             await Task.Delay(1500);
@@ -60,7 +60,7 @@ namespace ServerPulse.ClientTests.Services.Tests
             for (int i = 0; i < 15; i++)
             {
                 var testEvent = new TestEvent($"key{i}");
-                queueMessageSender.SendEvent(testEvent);
+                queueMessageSender.SendMessage(testEvent);
             }
             // Act
             var executeTask = queueMessageSender.StartAsync(cancellationTokenSource.Token);
@@ -76,7 +76,7 @@ namespace ServerPulse.ClientTests.Services.Tests
         {
             // Arrange
             var testEvent = new TestEvent("key1");
-            queueMessageSender.SendEvent(testEvent);
+            queueMessageSender.SendMessage(testEvent);
             mockMessageSender.Setup(m => m.SendJsonAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                              .ThrowsAsync(new Exception("Test exception"));
             // Act

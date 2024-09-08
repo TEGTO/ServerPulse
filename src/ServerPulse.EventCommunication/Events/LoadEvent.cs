@@ -6,11 +6,5 @@
         string Method,
         int StatusCode,
         TimeSpan Duration,
-        DateTime TimestampUTC) : BaseEvent(Key)
-    {
-        public override string ToString()
-        {
-            return base.ToString();
-        }
-    }
+        DateTime TimestampUTC) : BaseEvent(Key);
 }

@@ -1,5 +1,4 @@
 ﻿using ServerPulse.EventCommunication.Events;
-using System.Text.Json;
 
 namespace ServerPulse.EventCommunication
 {
@@ -8,10 +7,10 @@ namespace ServerPulse.EventCommunication
         public CustomEvent CustomEvent { get; init; }
         public string CustomEventSerialized { get; init; }
 
-        public CustomEventWrapper(CustomEvent customEvent)
+        public CustomEventWrapper(CustomEvent customEvent, string customEventSerialized)
         {
             CustomEvent = customEvent;
-            CustomEventSerialized = JsonSerializer.Serialize(customEvent);
+            this.CustomEventSerialized = customEventSerialized;
         }
     }
 }

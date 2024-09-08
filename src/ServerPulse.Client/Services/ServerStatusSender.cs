@@ -8,13 +8,13 @@ namespace ServerPulse.Client.Services
     {
         private readonly IMessageSender messageSender;
         private readonly ILogger<ServerStatusSender> logger;
-        private readonly EventSendingSettings<PulseEvent> pulseSettings;
-        private readonly EventSendingSettings<ConfigurationEvent> configurationSettings;
+        private readonly SendingSettings<PulseEvent> pulseSettings;
+        private readonly SendingSettings<ConfigurationEvent> configurationSettings;
 
         public ServerStatusSender(
             IMessageSender messageSender,
-            EventSendingSettings<PulseEvent> pulseSettings,
-            EventSendingSettings<ConfigurationEvent> configurationSettings,
+            SendingSettings<PulseEvent> pulseSettings,
+            SendingSettings<ConfigurationEvent> configurationSettings,
             ILogger<ServerStatusSender> logger)
         {
             this.messageSender = messageSender;
@@ -27,21 +27,21 @@ namespace ServerPulse.Client.Services
         {
             try
             {
-                var confEvent = new ConfigurationEvent(configurationSettings.Key, TimeSpan.FromSeconds(configurationSettings.EventSendingInterval));
-                await messageSender.SendJsonAsync(confEvent.ToString(), configurationSettings.EventController, stoppingToken);
+                var confEvent = new ConfigurationEvent(configurationSettings.Key, TimeSpan.FromSeconds(configurationSettings.SendingInterval));
+                await messageSender.SendJsonAsync(confEvent.ToString(), configurationSettings.SendingEndpoint, stoppingToken);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "An error occurred while sending load events.");
             }
 
-            using PeriodicTimer timer = new(TimeSpan.FromSeconds(pulseSettings.EventSendingInterval));
+            using PeriodicTimer timer = new(TimeSpan.FromSeconds(pulseSettings.SendingInterval));
             while (!stoppingToken.IsCancellationRequested && await timer.WaitForNextTickAsync(stoppingToken))
             {
                 try
                 {
                     var ev = new PulseEvent(pulseSettings.Key, true);
-                    await messageSender.SendJsonAsync(ev.ToString(), pulseSettings.EventController, stoppingToken);
+                    await messageSender.SendJsonAsync(ev.ToString(), pulseSettings.SendingEndpoint, stoppingToken);
                 }
                 catch (Exception ex)
                 {
