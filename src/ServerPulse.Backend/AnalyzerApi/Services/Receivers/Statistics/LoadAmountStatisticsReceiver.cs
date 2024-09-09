@@ -16,7 +16,7 @@ namespace AnalyzerApi.Services.Receivers.Statistics
 
         #region Override Members
 
-        public override async Task<LoadAmountStatistics?> ReceiveLastStatisticsByKeyAsync(string key, CancellationToken cancellationToken)
+        public override async Task<LoadAmountStatistics?> ReceiveLastStatisticsAsync(string key, CancellationToken cancellationToken)
         {
             string topic = GetTopic(topicData.topicOriginName, key);
             var start = DateTime.UtcNow.Date.AddDays(-1);

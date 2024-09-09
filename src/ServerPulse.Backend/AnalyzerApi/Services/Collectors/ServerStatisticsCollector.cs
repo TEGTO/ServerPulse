@@ -1,138 +1,33 @@
 ﻿using AnalyzerApi.Domain.Dtos.Wrappers;
 using AnalyzerApi.Domain.Models;
 using AnalyzerApi.Services.Interfaces;
-using System.Collections.Concurrent;
 
 namespace AnalyzerApi.Services.Collectors
 {
-    public class ServerStatisticsCollector : BaseStatisticsCollector, IStatisticsCollector
+    public class ServerStatisticsCollector : IStatisticsCollector<ServerStatistics>
     {
-        #region Fields
-
         private readonly IEventReceiver<PulseEventWrapper> pulseReceiver;
         private readonly IEventReceiver<ConfigurationEventWrapper> confReceiver;
         private readonly IStatisticsReceiver<ServerStatistics> statisticsReceiver;
-        private readonly PeriodicTimer periodicTimer;
-        private readonly ConcurrentDictionary<string, ConfigurationEventWrapper> configurations = new();
-        private readonly ConcurrentDictionary<string, PulseEventWrapper> lastPulseEvents = new();
-        private readonly ConcurrentDictionary<string, ServerStatistics> lastServerStatistics = new();
 
-        #endregion
-
-        public ServerStatisticsCollector(
-            IEventReceiver<PulseEventWrapper> pulseReceiver,
-            IEventReceiver<ConfigurationEventWrapper> confReceiver,
-            IStatisticsReceiver<ServerStatistics> statisticsReceiver,
-            IStatisticsSender statisticsSender,
-            IConfiguration configuration,
-            ILogger<ServerStatisticsCollector> logger)
-            : base(statisticsSender, logger)
+        public ServerStatisticsCollector(IEventReceiver<PulseEventWrapper> pulseReceiver, IEventReceiver<ConfigurationEventWrapper> confReceiver, IStatisticsReceiver<ServerStatistics> statisticsReceiver)
         {
             this.pulseReceiver = pulseReceiver;
             this.confReceiver = confReceiver;
             this.statisticsReceiver = statisticsReceiver;
-            int intervalInMilliseconds = int.Parse(configuration[Configuration.STATISTICS_COLLECT_INTERVAL_IN_MILLISECONDS]!);
-            periodicTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(intervalInMilliseconds));
         }
 
-        #region BaseStatisticsCollector Members
-
-        protected override async Task SendInitialStatisticsAsync(string key, CancellationToken cancellationToken)
+        public async Task<ServerStatistics> ReceiveLastStatisticsAsync(string key, CancellationToken cancellationToken)
         {
             var configurationTask = confReceiver.ReceiveLastEventByKeyAsync(key, cancellationToken);
             var pulseTask = pulseReceiver.ReceiveLastEventByKeyAsync(key, cancellationToken);
-            var statisticsTask = statisticsReceiver.ReceiveLastStatisticsByKeyAsync(key, cancellationToken);
+            var statisticsTask = statisticsReceiver.ReceiveLastStatisticsAsync(key, cancellationToken);
 
             await Task.WhenAll(configurationTask, pulseTask, statisticsTask);
 
-            var configurationEvent = await configurationTask;
-            if (configurationEvent != null)
-            {
-                configurations.TryAdd(key, configurationEvent);
-            }
-
-            var pulseEvent = await pulseTask;
-            if (pulseEvent != null)
-            {
-                lastPulseEvents.TryAdd(key, pulseEvent);
-            }
-
+            var lastConfiguration = await configurationTask;
+            var lastPulse = await pulseTask;
             var lastStatistics = await statisticsTask;
-            if (lastStatistics != null)
-            {
-                lastServerStatistics.TryAdd(key, lastStatistics);
-            }
-
-            var statistics = CollectServerStatistics(key, true);
-            statistics.IsInitial = true;
-
-            if (!statistics.IsAlive)
-            {
-                lastPulseEvents.TryRemove(key, out _);
-            }
-
-            await statisticsSender.SendStatisticsAsync(key, statistics, cancellationToken);
-        }
-        protected override Task[] GetEventSubscriptionTasks(string key, CancellationToken cancellationToken)
-        {
-            return new[]
-            {
-                SubscribeToPulseEventsAsync(key, cancellationToken),
-                SubscribeToConfigurationEventsAsync(key, cancellationToken),
-                PeriodicallySendStatisticsAsync(key, cancellationToken)
-            };
-        }
-        protected override void OnStatisticsListenerRemoved(string key)
-        {
-            configurations.TryRemove(key, out _);
-            lastPulseEvents.TryRemove(key, out _);
-            lastServerStatistics.TryRemove(key, out _);
-        }
-
-        #endregion
-
-        #region Private Helpers
-
-        private async Task PeriodicallySendStatisticsAsync(string key, CancellationToken cancellationToken)
-        {
-            while (await periodicTimer.WaitForNextTickAsync(cancellationToken))
-            {
-                if (lastPulseEvents.TryGetValue(key, out var lastPulse))
-                {
-                    var statistics = CollectServerStatistics(key, false);
-                    if (!statistics.IsAlive)
-                    {
-                        lastPulseEvents.TryRemove(key, out _);
-                    }
-                    await statisticsSender.SendStatisticsAsync(key, statistics, cancellationToken);
-                }
-
-                if (configurations.TryGetValue(key, out var lastConfiguration))
-                {
-                    int waitTime = (int)lastConfiguration.ServerKeepAliveInterval.TotalMilliseconds;
-                    await Task.Delay(waitTime, cancellationToken);
-                }
-            }
-        }
-        private async Task SubscribeToPulseEventsAsync(string key, CancellationToken cancellationToken)
-        {
-            await foreach (var pulse in pulseReceiver.ConsumeEventAsync(key, cancellationToken))
-            {
-                lastPulseEvents.AddOrUpdate(key, pulse, (k, p) => pulse);
-            }
-        }
-        private async Task SubscribeToConfigurationEventsAsync(string key, CancellationToken cancellationToken)
-        {
-            await foreach (var configuration in confReceiver.ConsumeEventAsync(key, cancellationToken))
-            {
-                configurations.AddOrUpdate(key, configuration, (k, c) => configuration);
-            }
-        }
-        private ServerStatistics CollectServerStatistics(string key, bool isInitial)
-        {
-            lastPulseEvents.TryGetValue(key, out var lastPulse);
-            configurations.TryGetValue(key, out var lastConfiguration);
-            lastServerStatistics.TryGetValue(key, out var lastStatistics);
 
             bool isAlive = CalculateIsServerAlive(lastPulse, lastConfiguration);
 
@@ -147,13 +42,11 @@ namespace AnalyzerApi.Services.Collectors
                 ServerUptime = uptime,
                 LastServerUptime = lastUptime,
                 LastPulseDateTimeUTC = lastPulse?.CreationDateUTC,
-                IsInitial = isInitial,
             };
-
-            lastServerStatistics.AddOrUpdate(key, statistics, (k, s) => statistics);
 
             return statistics;
         }
+
         private static bool CalculateIsServerAlive(PulseEventWrapper? pulseEvent, ConfigurationEventWrapper? configurationEvent)
         {
             if (pulseEvent != null && configurationEvent != null)
@@ -189,7 +82,5 @@ namespace AnalyzerApi.Services.Collectors
                 return lastStatistics?.LastServerUptime;
             }
         }
-
-        #endregion
     }
 }

@@ -1,14 +1,11 @@
 ﻿using MessageBus.Interfaces;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Moq;
-using ServerMonitorApi.Services;
 using ServerPulse.EventCommunication.Events;
 using Shared;
+using System.Text.Json;
 
-namespace ServerMonitorApi.IntegrationTests
+namespace AnalyzerApi.IntegrationTests
 {
     [TestFixture]
     public abstract class BaseIntegrationTest
@@ -17,12 +14,12 @@ namespace ServerMonitorApi.IntegrationTests
         protected const string CONFIGURATION_TOPIC = "ConfigurationTopic_";
         protected const string LOAD_TOPIC = "LoadTopic_";
         protected const string CUSTOM_TOPIC = "CustomEventTopic_";
+        protected const string LOAD_METHOD_STATISTICS_TOPIC = "LoadMethodStatisticsTopic_";
         private const int TIMEOUT_IN_MILLISECONDS = 5000;
 
         protected HttpClient client;
         protected IMessageConsumer messageConsumer;
-        protected Mock<ISlotKeyChecker> mockSlotKeyChecker;
-        protected Mock<IEventProcessing> mockEventProcessing;
+        protected IMessageProducer producer;
         private WebAppFactoryWrapper wrapper;
         private WebApplicationFactory<Program> factory;
         private IServiceScope scope;
@@ -31,25 +28,7 @@ namespace ServerMonitorApi.IntegrationTests
         public async Task GlobalSetup()
         {
             wrapper = new WebAppFactoryWrapper();
-            factory = (await wrapper.GetFactoryAsync()).WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureTestServices(services =>
-                {
-                    services.RemoveAll(typeof(ISlotKeyChecker));
-
-                    mockSlotKeyChecker = new Mock<ISlotKeyChecker>();
-                    mockSlotKeyChecker.Setup(x => x.CheckSlotKeyAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
-
-                    services.AddSingleton<ISlotKeyChecker>(mockSlotKeyChecker.Object);
-
-                    services.RemoveAll(typeof(IEventProcessing));
-
-                    mockEventProcessing = new Mock<IEventProcessing>();
-
-                    services.AddSingleton<IEventProcessing>(mockEventProcessing.Object);
-                });
-            });
+            factory = await wrapper.GetFactoryAsync();
             InitializeServices();
         }
         [OneTimeTearDown]
@@ -57,11 +36,10 @@ namespace ServerMonitorApi.IntegrationTests
         {
             scope.Dispose();
             client.Dispose();
-            await factory.DisposeAsync();
             await wrapper.DisposeAsync();
         }
 
-        protected async Task<T?> ReceiveLastTopicEventAsync<T>(string topic, string key) where T : BaseEvent
+        protected async Task<T?> ReceiveLastObjectFromTopicAsync<T>(string topic, string key) where T : class
         {
             var response = await messageConsumer.ReadLastTopicMessageAsync(topic + key, TIMEOUT_IN_MILLISECONDS, CancellationToken.None);
             if (response != null)
@@ -71,11 +49,30 @@ namespace ServerMonitorApi.IntegrationTests
             }
             return null;
         }
+        protected async Task SendCustomEventsAsync(string topic, string key, string[] serializedEvents)
+        {
+            foreach (var ev in serializedEvents)
+            {
+                await producer.ProduceAsync(topic + key, ev, CancellationToken.None);
+            }
+        }
+        protected async Task SendEventsAsync<T>(string topic, string key, T[] events) where T : BaseEvent
+        {
+            await Parallel.ForEachAsync(events, async (ev, ct) =>
+            {
+                if (!string.IsNullOrEmpty(topic + key))
+                {
+                    var message = JsonSerializer.Serialize(ev);
+                    await producer.ProduceAsync(topic + key, message, CancellationToken.None);
+                }
+            });
+        }
         private void InitializeServices()
         {
             scope = factory.Services.CreateScope();
             client = factory.CreateClient();
             messageConsumer = factory.Services.GetRequiredService<IMessageConsumer>();
+            producer = factory.Services.GetRequiredService<IMessageProducer>();
         }
     }
 }

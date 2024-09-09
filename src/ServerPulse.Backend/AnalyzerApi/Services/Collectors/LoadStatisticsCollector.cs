@@ -4,23 +4,22 @@ using AnalyzerApi.Services.Interfaces;
 
 namespace AnalyzerApi.Services.Collectors
 {
-    public class LoadStatisticsCollector : BaseStatisticsCollector, IStatisticsCollector
+    public class LoadStatisticsCollector : IStatisticsCollector<ServerLoadStatistics>
     {
         private readonly IEventReceiver<LoadEventWrapper> eventReceiver;
-        private readonly IStatisticsReceiver<LoadMethodStatistics> statisticsReceiver;
+        private readonly IStatisticsReceiver<LoadMethodStatistics> methodStatsReceiver;
 
-        public LoadStatisticsCollector(IEventReceiver<LoadEventWrapper> eventReceiver, IStatisticsReceiver<LoadMethodStatistics> statisticsReceiver, IStatisticsSender statisticsSender, ILogger<LoadStatisticsCollector> logger)
-            : base(statisticsSender, logger)
+        public LoadStatisticsCollector(IEventReceiver<LoadEventWrapper> eventReceiver, IStatisticsReceiver<LoadMethodStatistics> methodStatsReceiver)
         {
             this.eventReceiver = eventReceiver;
-            this.statisticsReceiver = statisticsReceiver;
+            this.methodStatsReceiver = methodStatsReceiver;
         }
 
-        protected override async Task SendInitialStatisticsAsync(string key, CancellationToken cancellationToken)
+        public async Task<ServerLoadStatistics> ReceiveLastStatisticsAsync(string key, CancellationToken cancellationToken)
         {
             var amountTask = eventReceiver.ReceiveEventAmountByKeyAsync(key, cancellationToken);
             var loadTask = eventReceiver.ReceiveLastEventByKeyAsync(key, cancellationToken);
-            var methodStatisticsTask = statisticsReceiver.ReceiveLastStatisticsByKeyAsync(key, cancellationToken);
+            var methodStatisticsTask = methodStatsReceiver.ReceiveLastStatisticsAsync(key, cancellationToken);
 
             await Task.WhenAll(amountTask, loadTask, methodStatisticsTask);
 
@@ -28,44 +27,12 @@ namespace AnalyzerApi.Services.Collectors
             var lastLoadEvent = await loadTask;
             var methodStatistics = await methodStatisticsTask;
 
-            var statistics = new ServerLoadStatistics
+            return new ServerLoadStatistics
             {
                 AmountOfEvents = amountOfEvents,
                 LastEvent = lastLoadEvent,
-                LoadMethodStatistics = methodStatistics,
-                IsInitial = true
+                LoadMethodStatistics = methodStatistics ?? new LoadMethodStatistics()
             };
-            await statisticsSender.SendStatisticsAsync(key, statistics, cancellationToken);
-        }
-
-        protected override Task[] GetEventSubscriptionTasks(string key, CancellationToken cancellationToken)
-        {
-            return new[]
-            {
-                SubscribeToPulseEventsAsync(key, cancellationToken)
-            };
-        }
-
-        private async Task SubscribeToPulseEventsAsync(string key, CancellationToken cancellationToken)
-        {
-            await foreach (var load in eventReceiver.ConsumeEventAsync(key, cancellationToken))
-            {
-                var amountTask = eventReceiver.ReceiveEventAmountByKeyAsync(key, cancellationToken);
-                var methodStatisticsTask = statisticsReceiver.ReceiveLastStatisticsByKeyAsync(key, cancellationToken);
-
-                await Task.WhenAll(amountTask, methodStatisticsTask);
-
-                int amountOfEvents = await amountTask;
-                var methodStatistics = await methodStatisticsTask;
-
-                var statistics = new ServerLoadStatistics
-                {
-                    AmountOfEvents = amountOfEvents,
-                    LastEvent = load,
-                    LoadMethodStatistics = methodStatistics,
-                };
-                await statisticsSender.SendStatisticsAsync(key, statistics, cancellationToken);
-            }
         }
     }
 }

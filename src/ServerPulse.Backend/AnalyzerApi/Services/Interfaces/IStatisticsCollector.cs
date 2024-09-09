@@ -1,8 +1,9 @@
-﻿namespace AnalyzerApi.Services.Interfaces
+﻿using AnalyzerApi.Domain.Models;
+
+namespace AnalyzerApi.Services.Interfaces
 {
-    public interface IStatisticsCollector
+    public interface IStatisticsCollector<T> where T : BaseStatistics
     {
-        public void StartConsumingStatistics(string key);
-        public void StopConsumingStatistics(string key);
+        public Task<T> ReceiveLastStatisticsAsync(string key, CancellationToken cancellationToken);
     }
 }

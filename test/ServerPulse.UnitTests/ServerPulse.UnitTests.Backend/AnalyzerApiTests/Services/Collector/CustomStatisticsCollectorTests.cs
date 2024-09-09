@@ -1,6 +1,6 @@
 ﻿using AnalyzerApi.Domain.Dtos.Wrappers;
 using AnalyzerApi.Domain.Models;
-using AnalyzerApi.Services.Collectors;
+using AnalyzerApi.Services.Consumers;
 using AnalyzerApi.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -11,8 +11,8 @@ namespace AnalyzerApiTests.Services.Collector
     internal class CustomStatisticsCollectorTests : BaseStatisticsCollectorTests
     {
         private Mock<IEventReceiver<CustomEventWrapper>> mockEventReceiver;
-        private Mock<ILogger<CustomStatisticsCollector>> mockLogger;
-        private CustomStatisticsCollector collector;
+        private Mock<ILogger<CustomStatisticsConsumer>> mockLogger;
+        private CustomStatisticsConsumer collector;
 
         [SetUp]
         public override void Setup()
@@ -20,9 +20,9 @@ namespace AnalyzerApiTests.Services.Collector
             base.Setup();
 
             mockEventReceiver = new Mock<IEventReceiver<CustomEventWrapper>>();
-            mockLogger = new Mock<ILogger<CustomStatisticsCollector>>();
+            mockLogger = new Mock<ILogger<CustomStatisticsConsumer>>();
 
-            collector = new CustomStatisticsCollector(
+            collector = new CustomStatisticsConsumer(
                 mockEventReceiver.Object,
                 mockStatisticsSender.Object,
                 mockLogger.Object
@@ -42,7 +42,7 @@ namespace AnalyzerApiTests.Services.Collector
             await Task.Delay(500);
             // Assert
             mockStatisticsSender.Verify(m => m.SendStatisticsAsync(key,
-                It.Is<CustomEventStatistics>(s => s.LastEvent == eventWrapper), It.IsAny<CancellationToken>()), Times.Once);
+                It.Is<ServerCustomStatistics>(s => s.LastEvent == eventWrapper), It.IsAny<CancellationToken>()), Times.Once);
         }
         [Test]
         public async Task GetEventSubscriptionTasks_SubscribesToCustomEventsAndSendStatistics()
@@ -57,7 +57,7 @@ namespace AnalyzerApiTests.Services.Collector
             await Task.Delay(2000);
             // Assert
             mockStatisticsSender.Verify(m => m.SendStatisticsAsync(key,
-                It.Is<CustomEventStatistics>(s => s.LastEvent == eventWrapper), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+                It.Is<ServerCustomStatistics>(s => s.LastEvent == eventWrapper), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
         }
         [Test]
         public async Task StopConsumingStatistics_StopsSendingStatistics()
@@ -75,7 +75,7 @@ namespace AnalyzerApiTests.Services.Collector
             collector.StopConsumingStatistics(key);
             await Task.Delay(1500);
             // Assert
-            mockStatisticsSender.Verify(m => m.SendStatisticsAsync(key, It.IsAny<CustomEventStatistics>(), It.IsAny<CancellationToken>()), Times.AtMost(2));
+            mockStatisticsSender.Verify(m => m.SendStatisticsAsync(key, It.IsAny<ServerCustomStatistics>(), It.IsAny<CancellationToken>()), Times.AtMost(2));
         }
         [Test]
         public async Task SubscribeToCustomEventsAsync_SendsStatisticsOnNewEvent()
@@ -90,7 +90,7 @@ namespace AnalyzerApiTests.Services.Collector
             await Task.Delay(2000);
             // Assert
             mockStatisticsSender.Verify(m => m.SendStatisticsAsync(key,
-                It.Is<CustomEventStatistics>(s => s.LastEvent == eventWrapper), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+                It.Is<ServerCustomStatistics>(s => s.LastEvent == eventWrapper), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
         }
     }
 }

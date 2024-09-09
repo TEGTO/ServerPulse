@@ -19,7 +19,7 @@ namespace ServerMonitorApi.IntegrationTests
         private RedisContainer redisContainer;
         private KafkaContainer kafkaContainer;
 
-        public WebApplicationFactory<Program> WebApplicationFactory { get; private set; }
+        protected WebApplicationFactory<Program> WebApplicationFactory { get; private set; }
 
         public async Task<WebApplicationFactory<Program>> GetFactoryAsync()
         {

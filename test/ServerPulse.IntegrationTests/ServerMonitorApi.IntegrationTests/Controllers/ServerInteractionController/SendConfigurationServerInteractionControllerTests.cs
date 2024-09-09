@@ -20,7 +20,7 @@ namespace ServerMonitorApi.IntegrationTests.Controllers.ServerInteractionControl
             // Assert
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             mockSlotKeyChecker.Verify(x => x.CheckSlotKeyAsync(configurationEvent.Key, It.IsAny<CancellationToken>()), Times.AtLeastOnce);
-            var lastMessage = await ReceiveLastTopicEventByKeyAsync<ConfigurationEvent>(CONFIGURATION_TOPIC, configurationEvent.Key);
+            var lastMessage = await ReceiveLastTopicEventAsync<ConfigurationEvent>(CONFIGURATION_TOPIC, configurationEvent.Key);
             Assert.That(lastMessage.Id, Is.EqualTo(configurationEvent.Id));
             Assert.That(lastMessage.ServerKeepAliveInterval, Is.EqualTo(TimeSpan.FromMinutes(5)));
         }

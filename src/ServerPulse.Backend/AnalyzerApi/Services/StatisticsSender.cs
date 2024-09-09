@@ -1,7 +1,6 @@
 ﻿using AnalyzerApi.Domain.Dtos.Responses;
 using AnalyzerApi.Domain.Models;
 using AnalyzerApi.Hubs;
-using AnalyzerApi.Services.Collectors;
 using AnalyzerApi.Services.Interfaces;
 using AutoMapper;
 using MessageBus.Interfaces;
@@ -14,9 +13,9 @@ namespace AnalyzerApi.Services
     {
         #region Fields
 
-        private readonly IHubContext<StatisticsHub<ServerStatisticsCollector>, IStatisticsHubClient> hubStatistics;
-        private readonly IHubContext<StatisticsHub<LoadStatisticsCollector>, IStatisticsHubClient> hubLoadStatistics;
-        private readonly IHubContext<StatisticsHub<CustomStatisticsCollector>, IStatisticsHubClient> hubCustomEventStatistics;
+        private readonly IHubContext<StatisticsHub<ServerStatistics>, IStatisticsHubClient> hubStatistics;
+        private readonly IHubContext<StatisticsHub<ServerLoadStatistics>, IStatisticsHubClient> hubLoadStatistics;
+        private readonly IHubContext<StatisticsHub<ServerCustomStatistics>, IStatisticsHubClient> hubCustomEventStatistics;
         private readonly IMessageProducer producer;
         private readonly IMapper mapper;
         private readonly ILogger<StatisticsSender> logger;
@@ -25,9 +24,9 @@ namespace AnalyzerApi.Services
         #endregion
 
         public StatisticsSender(
-            IHubContext<StatisticsHub<ServerStatisticsCollector>, IStatisticsHubClient> hubStatistics,
-            IHubContext<StatisticsHub<LoadStatisticsCollector>, IStatisticsHubClient> hubLoadStatistics,
-            IHubContext<StatisticsHub<CustomStatisticsCollector>, IStatisticsHubClient> hubCustomEventStatistics,
+            IHubContext<StatisticsHub<ServerStatistics>, IStatisticsHubClient> hubStatistics,
+            IHubContext<StatisticsHub<ServerLoadStatistics>, IStatisticsHubClient> hubLoadStatistics,
+            IHubContext<StatisticsHub<ServerCustomStatistics>, IStatisticsHubClient> hubCustomEventStatistics,
             IMessageProducer producer,
             IMapper mapper,
             IConfiguration configuration,
@@ -52,8 +51,8 @@ namespace AnalyzerApi.Services
                     return SendServerStatisticsAsync(key, statistics as ServerStatistics, cancellationToken);
                 case ServerLoadStatistics:
                     return SendServerLoadStatisticsAsync(key, statistics as ServerLoadStatistics, cancellationToken);
-                case CustomEventStatistics:
-                    return SendServerCustomStatisticsAsync(key, statistics as CustomEventStatistics, cancellationToken);
+                case ServerCustomStatistics:
+                    return SendServerCustomStatisticsAsync(key, statistics as ServerCustomStatistics, cancellationToken);
                 default:
                     return Task.CompletedTask;
             }
@@ -79,7 +78,7 @@ namespace AnalyzerApi.Services
             var serializedData = JsonSerializer.Serialize(response);
             await hubLoadStatistics.Clients.Group(key).ReceiveStatistics(key, serializedData);
         }
-        private async Task SendServerCustomStatisticsAsync(string key, CustomEventStatistics statistics, CancellationToken cancellationToken)
+        private async Task SendServerCustomStatisticsAsync(string key, ServerCustomStatistics statistics, CancellationToken cancellationToken)
         {
             var response = mapper.Map<CustomEventStatisticsResponse>(statistics);
             var serializedData = JsonSerializer.Serialize(response);

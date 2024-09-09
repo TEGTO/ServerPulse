@@ -29,7 +29,7 @@ namespace AnalyzerApi.Controllers
 
         [Route("{key}")]
         [HttpGet]
-        public async Task<ActionResult<SlotDataResponse>> GetSlotData([FromRoute] string key, CancellationToken cancellationToken)
+        public async Task<ActionResult<SlotDataResponse>> GetData([FromRoute] string key, CancellationToken cancellationToken)
         {
             var cacheKey = $"{this.cacheKey}-{key}-slotdata";
             SlotData? data = await cacheService.GetInCacheAsync<SlotData>(cacheKey);

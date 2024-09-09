@@ -25,7 +25,7 @@ namespace ServerMonitorApi.IntegrationTests.Controllers.ServerInteractionControl
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             mockSlotKeyChecker.Verify(x => x.CheckSlotKeyAsync(loadEvents.First().Key, It.IsAny<CancellationToken>()), Times.AtLeastOnce);
             mockEventProcessing.Verify(x => x.SendEventsForProcessingsAsync(loadEvents, It.IsAny<CancellationToken>()), Times.AtLeastOnce);
-            var lastMessage = await ReceiveLastTopicEventByKeyAsync<LoadEvent>(LOAD_TOPIC, loadEvents.First().Key);
+            var lastMessage = await ReceiveLastTopicEventAsync<LoadEvent>(LOAD_TOPIC, loadEvents.First().Key);
             Assert.True(loadEvents.Any(x => x.Id == lastMessage.Id)); //Each event will be sent in parallel, so we don't know which one will be the last one
             Assert.True(loadEvents.Any(x => x.Endpoint == lastMessage.Endpoint));
         }

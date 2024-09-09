@@ -19,7 +19,7 @@ namespace ServerSlotApi.IntegrationTests
         private PostgreSqlContainer dbContainer;
         private ConsulContainer consulContainer;
 
-        public WebApplicationFactory<Program> WebApplicationFactory { get; private set; }
+        protected WebApplicationFactory<Program> WebApplicationFactory { get; private set; }
 
         public async Task<WebApplicationFactory<Program>> GetFactoryAsync()
         {

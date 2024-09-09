@@ -47,7 +47,7 @@ namespace AnalyzerApi.Services
         private async Task ProcessLoadEventsAsync(LoadEvent[] events, CancellationToken cancellationToken)
         {
             var firstKey = events.First().Key;
-            var statistics = await statisticsReceiver.ReceiveLastStatisticsByKeyAsync(firstKey, cancellationToken);
+            var statistics = await statisticsReceiver.ReceiveLastStatisticsAsync(firstKey, cancellationToken);
 
             if (statistics == null)
             {

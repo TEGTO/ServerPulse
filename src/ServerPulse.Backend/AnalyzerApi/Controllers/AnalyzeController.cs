@@ -80,7 +80,7 @@ namespace AnalyzerApi.Controllers
             var options = new InRangeQueryOptions(key, DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
             var todayStatistics = await loadAmountStatisticsReceiver.GetStatisticsInRangeAsync(options, timeSpan, cancellationToken);
 
-            var response = statistics.Where(x => !todayStatistics.Any(y => x.DateFrom <= y.DateFrom && x.DateTo >= y.DateFrom)).ToList();
+            var response = statistics.Where(x => !todayStatistics.Any(y => x.DateFrom > y.DateFrom || x.DateTo > y.DateFrom)).ToList();
             response.AddRange(todayStatistics);
 
             await cacheService.SetValueAsync(cacheKey, JsonSerializer.Serialize(response), cacheExpiryInMinutes);

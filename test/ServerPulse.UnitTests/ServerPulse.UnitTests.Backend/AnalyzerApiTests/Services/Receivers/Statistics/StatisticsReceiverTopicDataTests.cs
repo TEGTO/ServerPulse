@@ -52,7 +52,7 @@ namespace AnalyzerApiTests.Services.Receivers.Statistics
                 .Returns(statistics);
             consumeResponse.Message.TryToDeserialize(out statistics);
             // Act
-            var result = await statisticsReceiver.ReceiveLastStatisticsByKeyAsync("key", cancellationToken);
+            var result = await statisticsReceiver.ReceiveLastStatisticsAsync("key", cancellationToken);
             // Assert
             Assert.IsNotNull(result);
             Assert.That(result.CollectedDateUTC, Is.EqualTo(statistics.CollectedDateUTC));
@@ -65,7 +65,7 @@ namespace AnalyzerApiTests.Services.Receivers.Statistics
             mockMessageConsumer.Setup(m => m.ReadLastTopicMessageAsync(It.IsAny<string>(), It.IsAny<int>(), cancellationToken))
                 .ReturnsAsync((ConsumeResponse?)null);
             // Act
-            var result = await statisticsReceiver.ReceiveLastStatisticsByKeyAsync("nonexistent-key", cancellationToken);
+            var result = await statisticsReceiver.ReceiveLastStatisticsAsync("nonexistent-key", cancellationToken);
             // Assert
             Assert.IsNull(result);
         }

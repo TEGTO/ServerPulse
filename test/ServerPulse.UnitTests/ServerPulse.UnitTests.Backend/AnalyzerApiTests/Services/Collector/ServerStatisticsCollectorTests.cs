@@ -1,7 +1,7 @@
 ﻿using AnalyzerApi;
 using AnalyzerApi.Domain.Dtos.Wrappers;
 using AnalyzerApi.Domain.Models;
-using AnalyzerApi.Services.Collectors;
+using AnalyzerApi.Services.Consumers;
 using AnalyzerApi.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -18,8 +18,8 @@ namespace AnalyzerApiTests.Services.Collector
         private Mock<IEventReceiver<PulseEventWrapper>> mockPulseReceiver;
         private Mock<IEventReceiver<ConfigurationEventWrapper>> mockConfReceiver;
         private Mock<IStatisticsReceiver<ServerStatistics>> mockStatisticsReceiver;
-        private Mock<ILogger<ServerStatisticsCollector>> mockLogger;
-        private ServerStatisticsCollector collector;
+        private Mock<ILogger<ServerStatisticsConsumer>> mockLogger;
+        private ServerStatisticsConsumer collector;
 
         [SetUp]
         public override void Setup()
@@ -29,12 +29,12 @@ namespace AnalyzerApiTests.Services.Collector
             mockPulseReceiver = new Mock<IEventReceiver<PulseEventWrapper>>();
             mockConfReceiver = new Mock<IEventReceiver<ConfigurationEventWrapper>>();
             mockStatisticsReceiver = new Mock<IStatisticsReceiver<ServerStatistics>>();
-            mockLogger = new Mock<ILogger<ServerStatisticsCollector>>();
+            mockLogger = new Mock<ILogger<ServerStatisticsConsumer>>();
 
             mockConfiguration.SetupGet(c => c[Configuration.STATISTICS_COLLECT_INTERVAL_IN_MILLISECONDS])
                              .Returns(STATISTICS_COLLECT_INTERVAL.ToString());
 
-            collector = new ServerStatisticsCollector(
+            collector = new ServerStatisticsConsumer(
                 mockPulseReceiver.Object,
                 mockConfReceiver.Object,
                 mockStatisticsReceiver.Object,

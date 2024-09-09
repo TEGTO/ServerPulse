@@ -15,7 +15,7 @@ namespace AnalyzerApiTests.Services
 
         private Mock<IStatisticsReceiver<ServerStatistics>> mockServerStatisticsReceiver;
         private Mock<IStatisticsReceiver<ServerLoadStatistics>> mockLoadStatisticsReceiver;
-        private Mock<IStatisticsReceiver<CustomEventStatistics>> mockCustomStatisticsReceiver;
+        private Mock<IStatisticsReceiver<ServerCustomStatistics>> mockCustomStatisticsReceiver;
         private Mock<IEventReceiver<LoadEventWrapper>> mockLoadEventReceiver;
         private Mock<IEventReceiver<CustomEventWrapper>> mockCustomEventReceiver;
         private Mock<IConfiguration> mockConfiguration;
@@ -26,7 +26,7 @@ namespace AnalyzerApiTests.Services
         {
             mockServerStatisticsReceiver = new Mock<IStatisticsReceiver<ServerStatistics>>();
             mockLoadStatisticsReceiver = new Mock<IStatisticsReceiver<ServerLoadStatistics>>();
-            mockCustomStatisticsReceiver = new Mock<IStatisticsReceiver<CustomEventStatistics>>();
+            mockCustomStatisticsReceiver = new Mock<IStatisticsReceiver<ServerCustomStatistics>>();
             mockLoadEventReceiver = new Mock<IEventReceiver<LoadEventWrapper>>();
             mockCustomEventReceiver = new Mock<IEventReceiver<CustomEventWrapper>>();
             mockConfiguration = new Mock<IConfiguration>();
@@ -49,7 +49,7 @@ namespace AnalyzerApiTests.Services
             var cancellationToken = CancellationToken.None;
             var expectedServerStatistics = new ServerStatistics();
             var expectedLoadStatistics = new ServerLoadStatistics();
-            var expectedCustomStatistics = new CustomEventStatistics();
+            var expectedCustomStatistics = new ServerCustomStatistics();
             var expectedLoadEvents = new List<LoadEventWrapper>();
             var expectedCustomEvents = new List<CustomEventWrapper>();
             mockServerStatisticsReceiver.Setup(r => r.ReceiveLastStatisticsByKeyAsync(key, cancellationToken))
@@ -86,7 +86,7 @@ namespace AnalyzerApiTests.Services
             mockLoadStatisticsReceiver.Setup(r => r.ReceiveLastStatisticsByKeyAsync(key, cancellationToken))
                                       .ReturnsAsync((ServerLoadStatistics)null);
             mockCustomStatisticsReceiver.Setup(r => r.ReceiveLastStatisticsByKeyAsync(key, cancellationToken))
-                                        .ReturnsAsync((CustomEventStatistics)null);
+                                        .ReturnsAsync((ServerCustomStatistics)null);
             mockLoadEventReceiver.Setup(r => r.GetCertainAmountOfEventsAsync(It.IsAny<ReadCertainMessageNumberOptions>(), cancellationToken))
                                  .ReturnsAsync(expectedLoadEvents);
             mockCustomEventReceiver.Setup(r => r.GetCertainAmountOfEventsAsync(It.IsAny<ReadCertainMessageNumberOptions>(), cancellationToken))

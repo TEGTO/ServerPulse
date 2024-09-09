@@ -7,12 +7,12 @@ namespace AnalyzerApi.Services.Receivers.Event
 {
     public sealed class CustomEventReceiver : EventReceiver<CustomEvent, CustomEventWrapper>
     {
-        private readonly string customEventTopic;
-
-        public CustomEventReceiver(IMessageConsumer messageConsumer, IMapper mapper, IConfiguration configuration, EventReceiverTopicData<CustomEventWrapper> topicData) : base(messageConsumer, mapper, configuration, topicData)
-        {
-            customEventTopic = configuration[Configuration.KAFKA_CUSTOM_TOPIC]!;
-        }
+        public CustomEventReceiver(
+            IMessageConsumer messageConsumer,
+            IMapper mapper,
+            IConfiguration configuration,
+            EventReceiverTopicData<CustomEventWrapper> topicData) : base(messageConsumer, mapper, configuration, topicData)
+        { }
 
         protected override CustomEventWrapper? ConvertToEventWrapper(ConsumeResponse response, IMapper mapper)
         {

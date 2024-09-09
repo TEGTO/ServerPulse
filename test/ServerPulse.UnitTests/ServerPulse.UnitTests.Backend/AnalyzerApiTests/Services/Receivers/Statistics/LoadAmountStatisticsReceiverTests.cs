@@ -55,7 +55,7 @@ namespace AnalyzerApiTests.Services.Receivers.Statistics
             mockMessageConsumer.Setup(m => m.GetMessageAmountPerTimespanAsync(It.IsAny<MessageInRangeQueryOptions>(), timeSpan, cancellationToken))
                                .ReturnsAsync(messagesPerDay);
             // Act
-            var result = await loadAmountStatisticsReceiver.ReceiveLastStatisticsByKeyAsync("key", cancellationToken);
+            var result = await loadAmountStatisticsReceiver.ReceiveLastStatisticsAsync("key", cancellationToken);
             // Assert
             Assert.IsNotNull(result);
             Assert.That(result.AmountOfEvents, Is.EqualTo(100));
@@ -70,7 +70,7 @@ namespace AnalyzerApiTests.Services.Receivers.Statistics
             mockMessageConsumer.Setup(m => m.GetMessageAmountPerTimespanAsync(It.IsAny<MessageInRangeQueryOptions>(), timeSpan, cancellationToken))
                                .ReturnsAsync(messagesPerDay);
             // Act
-            var result = await loadAmountStatisticsReceiver.ReceiveLastStatisticsByKeyAsync("key", cancellationToken);
+            var result = await loadAmountStatisticsReceiver.ReceiveLastStatisticsAsync("key", cancellationToken);
             // Assert
             Assert.IsNull(result);
         }

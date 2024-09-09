@@ -1,18 +1,19 @@
-﻿using AnalyzerApi.Services.Interfaces;
+﻿using AnalyzerApi.Domain.Models;
+using AnalyzerApi.Services.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
 
 namespace AnalyzerApi.Hubs
 {
-    public sealed class StatisticsHub<StatisticsCollector> : Hub<IStatisticsHubClient> where StatisticsCollector : IStatisticsCollector
+    public sealed class StatisticsHub<T> : Hub<IStatisticsHubClient> where T : BaseStatistics
     {
         private static readonly ConcurrentDictionary<string, List<string>> ConnectedClients = new();
         private static readonly ConcurrentDictionary<string, int> ListenerAmount = new();
 
-        private readonly StatisticsCollector serverStatisticsCollector;
-        private readonly ILogger<StatisticsHub<StatisticsCollector>> logger;
+        private readonly IStatisticsConsumer<T> serverStatisticsCollector;
+        private readonly ILogger<StatisticsHub<T>> logger;
 
-        public StatisticsHub(StatisticsCollector serverStatisticsCollector, ILogger<StatisticsHub<StatisticsCollector>> logger)
+        public StatisticsHub(IStatisticsConsumer<T> serverStatisticsCollector, ILogger<StatisticsHub<T>> logger)
         {
             this.serverStatisticsCollector = serverStatisticsCollector;
             this.logger = logger;

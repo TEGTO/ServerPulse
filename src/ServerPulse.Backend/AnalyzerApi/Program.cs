@@ -4,6 +4,7 @@ using AnalyzerApi.Domain.Models;
 using AnalyzerApi.Hubs;
 using AnalyzerApi.Services;
 using AnalyzerApi.Services.Collectors;
+using AnalyzerApi.Services.Consumers;
 using AnalyzerApi.Services.Interfaces;
 using AnalyzerApi.Services.Receivers.Event;
 using AnalyzerApi.Services.Receivers.Statistics;
@@ -69,13 +70,13 @@ builder.Services.AddSingleton<IEventReceiver<CustomEventWrapper>, CustomEventRec
 builder.Services.AddSingleton<IEventReceiver<LoadEventWrapper>, EventReceiver<LoadEvent, LoadEventWrapper>>();
 builder.Services.AddSingleton<IEventReceiver<PulseEventWrapper>, EventReceiver<PulseEvent, PulseEventWrapper>>();
 
-builder.Services.AddSingleton(new StatisticsReceiverTopicData<CustomEventStatistics>(builder.Configuration[Configuration.KAFKA_CUSTOM_TOPIC]!));
+builder.Services.AddSingleton(new StatisticsReceiverTopicData<ServerCustomStatistics>(builder.Configuration[Configuration.KAFKA_CUSTOM_TOPIC]!));
 builder.Services.AddSingleton(new StatisticsReceiverTopicData<LoadAmountStatistics>(builder.Configuration[Configuration.KAFKA_LOAD_TOPIC]!));
 builder.Services.AddSingleton(new StatisticsReceiverTopicData<LoadMethodStatistics>(builder.Configuration[Configuration.KAFKA_LOAD_METHOD_STATISTICS_TOPIC]!));
 builder.Services.AddSingleton(new StatisticsReceiverTopicData<ServerLoadStatistics>(builder.Configuration[Configuration.KAFKA_LOAD_TOPIC]!));
 builder.Services.AddSingleton(new StatisticsReceiverTopicData<ServerStatistics>(builder.Configuration[Configuration.KAFKA_LOAD_TOPIC]!));
 
-builder.Services.AddSingleton<IStatisticsReceiver<CustomEventStatistics>, StatisticsReceiver<CustomEventStatistics>>();
+builder.Services.AddSingleton<IStatisticsReceiver<ServerCustomStatistics>, StatisticsReceiver<ServerCustomStatistics>>();
 builder.Services.AddSingleton<IStatisticsReceiver<LoadAmountStatistics>, LoadAmountStatisticsReceiver>();
 builder.Services.AddSingleton<IStatisticsReceiver<LoadMethodStatistics>, StatisticsReceiver<LoadMethodStatistics>>();
 builder.Services.AddSingleton<IStatisticsReceiver<ServerLoadStatistics>, StatisticsReceiver<ServerLoadStatistics>>();
@@ -84,9 +85,14 @@ builder.Services.AddSingleton<IStatisticsReceiver<ServerStatistics>, StatisticsR
 builder.Services.AddSingleton<IStatisticsSender, StatisticsSender>();
 builder.Services.AddSingleton<IEventProcessor, EventProcessor>();
 builder.Services.AddSingleton<ISlotDataPicker, SlotDataPicker>();
-builder.Services.AddSingleton<ServerStatisticsCollector>();
-builder.Services.AddSingleton<LoadStatisticsCollector>();
-builder.Services.AddSingleton<CustomStatisticsCollector>();
+
+builder.Services.AddSingleton<IStatisticsConsumer<ServerStatistics>, ServerStatisticsConsumer>();
+builder.Services.AddSingleton<IStatisticsConsumer<ServerLoadStatistics>, StatisticsConsumer<ServerLoadStatistics, LoadEventWrapper>>();
+builder.Services.AddSingleton<IStatisticsConsumer<ServerCustomStatistics>, StatisticsConsumer<ServerCustomStatistics, CustomEventWrapper>>();
+
+builder.Services.AddSingleton<IStatisticsCollector<ServerStatistics>, ServerStatisticsCollector>();
+builder.Services.AddSingleton<IStatisticsCollector<ServerLoadStatistics>, LoadStatisticsCollector>();
+builder.Services.AddSingleton<IStatisticsCollector<ServerCustomStatistics>, CustomStatisticsCollector>();
 
 #endregion
 
@@ -110,10 +116,12 @@ app.MapControllers();
 
 #region Hubs
 
-app.MapHub<StatisticsHub<ServerStatisticsCollector>>("/statisticshub");
-app.MapHub<StatisticsHub<LoadStatisticsCollector>>("/loadstatisticshub");
-app.MapHub<StatisticsHub<CustomStatisticsCollector>>("/customstatisticshub");
+app.MapHub<StatisticsHub<ServerStatistics>>("/statisticshub");
+app.MapHub<StatisticsHub<ServerLoadStatistics>>("/loadstatisticshub");
+app.MapHub<StatisticsHub<ServerCustomStatistics>>("/customstatisticshub");
 
 #endregion
 
 app.Run();
+
+public partial class Program { }

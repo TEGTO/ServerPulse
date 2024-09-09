@@ -3,7 +3,7 @@ using AnalyzerApi.Domain.Dtos.Responses;
 using AnalyzerApi.Domain.Models;
 using AnalyzerApi.Hubs;
 using AnalyzerApi.Services;
-using AnalyzerApi.Services.Collectors;
+using AnalyzerApi.Services.Consumers;
 using AutoMapper;
 using MessageBus.Interfaces;
 using Microsoft.AspNetCore.SignalR;
@@ -18,9 +18,9 @@ namespace AnalyzerApiTests.Services
     [TestFixture]
     internal class StatisticsSenderTests
     {
-        private Mock<IHubContext<StatisticsHub<ServerStatisticsCollector>, IStatisticsHubClient>> mockHubStatisticsContext;
-        private Mock<IHubContext<StatisticsHub<LoadStatisticsCollector>, IStatisticsHubClient>> mockHubLoadStatisticsContext;
-        private Mock<IHubContext<StatisticsHub<CustomStatisticsCollector>, IStatisticsHubClient>> mockHubCustomEventStatisticsContext;
+        private Mock<IHubContext<StatisticsHub<ServerStatisticsConsumer>, IStatisticsHubClient>> mockHubStatisticsContext;
+        private Mock<IHubContext<StatisticsHub<LoadStatisticsConsumer>, IStatisticsHubClient>> mockHubLoadStatisticsContext;
+        private Mock<IHubContext<StatisticsHub<CustomStatisticsConsumer>, IStatisticsHubClient>> mockHubCustomEventStatisticsContext;
         private Mock<IMessageProducer> mockProducer;
         private Mock<IMapper> mockMapper;
         private Mock<ILogger<StatisticsSender>> mockLogger;
@@ -30,9 +30,9 @@ namespace AnalyzerApiTests.Services
         [SetUp]
         public void SetUp()
         {
-            mockHubStatisticsContext = new Mock<IHubContext<StatisticsHub<ServerStatisticsCollector>, IStatisticsHubClient>>();
-            mockHubLoadStatisticsContext = new Mock<IHubContext<StatisticsHub<LoadStatisticsCollector>, IStatisticsHubClient>>();
-            mockHubCustomEventStatisticsContext = new Mock<IHubContext<StatisticsHub<CustomStatisticsCollector>, IStatisticsHubClient>>();
+            mockHubStatisticsContext = new Mock<IHubContext<StatisticsHub<ServerStatisticsConsumer>, IStatisticsHubClient>>();
+            mockHubLoadStatisticsContext = new Mock<IHubContext<StatisticsHub<LoadStatisticsConsumer>, IStatisticsHubClient>>();
+            mockHubCustomEventStatisticsContext = new Mock<IHubContext<StatisticsHub<CustomStatisticsConsumer>, IStatisticsHubClient>>();
             mockProducer = new Mock<IMessageProducer>();
             mockMapper = new Mock<IMapper>();
             mockLogger = new Mock<ILogger<StatisticsSender>>();
@@ -114,7 +114,7 @@ namespace AnalyzerApiTests.Services
         {
             // Arrange
             var key = "test-key";
-            var statistics = new CustomEventStatistics();
+            var statistics = new ServerCustomStatistics();
             var expectedResponse = new CustomEventStatisticsResponse();
             var expectedSerializedData = JsonSerializer.Serialize(expectedResponse);
             mockMapper.Setup(m => m.Map<CustomEventStatisticsResponse>(statistics))
@@ -168,7 +168,7 @@ namespace AnalyzerApiTests.Services
         {
             // Arrange
             var key = "test-key";
-            var customEventStatistics = new CustomEventStatistics();
+            var customEventStatistics = new ServerCustomStatistics();
             var mockClientProxy = new Mock<IStatisticsHubClient>();
             mockHubCustomEventStatisticsContext
                 .Setup(hub => hub.Clients.Group(key))

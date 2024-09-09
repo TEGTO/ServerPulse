@@ -8,7 +8,7 @@ namespace AnalyzerApi.Domain.Dtos.Responses
         public DateTime CollectedDateUTC { get; set; }
         public ServerStatistics? GeneralStatistics { get; set; }
         public ServerLoadStatistics? LoadStatistics { get; set; }
-        public CustomEventStatistics? CustomEventStatistics { get; set; }
+        public ServerCustomStatistics? CustomEventStatistics { get; set; }
         public IEnumerable<LoadEventWrapper> LastLoadEvents { get; set; }
         public IEnumerable<CustomEventWrapper> LastCustomEvents { get; set; }
     }

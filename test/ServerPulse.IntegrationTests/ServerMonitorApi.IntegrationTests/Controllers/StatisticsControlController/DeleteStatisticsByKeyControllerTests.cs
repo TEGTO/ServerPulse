@@ -44,10 +44,10 @@ namespace ServerMonitorApi.IntegrationTests.Controllers.StatisticsControlControl
             var response = await client.DeleteAsync($"/statisticscontrol/{KEY}");
             // Assert
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            var loadEventTask = ReceiveLastTopicEventByKeyAsync<LoadEvent>(LOAD_TOPIC, KEY);
-            var pulseEventTask = ReceiveLastTopicEventByKeyAsync<LoadEvent>(ALIVE_TOPIC, KEY);
-            var customEventTask = ReceiveLastTopicEventByKeyAsync<LoadEvent>(CUSTOM_TOPIC, KEY);
-            var configurationEventTask = ReceiveLastTopicEventByKeyAsync<LoadEvent>(CONFIGURATION_TOPIC, KEY);
+            var loadEventTask = ReceiveLastTopicEventAsync<LoadEvent>(LOAD_TOPIC, KEY);
+            var pulseEventTask = ReceiveLastTopicEventAsync<LoadEvent>(ALIVE_TOPIC, KEY);
+            var customEventTask = ReceiveLastTopicEventAsync<LoadEvent>(CUSTOM_TOPIC, KEY);
+            var configurationEventTask = ReceiveLastTopicEventAsync<LoadEvent>(CONFIGURATION_TOPIC, KEY);
             var tasks = new List<Task>
             {
                 loadEventTask,
@@ -68,10 +68,10 @@ namespace ServerMonitorApi.IntegrationTests.Controllers.StatisticsControlControl
             var response = await client.DeleteAsync($"/statisticscontrol/invalidKey");
             // Assert
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            var loadEventTask = ReceiveLastTopicEventByKeyAsync<LoadEvent>(LOAD_TOPIC, KEY);
-            var pulseEventTask = ReceiveLastTopicEventByKeyAsync<LoadEvent>(ALIVE_TOPIC, KEY);
-            var customEventTask = ReceiveLastTopicEventByKeyAsync<LoadEvent>(CUSTOM_TOPIC, KEY);
-            var configurationEventTask = ReceiveLastTopicEventByKeyAsync<LoadEvent>(CONFIGURATION_TOPIC, KEY);
+            var loadEventTask = ReceiveLastTopicEventAsync<LoadEvent>(LOAD_TOPIC, KEY);
+            var pulseEventTask = ReceiveLastTopicEventAsync<LoadEvent>(ALIVE_TOPIC, KEY);
+            var customEventTask = ReceiveLastTopicEventAsync<LoadEvent>(CUSTOM_TOPIC, KEY);
+            var configurationEventTask = ReceiveLastTopicEventAsync<LoadEvent>(CONFIGURATION_TOPIC, KEY);
             var tasks = new List<Task>
             {
                 loadEventTask,

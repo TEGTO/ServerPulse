@@ -11,21 +11,21 @@ namespace AnalyzerApiTests.Hubs
     [TestFixture]
     internal class StatisticsHubTests
     {
-        private Mock<IStatisticsCollector> mockStatisticsCollector;
-        private Mock<ILogger<StatisticsHub<IStatisticsCollector>>> mockLogger;
+        private Mock<IStatisticsConsumer> mockStatisticsCollector;
+        private Mock<ILogger<StatisticsHub<IStatisticsConsumer>>> mockLogger;
         private Mock<HubCallerContext> mockContext;
         private Mock<IGroupManager> mockGroups;
-        private StatisticsHub<IStatisticsCollector> statisticsHub;
+        private StatisticsHub<IStatisticsConsumer> statisticsHub;
 
         [SetUp]
         public void Setup()
         {
-            mockStatisticsCollector = new Mock<IStatisticsCollector>();
-            mockLogger = new Mock<ILogger<StatisticsHub<IStatisticsCollector>>>();
+            mockStatisticsCollector = new Mock<IStatisticsConsumer>();
+            mockLogger = new Mock<ILogger<StatisticsHub<IStatisticsConsumer>>>();
             mockContext = new Mock<HubCallerContext>();
             mockGroups = new Mock<IGroupManager>();
 
-            statisticsHub = new StatisticsHub<IStatisticsCollector>(mockStatisticsCollector.Object, mockLogger.Object)
+            statisticsHub = new StatisticsHub<IStatisticsConsumer>(mockStatisticsCollector.Object, mockLogger.Object)
             {
                 Context = mockContext.Object,
                 Groups = mockGroups.Object
@@ -113,14 +113,14 @@ namespace AnalyzerApiTests.Hubs
         }
         private ConcurrentDictionary<string, List<string>> GetConnectedClients()
         {
-            Type type = typeof(StatisticsHub<IStatisticsCollector>);
+            Type type = typeof(StatisticsHub<IStatisticsConsumer>);
             FieldInfo info = type.GetField("ConnectedClients", BindingFlags.NonPublic | BindingFlags.Static);
             object value = info.GetValue(null);
             return value as ConcurrentDictionary<string, List<string>>;
         }
         private ConcurrentDictionary<string, int> GetListenerAmount()
         {
-            Type type = typeof(StatisticsHub<IStatisticsCollector>);
+            Type type = typeof(StatisticsHub<IStatisticsConsumer>);
             FieldInfo info = type.GetField("ListenerAmount", BindingFlags.NonPublic | BindingFlags.Static);
             object value = info.GetValue(null);
             return value as ConcurrentDictionary<string, int>;

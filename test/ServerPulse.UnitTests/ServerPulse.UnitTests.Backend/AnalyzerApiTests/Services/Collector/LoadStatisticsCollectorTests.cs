@@ -1,6 +1,6 @@
 ﻿using AnalyzerApi.Domain.Dtos.Wrappers;
 using AnalyzerApi.Domain.Models;
-using AnalyzerApi.Services.Collectors;
+using AnalyzerApi.Services.Consumers;
 using AnalyzerApi.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -12,8 +12,8 @@ namespace AnalyzerApiTests.Services.Collector
     {
         private Mock<IEventReceiver<LoadEventWrapper>> mockEventReceiver;
         private Mock<IStatisticsReceiver<LoadMethodStatistics>> mockStatisticsReceiver;
-        private Mock<ILogger<LoadStatisticsCollector>> mockLogger;
-        private LoadStatisticsCollector collector;
+        private Mock<ILogger<LoadStatisticsConsumer>> mockLogger;
+        private LoadStatisticsConsumer collector;
 
         [SetUp]
         public override void Setup()
@@ -22,9 +22,9 @@ namespace AnalyzerApiTests.Services.Collector
 
             mockEventReceiver = new Mock<IEventReceiver<LoadEventWrapper>>();
             mockStatisticsReceiver = new Mock<IStatisticsReceiver<LoadMethodStatistics>>();
-            mockLogger = new Mock<ILogger<LoadStatisticsCollector>>();
+            mockLogger = new Mock<ILogger<LoadStatisticsConsumer>>();
 
-            collector = new LoadStatisticsCollector(
+            collector = new LoadStatisticsConsumer(
                 mockEventReceiver.Object,
                 mockStatisticsReceiver.Object,
                 mockStatisticsSender.Object,

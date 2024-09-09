@@ -8,9 +8,9 @@ namespace AnalyzerApi.Services
     {
         #region Fields
 
-        private readonly IStatisticsReceiver<ServerStatistics> serverStatisticsReceiver;
-        private readonly IStatisticsReceiver<ServerLoadStatistics> loadStatisticsReceiver;
-        private readonly IStatisticsReceiver<CustomEventStatistics> customStatisticsReceiver;
+        private readonly IStatisticsCollector<ServerStatistics> serverStatisticsCollector;
+        private readonly IStatisticsCollector<ServerLoadStatistics> loadStatisticsCollector;
+        private readonly IStatisticsCollector<ServerCustomStatistics> customStatisticsCollector;
         private readonly IEventReceiver<LoadEventWrapper> loadEventReceiver;
         private readonly IEventReceiver<CustomEventWrapper> customEventReceiver;
         private readonly int maxLastEventAmount;
@@ -18,16 +18,16 @@ namespace AnalyzerApi.Services
         #endregion
 
         public SlotDataPicker(
-            IStatisticsReceiver<ServerStatistics> serverStatisticsReceiver,
-            IStatisticsReceiver<ServerLoadStatistics> loadStatisticsReceiver,
-            IStatisticsReceiver<CustomEventStatistics> customStatisticsReceiver,
+            IStatisticsCollector<ServerStatistics> serverStatisticsReceiver,
+            IStatisticsCollector<ServerLoadStatistics> loadStatisticsReceiver,
+            IStatisticsCollector<ServerCustomStatistics> customStatisticsReceiver,
             IEventReceiver<LoadEventWrapper> loadEventReceiver,
             IEventReceiver<CustomEventWrapper> customEventReceiver,
             IConfiguration configuration)
         {
-            this.serverStatisticsReceiver = serverStatisticsReceiver;
-            this.loadStatisticsReceiver = loadStatisticsReceiver;
-            this.customStatisticsReceiver = customStatisticsReceiver;
+            this.serverStatisticsCollector = serverStatisticsReceiver;
+            this.loadStatisticsCollector = loadStatisticsReceiver;
+            this.customStatisticsCollector = customStatisticsReceiver;
             this.loadEventReceiver = loadEventReceiver;
             this.customEventReceiver = customEventReceiver;
             maxLastEventAmount = int.Parse(configuration[Configuration.MAX_EVENT_AMOUNT_TO_GET_IN_SLOT_DATA]!);
@@ -39,9 +39,9 @@ namespace AnalyzerApi.Services
 
             var tasks = new Task[]
             {
-                serverStatisticsReceiver.ReceiveLastStatisticsByKeyAsync(key, cancellationToken),
-                loadStatisticsReceiver.ReceiveLastStatisticsByKeyAsync(key, cancellationToken),
-                customStatisticsReceiver.ReceiveLastStatisticsByKeyAsync(key, cancellationToken),
+                serverStatisticsCollector.ReceiveLastStatisticsAsync(key, cancellationToken),
+                loadStatisticsCollector.ReceiveLastStatisticsAsync(key, cancellationToken),
+                customStatisticsCollector.ReceiveLastStatisticsAsync(key, cancellationToken),
                 loadEventReceiver.GetCertainAmountOfEventsAsync(options, cancellationToken),
                 customEventReceiver.GetCertainAmountOfEventsAsync(options, cancellationToken)
             };
@@ -52,7 +52,7 @@ namespace AnalyzerApi.Services
             {
                 GeneralStatistics = await (Task<ServerStatistics?>)tasks[0],
                 LoadStatistics = await (Task<ServerLoadStatistics?>)tasks[1],
-                CustomEventStatistics = await (Task<CustomEventStatistics?>)tasks[2],
+                CustomEventStatistics = await (Task<ServerCustomStatistics?>)tasks[2],
                 LastLoadEvents = await (Task<IEnumerable<LoadEventWrapper>>)tasks[3],
                 LastCustomEvents = await (Task<IEnumerable<CustomEventWrapper>>)tasks[4]
             };

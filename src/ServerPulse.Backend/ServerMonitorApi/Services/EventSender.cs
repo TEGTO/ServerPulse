@@ -36,7 +36,8 @@ namespace ServerMonitorApi.Services
                 string topic = GetTopic(ev);
                 if (!string.IsNullOrEmpty(topic))
                 {
-                    await SendEvent(ev, topic, ct);
+                    var message = JsonSerializer.Serialize(ev);
+                    await producer.ProduceAsync(topic, message, cancellationToken);
                 }
             });
         }
@@ -49,11 +50,6 @@ namespace ServerMonitorApi.Services
                 LoadEvent _ => GetTopic(loadTopic, ev.Key),
                 _ => string.Empty
             };
-        }
-        private async Task SendEvent(BaseEvent ev, string topic, CancellationToken cancellationToken)
-        {
-            var message = JsonSerializer.Serialize(ev);
-            await producer.ProduceAsync(topic, message, cancellationToken);
         }
         private string GetTopic(string topic, string key)
         {

@@ -133,7 +133,7 @@ namespace AnalyzerApiTests
         public void AutoMapperProfile_CustomEventStatisticsMapping_MapsToCustomEventStatisticsResponse()
         {
             // Arrange
-            var customEventStats = new CustomEventStatistics
+            var customEventStats = new ServerCustomStatistics
             {
                 LastEvent = new CustomEventWrapper
                 {
@@ -159,7 +159,7 @@ namespace AnalyzerApiTests
             {
                 GeneralStatistics = new ServerStatistics { IsAlive = true },
                 LoadStatistics = new ServerLoadStatistics { AmountOfEvents = 5 },
-                CustomEventStatistics = new CustomEventStatistics(),
+                CustomEventStatistics = new ServerCustomStatistics(),
                 LastLoadEvents = new List<LoadEventWrapper> { new LoadEventWrapper() },
                 LastCustomEvents = new List<CustomEventWrapper> { new CustomEventWrapper() }
             };

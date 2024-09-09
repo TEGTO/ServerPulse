@@ -6,7 +6,7 @@ using Shared;
 
 namespace AnalyzerApi.Services.Receivers.Statistics
 {
-    public record class StatisticsReceiverTopicData<TStatistics>(string topicOriginName) where TStatistics : BaseStatistics;
+
     public class StatisticsReceiver<TStatistics> : BaseReceiver, IStatisticsReceiver<TStatistics>
         where TStatistics : BaseStatistics
     {
@@ -19,7 +19,7 @@ namespace AnalyzerApi.Services.Receivers.Statistics
 
         #region IStatisticsReceiver<TStatistics> Members
 
-        public virtual async Task<TStatistics?> ReceiveLastStatisticsByKeyAsync(string key, CancellationToken cancellationToken)
+        public virtual async Task<TStatistics?> ReceiveLastStatisticsAsync(string key, CancellationToken cancellationToken)
         {
             string topic = GetTopic(topicData.topicOriginName, key);
             var response = await ReceiveLastMessageByKeyAsync(topic, cancellationToken);

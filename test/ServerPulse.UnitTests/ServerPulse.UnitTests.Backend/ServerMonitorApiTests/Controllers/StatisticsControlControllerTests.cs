@@ -8,20 +8,14 @@ namespace ServerMonitorApiTests.Controllers
     [TestFixture]
     internal class StatisticsControlControllerTests
     {
-        private Mock<IEventSender> mockMessageSender;
-        private Mock<ISlotKeyChecker> mockServerSlotChecker;
         private Mock<IStatisticsControlService> mockStatisticsControlService;
         private StatisticsControlController controller;
 
         [SetUp]
         public void Setup()
         {
-            mockMessageSender = new Mock<IEventSender>();
-            mockServerSlotChecker = new Mock<ISlotKeyChecker>();
             mockStatisticsControlService = new Mock<IStatisticsControlService>();
             controller = new StatisticsControlController(
-                mockMessageSender.Object,
-                mockServerSlotChecker.Object,
                 mockStatisticsControlService.Object
             );
         }

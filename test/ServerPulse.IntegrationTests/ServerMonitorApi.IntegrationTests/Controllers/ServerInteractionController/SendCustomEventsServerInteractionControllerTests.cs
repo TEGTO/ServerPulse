@@ -27,7 +27,7 @@ namespace ServerMonitorApi.IntegrationTests.Controllers.ServerInteractionControl
             // Assert
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             mockSlotKeyChecker.Verify(x => x.CheckSlotKeyAsync(customEventWrappers.First().CustomEvent.Key, It.IsAny<CancellationToken>()), Times.AtLeastOnce);
-            var lastMessage = await ReceiveLastTopicEventByKeyAsync<CustomEvent>(CUSTOM_TOPIC, customEventWrappers.First().CustomEvent.Key);
+            var lastMessage = await ReceiveLastTopicEventAsync<CustomEvent>(CUSTOM_TOPIC, customEventWrappers.First().CustomEvent.Key);
             Assert.True(customEventWrappers.Any(x => x.CustomEvent.Id == lastMessage.Id)); //Each event will be sent in parallel, so we don't know which one will be the last one
             Assert.True(customEventWrappers.Any(x => x.CustomEvent.Name == lastMessage.Name));
         }
@@ -49,7 +49,7 @@ namespace ServerMonitorApi.IntegrationTests.Controllers.ServerInteractionControl
             // Assert
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             mockSlotKeyChecker.Verify(x => x.CheckSlotKeyAsync(customEventWrappers.First().CustomEvent.Key, It.IsAny<CancellationToken>()), Times.AtLeastOnce);
-            var lastMessage = await ReceiveLastTopicEventByKeyAsync<TestCustomEvent>(CUSTOM_TOPIC, customEventWrappers.First().CustomEvent.Key);
+            var lastMessage = await ReceiveLastTopicEventAsync<TestCustomEvent>(CUSTOM_TOPIC, customEventWrappers.First().CustomEvent.Key);
             Assert.True(lastMessage.AdditionalField1 == "add1" || lastMessage.AdditionalField1 == "add2");
             Assert.True(lastMessage.AdditionalField2 == 0 || lastMessage.AdditionalField2 == 1);
         }
