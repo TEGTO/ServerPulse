@@ -10,7 +10,7 @@ using Moq;
 using ServerMonitorApi.Services;
 using System.Text.Json;
 
-namespace AnalyzerApiTests.Controllers
+namespace AnalyzerApi.Controllers.Tests
 {
     [TestFixture]
     public class SlotDataControllerTests
@@ -45,7 +45,7 @@ namespace AnalyzerApiTests.Controllers
         }
 
         [Test]
-        public async Task GetSlotData_KeyExistsInCache_ReturnsCachedData()
+        public async Task GetData_KeyExistsInCache_ReturnsCachedData()
         {
             // Arrange
             var key = "test-key";
@@ -58,14 +58,14 @@ namespace AnalyzerApiTests.Controllers
             mockMapper.Setup(m => m.Map<SlotDataResponse>(It.IsAny<SlotData>()))
                       .Returns(expectedResponse);
             // Act
-            var result = await slotDataController.GetSlotData(key, cancellationToken);
+            var result = await slotDataController.GetData(key, cancellationToken);
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(result.Result);
             var okResult = result.Result as OkObjectResult;
             Assert.AreEqual(expectedResponse, okResult.Value);
         }
         [Test]
-        public async Task GetSlotData_KeyNotInCache_FetchesDataAndStoresInCache()
+        public async Task GetData_KeyNotInCache_FetchesDataAndStoresInCache()
         {
             // Arrange
             var key = "test-key";
@@ -81,7 +81,7 @@ namespace AnalyzerApiTests.Controllers
             mockMapper.Setup(m => m.Map<SlotDataResponse>(slotData))
                       .Returns(expectedResponse);
             // Act
-            var result = await slotDataController.GetSlotData(key, cancellationToken);
+            var result = await slotDataController.GetData(key, cancellationToken);
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(result.Result);
             var okResult = result.Result as OkObjectResult;

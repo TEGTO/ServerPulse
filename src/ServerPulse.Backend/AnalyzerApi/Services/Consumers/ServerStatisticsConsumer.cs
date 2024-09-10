@@ -1,14 +1,17 @@
 ﻿using AnalyzerApi.Domain.Dtos.Wrappers;
 using AnalyzerApi.Domain.Models;
 using AnalyzerApi.Services.Interfaces;
+using System.Collections.Concurrent;
 
 namespace AnalyzerApi.Services.Consumers
 {
     public class ServerStatisticsConsumer : StatisticsConsumer<ServerStatistics, PulseEventWrapper>
     {
         private readonly IEventReceiver<ConfigurationEventWrapper> confReceiver;
-        private readonly PeriodicTimer periodicTimer;
-        private bool isAlive = true;
+        private readonly ConcurrentDictionary<string, PeriodicTimer> lisetenerTimers = new();
+        private readonly ConcurrentDictionary<string, bool> listenersIsAlive = new();
+        private readonly ConcurrentDictionary<string, int> listenersDelay = new();
+        private readonly int intervalInMilliseconds;
 
         public ServerStatisticsConsumer(
             IStatisticsCollector<ServerStatistics> collector,
@@ -20,8 +23,7 @@ namespace AnalyzerApi.Services.Consumers
             : base(collector, receiver, statisticsSender, logger)
         {
             this.confReceiver = confReceiver;
-            int intervalInMilliseconds = int.Parse(configuration[Configuration.STATISTICS_COLLECT_INTERVAL_IN_MILLISECONDS]!);
-            periodicTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(intervalInMilliseconds));
+            intervalInMilliseconds = int.Parse(configuration[Configuration.STATISTICS_COLLECT_INTERVAL_IN_MILLISECONDS]!);
         }
 
         #region StatisticsConsumer Members
@@ -41,28 +43,38 @@ namespace AnalyzerApi.Services.Consumers
 
         private async Task PeriodicallySendStatisticsAsync(string key, CancellationToken cancellationToken)
         {
-            while (await periodicTimer.WaitForNextTickAsync(cancellationToken))
+            listenersIsAlive[key] = true;
+            listenersDelay[key] = 1000;
+            lisetenerTimers[key] = new PeriodicTimer(TimeSpan.FromMilliseconds(intervalInMilliseconds));
+            while (await lisetenerTimers[key].WaitForNextTickAsync(cancellationToken))
             {
-                if (isAlive)
+                if (listenersIsAlive[key])
                 {
                     var statistics = await collector.ReceiveLastStatisticsAsync(key, cancellationToken);
-                    isAlive = statistics.IsAlive;
+                    listenersIsAlive[key] = statistics.IsAlive;
                     await statisticsSender.SendStatisticsAsync(key, statistics, cancellationToken);
                 }
                 var conf = await confReceiver.ReceiveLastEventByKeyAsync(key, cancellationToken);
                 if (conf != null)
                 {
-                    int waitTime = (int)conf.ServerKeepAliveInterval.TotalMilliseconds;
-                    await Task.Delay(waitTime, cancellationToken);
+                    listenersDelay[key] = (int)conf.ServerKeepAliveInterval.TotalMilliseconds;
                 }
+                await Task.Delay(listenersDelay[key], cancellationToken);
             }
         }
         private async Task SubscribeToPulseEventsAsync(string key, CancellationToken cancellationToken)
         {
             await foreach (var pulse in receiver.ConsumeEventAsync(key, cancellationToken))
             {
-                isAlive = pulse.IsAlive;
+                listenersIsAlive[key] = pulse.IsAlive;
             }
+        }
+
+        protected override void OnStatisticsListenerRemoved(string key)
+        {
+            listenersIsAlive.TryRemove(key, out var res);
+            listenersDelay.TryRemove(key, out var res1);
+            lisetenerTimers.TryRemove(key, out var res3);
         }
 
         #endregion

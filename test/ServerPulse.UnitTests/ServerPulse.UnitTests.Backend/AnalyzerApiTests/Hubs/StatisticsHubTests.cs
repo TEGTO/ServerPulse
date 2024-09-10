@@ -1,4 +1,4 @@
-﻿using AnalyzerApi.Hubs;
+﻿using AnalyzerApi.Domain.Models;
 using AnalyzerApi.Services.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
@@ -6,26 +6,26 @@ using Moq;
 using System.Collections.Concurrent;
 using System.Reflection;
 
-namespace AnalyzerApiTests.Hubs
+namespace AnalyzerApi.Hubs.Tests
 {
     [TestFixture]
     internal class StatisticsHubTests
     {
-        private Mock<IStatisticsConsumer> mockStatisticsCollector;
-        private Mock<ILogger<StatisticsHub<IStatisticsConsumer>>> mockLogger;
+        private Mock<IStatisticsConsumer<TestStatistics>> mockStatisticsConsumer;
+        private Mock<ILogger<StatisticsHub<TestStatistics>>> mockLogger;
         private Mock<HubCallerContext> mockContext;
         private Mock<IGroupManager> mockGroups;
-        private StatisticsHub<IStatisticsConsumer> statisticsHub;
+        private StatisticsHub<TestStatistics> statisticsHub;
 
         [SetUp]
         public void Setup()
         {
-            mockStatisticsCollector = new Mock<IStatisticsConsumer>();
-            mockLogger = new Mock<ILogger<StatisticsHub<IStatisticsConsumer>>>();
+            mockStatisticsConsumer = new Mock<IStatisticsConsumer<TestStatistics>>();
+            mockLogger = new Mock<ILogger<StatisticsHub<TestStatistics>>>();
             mockContext = new Mock<HubCallerContext>();
             mockGroups = new Mock<IGroupManager>();
 
-            statisticsHub = new StatisticsHub<IStatisticsConsumer>(mockStatisticsCollector.Object, mockLogger.Object)
+            statisticsHub = new StatisticsHub<TestStatistics>(mockStatisticsConsumer.Object, mockLogger.Object)
             {
                 Context = mockContext.Object,
                 Groups = mockGroups.Object
@@ -48,7 +48,7 @@ namespace AnalyzerApiTests.Hubs
             await statisticsHub.StartListen(key);
             // Assert
             mockGroups.Verify(g => g.AddToGroupAsync(connectionId, key, default), Times.Once);
-            mockStatisticsCollector.Verify(s => s.StartConsumingStatistics(key), Times.Once);
+            mockStatisticsConsumer.Verify(s => s.StartConsumingStatistics(key), Times.Once);
             mockLogger.Verify(l => l.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
@@ -72,7 +72,7 @@ namespace AnalyzerApiTests.Hubs
             await statisticsHub.OnDisconnectedAsync(null);
             // Assert
             mockGroups.Verify(g => g.RemoveFromGroupAsync(connectionId, key, default), Times.Once);
-            mockStatisticsCollector.Verify(s => s.StopConsumingStatistics(key), Times.Once);
+            mockStatisticsConsumer.Verify(s => s.StopConsumingStatistics(key), Times.Once);
             mockLogger.Verify(l => l.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
@@ -99,7 +99,7 @@ namespace AnalyzerApiTests.Hubs
             // Assert
             mockGroups.Verify(g => g.RemoveFromGroupAsync(connectionId, key, default), Times.Once);
             Assert.That(listenerAmount[key], Is.EqualTo(1));
-            mockStatisticsCollector.Verify(s => s.StopConsumingStatistics(key), Times.Never);
+            mockStatisticsConsumer.Verify(s => s.StopConsumingStatistics(key), Times.Never);
         }
 
         private async Task InvokePrivateMethodAsync(object obj, string methodName, params object[] parameters)
@@ -113,17 +113,18 @@ namespace AnalyzerApiTests.Hubs
         }
         private ConcurrentDictionary<string, List<string>> GetConnectedClients()
         {
-            Type type = typeof(StatisticsHub<IStatisticsConsumer>);
+            Type type = typeof(StatisticsHub<TestStatistics>);
             FieldInfo info = type.GetField("ConnectedClients", BindingFlags.NonPublic | BindingFlags.Static);
             object value = info.GetValue(null);
             return value as ConcurrentDictionary<string, List<string>>;
         }
         private ConcurrentDictionary<string, int> GetListenerAmount()
         {
-            Type type = typeof(StatisticsHub<IStatisticsConsumer>);
+            Type type = typeof(StatisticsHub<TestStatistics>);
             FieldInfo info = type.GetField("ListenerAmount", BindingFlags.NonPublic | BindingFlags.Static);
             object value = info.GetValue(null);
             return value as ConcurrentDictionary<string, int>;
         }
     }
+    public class TestStatistics : BaseStatistics { };
 }

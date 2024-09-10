@@ -12,7 +12,7 @@ using Moq;
 using ServerMonitorApi.Services;
 using System.Text.Json;
 
-namespace AnalyzerApiTests.Controllers
+namespace AnalyzerApi.Controllers.Tests
 {
     [TestFixture]
     internal class AnalyzeControllerTests

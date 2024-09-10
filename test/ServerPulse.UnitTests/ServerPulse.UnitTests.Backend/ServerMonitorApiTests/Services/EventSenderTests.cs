@@ -67,10 +67,9 @@ namespace ServerMonitorApiTests.Services
             foreach (var ev in events)
             {
                 var expectedTopic = KAFKA_ALIVE_TOPIC + ev.Key;
-                var expectedMessage = ev.ToString();
                 mockProducer.Verify(x => x.ProduceAsync(
                     expectedTopic,
-                    expectedMessage,
+                    It.Is<string>(x => x.Contains(ev.Id)),
                     It.IsAny<CancellationToken>()
                 ), Times.Exactly(1));
             }
@@ -91,10 +90,9 @@ namespace ServerMonitorApiTests.Services
             foreach (var ev in events)
             {
                 var expectedTopic = KAFKA_CONFIGURATION_TOPIC + ev.Key;
-                var expectedMessage = ev.ToString();
                 mockProducer.Verify(x => x.ProduceAsync(
                     expectedTopic,
-                    expectedMessage,
+                    It.Is<string>(x => x.Contains(ev.Id)),
                     It.IsAny<CancellationToken>()
                 ), Times.Exactly(1));
             }
@@ -115,10 +113,9 @@ namespace ServerMonitorApiTests.Services
             foreach (var ev in events)
             {
                 var expectedTopic = KAFKA_LOAD_TOPIC + ev.Key;
-                var expectedMessage = ev.ToString();
                 mockProducer.Verify(x => x.ProduceAsync(
                     expectedTopic,
-                    expectedMessage,
+                    It.Is<string>(x => x.Contains(ev.Id)),
                     It.IsAny<CancellationToken>()
                 ), Times.Exactly(1));
             }

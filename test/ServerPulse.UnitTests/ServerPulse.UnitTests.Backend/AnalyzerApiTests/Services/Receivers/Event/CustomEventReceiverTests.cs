@@ -1,6 +1,4 @@
-﻿using AnalyzerApi;
-using AnalyzerApi.Domain.Dtos.Wrappers;
-using AnalyzerApi.Services.Receivers.Event;
+﻿using AnalyzerApi.Domain.Dtos.Wrappers;
 using AutoMapper;
 using MessageBus.Interfaces;
 using Microsoft.Extensions.Configuration;
@@ -9,7 +7,7 @@ using ServerPulse.EventCommunication.Events;
 using System.Reflection;
 using System.Text.Json;
 
-namespace AnalyzerApiTests.Services.Receivers.Event
+namespace AnalyzerApi.Services.Receivers.Event.Tests
 {
     [TestFixture]
     public class CustomEventReceiverTests

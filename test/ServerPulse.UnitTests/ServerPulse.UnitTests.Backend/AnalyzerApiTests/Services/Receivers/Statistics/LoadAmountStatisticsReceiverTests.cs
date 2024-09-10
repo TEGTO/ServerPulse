@@ -1,13 +1,11 @@
-﻿using AnalyzerApi;
-using AnalyzerApi.Domain.Models;
+﻿using AnalyzerApi.Domain.Models;
 using AnalyzerApi.Services.Interfaces;
-using AnalyzerApi.Services.Receivers.Statistics;
 using AutoMapper;
 using MessageBus.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Moq;
 
-namespace AnalyzerApiTests.Services.Receivers.Statistics
+namespace AnalyzerApi.Services.Receivers.Statistics.Tests
 {
     [TestFixture]
     internal class LoadAmountStatisticsReceiverTests

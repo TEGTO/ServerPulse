@@ -1,11 +1,10 @@
-﻿using AnalyzerApi;
-using AnalyzerApi.Services.Receivers;
+﻿using AnalyzerApi.Services.Receivers;
 using AutoMapper;
 using MessageBus.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Moq;
 
-namespace AnalyzerApiTests.Services
+namespace AnalyzerApi.Services.Tests
 {
     [TestFixture]
     internal class BaseReceiverTests

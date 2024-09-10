@@ -79,8 +79,11 @@ namespace AnalyzerApi.Services.Consumers
         protected virtual async Task SendInitialStatisticsAsync(string key, CancellationToken cancellationToken)
         {
             var statistics = await collector.ReceiveLastStatisticsAsync(key, cancellationToken);
-            statistics.IsInitial = true;
-            await statisticsSender.SendStatisticsAsync(key, statistics, cancellationToken);
+            if (statistics != null)
+            {
+                statistics.IsInitial = true;
+                await statisticsSender.SendStatisticsAsync(key, statistics, cancellationToken);
+            }
         }
         protected virtual Task[] GetEventSubscriptionTasks(string key, CancellationToken cancellationToken)
         {
@@ -99,6 +102,5 @@ namespace AnalyzerApi.Services.Consumers
                 await statisticsSender.SendStatisticsAsync(key, statistics, cancellationToken);
             }
         }
-
     }
 }

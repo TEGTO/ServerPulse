@@ -47,7 +47,7 @@ namespace AnalyzerApi.Services.Collectors
             return statistics;
         }
 
-        private static bool CalculateIsServerAlive(PulseEventWrapper? pulseEvent, ConfigurationEventWrapper? configurationEvent)
+        private bool CalculateIsServerAlive(PulseEventWrapper? pulseEvent, ConfigurationEventWrapper? configurationEvent)
         {
             if (pulseEvent != null && configurationEvent != null)
             {
@@ -56,11 +56,15 @@ namespace AnalyzerApi.Services.Collectors
             }
             return false;
         }
-        private static TimeSpan? CalculateServerUptime(ServerStatistics? lastStatistics)
+        private TimeSpan? CalculateServerUptime(ServerStatistics? lastStatistics)
         {
             if (lastStatistics != null && lastStatistics.IsAlive)
             {
-                return lastStatistics.ServerUptime + (DateTime.UtcNow - lastStatistics.LastPulseDateTimeUTC);
+                if (lastStatistics.LastPulseDateTimeUTC != null)
+                {
+                    return lastStatistics.ServerUptime + (DateTime.UtcNow - lastStatistics.LastPulseDateTimeUTC.Value);
+                }
+                return lastStatistics.ServerUptime;
             }
             else
             {
@@ -73,13 +77,20 @@ namespace AnalyzerApi.Services.Collectors
             {
                 return currentUptime;
             }
-            else if (lastStatistics?.IsAlive == true)
+            else if (lastStatistics != null)
             {
-                return CalculateServerUptime(lastStatistics);
+                if (lastStatistics.IsAlive)
+                {
+                    return CalculateServerUptime(lastStatistics);
+                }
+                else
+                {
+                    return lastStatistics.LastServerUptime;
+                }
             }
             else
             {
-                return lastStatistics?.LastServerUptime;
+                return null;
             }
         }
     }

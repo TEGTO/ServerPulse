@@ -1,5 +1,6 @@
 ﻿using MessageBus.Interfaces;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using ServerPulse.EventCommunication.Events;
 using Shared;
@@ -18,6 +19,7 @@ namespace AnalyzerApi.IntegrationTests
         private const int TIMEOUT_IN_MILLISECONDS = 5000;
 
         protected HttpClient client;
+        protected TestServer server;
         protected IMessageConsumer messageConsumer;
         protected IMessageProducer producer;
         private WebAppFactoryWrapper wrapper;
@@ -71,6 +73,7 @@ namespace AnalyzerApi.IntegrationTests
         {
             scope = factory.Services.CreateScope();
             client = factory.CreateClient();
+            server = factory.Server;
             messageConsumer = factory.Services.GetRequiredService<IMessageConsumer>();
             producer = factory.Services.GetRequiredService<IMessageProducer>();
         }

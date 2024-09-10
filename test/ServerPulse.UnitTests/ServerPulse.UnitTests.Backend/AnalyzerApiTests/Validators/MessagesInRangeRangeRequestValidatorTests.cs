@@ -1,11 +1,10 @@
 ﻿using AnalyzerApi.Domain.Dtos.Requests;
-using AnalyzerApi.Validators;
 using FluentValidation.TestHelper;
 
-namespace AnalyzerApiTests.Validators
+namespace AnalyzerApi.Validators.Tests
 {
     [TestFixture]
-    internal class LoadEventsRangeRequestValidatorTests
+    internal class MessagesInRangeRangeRequestValidatorTests
     {
         private MessagesInRangeRangeRequestValidator validator;
 

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Moq;
 using ServerPulse.EventCommunication.Events;
 
-namespace AnalyzerApi.Services
+namespace AnalyzerApi.Services.Tests
 {
     [TestFixture]
     internal class EventProcessorTests
@@ -73,12 +73,12 @@ namespace AnalyzerApi.Services
                 new LoadEvent(key, "endpoint2", "POST", 404, TimeSpan.FromSeconds(20), DateTime.Now)
             };
             var statistics = new LoadMethodStatistics { GetAmount = 1, PostAmount = 2 };
-            mockStatisticsReceiver.Setup(x => x.ReceiveLastStatisticsByKeyAsync(key, cancellationToken))
+            mockStatisticsReceiver.Setup(x => x.ReceiveLastStatisticsAsync(key, cancellationToken))
                                   .ReturnsAsync(statistics);
             // Act
             await eventProcessor.ProcessEventsAsync(events, cancellationToken);
             // Assert
-            mockStatisticsReceiver.Verify(x => x.ReceiveLastStatisticsByKeyAsync(key, cancellationToken), Times.Once);
+            mockStatisticsReceiver.Verify(x => x.ReceiveLastStatisticsAsync(key, cancellationToken), Times.Once);
             mockProducer.Verify(x => x.ProduceAsync(KAFKA_LOAD_METHOD_STATISTICS_TOPIC + key, It.IsAny<string>(), cancellationToken), Times.Once);
             mockProducer.Verify(x => x.ProduceAsync(It.IsAny<string>(), It.Is<string>(x => x.Contains("{\"GetAmount\":2,\"PostAmount\":3")), cancellationToken), Times.Once);
         }
@@ -99,7 +99,7 @@ namespace AnalyzerApi.Services
                 new LoadEvent(key, "endpoint2", "POST", 404, TimeSpan.FromSeconds(20), DateTime.Now)
             };
             var statistics = new LoadMethodStatistics { GetAmount = 1, PostAmount = 1 };
-            mockStatisticsReceiver.Setup(x => x.ReceiveLastStatisticsByKeyAsync(key, cancellationToken))
+            mockStatisticsReceiver.Setup(x => x.ReceiveLastStatisticsAsync(key, cancellationToken))
                                   .ReturnsAsync(statistics);
             // Act
             await eventProcessor.ProcessEventsAsync(events, cancellationToken);
@@ -117,7 +117,7 @@ namespace AnalyzerApi.Services
                 new LoadEvent(key, "endpoint1", "GET", 200, TimeSpan.FromSeconds(10), DateTime.Now),
                 new LoadEvent(key, "endpoint2", "POST", 404, TimeSpan.FromSeconds(20), DateTime.Now)
             };
-            mockStatisticsReceiver.Setup(x => x.ReceiveLastStatisticsByKeyAsync(key, cancellationToken))
+            mockStatisticsReceiver.Setup(x => x.ReceiveLastStatisticsAsync(key, cancellationToken))
                                   .ReturnsAsync((LoadMethodStatistics)null);
             // Act
             await eventProcessor.ProcessEventsAsync(events, cancellationToken);

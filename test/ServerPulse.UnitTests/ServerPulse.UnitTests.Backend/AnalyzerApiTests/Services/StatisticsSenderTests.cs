@@ -1,9 +1,6 @@
-﻿using AnalyzerApi;
-using AnalyzerApi.Domain.Dtos.Responses;
+﻿using AnalyzerApi.Domain.Dtos.Responses;
 using AnalyzerApi.Domain.Models;
 using AnalyzerApi.Hubs;
-using AnalyzerApi.Services;
-using AnalyzerApi.Services.Consumers;
 using AutoMapper;
 using MessageBus.Interfaces;
 using Microsoft.AspNetCore.SignalR;
@@ -13,14 +10,14 @@ using Moq;
 using System.Reflection;
 using System.Text.Json;
 
-namespace AnalyzerApiTests.Services
+namespace AnalyzerApi.Services.Tests
 {
     [TestFixture]
     internal class StatisticsSenderTests
     {
-        private Mock<IHubContext<StatisticsHub<ServerStatisticsConsumer>, IStatisticsHubClient>> mockHubStatisticsContext;
-        private Mock<IHubContext<StatisticsHub<LoadStatisticsConsumer>, IStatisticsHubClient>> mockHubLoadStatisticsContext;
-        private Mock<IHubContext<StatisticsHub<CustomStatisticsConsumer>, IStatisticsHubClient>> mockHubCustomEventStatisticsContext;
+        private Mock<IHubContext<StatisticsHub<ServerStatistics>, IStatisticsHubClient>> mockHubStatisticsContext;
+        private Mock<IHubContext<StatisticsHub<ServerLoadStatistics>, IStatisticsHubClient>> mockHubLoadStatisticsContext;
+        private Mock<IHubContext<StatisticsHub<ServerCustomStatistics>, IStatisticsHubClient>> mockHubCustomEventStatisticsContext;
         private Mock<IMessageProducer> mockProducer;
         private Mock<IMapper> mockMapper;
         private Mock<ILogger<StatisticsSender>> mockLogger;
@@ -30,9 +27,9 @@ namespace AnalyzerApiTests.Services
         [SetUp]
         public void SetUp()
         {
-            mockHubStatisticsContext = new Mock<IHubContext<StatisticsHub<ServerStatisticsConsumer>, IStatisticsHubClient>>();
-            mockHubLoadStatisticsContext = new Mock<IHubContext<StatisticsHub<LoadStatisticsConsumer>, IStatisticsHubClient>>();
-            mockHubCustomEventStatisticsContext = new Mock<IHubContext<StatisticsHub<CustomStatisticsConsumer>, IStatisticsHubClient>>();
+            mockHubStatisticsContext = new Mock<IHubContext<StatisticsHub<ServerStatistics>, IStatisticsHubClient>>();
+            mockHubLoadStatisticsContext = new Mock<IHubContext<StatisticsHub<ServerLoadStatistics>, IStatisticsHubClient>>();
+            mockHubCustomEventStatisticsContext = new Mock<IHubContext<StatisticsHub<ServerCustomStatistics>, IStatisticsHubClient>>();
             mockProducer = new Mock<IMessageProducer>();
             mockMapper = new Mock<IMapper>();
             mockLogger = new Mock<ILogger<StatisticsSender>>();

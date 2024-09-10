@@ -5,7 +5,7 @@ using AuthenticationApi;
 using AutoMapper;
 using ServerPulse.EventCommunication.Events;
 
-namespace AnalyzerApiTests
+namespace AnalyzerApi.Tests
 {
     [TestFixture]
     internal class AutoMapperProfileTests

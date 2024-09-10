@@ -74,7 +74,7 @@ builder.Services.AddSingleton(new StatisticsReceiverTopicData<ServerCustomStatis
 builder.Services.AddSingleton(new StatisticsReceiverTopicData<LoadAmountStatistics>(builder.Configuration[Configuration.KAFKA_LOAD_TOPIC]!));
 builder.Services.AddSingleton(new StatisticsReceiverTopicData<LoadMethodStatistics>(builder.Configuration[Configuration.KAFKA_LOAD_METHOD_STATISTICS_TOPIC]!));
 builder.Services.AddSingleton(new StatisticsReceiverTopicData<ServerLoadStatistics>(builder.Configuration[Configuration.KAFKA_LOAD_TOPIC]!));
-builder.Services.AddSingleton(new StatisticsReceiverTopicData<ServerStatistics>(builder.Configuration[Configuration.KAFKA_LOAD_TOPIC]!));
+builder.Services.AddSingleton(new StatisticsReceiverTopicData<ServerStatistics>(builder.Configuration[Configuration.KAFKA_SERVER_STATISTICS_TOPIC]!));
 
 builder.Services.AddSingleton<IStatisticsReceiver<ServerCustomStatistics>, StatisticsReceiver<ServerCustomStatistics>>();
 builder.Services.AddSingleton<IStatisticsReceiver<LoadAmountStatistics>, LoadAmountStatisticsReceiver>();

@@ -1,14 +1,12 @@
-﻿using AnalyzerApi;
-using AnalyzerApi.Domain.Dtos.Requests;
-using AnalyzerApi.Validators;
+﻿using AnalyzerApi.Domain.Dtos.Requests;
 using FluentValidation.TestHelper;
 using Microsoft.Extensions.Configuration;
 using Moq;
 
-namespace AnalyzerApiTests.Validators
+namespace AnalyzerApi.Validators.Tests
 {
     [TestFixture]
-    internal class LoadAmountStatisticsInRangeRequestValidatorTests
+    internal class MessageAmountInRangeRequestValidatorTests
     {
         private MessageAmountInRangeRequestValidator validator;
         private Mock<IConfiguration> mockConfiguration;

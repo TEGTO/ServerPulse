@@ -1,7 +1,5 @@
-﻿using AnalyzerApi;
-using AnalyzerApi.Domain.Dtos.Wrappers;
+﻿using AnalyzerApi.Domain.Dtos.Wrappers;
 using AnalyzerApi.Services.Interfaces;
-using AnalyzerApi.Services.Receivers.Event;
 using AutoMapper;
 using Confluent.Kafka;
 using MessageBus.Interfaces;
@@ -10,7 +8,7 @@ using Moq;
 using ServerPulse.EventCommunication.Events;
 using System.Text.Json;
 
-namespace AnalyzerApiTests.Services.Receivers.Event
+namespace AnalyzerApi.Services.Receivers.Event.Tests
 {
     [TestFixture]
     internal class EventReceiverTests
