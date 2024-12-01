@@ -1,5 +1,5 @@
-﻿using Shared;
-using Shared.Dtos.ServerSlot;
+﻿using ServerSlotApi.Dtos;
+using Shared;
 using System.Text;
 using System.Text.Json;
 

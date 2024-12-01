@@ -1,8 +1,9 @@
-using AuthData.Data;
-using AuthData.Domain.Entities;
 using Authentication;
 using Authentication.Token;
 using AuthenticationApi;
+using AuthenticationApi.Infrastructure;
+using AuthenticationApi.Infrastructure.Data;
+using AuthenticationApi.Infrastructure.Validators;
 using AuthenticationApi.Services;
 using DatabaseControl;
 using ExceptionHandling;
@@ -14,7 +15,10 @@ using Shared;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.AddLogging();
-builder.Services.AddDbContextFactory<AuthIdentityDbContext>(builder.Configuration.GetConnectionString(Configuration.AUTH_DATABASE_CONNECTION_STRING)!, "AuthenticationApi");
+builder.Services.AddDbContextFactory<AuthIdentityDbContext>(
+    builder.Configuration.GetConnectionString(Configuration.AUTH_DATABASE_CONNECTION_STRING)!,
+    "AuthenticationApi"
+);
 
 #region Identity 
 
@@ -52,10 +56,15 @@ builder.Services.AddMediatR(conf =>
     conf.RegisterServicesFromAssembly(typeof(Program).Assembly);
 });
 
-builder.Services.AddSharedFluentValidation(typeof(Program));
+builder.Services.AddSharedFluentValidation(typeof(Program), typeof(AuthTokenValidator));
 
 builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddSwagger("Authentication API");
+}
 
 var app = builder.Build();
 
@@ -69,6 +78,10 @@ app.UseSharedMiddleware();
 if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
+}
+else
+{
+    app.UseSwagger("Authentication API V1");
 }
 
 app.UseIdentity();

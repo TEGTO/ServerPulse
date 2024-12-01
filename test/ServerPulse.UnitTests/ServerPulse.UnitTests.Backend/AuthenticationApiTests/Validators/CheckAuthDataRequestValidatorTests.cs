@@ -1,4 +1,5 @@
-﻿using FluentValidation.TestHelper;
+﻿using AuthenticationApi.Infrastructure.Validators;
+using FluentValidation.TestHelper;
 using Shared.Dtos.Auth;
 
 namespace AuthenticationApi.Validators.Tests

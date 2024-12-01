@@ -1,4 +1,4 @@
-﻿using AuthenticationApi.Domain.Models;
+﻿using AuthenticationApi.Infrastructure;
 using AuthenticationApi.Services;
 using AutoMapper;
 using ExceptionHandling;

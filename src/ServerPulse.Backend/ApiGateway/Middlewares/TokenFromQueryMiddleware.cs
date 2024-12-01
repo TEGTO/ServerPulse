@@ -12,7 +12,7 @@
         public async Task Invoke(HttpContext context)
         {
             var request = context.Request;
-            if (request.Path.ToString().Contains("hub") &&
+            if (request.Path.ToString().ToLower().Contains("hub") &&
                request.Query.TryGetValue("access_token", out var accessToken))
             {
                 request.Headers.Append("Authorization", $"Bearer {accessToken}");

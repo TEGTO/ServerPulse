@@ -3,11 +3,10 @@ using AuthenticationApi.Command.ChechAuthData;
 using AuthenticationApi.Command.LoginUser;
 using AuthenticationApi.Command.RefreshToken;
 using AuthenticationApi.Command.RegisterUser;
-using AuthenticationApi.Domain.Dtos;
+using AuthenticationApi.Dtos;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Shared.Dtos.Auth;
 
 namespace AuthenticationApi.Controllers
 {

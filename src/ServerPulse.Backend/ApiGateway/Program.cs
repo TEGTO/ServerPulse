@@ -42,6 +42,7 @@ Utility.MergeJsonFiles(
         $"ocelot.{env}.statisticscontrol.json",
         $"ocelot.{env}.slotdata.json",
         $"ocelot.{env}.slot.json",
+        $"ocelot.{env}.swagger.json",
     ], mergedPath);
 
 builder.Configuration
@@ -53,6 +54,10 @@ builder.Services.AddOcelot(builder.Configuration).AddPolly();
 
 #endregion
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddSwaggerForOcelot(builder.Configuration);
+}
 
 var app = builder.Build();
 
@@ -69,6 +74,17 @@ app.UseRouting();
 if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
+}
+else
+{
+    app.UseSwaggerForOcelotUI(opt =>
+    {
+        opt.PathToSwaggerGenerator = "/swagger/docs";
+        opt.DownstreamSwaggerHeaders =
+        [
+              new KeyValuePair<string, string>("Authorization", "Bearer {token}")
+        ];
+    });
 }
 
 app.UseAuthentication();

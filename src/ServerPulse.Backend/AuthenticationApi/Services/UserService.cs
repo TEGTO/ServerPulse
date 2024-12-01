@@ -1,7 +1,6 @@
-﻿using AuthData.Domain.Entities;
-using AuthenticationApi.Domain.Models;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
+using AuthenticationApi.Infrastructure;
 
 namespace AuthenticationApi.Services
 {

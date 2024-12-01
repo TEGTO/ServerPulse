@@ -25,6 +25,8 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\Authentication\Authentication.csproj" />
 	  <ProjectReference Include="..\DatabaseControl\DatabaseControl.csproj" />
+	  <ProjectReference Include="..\ServerSlotApi.Dtos\ServerSlotApi.Dtos.csproj" />
+	  <ProjectReference Include="..\ServerSlotApi.Infrastructure\ServerSlotApi.Infrastructure.csproj" />
 	  <ProjectReference Include="..\Shared\Shared.csproj" />
 	</ItemGroup>
 

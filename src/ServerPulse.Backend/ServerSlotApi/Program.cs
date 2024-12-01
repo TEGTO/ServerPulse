@@ -4,7 +4,8 @@ using ExceptionHandling;
 using Logging;
 using Microsoft.EntityFrameworkCore;
 using ServerSlotApi;
-using ServerSlotApi.Data;
+using ServerSlotApi.Infrastructure.Data;
+using ServerSlotApi.Infrastructure.Validators;
 using ServerSlotApi.Services;
 using Shared;
 
@@ -17,7 +18,8 @@ builder.Services.AddDbContextFactory<ServerDataDbContext>(options =>
 
 builder.Services.AddDbContextFactory<ServerDataDbContext>(
     builder.Configuration.GetConnectionString(Configuration.SERVER_SLOT_DATABASE_CONNECTION_STRING)!,
-    "ServerSlotApi");
+    "ServerSlotApi"
+);
 
 builder.Services.AddCustomHttpClientServiceWithResilience(builder.Configuration);
 
@@ -34,16 +36,25 @@ builder.Services.ConfigureIdentityServices(builder.Configuration);
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
-builder.Services.AddSharedFluentValidation(typeof(Program));
+builder.Services.AddSharedFluentValidation(typeof(Program), typeof(CheckServerSlotRequestValidator));
 
 builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddSwagger("Server Slot API");
+}
 
 var app = builder.Build();
 
 if (app.Configuration[Configuration.EF_CREATE_DATABASE] == "true")
 {
     await app.ConfigureDatabaseAsync<ServerDataDbContext>(CancellationToken.None);
+}
+else
+{
+    app.UseSwagger("Server Slot API V1");
 }
 
 app.UseSharedMiddleware();

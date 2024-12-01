@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-
+	<WarningsAsErrors>CS8618;CS8601;CS8602;CS8603;CS8604</WarningsAsErrors>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
@@ -16,10 +16,8 @@
 		<PackageReference Include="NUnit" Version="3.14.0" />
 		<PackageReference Include="NUnit.Analyzers" Version="3.9.0" />
 		<PackageReference Include="FluentValidation" Version="11.9.1" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.4" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
-		<PackageReference Include="MockQueryable.Moq" Version="7.0.3" />
 		<PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+		<PackageReference Include="RichardSzalay.MockHttp" Version="7.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>

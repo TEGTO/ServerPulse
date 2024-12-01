@@ -1,7 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using ServerSlotApi.Data;
-using ServerSlotApi.Domain.Entities;
-using Shared.Repositories;
+﻿using DatabaseControl.Repositories;
+using Microsoft.EntityFrameworkCore;
+using ServerSlotApi.Infrastructure.Data;
+using ServerSlotApi.Infrastructure.Entities;
 
 namespace ServerSlotApi.Services
 {

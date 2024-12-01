@@ -1,5 +1,5 @@
-﻿using MediatR;
-using Shared.Dtos.Auth;
+﻿using AuthenticationApi.Dtos;
+using MediatR;
 
 namespace AuthenticationApi.Command.ChechAuthData
 {

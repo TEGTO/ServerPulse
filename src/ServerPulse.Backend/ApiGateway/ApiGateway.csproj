@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>ff7b7874-0315-41d7-957c-68ec10465ac9</UserSecretsId>
+	<WarningsAsErrors>CS8618;CS8601;CS8602;CS8603;CS8604</WarningsAsErrors>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 	<ItemGroup>
@@ -12,6 +12,7 @@
 		<PackageReference Include="Ocelot" Version="23.3.3" />
 		<PackageReference Include="Ocelot.Provider.Consul" Version="21.0.0" />
 		<PackageReference Include="Ocelot.Provider.Polly" Version="23.3.3" />
+		<PackageReference Include="MMLib.SwaggerForOcelot" Version="8.3.2" />
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\Authentication\Authentication.csproj" />

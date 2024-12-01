@@ -1,11 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ServerSlotApi.Domain.Dtos;
-using ServerSlotApi.Domain.Entities;
 using ServerSlotApi.Dtos;
+using ServerSlotApi.Infrastructure.Entities;
 using ServerSlotApi.Services;
-using Shared.Dtos.ServerSlot;
 using System.Security.Claims;
 
 namespace ServerSlotApi.Controllers

@@ -1,6 +1,6 @@
-﻿using AuthData.Domain.Entities;
-using Authentication.Models;
+﻿using Authentication.Models;
 using System.Security.Claims;
+using AuthenticationApi.Infrastructure;
 
 namespace AuthenticationApi.Services
 {

@@ -1,6 +1,5 @@
-﻿using AuthData.Domain.Entities;
-using AuthenticationApi.Domain.Dtos;
-using AuthenticationApi.Domain.Models;
+﻿using AuthenticationApi.Dtos;
+using AuthenticationApi.Infrastructure;
 using AuthenticationApi.Services;
 using AutoMapper;
 using ExceptionHandling;

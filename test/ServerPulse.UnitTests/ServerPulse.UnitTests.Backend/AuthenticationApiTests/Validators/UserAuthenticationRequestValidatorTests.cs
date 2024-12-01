@@ -1,4 +1,5 @@
 ﻿using AuthenticationApi.Domain.Dtos;
+using AuthenticationApi.Infrastructure.Validators;
 using FluentValidation.TestHelper;
 
 namespace AuthenticationApi.Validators.Tests

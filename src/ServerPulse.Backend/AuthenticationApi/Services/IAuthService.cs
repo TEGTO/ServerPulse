@@ -1,5 +1,5 @@
 ﻿using Authentication.Models;
-using AuthenticationApi.Domain.Models;
+using AuthenticationApi.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 
 namespace AuthenticationApi.Services

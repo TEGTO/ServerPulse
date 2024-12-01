@@ -97,9 +97,23 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSignalR();
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddSwagger("Analyzer API");
+}
+
 var app = builder.Build();
 
 app.UseSharedMiddleware();
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+else
+{
+    app.UseSwagger("Analyzer API V1");
+}
 
 app.MapHealthChecks("/health");
 app.MapControllers();

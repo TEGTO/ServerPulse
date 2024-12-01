@@ -1,4 +1,4 @@
-﻿using AuthenticationApi.Domain.Dtos;
+﻿using AuthenticationApi.Dtos;
 using MediatR;
 using System.Security.Claims;
 

@@ -58,6 +58,11 @@ builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 builder.Services.AddSharedFluentValidation(typeof(Program));
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddSwagger("Server Monitor API");
+}
+
 var app = builder.Build();
 
 app.UseSharedMiddleware();
@@ -65,6 +70,10 @@ app.UseSharedMiddleware();
 if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
+}
+else
+{
+    app.UseSwagger("Server Monitor API V1");
 }
 
 app.UseIdentity();

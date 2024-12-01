@@ -1,4 +1,4 @@
-﻿using ServerSlotApi.Domain.Entities;
+﻿using ServerSlotApi.Infrastructure.Entities;
 
 namespace ServerSlotApi.Services
 {

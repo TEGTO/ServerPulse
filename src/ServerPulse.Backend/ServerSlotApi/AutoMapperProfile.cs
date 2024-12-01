@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
-using ServerSlotApi.Domain.Dtos;
-using ServerSlotApi.Domain.Entities;
 using ServerSlotApi.Dtos;
+using ServerSlotApi.Infrastructure.Entities;
 
 namespace ServerSlotApi
 {

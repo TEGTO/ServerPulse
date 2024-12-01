@@ -24,8 +24,8 @@
 	</ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AuthData\AuthData.csproj" />
-    <ProjectReference Include="..\Authentication\Authentication.csproj" />
+    <ProjectReference Include="..\AuthenticationApi.Dtos\AuthenticationApi.Dtos.csproj" />
+    <ProjectReference Include="..\AuthenticationApi.Infrastructure\AuthenticationApi.Infrastructure.csproj" />
     <ProjectReference Include="..\DatabaseControl\DatabaseControl.csproj" />
     <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>

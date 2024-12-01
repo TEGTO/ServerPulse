@@ -1,6 +1,6 @@
 ﻿using Authentication.Models;
 using Authentication.Services;
-using AuthenticationApi.Domain.Dtos;
+using AuthenticationApi.Dtos;
 using Microsoft.AspNetCore.Identity;
 using System.Text;
 using System.Text.Json;

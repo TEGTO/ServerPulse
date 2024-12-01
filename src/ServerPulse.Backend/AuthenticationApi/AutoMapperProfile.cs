@@ -1,8 +1,7 @@
-﻿using AuthData.Domain.Entities;
-using Authentication.Models;
-using AuthenticationApi.Domain.Dtos;
-using AuthenticationApi.Domain.Models;
+﻿using Authentication.Models;
 using AutoMapper;
+using AuthenticationApi.Infrastructure;
+using AuthenticationApi.Dtos;
 
 namespace AuthenticationApi
 {

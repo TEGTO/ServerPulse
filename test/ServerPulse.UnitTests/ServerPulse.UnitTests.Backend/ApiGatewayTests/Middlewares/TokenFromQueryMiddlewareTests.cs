@@ -18,50 +18,43 @@ namespace ApiGateway.Middlewares.Tests
         }
 
         [Test]
-        public async Task Invoke_WithHubPathAndAccessToken_AddsAuthorizationHeader()
+        [TestCase("/hub/somepath", "test-token", true, "Bearer test-token")]
+        [TestCase("/HUB/somepath", "test-token", true, "Bearer test-token")]
+        [TestCase(null, "test-token", false, "Bearer test-token")]
+        [TestCase("/hub", "another-token", true, "Bearer another-token")]
+        [TestCase("/someotherpath", "test-token", false, null, Description = "Path without \"hub\"")]
+        [TestCase("/hub/somepath", null, false, null, Description = "Missing access token")]
+        [TestCase("/hub/somepath", null, false, null, Description = "Empty access token")]
+        public async Task Invoke_VariousScenarios_VerifiesAuthorizationHeader(string? path, string? accessToken, bool shouldAddHeader, string? expectedHeaderValue)
         {
             // Arrange
-            var context = new DefaultHttpContext();
-            context.Request.Path = "/hub/somepath";
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            var queryDict = new Dictionary<string, StringValues>();
+            if (accessToken != null)
             {
-                { "access_token", "test-token" }
-            });
+                queryDict.Add("access_token", accessToken);
+            }
+
+            var context = new DefaultHttpContext();
+            context.Request.Path = path;
+            context.Request.Query = new QueryCollection(queryDict);
+
             // Act
             await middleware.Invoke(context);
+
             // Assert
-            Assert.IsTrue(context.Request.Headers.ContainsKey("Authorization"));
-            Assert.That(context.Request.Headers["Authorization"], Is.EqualTo("Bearer test-token"));
-            mockNext.Verify(next => next(context), Times.Once);
-        }
-        [Test]
-        public async Task Invoke_WithoutHubPath_DoesNotAddAuthorizationHeader()
-        {
-            // Arrange
-            var context = new DefaultHttpContext();
-            context.Request.Path = "/someotherpath";
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            if (shouldAddHeader)
             {
-                { "access_token", "test-token" }
-            });
-            // Act
-            await middleware.Invoke(context);
-            // Assert
-            Assert.IsFalse(context.Request.Headers.ContainsKey("Authorization"));
+                Assert.IsTrue(context.Request.Headers.ContainsKey("Authorization"));
+                Assert.That(context.Request.Headers["Authorization"], Is.EqualTo(expectedHeaderValue));
+            }
+            else
+            {
+                Assert.IsFalse(context.Request.Headers.ContainsKey("Authorization"));
+            }
+
             mockNext.Verify(next => next(context), Times.Once);
         }
-        [Test]
-        public async Task Invoke_WithHubPathWithoutAccessToken_DoesNotAddAuthorizationHeader()
-        {
-            // Arrange
-            var context = new DefaultHttpContext();
-            context.Request.Path = "/hub/somepath";
-            // Act
-            await middleware.Invoke(context);
-            // Assert
-            Assert.IsFalse(context.Request.Headers.ContainsKey("Authorization"));
-            mockNext.Verify(next => next(context), Times.Once);
-        }
+
         [Test]
         public async Task Invoke_AlwaysCallsNextDelegate()
         {
@@ -72,8 +65,10 @@ namespace ApiGateway.Middlewares.Tests
             {
                 { "access_token", "test-token" }
             });
+
             // Act
             await middleware.Invoke(context);
+
             // Assert
             mockNext.Verify(next => next(context), Times.Once);
         }
