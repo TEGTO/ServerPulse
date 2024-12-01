@@ -11,7 +11,7 @@ using Testcontainers.Redis;
 
 namespace AnalyzerApi.IntegrationTests
 {
-    public class WebAppFactoryWrapper : IAsyncDisposable
+    public sealed class WebAppFactoryWrapper : IAsyncDisposable
     {
         private ConsulContainer consulContainer;
         private RedisContainer redisContainer;
@@ -41,8 +41,8 @@ namespace AnalyzerApi.IntegrationTests
                 await kafkaContainer.DisposeAsync();
 
                 await WebApplicationFactory.DisposeAsync();
+                WebApplicationFactory = null;
             }
-            GC.SuppressFinalize(this);
         }
 
         private async Task InitializeContainersAsync()
@@ -75,7 +75,6 @@ namespace AnalyzerApi.IntegrationTests
 
                   builder.ConfigureTestServices(services =>
                   {
-
                   });
               });
         }

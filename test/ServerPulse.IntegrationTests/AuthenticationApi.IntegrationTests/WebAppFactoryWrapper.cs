@@ -14,7 +14,7 @@ using Testcontainers.PostgreSql;
 
 namespace AuthenticationApi.IntegrationTests
 {
-    public class WebAppFactoryWrapper : IAsyncDisposable
+    public sealed class WebAppFactoryWrapper : IAsyncDisposable
     {
         private PostgreSqlContainer dbContainer;
         private ConsulContainer consulContainer;
@@ -36,11 +36,13 @@ namespace AuthenticationApi.IntegrationTests
             {
                 await dbContainer.StopAsync();
                 await consulContainer.StopAsync();
+
                 await dbContainer.DisposeAsync();
                 await consulContainer.DisposeAsync();
+
                 await WebApplicationFactory.DisposeAsync();
+                WebApplicationFactory = null;
             }
-            GC.SuppressFinalize(this);
         }
 
         private async Task InitializeContainersAsync()

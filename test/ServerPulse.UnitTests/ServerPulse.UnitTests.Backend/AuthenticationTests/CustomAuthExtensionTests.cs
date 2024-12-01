@@ -1,5 +1,5 @@
 ﻿using Authentication;
-using Authentication.Configuration;
+using Authentication.Token;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;

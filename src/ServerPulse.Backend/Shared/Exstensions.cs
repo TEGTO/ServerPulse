@@ -1,11 +1,13 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Serilog;
 using System.Text.Json;
 
 namespace Shared
 {
     public static class Extensions
     {
-        private static readonly ILogger logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger("Extensions");
+        private static readonly ILogger logger = new LoggerConfiguration()
+         .WriteTo.Console()
+         .CreateLogger();
 
         public static bool TryToDeserialize<T>(this string? message, out T? obj)
         {
@@ -19,7 +21,7 @@ namespace Shared
 
                 obj = JsonSerializer.Deserialize<T>(message);
 
-                if (obj == null)
+                if (object.Equals(obj, default(T)))
                 {
                     return false;
                 }
@@ -28,7 +30,7 @@ namespace Shared
             }
             catch (JsonException ex)
             {
-                logger.LogInformation("Deserialization failed: " + ex.Message);
+                logger.Error(ex, "Deserialization failed");
                 obj = default;
                 return false;
             }

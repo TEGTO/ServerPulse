@@ -15,16 +15,15 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\Authentication\Authentication.csproj" />
-	  <ProjectReference Include="..\ConsulUtils\ConsulUtils.csproj" />
 	  <ProjectReference Include="..\Shared\Shared.csproj" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Content Update="ocelot.eventprocessing.json">
+	  <Content Update="ocelot.Development.eventprocessing.json">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 	  </Content>
-	  <Content Update="ocelot.statisticscontrol.json">
+	  <Content Update="ocelot.Development.statisticscontrol.json">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

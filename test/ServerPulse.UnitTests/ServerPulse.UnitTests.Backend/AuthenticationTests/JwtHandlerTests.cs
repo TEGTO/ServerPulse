@@ -1,5 +1,4 @@
-﻿using Authentication.Configuration;
-using Authentication.Services;
+﻿using Authentication.Token;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Moq;

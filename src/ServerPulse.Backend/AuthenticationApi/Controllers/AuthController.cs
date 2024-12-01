@@ -1,14 +1,13 @@
-﻿using Authentication.Models;
+﻿using AuthenticationApi.Command;
+using AuthenticationApi.Command.ChechAuthData;
+using AuthenticationApi.Command.LoginUser;
+using AuthenticationApi.Command.RefreshToken;
+using AuthenticationApi.Command.RegisterUser;
 using AuthenticationApi.Domain.Dtos;
-using AuthenticationApi.Domain.Entities;
-using AuthenticationApi.Domain.Models;
-using AuthenticationApi.Services;
-using AutoMapper;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Shared.Dtos;
 using Shared.Dtos.Auth;
-using System.Net;
 
 namespace AuthenticationApi.Controllers
 {
@@ -16,79 +15,47 @@ namespace AuthenticationApi.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly IMapper mapper;
-        private readonly IAuthService authService;
-        private readonly IConfiguration configuration;
-        private readonly double expiryInDays;
+        private readonly IMediator mediator;
 
-        public AuthController(IMapper mapper, IAuthService authService, IConfiguration configuration)
+        public AuthController(IMediator mediator)
         {
-            this.mapper = mapper;
-            this.authService = authService;
-            this.configuration = configuration;
-            expiryInDays = double.Parse(configuration[Configuration.AUTH_REFRESH_TOKEN_EXPIRY_IN_DAYS]!);
+            this.mediator = mediator;
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] UserRegistrationRequest request)
+        public async Task<IActionResult> Register(UserRegistrationRequest request, CancellationToken cancellationToken)
         {
-            var user = mapper.Map<User>(request);
-            var result = await authService.RegisterUserAsync(user, request.Password);
-            if (!result.Succeeded)
-            {
-                var errors = result.Errors.Select(e => e.Description).ToArray();
-                return BadRequest(new ResponseError
-                {
-                    StatusCode = ((int)HttpStatusCode.BadRequest).ToString(),
-                    Messages = errors
-                });
-            }
-            return Created($"/users/{user.Id}", null);
+            var response = await mediator.Send(new RegisterUserCommand(request), cancellationToken);
+            return CreatedAtAction(nameof(Register), new { id = response.Email }, response);
         }
+
         [HttpPost("login")]
-        public async Task<ActionResult<UserAuthenticationResponse>> Login([FromBody] UserAuthenticationRequest request)
+        public async Task<ActionResult<UserAuthenticationResponse>> Login(UserAuthenticationRequest request, CancellationToken cancellationToken)
         {
-            var token = await authService.LoginUserAsync(request.Login, request.Password, expiryInDays);
-            var tokenDto = mapper.Map<AuthToken>(token);
-            var user = await authService.GetUserByLoginAsync(request.Login);
-            var response = new UserAuthenticationResponse()
-            {
-                AuthToken = tokenDto,
-                UserName = user.UserName,
-                Email = user.Email
-            };
+            var response = await mediator.Send(new LoginUserCommand(request), cancellationToken);
             return Ok(response);
         }
+
         [Authorize]
         [HttpPut("update")]
-        public async Task<IActionResult> Update([FromBody] UserUpdateDataRequest request)
+        public async Task<IActionResult> Update([FromBody] UserUpdateDataRequest request, CancellationToken cancellationToken)
         {
-            UserUpdateData serviceUpdateRequest = mapper.Map<UserUpdateData>(request);
-            var identityErrors = await authService.UpdateUserAsync(serviceUpdateRequest);
-            if (identityErrors.Count > 0)
-            {
-                var errors = identityErrors.Select(e => e.Description).ToArray();
-                return BadRequest(new ResponseError { StatusCode = $"{(int)HttpStatusCode.BadRequest}", Messages = errors.ToArray() });
-            }
+            await mediator.Send(new UpdateUserCommand(request, User), cancellationToken);
             return Ok();
         }
+
         [HttpPost("refresh")]
-        public async Task<ActionResult<AuthToken>> Refresh([FromBody] AuthToken request)
+        public async Task<ActionResult<AuthToken>> Refresh(AuthToken request, CancellationToken cancellationToken)
         {
-            var tokenData = mapper.Map<AccessTokenData>(request);
-            var newToken = await authService.RefreshTokenAsync(tokenData, expiryInDays);
-            var tokenDto = mapper.Map<AuthToken>(newToken);
-            return Ok(tokenDto);
+            var response = await mediator.Send(new RefreshTokenCommand(request), cancellationToken);
+            return Ok(response);
         }
+
         [HttpPost("check")]
-        public async Task<ActionResult<CheckAuthDataResponse>> CheckAuthData([FromBody] CheckAuthDataRequest request)
+        public async Task<ActionResult<CheckAuthDataResponse>> CheckAuthData([FromBody] CheckAuthDataRequest request, CancellationToken cancellationToken)
         {
-            var isCorrect = await authService.CheckAuthDataAsync(request.Login, request.Password);
-            var checkAuthDataResponse = new CheckAuthDataResponse
-            {
-                IsCorrect = isCorrect
-            };
-            return Ok(checkAuthDataResponse);
+            var response = await mediator.Send(new CheckAuthDataCommand(request), cancellationToken);
+            return Ok(response);
         }
     }
 }

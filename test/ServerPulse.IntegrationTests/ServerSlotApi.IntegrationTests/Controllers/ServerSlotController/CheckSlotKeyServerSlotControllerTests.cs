@@ -11,7 +11,6 @@ namespace ServerSlotApi.IntegrationTests.Controllers.ServerSlotController
     {
         private List<ServerSlotResponse> serverSlotReponses;
 
-
         [OneTimeSetUp]
         public async Task SetUp()
         {

@@ -6,9 +6,13 @@ services:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
       - ASPNETCORE_URLS=http://+:8080;
       - ASPNETCORE_HTTP_PORTS=8080
-      - Consul__Host=${Consul__Host}
-      - Consul__ServiceName=authentication
-      - Consul__ServicePort=8080
+      - ConnectionStrings__AuthenticationDb=${ConnectionStrings__AuthenticationDb}
+      - EFCreateDatabase=${EFCreateDatabase}
+      - AuthSettings__Key=${AuthSettings__Key}
+      - AuthSettings__Audience=${AuthSettings__Audience}
+      - AuthSettings__Issuer=${AuthSettings__Issuer}
+      - AuthSettings__ExpiryInMinutes=${AuthSettings__ExpiryInMinutes}
+      - AuthSettings__RefreshExpiryInDays=${AuthSettings__RefreshExpiryInDays}
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
@@ -17,9 +21,15 @@ services:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
       - ASPNETCORE_URLS=http://+:8080;
       - ASPNETCORE_HTTP_PORTS=8080
-      - Consul__Host=${Consul__Host}
-      - Consul__ServiceName=server-slot
-      - Consul__ServicePort=8080
+      - EFCreateDatabase=${EFCreateDatabase}
+      - ConnectionStrings__ServerSlotDb=${ConnectionStrings__ServerSlotDb}
+      - SlotsPerUser=${SlotsPerUser}
+      - ServerMonitorApi__DeleteStatistics=${ServerMonitorApi__DeleteStatistics}
+      - ApiGateway=${ApiGateway}
+      - AuthSettings__Key=${AuthSettings__Key}
+      - AuthSettings__Audience=${AuthSettings__Audience}
+      - AuthSettings__Issuer=${AuthSettings__Issuer}
+      - AuthSettings__ExpiryInMinutes=${AuthSettings__ExpiryInMinutes}
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
@@ -27,9 +37,17 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
-      - Consul__Host=${Consul__Host}
-      - Consul__ServiceName=server-monitor
-      - Consul__ServicePort=8080
+      - ApiGateway=${ApiGateway}
+      - Kafka__ClientId=${Kafka__ClientId__MonitorApi}
+      - Kafka__BootstrapServers=${Kafka__BootstrapServers}
+      - Kafka__AliveTopic=${Kafka__AliveTopic}
+      - Kafka__ConfigurationTopic=${Kafka__ConfigurationTopic}
+      - Kafka__LoadTopic=${Kafka__LoadTopic}
+      - Kafka__CustomTopic=${Kafka__CustomTopic}
+      - Cache__ServerSlotExpiryInMinutes=${Cache__ServerSlotExpiryInMinutes}
+      - ServerSlotApi__Check=${ServerSlotApi__Check}
+      - Analyzer__Load=${Analyzer__Load}
+      - ConnectionStrings__RedisServer=${ConnectionStrings__RedisServer}
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
@@ -37,9 +55,22 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
-      - Consul__Host=${Consul__Host}
-      - Consul__ServiceName=analyzer
-      - Consul__ServicePort=8080
+      - Kafka__BootstrapServers=${Kafka__BootstrapServers}
+      - Kafka__ClientId=${Kafka__ClientId__Analyzer}
+      - Kafka__GroupId=${Kafka__GroupId}
+      - Kafka__AnalyzerReceiveTimeout=${Kafka__AnalyzerReceiveTimeout}
+      - Kafka__AliveTopic=${Kafka__AliveTopic}
+      - Kafka__ConfigurationTopic=${Kafka__ConfigurationTopic}
+      - Kafka__LoadTopic=${Kafka__LoadTopic}
+      - Kafka__ServerStatisticsTopic=${Kafka__ServerStatisticsTopic}
+      - Kafka__TopicDataSaveInDays=${Kafka__TopicDataSaveInDays}
+      - PulseEventIntervalInMilliseconds=${PulseEventIntervalInMilliseconds}
+      - StatisticsCollectIntervalInMilliseconds=${StatisticsCollectIntervalInMilliseconds}
+      - ConnectionStrings__RedisServer=${ConnectionStrings__RedisServer}
+      - Cache__ServerLoadStatisticsPerDayExpiryInMinutes=${Cache__ServerLoadStatisticsPerDayExpiryInMinutes}
+      - Cache__StatisticsKey=${Cache__StatisticsKey}
+      - MinimumStatisticsTimeSpanInSeconds=${MinimumStatisticsTimeSpanInSeconds}
+      - MaxEventAmountToGetInSlotData=${MaxEventAmountToGetInSlotData}
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
@@ -51,9 +82,12 @@ services:
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_Kestrel__Certificates__Default__Password=${CertificatePassword}
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/app/certificates/aspnetapp.pfx
-      - Consul__Host=${Consul__Host}
-      - Consul__ServiceName=apigateway
-      - Consul__ServicePort=8080
+      - AuthSettings__Key=${AuthSettings__Key}
+      - AuthSettings__Audience=${AuthSettings__Audience}
+      - AuthSettings__Issuer=${AuthSettings__Issuer}
+      - AuthSettings__ExpiryInMinutes=${AuthSettings__ExpiryInMinutes}
+      - AllowedCORSOrigins=${AllowedCORSOrigins}
+      - UseCORS=${UseCORS}
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro

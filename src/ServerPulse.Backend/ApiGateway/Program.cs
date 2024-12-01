@@ -1,83 +1,75 @@
 using ApiGateway;
 using ApiGateway.Middlewares;
 using Authentication;
-using ConsulUtils.Extension;
+using ExceptionHandling;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
-using Ocelot.Provider.Consul;
 using Ocelot.Provider.Polly;
-using Shared.Middlewares;
+using Shared;
 
 var builder = WebApplication.CreateBuilder(args);
 
-#region Consul
-
-string environmentName = builder.Environment.EnvironmentName;
-builder.Services.AddHealthChecks();
-var consulSettings = ConsulExtension.GetConsulSettings(builder.Configuration);
-builder.Services.AddConsulService(consulSettings);
-builder.Configuration.ConfigureConsul(consulSettings, environmentName);
-
-#endregion
-
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-
 #region Cors
 
-var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
-var allowedOrigins = builder.Configuration.GetSection(Configuration.ALLOWED_CORS_ORIGINS).Get<string[]>() ?? [];
+bool.TryParse(builder.Configuration[Configuration.USE_CORS], out bool useCors);
+var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
-builder.Services.AddCors(options =>
+if (useCors)
 {
-    options.AddPolicy(name: MyAllowSpecificOrigins, policy =>
-    {
-        policy.WithOrigins(allowedOrigins)
-        .AllowAnyHeader()
-        .AllowCredentials()
-        .AllowAnyMethod();
-        if (builder.Environment.IsDevelopment())
-        {
-            policy.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost");
-        }
-    });
-});
+    builder.Services.AddApplicationCors(builder.Configuration, myAllowSpecificOrigins, builder.Environment.IsDevelopment());
+}
 
 #endregion
 
-
 builder.Services.ConfigureIdentityServices(builder.Configuration);
+builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddHealthChecks();
 
 #region Ocelot
 
-var mergedPath = "merged.json";
+var env = builder.Environment.EnvironmentName;
+
+var mergedPath = $"merged.{env}.json";
+
 Utility.MergeJsonFiles(
     [
-    "ocelot.json",
-    "ocelot.analyzer.json",
-    "ocelot.eventprocessing.json",
-    "ocelot.authentication.json",
-    "ocelot.interaction.json",
-    "ocelot.statisticscontrol.json",
-    "ocelot.slotdata.json",
-    "ocelot.slot.json"
+        $"ocelot.{env}.json",
+        $"ocelot.{env}.analyzer.json",
+        $"ocelot.{env}.eventprocessing.json",
+        $"ocelot.{env}.authentication.json",
+        $"ocelot.{env}.interaction.json",
+        $"ocelot.{env}.statisticscontrol.json",
+        $"ocelot.{env}.slotdata.json",
+        $"ocelot.{env}.slot.json",
     ], mergedPath);
+
 builder.Configuration
     .SetBasePath(builder.Environment.ContentRootPath)
-    .AddJsonFile(mergedPath, optional: false, reloadOnChange: true)
+    .AddJsonFile(mergedPath, optional: true, reloadOnChange: true)
     .AddEnvironmentVariables();
 
-builder.Services.AddOcelot(builder.Configuration).AddPolly().AddConsul();
+builder.Services.AddOcelot(builder.Configuration).AddPolly();
 
 #endregion
 
+
 var app = builder.Build();
 
-app.UseCors(MyAllowSpecificOrigins);
-app.UseExceptionMiddleware();
+if (useCors)
+{
+    app.UseCors(myAllowSpecificOrigins);
+}
+
+app.UseSharedMiddleware();
 app.UseMiddleware<TokenFromQueryMiddleware>();
 
 app.UseRouting();
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -87,4 +79,6 @@ app.MapHealthChecks("/health");
 
 app.UseOcelotWebSockets();
 await app.UseOcelot();
-app.Run();
+await app.RunAsync();
+
+public partial class Program { }

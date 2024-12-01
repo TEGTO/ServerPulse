@@ -1,4 +1,4 @@
-﻿using Authentication.Configuration;
+﻿using Authentication.Token;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 

@@ -1,31 +1,24 @@
+using Authentication;
 using CacheUtils;
 using Confluent.Kafka;
-using ConsulUtils.Extension;
+using ExceptionHandling;
+using Logging;
 using MessageBus;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using ServerMonitorApi;
 using ServerMonitorApi.Services;
 using Shared;
-using Shared.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
-#region Consul
-
-string environmentName = builder.Environment.EnvironmentName;
-builder.Services.AddHealthChecks();
-var consulSettings = ConsulExtension.GetConsulSettings(builder.Configuration);
-builder.Services.AddConsulService(consulSettings);
-builder.Configuration.ConfigureConsul(consulSettings, environmentName);
-
-#endregion
+builder.Host.AddLogging();
 
 builder.Services.Configure<KestrelServerOptions>(options =>
 {
     options.Limits.MaxRequestBodySize = 1 * 1024 * 1024; //1 MB
 });
 
-builder.Services.AddHttpClient();
+builder.Services.AddCustomHttpClientServiceWithResilience(builder.Configuration);
 
 #region Kafka
 
@@ -67,13 +60,18 @@ builder.Services.AddSharedFluentValidation(typeof(Program));
 
 var app = builder.Build();
 
-app.UseExceptionMiddleware();
+app.UseSharedMiddleware();
 
-app.UseAuthorization();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
+app.UseIdentity();
 
 app.MapHealthChecks("/health");
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();
 
 public partial class Program { }

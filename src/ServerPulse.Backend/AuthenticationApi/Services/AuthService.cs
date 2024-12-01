@@ -1,6 +1,5 @@
-﻿using Authentication.Models;
-using Authentication.Services;
-using AuthenticationApi.Domain.Entities;
+﻿using AuthData.Domain.Entities;
+using Authentication.Models;
 using AuthenticationApi.Domain.Models;
 using Microsoft.AspNetCore.Identity;
 
@@ -9,109 +8,63 @@ namespace AuthenticationApi.Services
     public class AuthService : IAuthService
     {
         private readonly UserManager<User> userManager;
-        private readonly ITokenHandler tokenHandler;
+        private readonly ITokenService tokenService;
+        private readonly double expiryInDays;
 
-        public AuthService(UserManager<User> userManager, ITokenHandler tokenHandler)
+        public AuthService(UserManager<User> userManager, ITokenService tokenService, IConfiguration configuration)
         {
             this.userManager = userManager;
-            this.tokenHandler = tokenHandler;
+            this.tokenService = tokenService;
+            expiryInDays = double.Parse(configuration[Configuration.AUTH_REFRESH_TOKEN_EXPIRY_IN_DAYS]!);
         }
 
-        public async Task<IdentityResult> RegisterUserAsync(User user, string password)
+        #region IAuthService Members
+
+        public async Task<IdentityResult> RegisterUserAsync(RegisterUserModel registerModel, CancellationToken cancellationToken)
         {
-            return await userManager.CreateAsync(user, password);
+            return await userManager.CreateAsync(registerModel.User, registerModel.Password);
         }
-        public async Task<AccessTokenData> LoginUserAsync(string login, string password, double refreshTokenExpiryInDays)
+        public async Task<AccessTokenData> LoginUserAsync(LoginUserModel loginModel, CancellationToken cancellationToken)
         {
-            var user = await GetUserByLoginAsync(login);
-            if (user == null || !await userManager.CheckPasswordAsync(user, password))
+            var user = loginModel.User;
+
+            if (!await userManager.CheckPasswordAsync(user, loginModel.Password))
             {
-                throw new UnauthorizedAccessException("Invalid authentication. Login or email address is not correct.");
+                throw new UnauthorizedAccessException("Invalid authentication. Check Login or password.");
             }
-            var tokenData = CreateNewTokenData(user, refreshTokenExpiryInDays);
-            await SetRefreshToken(user, tokenData);
+
+            var refreshTokenExpiryDate = DateTime.UtcNow.AddDays(expiryInDays);
+
+            var tokenData = await tokenService.CreateNewTokenDataAsync(user, refreshTokenExpiryDate, cancellationToken);
+            await tokenService.SetRefreshTokenAsync(user, tokenData, cancellationToken);
+
             return tokenData;
         }
-        public async Task<User?> GetUserByLoginAsync(string login)
+        public async Task<AccessTokenData> RefreshTokenAsync(RefreshTokenModel refreshTokenModel, CancellationToken cancellationToken)
         {
-            var user = await userManager.FindByEmailAsync(login);
-            user = user == null ? await userManager.FindByNameAsync(login) : user;
-            return user;
-        }
-        public async Task<List<IdentityError>> UpdateUserAsync(UserUpdateData updateData)
-        {
-            var user = await userManager.FindByEmailAsync(updateData.OldEmail);
-            List<IdentityError> identityErrors = new List<IdentityError>();
-
-            if (!string.IsNullOrEmpty(updateData.UserName))
-            {
-                var result = await userManager.SetUserNameAsync(user, updateData.UserName);
-                identityErrors.AddRange(result.Errors);
-            }
-
-            if (!string.IsNullOrEmpty(updateData.NewEmail) && !updateData.NewEmail.Equals(updateData.OldEmail))
-            {
-                var token = await userManager.GenerateChangeEmailTokenAsync(user, updateData.NewEmail);
-                var result = await userManager.ChangeEmailAsync(user, updateData.NewEmail, token);
-                identityErrors.AddRange(result.Errors);
-            }
-
-            if (!string.IsNullOrEmpty(updateData.NewPassword))
-            {
-                var result = await userManager.ChangePasswordAsync(user, updateData.OldPassword, updateData.NewPassword);
-                identityErrors.AddRange(result.Errors);
-            }
-
-            return RemoveDuplicates(identityErrors);
-        }
-        public async Task<AccessTokenData> RefreshTokenAsync(AccessTokenData accessTokenData, double refreshTokenExpiryInDays)
-        {
-            var principal = tokenHandler.GetPrincipalFromExpiredToken(accessTokenData.AccessToken);
-            var user = await userManager.FindByNameAsync(principal.Identity.Name);
+            var user = refreshTokenModel.User;
+            var accessTokenData = refreshTokenModel.AccessTokenData;
 
             if (user == null)
             {
                 throw new UnauthorizedAccessException("Invalid authentication. AccessToken is not valid.");
             }
 
-            if (user.RefreshToken != accessTokenData.RefreshToken || user.RefreshTokenExpiryTime < DateTime.UtcNow)
+            if (accessTokenData.RefreshToken == null ||
+                user.RefreshToken != accessTokenData.RefreshToken ||
+                user.RefreshTokenExpiryTime < DateTime.UtcNow)
             {
-                throw new InvalidDataException("Refresh token is not valid!");
+                throw new UnauthorizedAccessException("Refresh token is not valid!");
             }
 
-            var tokenData = CreateNewTokenData(user, refreshTokenExpiryInDays);
-            await SetRefreshToken(user, tokenData);
+            var refreshTokenExpiryDate = DateTime.UtcNow.AddDays(expiryInDays);
+
+            var tokenData = await tokenService.CreateNewTokenDataAsync(user, refreshTokenExpiryDate, cancellationToken);
+            await tokenService.SetRefreshTokenAsync(user, tokenData, cancellationToken);
+
             return tokenData;
-        }
-        public async Task<bool> CheckAuthDataAsync(string login, string password)
-        {
-            var user = await GetUserByLoginAsync(login);
-            if (user == null || !await userManager.CheckPasswordAsync(user, password))
-            {
-                return false;
-            }
-            return true;
         }
 
-        private AccessTokenData CreateNewTokenData(User user, double refreshTokenExpiryInDays)
-        {
-            var tokenData = tokenHandler.CreateToken(user);
-            tokenData.RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(refreshTokenExpiryInDays);
-            return tokenData;
-        }
-        private async Task SetRefreshToken(User user, AccessTokenData accessTokenData)
-        {
-            user.RefreshToken = accessTokenData.RefreshToken;
-            user.RefreshTokenExpiryTime = accessTokenData.RefreshTokenExpiryDate;
-            await userManager.UpdateAsync(user);
-        }
-        private List<IdentityError> RemoveDuplicates(List<IdentityError> identityErrors)
-        {
-            identityErrors = identityErrors
-            .GroupBy(e => e.Description)
-            .Select(g => g.First())
-            .ToList();
-            return identityErrors;
-        }
+        #endregion
     }
 }

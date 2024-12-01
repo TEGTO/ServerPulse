@@ -16,7 +16,6 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include=".env" />
-    <None Include="docker-compose-consul.yml" />
     <None Include="docker-compose-databases.override.yml">
       <DependentUpon>docker-compose-databases.yml</DependentUpon>
     </None>
@@ -26,9 +25,9 @@
     <None Include="docker-compose-kafka.dev.yml">
       <DependentUpon>docker-compose-kafka.yml</DependentUpon>
     </None>
-	 <None Include="docker-compose-redis.override.yml" >
-		 <DependentUpon >docker-compose-redis.yml</DependentUpon>
-	 </None>
+    <None Include="docker-compose-redis.override.yml">
+      <DependentUpon>docker-compose-redis.yml</DependentUpon>
+    </None>
     <None Include="docker-compose-redis.yml" />
     <None Include="docker-compose.override.yml">
       <DependentUpon>docker-compose.yml</DependentUpon>

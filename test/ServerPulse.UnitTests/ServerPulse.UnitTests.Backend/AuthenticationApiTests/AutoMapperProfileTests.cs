@@ -96,7 +96,7 @@ namespace AuthenticationApi.Tests
                 NewPassword = "NewPassword123"
             };
             //Act
-            var result = mapper.Map<UserUpdateData>(request);
+            var result = mapper.Map<UserUpdateModel>(request);
             //Assert
             Assert.That(result.UserName, Is.EqualTo(request.UserName));
             Assert.That(result.OldEmail, Is.EqualTo(request.OldEmail));

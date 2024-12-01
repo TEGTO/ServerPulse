@@ -100,8 +100,8 @@ namespace AuthenticationApi.Controllers.Tests
         {
             // Arrange
             var updateRequest = new UserUpdateDataRequest { UserName = "newuser", OldEmail = "old@example.com", NewEmail = "new@example.com", OldPassword = "OldPassword123", NewPassword = "NewPassword123" };
-            var serviceUpdateRequest = new UserUpdateData { UserName = "newuser", OldEmail = "old@example.com", NewEmail = "new@example.com", OldPassword = "OldPassword123", NewPassword = "NewPassword123" };
-            mapperMock.Setup(m => m.Map<UserUpdateData>(updateRequest)).Returns(serviceUpdateRequest);
+            var serviceUpdateRequest = new UserUpdateModel { UserName = "newuser", OldEmail = "old@example.com", NewEmail = "new@example.com", OldPassword = "OldPassword123", NewPassword = "NewPassword123" };
+            mapperMock.Setup(m => m.Map<UserUpdateModel>(updateRequest)).Returns(serviceUpdateRequest);
             authServiceMock.Setup(a => a.UpdateUserAsync(serviceUpdateRequest)).ReturnsAsync(new List<IdentityError>());
 
             // Act
@@ -115,9 +115,9 @@ namespace AuthenticationApi.Controllers.Tests
         {
             // Arrange
             var updateRequest = new UserUpdateDataRequest { UserName = "newuser", OldEmail = "old@example.com", NewEmail = "new@example.com", OldPassword = "OldPassword123", NewPassword = "NewPassword123" };
-            var serviceUpdateRequest = new UserUpdateData { UserName = "newuser", OldEmail = "old@example.com", NewEmail = "new@example.com", OldPassword = "OldPassword123", NewPassword = "NewPassword123" };
+            var serviceUpdateRequest = new UserUpdateModel { UserName = "newuser", OldEmail = "old@example.com", NewEmail = "new@example.com", OldPassword = "OldPassword123", NewPassword = "NewPassword123" };
             var identityErrors = new List<IdentityError> { new IdentityError { Description = "Error" } };
-            mapperMock.Setup(m => m.Map<UserUpdateData>(updateRequest)).Returns(serviceUpdateRequest);
+            mapperMock.Setup(m => m.Map<UserUpdateModel>(updateRequest)).Returns(serviceUpdateRequest);
             authServiceMock.Setup(a => a.UpdateUserAsync(serviceUpdateRequest)).ReturnsAsync(identityErrors);
 
             // Act

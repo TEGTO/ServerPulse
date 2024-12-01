@@ -1,5 +1,5 @@
 ﻿using Authentication.Models;
-using Authentication.Services;
+using Authentication.Token;
 using AuthenticationApi.Domain.Entities;
 using AuthenticationApi.Domain.Models;
 using Microsoft.AspNetCore.Identity;
@@ -75,7 +75,7 @@ namespace AuthenticationApi.Services.Tests
         public async Task UpdateUserAsync_ValidUpdateData_IdentityErrorsReturned()
         {
             //Arrange
-            var updateData = new UserUpdateData
+            var updateData = new UserUpdateModel
             {
                 UserName = "newuser",
                 OldEmail = "old@example.com",

@@ -10,23 +10,15 @@ using AnalyzerApi.Services.Receivers.Event;
 using AnalyzerApi.Services.Receivers.Statistics;
 using CacheUtils;
 using Confluent.Kafka;
-using ConsulUtils.Extension;
+using ExceptionHandling;
+using Logging;
 using MessageBus;
 using ServerPulse.EventCommunication.Events;
 using Shared;
-using Shared.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
-#region Consul
-
-string environmentName = builder.Environment.EnvironmentName;
-builder.Services.AddHealthChecks();
-var consulSettings = ConsulExtension.GetConsulSettings(builder.Configuration);
-builder.Services.AddConsulService(consulSettings);
-builder.Configuration.ConfigureConsul(consulSettings, environmentName);
-
-#endregion 
+builder.Host.AddLogging();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -107,9 +99,7 @@ builder.Services.AddSignalR();
 
 var app = builder.Build();
 
-app.UseExceptionMiddleware();
-
-app.UseAuthorization();
+app.UseSharedMiddleware();
 
 app.MapHealthChecks("/health");
 app.MapControllers();
@@ -122,6 +112,6 @@ app.MapHub<StatisticsHub<ServerCustomStatistics>>("/customstatisticshub");
 
 #endregion
 
-app.Run();
+await app.RunAsync();
 
 public partial class Program { }

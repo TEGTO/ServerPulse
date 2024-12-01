@@ -13,7 +13,7 @@ using Testcontainers.Redis;
 
 namespace ServerMonitorApi.IntegrationTests
 {
-    public class WebAppFactoryWrapper : IAsyncDisposable
+    public sealed class WebAppFactoryWrapper : IAsyncDisposable
     {
         private ConsulContainer consulContainer;
         private RedisContainer redisContainer;
@@ -43,8 +43,8 @@ namespace ServerMonitorApi.IntegrationTests
                 await kafkaContainer.DisposeAsync();
 
                 await WebApplicationFactory.DisposeAsync();
+                WebApplicationFactory = null;
             }
-            GC.SuppressFinalize(this);
         }
 
         private async Task InitializeContainersAsync()

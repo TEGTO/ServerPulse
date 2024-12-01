@@ -3,7 +3,7 @@
 [assembly: InternalsVisibleTo("CacheUtilsTests")]
 namespace CacheUtils
 {
-    internal class Configuration
+    internal static class Configuration
     {
         public static string REDIS_CONNECTION_STRING { get; } = "RedisServer";
     }

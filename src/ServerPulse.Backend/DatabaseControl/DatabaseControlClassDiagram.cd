@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="Shared.Repositories.DatabaseRepository&lt;TContext&gt;" BaseTypeListCollapsed="true">
+    <Position X="0.5" Y="4.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AQCAAAAAAAAAAAAAAAAAAAEAAAgQAAgAEAAAABAAAIA=</HashCode>
+      <FileName>Repositories\DatabaseRepository.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="DatabaseControl.ApplicationBuilderExstensions">
+    <Position X="0.5" Y="3" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAA=</HashCode>
+      <FileName>ApplicationBuilderExstensions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DatabaseControl.DatabaseConfiguration">
+    <Position X="3.5" Y="3" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>DatabaseConfiguration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DatabaseControl.ServiceCollectionExtensions">
+    <Position X="3.25" Y="4.5" Width="3.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEACAAAAAA=</HashCode>
+      <FileName>ServiceCollectionExtensions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Interface Name="Shared.Repositories.IDatabaseRepository&lt;TContext&gt;">
+    <Position X="0.5" Y="7.75" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAAAAAAAAAAAAAAAAAAEAAAAAAAgAEAAAABAAAIA=</HashCode>
+      <FileName>Repositories\IDatabaseRepository.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
