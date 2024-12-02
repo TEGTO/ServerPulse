@@ -1,7 +1,7 @@
 ﻿using Authentication.Models;
-using AutoMapper;
-using AuthenticationApi.Infrastructure;
 using AuthenticationApi.Dtos;
+using AuthenticationApi.Infrastructure;
+using AutoMapper;
 
 namespace AuthenticationApi
 {
@@ -10,12 +10,15 @@ namespace AuthenticationApi
         public AutoMapperProfile()
         {
             CreateMap<User, UserRegistrationRequest>();
-            CreateMap<UserRegistrationRequest, User>();
+            CreateMap<UserRegistrationRequest, User>()
+                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email)) // Map Email to UserName
+                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));   // Map Email to Email
 
             CreateMap<AccessTokenData, AuthToken>();
             CreateMap<AuthToken, AccessTokenData>();
 
-            CreateMap<UserUpdateDataRequest, UserUpdateModel>();
+            CreateMap<UserUpdateDataRequest, UserUpdateModel>()
+                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.NewEmail));
         }
     }
 }

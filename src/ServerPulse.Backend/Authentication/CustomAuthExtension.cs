@@ -22,6 +22,8 @@ namespace Authentication
 
             services.AddSingleton(jwtSettings);
 
+            services.AddAuthorization();
+
             services.AddCustomAuthentication(jwtSettings);
 
             return services;
@@ -53,6 +55,8 @@ namespace Authentication
         public static IApplicationBuilder UseIdentity(this IApplicationBuilder app)
         {
             app.UseAuthentication();
+            app.UseAuthorization();
+
             return app;
         }
     }

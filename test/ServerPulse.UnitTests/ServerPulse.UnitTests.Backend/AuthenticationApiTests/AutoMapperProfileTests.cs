@@ -34,7 +34,6 @@ namespace AuthenticationApi.Tests
             var result = mapper.Map<UserRegistrationRequest>(user);
 
             //Assert
-            Assert.That(result.UserName, Is.EqualTo(user.UserName));
             Assert.That(result.Email, Is.EqualTo(user.Email));
         }
 
@@ -44,7 +43,6 @@ namespace AuthenticationApi.Tests
             //Arrange
             var request = new UserRegistrationRequest
             {
-                UserName = "testuser",
                 Email = "testuser@example.com",
                 Password = "Password123",
                 ConfirmPassword = "Password123"
@@ -54,7 +52,6 @@ namespace AuthenticationApi.Tests
             var result = mapper.Map<User>(request);
 
             //Assert
-            Assert.That(result.UserName, Is.EqualTo(request.UserName));
             Assert.That(result.Email, Is.EqualTo(request.Email));
         }
 
@@ -101,7 +98,6 @@ namespace AuthenticationApi.Tests
             //Arrange
             var request = new UserUpdateDataRequest
             {
-                UserName = "testuser",
                 OldEmail = "old@example.com",
                 NewEmail = "new@example.com",
                 OldPassword = "OldPassword123",
@@ -112,7 +108,6 @@ namespace AuthenticationApi.Tests
             var result = mapper.Map<UserUpdateModel>(request);
 
             //Assert
-            Assert.That(result.UserName, Is.EqualTo(request.UserName));
             Assert.That(result.OldEmail, Is.EqualTo(request.OldEmail));
             Assert.That(result.NewEmail, Is.EqualTo(request.NewEmail));
             Assert.That(result.OldPassword, Is.EqualTo(request.OldPassword));

@@ -25,15 +25,22 @@ namespace Shared.Helpers
             var httpContent = new FormUrlEncodedContent(bodyParams);
             return await SendHttpRequestAsync<T>(HttpMethod.Post, endpoint, httpContent: httpContent, accessToken: accessToken, cancellationToken: cancellationToken);
         }
+
         public async Task<T?> SendPostRequestAsync<T>(string endpoint, string json, string? accessToken = null, CancellationToken cancellationToken = default)
         {
             var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
             return await SendHttpRequestAsync<T>(HttpMethod.Post, endpoint, httpContent: httpContent, accessToken: accessToken, cancellationToken: cancellationToken);
         }
+
         public async Task SendPutRequestAsync(string endpoint, string jsonBody, Dictionary<string, string>? queryParams = null, string? accessToken = null, CancellationToken cancellationToken = default)
         {
             var httpContent = new StringContent(jsonBody, Encoding.UTF8, "application/json");
             await SendHttpRequestAsync<dynamic>(HttpMethod.Put, endpoint, accessToken, queryParams, httpContent, cancellationToken);
+        }
+
+        public async Task SendDeleteRequestAsync(string endpoint, string? accessToken = null, CancellationToken cancellationToken = default)
+        {
+            await SendHttpRequestAsync<dynamic>(HttpMethod.Get, endpoint, accessToken, cancellationToken: cancellationToken);
         }
 
         private async Task<T?> SendHttpRequestAsync<T>(HttpMethod httpMethod, string endpoint, string? accessToken = null, Dictionary<string, string>? queryParams = null, HttpContent? httpContent = null, CancellationToken cancellationToken = default)

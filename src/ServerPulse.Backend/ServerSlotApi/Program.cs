@@ -5,8 +5,8 @@ using Logging;
 using Microsoft.EntityFrameworkCore;
 using ServerSlotApi;
 using ServerSlotApi.Infrastructure.Data;
+using ServerSlotApi.Infrastructure.Repositories;
 using ServerSlotApi.Infrastructure.Validators;
-using ServerSlotApi.Services;
 using Shared;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,8 +25,7 @@ builder.Services.AddCustomHttpClientServiceWithResilience(builder.Configuration)
 
 #region Project Services
 
-builder.Services.AddSingleton<IServerSlotService, ServerSlotService>();
-builder.Services.AddSingleton<ISlotStatisticsService, SlotStatisticsService>();
+builder.Services.AddSingleton<IServerSlotRepository, ServerSlotRepository>();
 
 #endregion
 
@@ -35,6 +34,11 @@ builder.Services.AddRepositoryWithResilience<ServerDataDbContext>(builder.Config
 builder.Services.ConfigureIdentityServices(builder.Configuration);
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
+builder.Services.AddMediatR(conf =>
+{
+    conf.RegisterServicesFromAssembly(typeof(Program).Assembly);
+});
 
 builder.Services.AddSharedFluentValidation(typeof(Program), typeof(CheckServerSlotRequestValidator));
 

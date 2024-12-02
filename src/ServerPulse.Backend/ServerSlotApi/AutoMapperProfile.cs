@@ -9,7 +9,9 @@ namespace ServerSlotApi
         public AutoMapperProfile()
         {
             CreateMap<ServerSlot, ServerSlotResponse>();
+
             CreateMap<CreateServerSlotRequest, ServerSlot>();
+
             CreateMap<UpdateServerSlotRequest, ServerSlot>();
         }
     }

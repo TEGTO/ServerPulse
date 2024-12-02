@@ -86,7 +86,6 @@ else
 
 app.UseIdentity();
 
-app.MapHealthChecks("/health");
 app.MapControllers();
 
 await app.RunAsync();

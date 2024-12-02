@@ -158,6 +158,36 @@ namespace Shared.Helpers.Tests
                 await httpHelper.SendPutRequestAsync(endpoint, jsonBody, null, accessToken));
             Assert.That(exception.Message, Is.EqualTo(responseBody));
         }
+
+        [Test]
+        [TestCase("https://example.com/api/data", null, HttpStatusCode.OK)]
+        [TestCase("https://example.com/api/data", "token123", HttpStatusCode.OK)]
+        public async Task SendDeleteRequestAsync_ValidRequest_SuccessfulExecution(string endpoint, string? accessToken, HttpStatusCode statusCode)
+        {
+            // Arrange
+            mockHttp.When(HttpMethod.Get, endpoint).Respond(statusCode);
+
+            // Act
+            await httpHelper.SendDeleteRequestAsync(endpoint, accessToken);
+
+            // Assert
+            Assert.Pass();
+        }
+
+        [Test]
+        [TestCase("https://example.com/api/data", null, HttpStatusCode.BadRequest, "{\"error\":\"Invalid request\"}")]
+        [TestCase("https://example.com/api/data", "token123", HttpStatusCode.Unauthorized, "{\"error\":\"Unauthorized access\"}")]
+        public void SendDeleteRequestAsync_InvalidRequest_ThrowsHttpRequestException(
+            string endpoint, string? accessToken, HttpStatusCode statusCode, string responseBody)
+        {
+            // Arrange
+            mockHttp.When(HttpMethod.Get, endpoint).Respond(statusCode, "application/json", responseBody);
+
+            // Act & Assert
+            var exception = Assert.ThrowsAsync<HttpRequestException>(async () =>
+                await httpHelper.SendDeleteRequestAsync(endpoint, accessToken));
+            Assert.That(exception.Message, Is.EqualTo(responseBody));
+        }
     }
 
     public class TestResponse

@@ -1,9 +1,13 @@
-﻿using AutoMapper;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ServerSlotApi.Command.CheckSlotKey;
+using ServerSlotApi.Command.CreateSlot;
+using ServerSlotApi.Command.DeleteSlot;
+using ServerSlotApi.Command.GetSlotById;
+using ServerSlotApi.Command.GetSlotsByEmail;
+using ServerSlotApi.Command.UpdateSlot;
 using ServerSlotApi.Dtos;
-using ServerSlotApi.Infrastructure.Entities;
-using ServerSlotApi.Services;
 using System.Security.Claims;
 
 namespace ServerSlotApi.Controllers
@@ -12,113 +16,78 @@ namespace ServerSlotApi.Controllers
     [ApiController]
     public class ServerSlotController : ControllerBase
     {
-        private readonly IMapper mapper;
-        private readonly IServerSlotService serverSlotService;
-        private readonly ISlotStatisticsService slotStatisticsService;
+        private readonly IMediator mediator;
 
-        public ServerSlotController(IMapper mapper, IServerSlotService serverAuthService, ISlotStatisticsService slotStatisticsService)
+        public ServerSlotController(IMediator mediator)
         {
-            this.mapper = mapper;
-            this.serverSlotService = serverAuthService;
-            this.slotStatisticsService = slotStatisticsService;
+            this.mediator = mediator;
         }
 
         #region Endpoints
 
         [Authorize]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ServerSlotResponse>>> GetSlotsByEmail(CancellationToken cancellationToken)
+        public async Task<ActionResult<IEnumerable<ServerSlotResponse>>> GetSlotsByEmail([FromQuery] string str = "", CancellationToken cancellationToken = default)
         {
             var email = GetUserEmail();
-            var serverSlots = await serverSlotService.GetSlotsByEmailAsync(email, cancellationToken);
-            return Ok(serverSlots.Select(mapper.Map<ServerSlotResponse>));
+
+            var response = await mediator.Send(new GetSlotsByEmailCommand(email, str), cancellationToken);
+
+            return Ok(response);
         }
+
         [Authorize]
         [Route("{id}")]
         [HttpGet]
-        public async Task<ActionResult<ServerSlotResponse>> GetSlotById(string id, CancellationToken cancellationToken)
-        {
-            var param = new SlotParams(GetUserEmail(), id);
-
-            var serverSlot = await serverSlotService.GetSlotByIdAsync(param, cancellationToken);
-            if (serverSlot == null)
-            {
-                return NotFound();
-            }
-
-            var response = mapper.Map<ServerSlotResponse>(serverSlot);
-            return Ok(response);
-        }
-        [Authorize]
-        [HttpGet("contains/{str}")]
-        public async Task<ActionResult<IEnumerable<ServerSlotResponse>>> GetSlotsContainingString(string str, CancellationToken cancellationToken)
+        public async Task<ActionResult<ServerSlotResponse?>> GetSlotById(string id, CancellationToken cancellationToken)
         {
             var email = GetUserEmail();
-            var serverSlots = await serverSlotService.GetSlotsContainingStringAsync(email, str, cancellationToken);
-            return Ok(serverSlots.Select(mapper.Map<ServerSlotResponse>));
+
+            var response = await mediator.Send(new GetSlotByIdCommand(email, id), cancellationToken);
+
+            return Ok(response);
         }
+
         [Route("/check")]
         [HttpPost]
-        public async Task<ActionResult<CheckSlotKeyResponse>> CheckSlotKey([FromBody] CheckSlotKeyRequest request,
-            CancellationToken cancellationToken)
+        public async Task<ActionResult<CheckSlotKeyResponse>> CheckSlotKey(CheckSlotKeyRequest request, CancellationToken cancellationToken)
         {
-            var result = await serverSlotService.CheckIfKeyValidAsync(request.SlotKey, cancellationToken);
-            var response = new CheckSlotKeyResponse()
-            {
-                SlotKey = request.SlotKey,
-                IsExisting = result
-            };
+            var response = await mediator.Send(new CheckSlotKeyCommand(request), cancellationToken);
 
             return Ok(response);
         }
+
         [Authorize]
         [HttpPost]
-        public async Task<ActionResult<ServerSlotResponse>> CreateSlot([FromBody] CreateServerSlotRequest request,
-            CancellationToken cancellationToken)
+        public async Task<ActionResult<ServerSlotResponse>> CreateSlot(CreateServerSlotRequest request, CancellationToken cancellationToken)
         {
             var email = GetUserEmail();
-            var serverSlot = new ServerSlot()
-            {
-                UserEmail = email,
-                Name = request.Name
-            };
 
-            var result = await serverSlotService.CreateSlotAsync(serverSlot, cancellationToken);
+            var response = await mediator.Send(new CreateSlotCommand(email, request), cancellationToken);
 
-            var response = mapper.Map<ServerSlotResponse>(result);
             return Created(string.Empty, response);
         }
+
         [Authorize]
         [HttpPut]
         public async Task<IActionResult> UpdateSlot([FromBody] UpdateServerSlotRequest request, CancellationToken cancellationToken)
         {
-            var param = new SlotParams(GetUserEmail(), request.Id);
-            var serverSlot = mapper.Map<ServerSlot>(request);
+            var email = GetUserEmail();
 
-            await serverSlotService.UpdateSlotAsync(param, serverSlot, cancellationToken);
+            await mediator.Send(new UpdateSlotCommand(email, request), cancellationToken);
 
             return Ok();
         }
+
         [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSlot(string id, CancellationToken cancellationToken)
         {
-            var param = new SlotParams(GetUserEmail(), id);
+            var email = GetUserEmail();
 
-            var slot = await serverSlotService.GetSlotByIdAsync(param, cancellationToken);
+            string token = Request?.Headers.Authorization.ToString().Replace("Bearer ", string.Empty) ?? "";
 
-            if (slot != null)
-            {
-                string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", string.Empty);
-                if (await slotStatisticsService.DeleteSlotStatisticsAsync(slot.SlotKey, token, cancellationToken))
-                {
-                    await serverSlotService.DeleteSlotByIdAsync(param, cancellationToken);
-                }
-                else
-                {
-                    return StatusCode(500, "Failed to delete server slot!");
-                }
-            }
+            await mediator.Send(new DeleteSlotCommand(email, id, token), cancellationToken);
 
             return Ok();
         }

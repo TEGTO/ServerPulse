@@ -30,7 +30,6 @@ namespace AuthenticationApi.Command.Tests
             var validPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "valid-user-id") }));
             var validRequest = new UserUpdateDataRequest
             {
-                UserName = "newuser",
                 OldEmail = "old@example.com",
                 NewEmail = "new@example.com",
                 OldPassword = "oldpass",
@@ -59,7 +58,6 @@ namespace AuthenticationApi.Command.Tests
             var invalidPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "invalid-user-id") }));
             var invalidRequest = new UserUpdateDataRequest
             {
-                UserName = "invaliduser",
                 OldEmail = "invalid@example.com",
                 NewEmail = "invalidnew@example.com",
                 OldPassword = "wrongpass",

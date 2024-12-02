@@ -14,6 +14,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\DatabaseControl\DatabaseControl.csproj" />
 	  <ProjectReference Include="..\ServerSlotApi.Dtos\ServerSlotApi.Dtos.csproj" />
 	</ItemGroup>
 

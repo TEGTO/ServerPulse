@@ -28,13 +28,12 @@ namespace AuthenticationApi.Command.RegisterUser.Tests
         {
             var validRequest = new UserRegistrationRequest
             {
-                UserName = "validuser",
                 Email = "validuser@example.com",
                 Password = "validpassword",
                 ConfirmPassword = "validpassword"
             };
 
-            var validUser = new User { UserName = validRequest.UserName, Email = validRequest.Email };
+            var validUser = new User { Email = validRequest.Email };
 
             var validRegisterModel = new RegisterUserModel(validUser, validRequest.Password);
 
@@ -59,13 +58,12 @@ namespace AuthenticationApi.Command.RegisterUser.Tests
 
             var invalidRequest = new UserRegistrationRequest
             {
-                UserName = "invaliduser",
                 Email = "invaliduser@example.com",
                 Password = "weakpassword",
                 ConfirmPassword = "weakpassword"
             };
 
-            var invalidUser = new User { UserName = invalidRequest.UserName, Email = invalidRequest.Email };
+            var invalidUser = new User { Email = invalidRequest.Email };
 
             yield return new TestCaseData(
                 invalidRequest,
