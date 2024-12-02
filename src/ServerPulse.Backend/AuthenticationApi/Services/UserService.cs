@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using AuthenticationApi.Infrastructure;
+using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
-using AuthenticationApi.Infrastructure;
 
 namespace AuthenticationApi.Services
 {
@@ -29,7 +29,7 @@ namespace AuthenticationApi.Services
             return user;
         }
 
-        public async Task<List<IdentityError>> UpdateUserAsync(User user, UserUpdateModel updateModel, bool resetPassword, CancellationToken cancellationToken)
+        public async Task<IEnumerable<IdentityError>> UpdateUserAsync(User user, UserUpdateModel updateModel, bool resetPassword, CancellationToken cancellationToken)
         {
             List<IdentityError> identityErrors = new List<IdentityError>();
 
@@ -73,7 +73,7 @@ namespace AuthenticationApi.Services
 
         #region Private Helpers
 
-        private static List<IdentityError> RemoveDuplicates(List<IdentityError> identityErrors)
+        private static IEnumerable<IdentityError> RemoveDuplicates(List<IdentityError> identityErrors)
         {
             identityErrors = identityErrors
             .GroupBy(e => e.Description)

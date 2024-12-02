@@ -22,7 +22,7 @@ namespace AuthenticationApi.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register(UserRegistrationRequest request, CancellationToken cancellationToken)
+        public async Task<ActionResult<UserAuthenticationResponse>> Register(UserRegistrationRequest request, CancellationToken cancellationToken)
         {
             var response = await mediator.Send(new RegisterUserCommand(request), cancellationToken);
             return CreatedAtAction(nameof(Register), new { id = response.Email }, response);

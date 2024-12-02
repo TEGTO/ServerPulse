@@ -4,9 +4,9 @@ namespace AuthenticationApi
 {
     public static class Utilities
     {
-        public static bool HasErrors(List<IdentityError> identityErrors, out string[] errorResponse)
+        public static bool HasErrors(IEnumerable<IdentityError> identityErrors, out string[] errorResponse)
         {
-            if (identityErrors.Count > 0)
+            if (identityErrors.Count() > 0)
             {
                 var errors = identityErrors.Select(e => e.Description).ToArray();
                 errorResponse = errors;

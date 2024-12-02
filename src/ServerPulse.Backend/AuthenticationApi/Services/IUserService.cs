@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using AuthenticationApi.Infrastructure;
+using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
-using AuthenticationApi.Infrastructure;
 
 namespace AuthenticationApi.Services
 {
@@ -8,7 +8,7 @@ namespace AuthenticationApi.Services
     {
         public Task<User?> GetUserAsync(ClaimsPrincipal principal, CancellationToken cancellationToken);
         public Task<User?> GetUserByLoginAsync(string login, CancellationToken cancellationToken);
-        public Task<List<IdentityError>> UpdateUserAsync(User user, UserUpdateModel updateModel, bool resetPassword, CancellationToken cancellationToken);
+        public Task<IEnumerable<IdentityError>> UpdateUserAsync(User user, UserUpdateModel updateModel, bool resetPassword, CancellationToken cancellationToken);
         public Task<bool> CheckPasswordAsync(User user, string password, CancellationToken cancellationToken);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Authentication.Models;
-using Microsoft.AspNetCore.Identity;
 using AuthenticationApi.Infrastructure;
+using ExceptionHandling;
+using Microsoft.AspNetCore.Identity;
 
 namespace AuthenticationApi.Services
 {
@@ -23,6 +24,7 @@ namespace AuthenticationApi.Services
         {
             return await userManager.CreateAsync(registerModel.User, registerModel.Password);
         }
+
         public async Task<AccessTokenData> LoginUserAsync(LoginUserModel loginModel, CancellationToken cancellationToken)
         {
             var user = loginModel.User;
@@ -35,19 +37,17 @@ namespace AuthenticationApi.Services
             var refreshTokenExpiryDate = DateTime.UtcNow.AddDays(expiryInDays);
 
             var tokenData = await tokenService.CreateNewTokenDataAsync(user, refreshTokenExpiryDate, cancellationToken);
-            await tokenService.SetRefreshTokenAsync(user, tokenData, cancellationToken);
+
+            var identityErrors = await tokenService.SetRefreshTokenAsync(user, tokenData, cancellationToken);
+            if (Utilities.HasErrors(identityErrors.Errors, out var errorResponse)) throw new AuthorizationException(errorResponse);
 
             return tokenData;
         }
+
         public async Task<AccessTokenData> RefreshTokenAsync(RefreshTokenModel refreshTokenModel, CancellationToken cancellationToken)
         {
             var user = refreshTokenModel.User;
             var accessTokenData = refreshTokenModel.AccessTokenData;
-
-            if (user == null)
-            {
-                throw new UnauthorizedAccessException("Invalid authentication. AccessToken is not valid.");
-            }
 
             if (accessTokenData.RefreshToken == null ||
                 user.RefreshToken != accessTokenData.RefreshToken ||
@@ -59,7 +59,9 @@ namespace AuthenticationApi.Services
             var refreshTokenExpiryDate = DateTime.UtcNow.AddDays(expiryInDays);
 
             var tokenData = await tokenService.CreateNewTokenDataAsync(user, refreshTokenExpiryDate, cancellationToken);
-            await tokenService.SetRefreshTokenAsync(user, tokenData, cancellationToken);
+
+            var identityErrors = await tokenService.SetRefreshTokenAsync(user, tokenData, cancellationToken);
+            if (Utilities.HasErrors(identityErrors.Errors, out var errorResponse)) throw new AuthorizationException(errorResponse);
 
             return tokenData;
         }

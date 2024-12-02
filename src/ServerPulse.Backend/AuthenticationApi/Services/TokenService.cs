@@ -1,8 +1,8 @@
 ﻿using Authentication.Models;
 using Authentication.Token;
+using AuthenticationApi.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
-using AuthenticationApi.Infrastructure;
 
 namespace AuthenticationApi.Services
 {
@@ -23,11 +23,11 @@ namespace AuthenticationApi.Services
             tokenData.RefreshTokenExpiryDate = refreshTokenExpiryDate;
             return Task.FromResult(tokenData);
         }
-        public async Task SetRefreshTokenAsync(User user, AccessTokenData accessTokenData, CancellationToken cancellationToken)
+        public async Task<IdentityResult> SetRefreshTokenAsync(User user, AccessTokenData accessTokenData, CancellationToken cancellationToken)
         {
             user.RefreshToken = accessTokenData.RefreshToken;
             user.RefreshTokenExpiryTime = accessTokenData.RefreshTokenExpiryDate;
-            await userManager.UpdateAsync(user);
+            return await userManager.UpdateAsync(user);
         }
         public ClaimsPrincipal GetPrincipalFromToken(string token)
         {
