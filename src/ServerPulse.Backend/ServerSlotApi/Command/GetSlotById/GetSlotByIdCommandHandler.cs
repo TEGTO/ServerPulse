@@ -19,7 +19,7 @@ namespace ServerSlotApi.Command.GetSlotById
 
         public async Task<ServerSlotResponse> Handle(GetSlotByIdCommand command, CancellationToken cancellationToken)
         {
-            ArgumentException.ThrowIfNullOrEmpty(nameof(command.Email));
+            ArgumentException.ThrowIfNullOrEmpty(command.Email);
 
             var model = new SlotModel() { SlotId = command.Id, UserEmail = command.Email! };
 

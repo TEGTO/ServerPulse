@@ -18,7 +18,7 @@ namespace ServerSlotApi.Command.GetSlotsByEmail
 
         public async Task<IEnumerable<ServerSlotResponse>> Handle(GetSlotsByEmailCommand command, CancellationToken cancellationToken)
         {
-            ArgumentException.ThrowIfNullOrEmpty(nameof(command.Email));
+            ArgumentException.ThrowIfNullOrEmpty(command.Email);
 
             var slots = await repository.GetSlotsByUserEmailAsync(command.Email!, command.ContainsString, cancellationToken);
 

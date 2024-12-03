@@ -1,8 +1,7 @@
 ﻿using AutoMapper;
 using ServerSlotApi;
-using ServerSlotApi.Domain.Dtos;
-using ServerSlotApi.Domain.Entities;
 using ServerSlotApi.Dtos;
+using ServerSlotApi.Infrastructure.Entities;
 
 namespace ServerSlotApiTests
 {
@@ -31,8 +30,10 @@ namespace ServerSlotApiTests
                 UserEmail = "test@example.com",
                 Name = "SlotName",
             };
+
             // Act
             var result = mapper.Map<ServerSlotResponse>(serverSlot);
+
             // Assert
             Assert.That(result.Id, Is.EqualTo(serverSlot.Id));
             Assert.That(result.UserEmail, Is.EqualTo(serverSlot.UserEmail));
@@ -48,14 +49,17 @@ namespace ServerSlotApiTests
             {
                 Name = "NewSlot"
             };
+
             // Act
             var result = mapper.Map<ServerSlot>(createRequest);
+
             // Assert
             Assert.That(result.Name, Is.EqualTo(createRequest.Name));
             Assert.That(result.UserEmail, Is.EqualTo(default));
             Assert.That(result.SlotKey, Is.Not.EqualTo(default));
             Assert.That(result.CreationDate, Is.Not.EqualTo(default(DateTime)));
         }
+
         [Test]
         public void Map_UpdateServerSlotRequest_To_ServerSlot()
         {
@@ -65,8 +69,10 @@ namespace ServerSlotApiTests
                 Id = "1",
                 Name = "UpdatedSlot"
             };
+
             // Act
             var result = mapper.Map<ServerSlot>(updateRequest);
+
             // Assert
             Assert.That(result.Id, Is.EqualTo(updateRequest.Id));
             Assert.That(result.Name, Is.EqualTo(updateRequest.Name));

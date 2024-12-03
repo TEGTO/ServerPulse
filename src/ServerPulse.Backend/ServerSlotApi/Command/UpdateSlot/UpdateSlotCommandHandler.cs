@@ -18,7 +18,7 @@ namespace ServerSlotApi.Command.UpdateSlot
 
         public async Task<Unit> Handle(UpdateSlotCommand command, CancellationToken cancellationToken)
         {
-            ArgumentException.ThrowIfNullOrEmpty(nameof(command.Email));
+            ArgumentException.ThrowIfNullOrEmpty(command.Email);
 
             var slot = mapper.Map<ServerSlot>(command.Request);
             slot.UserEmail = command.Email!;

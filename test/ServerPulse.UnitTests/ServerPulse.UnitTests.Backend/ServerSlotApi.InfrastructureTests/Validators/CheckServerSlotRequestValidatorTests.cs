@@ -18,12 +18,16 @@ namespace ServerSlotApi.Infrastructure.Validators.Tests
         {
             yield return new TestCaseData(null, false, "SlotKey")
                 .SetDescription("SlotKey is null; validation should fail.");
+
             yield return new TestCaseData("", false, "SlotKey")
                 .SetDescription("SlotKey is empty; validation should fail.");
+
             yield return new TestCaseData(new string('A', 257), false, "SlotKey")
-                .SetDescription("SlotKey exceeds maximum length of 256; validation should fail.");
+                .SetDescription("SlotKey exceeds maximum length of 256; validation should fdail.");
+
             yield return new TestCaseData("ValidSlotKey123", true, null)
                 .SetDescription("SlotKey is valid; validation should pass.");
+
             yield return new TestCaseData(new string('A', 256), true, null)
                 .SetDescription("SlotKey is exactly 256 characters long; validation should pass.");
         }

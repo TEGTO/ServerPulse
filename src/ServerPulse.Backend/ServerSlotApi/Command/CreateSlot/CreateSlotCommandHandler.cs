@@ -19,7 +19,7 @@ namespace ServerSlotApi.Command.CreateSlot
 
         public async Task<ServerSlotResponse> Handle(CreateSlotCommand command, CancellationToken cancellationToken)
         {
-            ArgumentException.ThrowIfNullOrEmpty(nameof(command.Email));
+            ArgumentException.ThrowIfNullOrEmpty(command.Email);
 
             var slot = mapper.Map<ServerSlot>(command.Request);
             slot.UserEmail = command.Email!;

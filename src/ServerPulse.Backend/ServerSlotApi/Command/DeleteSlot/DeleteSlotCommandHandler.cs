@@ -20,7 +20,7 @@ namespace ServerSlotApi.Command.DeleteSlot
 
         public async Task<Unit> Handle(DeleteSlotCommand command, CancellationToken cancellationToken)
         {
-            ArgumentException.ThrowIfNullOrEmpty(nameof(command.Email));
+            ArgumentException.ThrowIfNullOrEmpty(command.Email);
 
             var model = new SlotModel() { SlotId = command.Id, UserEmail = command.Email! };
 

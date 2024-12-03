@@ -1,6 +1,5 @@
 ﻿using DatabaseControl.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using ServerSlotApi.Infrastructure.Data;
 using ServerSlotApi.Infrastructure.Entities;
 using ServerSlotApi.Infrastructure.Models;
@@ -11,7 +10,7 @@ namespace ServerSlotApi.Infrastructure.Repositories
     {
         private readonly IDatabaseRepository<ServerDataDbContext> repository;
 
-        public ServerSlotRepository(IDatabaseRepository<ServerDataDbContext> repository, IConfiguration configuration)
+        public ServerSlotRepository(IDatabaseRepository<ServerDataDbContext> repository)
         {
             this.repository = repository;
         }

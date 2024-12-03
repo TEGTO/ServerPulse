@@ -1,9 +1,10 @@
 ﻿using MediatR;
+using ServerSlotApi.Dtos;
 using ServerSlotApi.Infrastructure.Repositories;
 
 namespace ServerSlotApi.Command.CheckSlotKey
 {
-    public class CheckSlotKeyCommandHandler : IRequestHandler<CheckSlotKeyCommand, bool>
+    public class CheckSlotKeyCommandHandler : IRequestHandler<CheckSlotKeyCommand, CheckSlotKeyResponse>
     {
         private readonly IServerSlotRepository repository;
 
@@ -12,10 +13,13 @@ namespace ServerSlotApi.Command.CheckSlotKey
             this.repository = repository;
         }
 
-        public async Task<bool> Handle(CheckSlotKeyCommand command, CancellationToken cancellationToken)
+        public async Task<CheckSlotKeyResponse> Handle(CheckSlotKeyCommand command, CancellationToken cancellationToken)
         {
-            var slot = await repository.GetSlotByKeyAsync(command.Request.SlotKey, cancellationToken);
-            return slot != null;
+            var key = command.Request.SlotKey;
+
+            var slot = await repository.GetSlotByKeyAsync(key, cancellationToken);
+
+            return new CheckSlotKeyResponse() { IsExisting = slot != null, SlotKey = key };
         }
     }
 }

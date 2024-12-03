@@ -14,8 +14,8 @@ namespace ServerSlotApi.Infrastructure.Entities
         [Required]
         [MaxLength(256)]
         public string Name { get; set; } = default!;
-        public string SlotKey { get; private init; }
-        public DateTime CreationDate { get; private init; }
+        public string SlotKey { get; }
+        public DateTime CreationDate { get; }
 
         public ServerSlot()
         {
