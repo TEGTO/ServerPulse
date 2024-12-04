@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using ServerSlotApi.Command.CheckSlotKey;
 using ServerSlotApi.Command.CreateSlot;
 using ServerSlotApi.Command.DeleteSlot;
@@ -27,6 +28,7 @@ namespace ServerSlotApi.Controllers
 
         [Authorize]
         [HttpGet]
+        [OutputCache(PolicyName = "GetSlotsByEmailPolicy")]
         public async Task<ActionResult<IEnumerable<ServerSlotResponse>>> GetSlotsByEmail([FromQuery] string str = "", CancellationToken cancellationToken = default)
         {
             var email = GetUserEmail();
@@ -50,6 +52,7 @@ namespace ServerSlotApi.Controllers
 
         [Route("/check")]
         [HttpPost]
+        [OutputCache(PolicyName = "CheckSlotKeyPolicy")]
         public async Task<ActionResult<CheckSlotKeyResponse>> CheckSlotKey(CheckSlotKeyRequest request, CancellationToken cancellationToken)
         {
             var response = await mediator.Send(new CheckSlotKeyCommand(request), cancellationToken);

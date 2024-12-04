@@ -1,9 +1,11 @@
 using Authentication;
+using Caching;
 using DatabaseControl;
 using ExceptionHandling;
 using Logging;
 using Microsoft.EntityFrameworkCore;
 using ServerSlotApi;
+using ServerSlotApi.Dtos;
 using ServerSlotApi.Infrastructure.Data;
 using ServerSlotApi.Infrastructure.Repositories;
 using ServerSlotApi.Infrastructure.Validators;
@@ -27,6 +29,26 @@ builder.Services.AddCustomHttpClientServiceWithResilience(builder.Configuration)
 
 builder.Services.AddSingleton<IServerSlotRepository, ServerSlotRepository>();
 
+#endregion
+
+#region Caching
+
+builder.Services.AddOutputCache((options) =>
+{
+    options.AddPolicy("BasePolicy", new OutputCachePolicy());
+
+    var expiryTime = int.TryParse(
+        builder.Configuration[Configuration.CACHE_GET_BY_EMAIL_SERVER_SLOT_EXPIRY_IN_SECONDS],
+        out var getByEmailExpiry) ? getByEmailExpiry : 1;
+
+    options.SetOutputCachePolicy("GetSlotsByEmailPolicy", duration: TimeSpan.FromSeconds(expiryTime), useAuthId: true);
+
+    expiryTime = int.TryParse(
+        builder.Configuration[Configuration.CACHE_CHECK_SERVER_SLOT_EXPIRY_IN_SECONDS],
+        out var checkSlotExpiry) ? checkSlotExpiry : 1;
+
+    options.SetOutputCachePolicy("CheckSlotKeyPolicy", duration: TimeSpan.FromSeconds(expiryTime), type: typeof(CheckSlotKeyRequest));
+});
 #endregion
 
 builder.Services.AddRepositoryWithResilience<ServerDataDbContext>(builder.Configuration);

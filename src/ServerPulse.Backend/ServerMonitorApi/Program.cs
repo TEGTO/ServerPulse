@@ -1,5 +1,4 @@
 using Authentication;
-using CacheUtils;
 using Confluent.Kafka;
 using ExceptionHandling;
 using Logging;
@@ -33,12 +32,6 @@ var adminConfig = new AdminClientConfig
     BootstrapServers = builder.Configuration[Configuration.KAFKA_BOOTSTRAP_SERVERS]
 };
 builder.Services.AddKafkaProducer(producerConfig, adminConfig);
-
-#endregion
-
-#region Cache
-
-builder.Services.AddCache(builder.Configuration);
 
 #endregion
 

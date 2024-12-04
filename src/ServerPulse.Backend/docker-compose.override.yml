@@ -30,6 +30,8 @@ services:
       - AuthSettings__Audience=${AuthSettings__Audience}
       - AuthSettings__Issuer=${AuthSettings__Issuer}
       - AuthSettings__ExpiryInMinutes=${AuthSettings__ExpiryInMinutes}
+      - Cache__GetServerSlotByEmailExpiryInSeconds=${Cache__GetServerSlotByEmailExpiryInSeconds}
+      - Cache__ServerSlotCheckExpiryInSeconds=${Cache__ServerSlotCheckExpiryInSeconds}
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
@@ -44,7 +46,6 @@ services:
       - Kafka__ConfigurationTopic=${Kafka__ConfigurationTopic}
       - Kafka__LoadTopic=${Kafka__LoadTopic}
       - Kafka__CustomTopic=${Kafka__CustomTopic}
-      - Cache__ServerSlotExpiryInMinutes=${Cache__ServerSlotExpiryInMinutes}
       - ServerSlotApi__Check=${ServerSlotApi__Check}
       - Analyzer__Load=${Analyzer__Load}
       - ConnectionStrings__RedisServer=${ConnectionStrings__RedisServer}
