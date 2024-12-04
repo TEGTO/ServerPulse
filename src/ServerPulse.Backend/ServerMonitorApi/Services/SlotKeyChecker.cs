@@ -1,53 +1,48 @@
 ﻿using ServerSlotApi.Dtos;
 using Shared;
-using System.Text;
+using Shared.Helpers;
 using System.Text.Json;
 
 namespace ServerMonitorApi.Services
 {
     public class SlotKeyChecker : ISlotKeyChecker
     {
-        private readonly IHttpClientFactory httpClientFactory;
+        private readonly IHttpHelper httpHelper;
         private readonly ICacheService cacheService;
-        private readonly string slotCheckerUri;
+        private readonly string slotCheckerUrl;
         private readonly double cacheExpiryInMinutes;
 
-        public SlotKeyChecker(IHttpClientFactory httpClientFactory, ICacheService cacheService, IConfiguration configuration)
+        public SlotKeyChecker(IHttpHelper httpHelper, ICacheService cacheService, IConfiguration configuration)
         {
-            this.httpClientFactory = httpClientFactory;
+            this.httpHelper = httpHelper;
             this.cacheService = cacheService;
 
-            slotCheckerUri = $"{configuration[Configuration.API_GATEWAY]}{configuration[Configuration.SERVER_SLOT_ALIVE_CHECKER]}";
+            slotCheckerUrl = $"{configuration[Configuration.API_GATEWAY]}{configuration[Configuration.SERVER_SLOT_ALIVE_CHECKER]}";
             cacheExpiryInMinutes = double.Parse(configuration[Configuration.CACHE_SERVER_SLOT_EXPIRY_IN_MINUTES]!);
         }
 
-        public async Task<bool> CheckSlotKeyAsync(string slotKey, CancellationToken cancellationToken)
+        public async Task<bool> CheckSlotKeyAsync(string key, CancellationToken cancellationToken)
         {
-            if (await CheckSlotKeyInCacheAsync(slotKey))
+            if (await CheckSlotKeyInCacheAsync(key))
             {
                 return true;
             }
 
-            var httpClient = httpClientFactory.CreateClient();
             var checkServerSlotRequest = new CheckSlotKeyRequest()
             {
-                SlotKey = slotKey,
+                SlotKey = key,
             };
-            var jsonContent = new StringContent
-            (
-                JsonSerializer.Serialize(checkServerSlotRequest),
-                Encoding.UTF8,
-                "application/json"
-            );
-            var checkUrl = slotCheckerUri;
 
-            var httpResponseMessage = await httpClient.PostAsync(checkUrl, jsonContent, cancellationToken);
-            using var contentStream = await httpResponseMessage.Content.ReadAsStreamAsync();
-            var response = await JsonSerializer.DeserializeAsync<CheckSlotKeyResponse>(contentStream, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var response = await httpHelper.SendPostRequestAsync<CheckSlotKeyResponse>(
+                slotCheckerUrl,
+                JsonSerializer.Serialize(checkServerSlotRequest),
+                null,
+                cancellationToken
+            );
 
             if (response != null && response.IsExisting)
             {
-                await cacheService.SetValueAsync(slotKey, JsonSerializer.Serialize(response), cacheExpiryInMinutes);
+                await cacheService.SetValueAsync(key, JsonSerializer.Serialize(response), cacheExpiryInMinutes);
                 return true;
             }
 
@@ -57,14 +52,17 @@ namespace ServerMonitorApi.Services
         private async Task<bool> CheckSlotKeyInCacheAsync(string slotKey)
         {
             var json = await cacheService.GetValueAsync(slotKey);
+
             if (string.IsNullOrEmpty(json))
             {
                 return false;
             }
-            if (json.TryToDeserialize(out CheckSlotKeyResponse response))
+
+            if (json.TryToDeserialize(out CheckSlotKeyResponse? response))
             {
-                return response.IsExisting;
+                return response?.IsExisting ?? false;
             }
+
             return false;
         }
     }

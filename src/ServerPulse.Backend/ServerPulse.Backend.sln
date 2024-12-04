@@ -71,25 +71,29 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExceptionHandling", "Except
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseControl", "DatabaseControl\DatabaseControl.csproj", "{C52AC13E-471C-4F3F-93CA-ACDBE4F4F6A2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthenticationApi.Infrastructure", "AuthenticationApi.Infrastructure\AuthenticationApi.Infrastructure.csproj", "{CD88BBB6-5C00-4BED-A2BC-CBBF07141CDF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthenticationApi.Infrastructure", "AuthenticationApi.Infrastructure\AuthenticationApi.Infrastructure.csproj", "{CD88BBB6-5C00-4BED-A2BC-CBBF07141CDF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthenticationApi.Dtos", "AuthenticationApi.Dtos\AuthenticationApi.Dtos.csproj", "{2FD92622-48B3-485E-AB61-56A12340238E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthenticationApi.Dtos", "AuthenticationApi.Dtos\AuthenticationApi.Dtos.csproj", "{2FD92622-48B3-485E-AB61-56A12340238E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AuthenticationApi", "AuthenticationApi", "{486984DC-19B6-437D-80BF-0BCA6F3921B8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthenticationApi.InfrastructureTests", "..\..\test\ServerPulse.UnitTests\ServerPulse.UnitTests.Backend\AuthenticationApi.InfrastructureTests\AuthenticationApi.InfrastructureTests.csproj", "{62BFC0CF-53C1-4D86-8B26-F8F32662223E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthenticationApi.InfrastructureTests", "..\..\test\ServerPulse.UnitTests\ServerPulse.UnitTests.Backend\AuthenticationApi.InfrastructureTests\AuthenticationApi.InfrastructureTests.csproj", "{62BFC0CF-53C1-4D86-8B26-F8F32662223E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseControlTests", "..\..\test\ServerPulse.UnitTests\ServerPulse.UnitTests.Backend\DatabaseControlTests\DatabaseControlTests.csproj", "{41736124-6796-4E2D-924C-58CBCEF9C2B7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseControlTests", "..\..\test\ServerPulse.UnitTests\ServerPulse.UnitTests.Backend\DatabaseControlTests\DatabaseControlTests.csproj", "{41736124-6796-4E2D-924C-58CBCEF9C2B7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExceptionHandlingTests", "..\..\test\ServerPulse.UnitTests\ServerPulse.UnitTests.Backend\ExceptionHandlingTests\ExceptionHandlingTests.csproj", "{A26EDBA4-F605-4735-885E-F8630EE43A37}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExceptionHandlingTests", "..\..\test\ServerPulse.UnitTests\ServerPulse.UnitTests.Backend\ExceptionHandlingTests\ExceptionHandlingTests.csproj", "{A26EDBA4-F605-4735-885E-F8630EE43A37}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ServerSlotApi", "ServerSlotApi", "{4D3C3B4C-1A2E-4D04-A0BC-B593A253E0D7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerSlotApi.Dtos", "ServerSlotApi.Dtos\ServerSlotApi.Dtos.csproj", "{2DC85E38-6837-4BA4-ACE7-5421FE80C792}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerSlotApi.Dtos", "ServerSlotApi.Dtos\ServerSlotApi.Dtos.csproj", "{2DC85E38-6837-4BA4-ACE7-5421FE80C792}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerSlotApi.Infrastructure", "ServerSlotApi.Infrastructure\ServerSlotApi.Infrastructure.csproj", "{D789E596-F8D5-4C57-B210-07FCE3F8202C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerSlotApi.Infrastructure", "ServerSlotApi.Infrastructure\ServerSlotApi.Infrastructure.csproj", "{D789E596-F8D5-4C57-B210-07FCE3F8202C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerSlotApi.InfrastructureTests", "..\..\test\ServerPulse.UnitTests\ServerPulse.UnitTests.Backend\ServerSlotApi.InfrastructureTests\ServerSlotApi.InfrastructureTests.csproj", "{27580BDD-F736-42CC-84A3-82A46CC4C102}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerSlotApi.InfrastructureTests", "..\..\test\ServerPulse.UnitTests\ServerPulse.UnitTests.Backend\ServerSlotApi.InfrastructureTests\ServerSlotApi.InfrastructureTests.csproj", "{27580BDD-F736-42CC-84A3-82A46CC4C102}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ServerMonitorApi", "ServerMonitorApi", "{0B3A1E6B-E075-42CC-96B9-B2C2CE514EF7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerMonitorApi.Infrastructure", "ServerMonitorApi.Infrastructure\ServerMonitorApi.Infrastructure.csproj", "{2DB18D0D-7963-41B3-8F60-85131356C8ED}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -240,6 +244,10 @@ Global
 		{27580BDD-F736-42CC-84A3-82A46CC4C102}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{27580BDD-F736-42CC-84A3-82A46CC4C102}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{27580BDD-F736-42CC-84A3-82A46CC4C102}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2DB18D0D-7963-41B3-8F60-85131356C8ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DB18D0D-7963-41B3-8F60-85131356C8ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DB18D0D-7963-41B3-8F60-85131356C8ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DB18D0D-7963-41B3-8F60-85131356C8ED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -284,6 +292,8 @@ Global
 		{2DC85E38-6837-4BA4-ACE7-5421FE80C792} = {4D3C3B4C-1A2E-4D04-A0BC-B593A253E0D7}
 		{D789E596-F8D5-4C57-B210-07FCE3F8202C} = {4D3C3B4C-1A2E-4D04-A0BC-B593A253E0D7}
 		{27580BDD-F736-42CC-84A3-82A46CC4C102} = {0282EC42-88AA-4C4E-BCA8-6083EE7CEA7C}
+		{0B3A1E6B-E075-42CC-96B9-B2C2CE514EF7} = {055C1BB6-678D-4258-80AC-4816688B1AF6}
+		{2DB18D0D-7963-41B3-8F60-85131356C8ED} = {0B3A1E6B-E075-42CC-96B9-B2C2CE514EF7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {89B7B374-29A5-4E5B-A21F-6FC2B0DE9918}

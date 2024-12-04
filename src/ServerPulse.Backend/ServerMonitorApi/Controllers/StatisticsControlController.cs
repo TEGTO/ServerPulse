@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using ServerMonitorApi.Services;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using ServerMonitorApi.Command.DeleteStatisticsByKey;
 
 namespace ServerMonitorApi.Controllers
 {
@@ -7,17 +8,17 @@ namespace ServerMonitorApi.Controllers
     [ApiController]
     public class StatisticsControlController : ControllerBase
     {
-        private readonly IStatisticsControlService statisticsControlService;
+        private readonly IMediator mediator;
 
-        public StatisticsControlController(IStatisticsControlService statisticsControlService)
+        public StatisticsControlController(IMediator mediator)
         {
-            this.statisticsControlService = statisticsControlService;
+            this.mediator = mediator;
         }
 
         [HttpDelete("{key}")]
         public async Task<IActionResult> DeleteStatisticsByKey(string key, CancellationToken cancellationToken)
         {
-            await statisticsControlService.DeleteStatisticsByKeyAsync(key);
+            await mediator.Send(new DeleteStatisticsByKeyCommand(key), cancellationToken);
             return Ok();
         }
     }

@@ -44,9 +44,6 @@ builder.Services.AddCache(builder.Configuration);
 
 #region Project Services
 
-builder.Services.AddSingleton<IEventSender, EventSender>();
-builder.Services.AddSingleton<IStatisticsControlService, StatisticsControlService>();
-builder.Services.AddSingleton<IEventProcessing, EventProcessing>();
 builder.Services.AddSingleton<ISlotKeyChecker, SlotKeyChecker>();
 
 #endregion
@@ -55,6 +52,11 @@ builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
+builder.Services.AddMediatR(conf =>
+{
+    conf.RegisterServicesFromAssembly(typeof(Program).Assembly);
+});
 
 builder.Services.AddSharedFluentValidation(typeof(Program));
 
