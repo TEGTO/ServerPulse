@@ -1,111 +1,101 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Moq;
-using Moq.Protected;
-using ServerMonitorApi;
-using ServerMonitorApi.Services;
-using Shared.Dtos.ServerSlot;
-using System.Net;
-using System.Text;
+using ServerSlotApi.Dtos;
+using Shared.Helpers;
 using System.Text.Json;
 
-namespace ServerMonitorApiTests.Services
+namespace ServerMonitorApi.Services.Tests
 {
     [TestFixture]
     internal class SlotKeyCheckerTests
     {
-        private const string ServerSlotApiUrl = "http://localhost:5000";
-        private const double RedisExpiryInMinutes = 60;
-
-        private Mock<IHttpClientFactory> httpClientFactoryMock;
-        private Mock<ICacheService> cacheServiceMock;
+        private Mock<IHttpHelper> httpHelperMock;
         private Mock<IConfiguration> configurationMock;
         private SlotKeyChecker slotKeyChecker;
+        private CancellationToken cancellationToken;
 
         [SetUp]
         public void SetUp()
         {
-            httpClientFactoryMock = new Mock<IHttpClientFactory>();
-            cacheServiceMock = new Mock<ICacheService>();
+            httpHelperMock = new Mock<IHttpHelper>();
             configurationMock = new Mock<IConfiguration>();
 
-            configurationMock.Setup(config => config[Configuration.SERVER_SLOT_ALIVE_CHECKER]).Returns(ServerSlotApiUrl);
-            configurationMock.Setup(config => config[Configuration.CACHE_SERVER_SLOT_EXPIRY_IN_MINUTES]).Returns(RedisExpiryInMinutes.ToString());
+            configurationMock.Setup(c => c[Configuration.API_GATEWAY]).Returns("http://api.gateway/");
+            configurationMock.Setup(c => c[Configuration.SERVER_SLOT_ALIVE_CHECKER]).Returns("server/slot/check");
 
-            slotKeyChecker = new SlotKeyChecker(httpClientFactoryMock.Object, cacheServiceMock.Object, configurationMock.Object);
+            slotKeyChecker = new SlotKeyChecker(httpHelperMock.Object, configurationMock.Object);
+            cancellationToken = CancellationToken.None;
+        }
+
+        private static IEnumerable<TestCaseData> CheckSlotKeyTestCases()
+        {
+            yield return new TestCaseData(
+                "validKey",
+                new CheckSlotKeyResponse { SlotKey = "validKey", IsExisting = true },
+                true
+            ).SetDescription("Valid slot key should return true.");
+
+            yield return new TestCaseData(
+                "nonExistentKey",
+                new CheckSlotKeyResponse { SlotKey = "nonExistentKey", IsExisting = false },
+                false
+            ).SetDescription("Non-existent slot key should return false.");
         }
 
         [Test]
-        public async Task CheckSlotKeyAsync_SlotKeyExistsInRedis_ReturnsTrue()
+        [TestCaseSource(nameof(CheckSlotKeyTestCases))]
+        public async Task CheckSlotKeyAsync_ValidResponses_ReturnsExpectedResult(string key, CheckSlotKeyResponse httpResponse, bool expectedResult)
         {
             // Arrange
-            var slotKey = "existing-slot-key";
-            var redisResponse = new CheckSlotKeyResponse { IsExisting = true };
-            var redisJson = JsonSerializer.Serialize(redisResponse);
-            cacheServiceMock.Setup(service => service.GetValueAsync(slotKey)).ReturnsAsync(redisJson);
-            // Act
-            var result = await slotKeyChecker.CheckSlotKeyAsync(slotKey, CancellationToken.None);
-            // Assert
-            Assert.IsTrue(result);
-            cacheServiceMock.Verify(service => service.GetValueAsync(slotKey), Times.Once);
-        }
-        [Test]
-        public async Task CheckSlotKeyAsync_SlotKeyNotInRedisButExistsInServer_ReturnsTrue()
-        {
-            // Arrange
-            var slotKey = "new-slot-key";
-            var checkSlotKeyResponse = new CheckSlotKeyResponse { IsExisting = true };
-            var responseJson = JsonSerializer.Serialize(checkSlotKeyResponse);
-            cacheServiceMock.Setup(service => service.GetValueAsync(slotKey)).ReturnsAsync(string.Empty);
-            cacheServiceMock.Setup(service => service.SetValueAsync(slotKey, It.IsAny<string>(), RedisExpiryInMinutes))
-                .Returns(Task.CompletedTask);
-            var httpClientHandlerMock = new Mock<HttpMessageHandler>();
-            httpClientHandlerMock.Protected()
-                .Setup<Task<HttpResponseMessage>>(
-                    "SendAsync",
-                    ItExpr.IsAny<HttpRequestMessage>(),
-                    ItExpr.IsAny<CancellationToken>()
-                )
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(responseJson, Encoding.UTF8, "application/json")
-                });
+            var expectedUrl = "http://api.gateway/server/slot/check";
+            var expectedRequestBody = JsonSerializer.Serialize(new CheckSlotKeyRequest { SlotKey = key });
 
-            var httpClient = new HttpClient(httpClientHandlerMock.Object);
-            httpClientFactoryMock.Setup(factory => factory.CreateClient(It.IsAny<string>())).Returns(httpClient);
+            httpHelperMock
+                .Setup(h => h.SendPostRequestAsync<CheckSlotKeyResponse>(
+                    expectedUrl,
+                    expectedRequestBody,
+                    null,
+                    cancellationToken))
+                .ReturnsAsync(httpResponse);
+
             // Act
-            var result = await slotKeyChecker.CheckSlotKeyAsync(slotKey, CancellationToken.None);
+            var result = await slotKeyChecker.CheckSlotKeyAsync(key, cancellationToken);
+
             // Assert
-            Assert.IsTrue(result);
-            cacheServiceMock.Verify(service => service.GetValueAsync(slotKey), Times.Once);
-            cacheServiceMock.Verify(service => service.SetValueAsync(slotKey, It.IsAny<string>(), RedisExpiryInMinutes), Times.Once);
+            Assert.That(result, Is.EqualTo(expectedResult));
+            httpHelperMock.Verify(h => h.SendPostRequestAsync<CheckSlotKeyResponse>(
+                expectedUrl,
+                expectedRequestBody,
+                null,
+                cancellationToken), Times.Once);
         }
+
         [Test]
-        public async Task CheckSlotKeyAsync_SlotKeyNotFound_ReturnsFalse()
+        public async Task CheckSlotKeyAsync_NullResponse_ReturnsFalse()
         {
             // Arrange
-            var slotKey = "non-existing-slot-key";
-            cacheServiceMock.Setup(service => service.GetValueAsync(slotKey)).ReturnsAsync(string.Empty);
-            var httpClientHandlerMock = new Mock<HttpMessageHandler>();
-            httpClientHandlerMock.Protected()
-                .Setup<Task<HttpResponseMessage>>(
-                    "SendAsync",
-                    ItExpr.IsAny<HttpRequestMessage>(),
-                    ItExpr.IsAny<CancellationToken>()
-                )
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(JsonSerializer.Serialize(new CheckSlotKeyResponse { IsExisting = false }), Encoding.UTF8, "application/json")
-                });
-            var httpClient = new HttpClient(httpClientHandlerMock.Object);
-            httpClientFactoryMock.Setup(factory => factory.CreateClient(It.IsAny<string>())).Returns(httpClient);
+            var key = "keyWithNoResponse";
+            var expectedUrl = "http://api.gateway/server/slot/check";
+            var expectedRequestBody = JsonSerializer.Serialize(new CheckSlotKeyRequest { SlotKey = key });
+
+            httpHelperMock
+                .Setup(h => h.SendPostRequestAsync<CheckSlotKeyResponse>(
+                    expectedUrl,
+                    expectedRequestBody,
+                    null,
+                    cancellationToken))
+                .ReturnsAsync((CheckSlotKeyResponse?)null);
+
             // Act
-            var result = await slotKeyChecker.CheckSlotKeyAsync(slotKey, CancellationToken.None);
+            var result = await slotKeyChecker.CheckSlotKeyAsync(key, cancellationToken);
+
             // Assert
-            Assert.IsFalse(result);
-            cacheServiceMock.Verify(service => service.GetValueAsync(slotKey), Times.Once);
-            cacheServiceMock.Verify(service => service.SetValueAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<double>()), Times.Never);
+            Assert.That(result, Is.False);
+            httpHelperMock.Verify(h => h.SendPostRequestAsync<CheckSlotKeyResponse>(
+                expectedUrl,
+                expectedRequestBody,
+                null,
+                cancellationToken), Times.Once);
         }
     }
 }

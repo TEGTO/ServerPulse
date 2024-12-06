@@ -1,229 +1,105 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using Moq;
-using ServerMonitorApi.Controllers;
-using ServerMonitorApi.Services;
+using ServerMonitorApi.Command.SendConfiguration;
+using ServerMonitorApi.Command.SendCustomEvents;
+using ServerMonitorApi.Command.SendLoadEvents;
+using ServerMonitorApi.Command.SendPulse;
 using ServerPulse.EventCommunication;
 using ServerPulse.EventCommunication.Events;
-using System.Text.Json;
 
-namespace ServerMonitorApiTests.Controllers
+namespace ServerMonitorApi.Controllers.Tests
 {
     [TestFixture]
     internal class ServerInteractionControllerTests
     {
-        private Mock<IEventSender> mockEventSender;
-        private Mock<ISlotKeyChecker> mockSlotChecker;
-        private Mock<IEventProcessing> mockEventProcessing;
+        private Mock<IMediator> mediatorMock;
         private ServerInteractionController controller;
+        private CancellationToken cancellationToken;
 
         [SetUp]
-        public void Setup()
+        public void SetUp()
         {
-            mockEventSender = new Mock<IEventSender>();
-            mockSlotChecker = new Mock<ISlotKeyChecker>();
-            mockEventProcessing = new Mock<IEventProcessing>();
-            controller = new ServerInteractionController(mockEventSender.Object, mockSlotChecker.Object, mockEventProcessing.Object);
+            mediatorMock = new Mock<IMediator>();
+
+            controller = new ServerInteractionController(mediatorMock.Object);
+            cancellationToken = CancellationToken.None;
         }
 
-        #region SendPulse Tests
         [Test]
-        public async Task SendPulse_SlotKeyIsValid_CallsEventSender()
+        public async Task SendPulse_ValidRequest_ReturnsOk()
         {
             // Arrange
-            var key = "validSlotKey";
-            var pulseEvent = new PulseEvent(key, true);
-            var cancellationToken = CancellationToken.None;
-            mockSlotChecker.Setup(x => x.CheckSlotKeyAsync(key, cancellationToken)).ReturnsAsync(true);
+            var pulseEvent = new PulseEvent("key1", true);
+
+            mediatorMock.Setup(m => m.Send(It.IsAny<SendPulseCommand>(), cancellationToken))
+                .ReturnsAsync(Unit.Value);
+
             // Act
             var result = await controller.SendPulse(pulseEvent, cancellationToken);
+
             // Assert
-            mockEventSender.Verify(x => x.SendEventsAsync(It.IsAny<PulseEvent[]>(), cancellationToken), Times.Once);
-            Assert.IsInstanceOf<OkResult>(result);
-        }
-        [Test]
-        public async Task SendPulse_SlotKeyIsNotFound_ReturnsNotFound()
-        {
-            // Arrange
-            var key = "invalidSlotKey";
-            var pulseEvent = new PulseEvent(key, true);
-            var cancellationToken = CancellationToken.None;
-            mockSlotChecker.Setup(x => x.CheckSlotKeyAsync(key, cancellationToken)).ReturnsAsync(false);
-            // Act
-            var result = await controller.SendPulse(pulseEvent, cancellationToken);
-            // Assert
-            Assert.IsInstanceOf<NotFoundObjectResult>(result);
-            var notFoundResult = result as NotFoundObjectResult;
-            Assert.That(notFoundResult.Value, Is.EqualTo($"Server slot with key '{key}' is not found!"));
+            Assert.That(result, Is.TypeOf<OkResult>());
+            mediatorMock.Verify(m => m.Send(It.Is<SendPulseCommand>(c => c.Event == pulseEvent), cancellationToken), Times.Once);
         }
 
-        #endregion
-
-        #region SendConfiguration Tests
-
         [Test]
-        public async Task SendConfiguration_SlotKeyIsValid_CallsEventSender()
+        public async Task SendConfiguration_ValidRequest_ReturnsOk()
         {
             // Arrange
-            var key = "validSlotKey";
-            var configurationEvent = new ConfigurationEvent(key, TimeSpan.FromMinutes(5));
-            var cancellationToken = CancellationToken.None;
-            mockSlotChecker.Setup(x => x.CheckSlotKeyAsync(key, cancellationToken)).ReturnsAsync(true);
+            var configurationEvent = new ConfigurationEvent("key1", TimeSpan.FromMinutes(5));
+
+            mediatorMock.Setup(m => m.Send(It.IsAny<SendConfigurationCommand>(), cancellationToken))
+                .ReturnsAsync(Unit.Value);
+
             // Act
             var result = await controller.SendConfiguration(configurationEvent, cancellationToken);
-            // Assert
-            mockEventSender.Verify(x => x.SendEventsAsync(It.IsAny<ConfigurationEvent[]>(), cancellationToken), Times.Once);
-            Assert.IsInstanceOf<OkResult>(result);
-        }
-        [Test]
-        public async Task SendConfiguration_SlotKeyIsNotFound_ReturnsNotFound()
-        {
-            // Arrange
-            var key = "invalidSlotKey";
-            var configurationEvent = new ConfigurationEvent(key, TimeSpan.FromMinutes(5));
-            var cancellationToken = CancellationToken.None;
-            mockSlotChecker.Setup(x => x.CheckSlotKeyAsync(key, cancellationToken)).ReturnsAsync(false);
-            // Act
-            var result = await controller.SendConfiguration(configurationEvent, cancellationToken);
-            // Assert
-            Assert.IsInstanceOf<NotFoundObjectResult>(result);
-            var notFoundResult = result as NotFoundObjectResult;
-            Assert.That(notFoundResult.Value, Is.EqualTo($"Server slot with key '{key}' is not found!"));
-        }
-        #endregion
 
-        #region SendLoadEvents Tests
-        [Test]
-        public async Task SendLoadEvents_DifferentKeys_ReturnsBadRequest()
-        {
-            // Arrange
-            var loadEvents = new[]
-            {
-                new LoadEvent("key1", "endpoint1", "GET", 200, TimeSpan.FromSeconds(10), DateTime.Now),
-                new LoadEvent("key2", "endpoint2", "POST", 404, TimeSpan.FromSeconds(20), DateTime.Now)
-            };
-            var cancellationToken = CancellationToken.None;
-            // Act
-            var result = await controller.SendLoadEvents(loadEvents, cancellationToken);
             // Assert
-            Assert.IsInstanceOf<BadRequestObjectResult>(result);
-            var badRequestResult = result as BadRequestObjectResult;
-            Assert.That(badRequestResult.Value, Is.EqualTo("All load events must have the same key per request!"));
+            Assert.That(result, Is.TypeOf<OkResult>());
+            mediatorMock.Verify(m => m.Send(It.Is<SendConfigurationCommand>(c => c.Event == configurationEvent), cancellationToken), Times.Once);
         }
-        [Test]
-        public async Task SendLoadEvents_SlotKeyIsValid_CallsEventSenderAndEventProcessing()
-        {
-            // Arrange
-            var key = "validSlotKey";
-            var loadEvents = new[]
-            {
-                new LoadEvent(key, "endpoint1", "GET", 200, TimeSpan.FromSeconds(10), DateTime.Now),
-                new LoadEvent(key, "endpoint2", "POST", 404, TimeSpan.FromSeconds(20), DateTime.Now)
-            };
-            var cancellationToken = CancellationToken.None;
-            mockSlotChecker.Setup(x => x.CheckSlotKeyAsync(key, cancellationToken)).ReturnsAsync(true);
-            // Act
-            var result = await controller.SendLoadEvents(loadEvents, cancellationToken);
-            // Assert
-            mockEventProcessing.Verify(x => x.SendEventsForProcessingsAsync(loadEvents, cancellationToken), Times.Once);
-            mockEventSender.Verify(x => x.SendEventsAsync(loadEvents, cancellationToken), Times.Once);
-            Assert.IsInstanceOf<OkResult>(result);
-        }
-        [Test]
-        public async Task SendLoadEvents_SlotKeyIsNotFound_ReturnsNotFound()
-        {
-            // Arrange
-            var key = "invalidSlotKey";
-            var loadEvents = new[]
-            {
-                new LoadEvent(key, "endpoint1", "GET", 200, TimeSpan.FromSeconds(10), DateTime.Now),
-                new LoadEvent(key, "endpoint2", "POST", 404, TimeSpan.FromSeconds(20), DateTime.Now)
-            };
-            var cancellationToken = CancellationToken.None;
-            mockSlotChecker.Setup(x => x.CheckSlotKeyAsync(key, cancellationToken)).ReturnsAsync(false);
-            // Act
-            var result = await controller.SendLoadEvents(loadEvents, cancellationToken);
-            // Assert
-            Assert.IsInstanceOf<NotFoundObjectResult>(result);
-            var notFoundResult = result as NotFoundObjectResult;
-            Assert.That(notFoundResult.Value, Is.EqualTo($"Server slot with key '{key}' is not found!"));
-        }
-        #endregion
 
-        #region SendCustomEvents Tests
         [Test]
-        public async Task SendCustomEvents_EmptyCustomEventShells_ReturnsBadRequest()
+        public async Task SendLoadEvents_ValidRequest_ReturnsOk()
         {
             // Arrange
-            var customEventShells = new CustomEventWrapper[] { };
-            var cancellationToken = CancellationToken.None;
-            // Act
-            var result = await controller.SendCustomEvents(customEventShells, cancellationToken);
-            // Assert
-            Assert.IsInstanceOf<BadRequestObjectResult>(result);
-            var badRequestResult = result as BadRequestObjectResult;
-            Assert.That(badRequestResult.Value, Is.EqualTo("Invalid custom event structure!"));
-        }
-        [Test]
-        public async Task SendCustomEvents_DifferentKeys_ReturnsBadRequest()
-        {
-            // Arrange
-            var ev1 = new CustomEvent("key1", "data1", "desc1");
-            var ev2 = new CustomEvent("key2", "data2", "desc2");
-            var customEventShells = new[]
+            var loadEvents = new[]
             {
-                new CustomEventWrapper(ev1, JsonSerializer.Serialize(ev1)),
-                new CustomEventWrapper(ev2, JsonSerializer.Serialize(ev2))
+                new LoadEvent("key1", "/endpoint1", "GET", 200, TimeSpan.FromMilliseconds(500), DateTime.UtcNow),
+                new LoadEvent("key1", "/endpoint2", "POST", 201, TimeSpan.FromMilliseconds(300), DateTime.UtcNow)
             };
-            var cancellationToken = CancellationToken.None;
+
+            mediatorMock.Setup(m => m.Send(It.IsAny<SendLoadEventsCommand>(), cancellationToken))
+                .ReturnsAsync(Unit.Value);
+
             // Act
-            var result = await controller.SendCustomEvents(customEventShells, cancellationToken);
+            var result = await controller.SendLoadEvents(loadEvents, cancellationToken);
+
             // Assert
-            Assert.IsInstanceOf<BadRequestObjectResult>(result);
-            var badRequestResult = result as BadRequestObjectResult;
-            Assert.That(badRequestResult.Value, Is.EqualTo("All custom events must have the same key per request!"));
+            Assert.That(result, Is.TypeOf<OkResult>());
+            mediatorMock.Verify(m => m.Send(It.Is<SendLoadEventsCommand>(c => c.Events == loadEvents), cancellationToken), Times.Once);
         }
+
         [Test]
-        public async Task SendCustomEvents_SlotKeyIsValid_CallsEventSender()
+        public async Task SendCustomEvents_ValidRequest_ReturnsOk()
         {
             // Arrange
-            var key = "validSlotKey";
-            var ev1 = new CustomEvent(key, "data1", "desc1");
-            var ev2 = new CustomEvent(key, "data2", "desc2");
-            var customEventShells = new[]
+            var customEventWrappers = new[]
             {
-                new CustomEventWrapper(ev1, JsonSerializer.Serialize(ev1)),
-                new CustomEventWrapper(ev1, JsonSerializer.Serialize(ev2))
+                new CustomEventWrapper(new CustomEvent("key1", "Event1", "Description1"), "Serialized1"),
+                new CustomEventWrapper(new CustomEvent("key1", "Event2", "Description2"), "Serialized2")
             };
-            var cancellationToken = CancellationToken.None;
-            mockSlotChecker.Setup(x => x.CheckSlotKeyAsync(key, cancellationToken)).ReturnsAsync(true);
+
+            mediatorMock.Setup(m => m.Send(It.IsAny<SendCustomEventsCommand>(), cancellationToken))
+                .ReturnsAsync(Unit.Value);
+
             // Act
-            var result = await controller.SendCustomEvents(customEventShells, cancellationToken);
+            var result = await controller.SendCustomEvents(customEventWrappers, cancellationToken);
+
             // Assert
-            var serializedEvents = customEventShells.Select(x => x.CustomEventSerialized).ToArray();
-            mockEventSender.Verify(x => x.SendCustomEventsAsync(key, serializedEvents, cancellationToken), Times.Once);
-            Assert.IsInstanceOf<OkResult>(result);
+            Assert.That(result, Is.TypeOf<OkResult>());
+            mediatorMock.Verify(m => m.Send(It.Is<SendCustomEventsCommand>(c => c.Events == customEventWrappers), cancellationToken), Times.Once);
         }
-        [Test]
-        public async Task SendCustomEvents_SlotKeyIsNotFound_ReturnsNotFound()
-        {
-            // Arrange
-            var key = "invalidSlotKey";
-            var ev1 = new CustomEvent(key, "data1", "desc1");
-            var ev2 = new CustomEvent(key, "data2", "desc2");
-            var customEventShells = new[]
-            {
-                new CustomEventWrapper(ev1, JsonSerializer.Serialize(ev1)),
-                new CustomEventWrapper(ev1, JsonSerializer.Serialize(ev2))
-            };
-            var cancellationToken = CancellationToken.None;
-            mockSlotChecker.Setup(x => x.CheckSlotKeyAsync(key, cancellationToken)).ReturnsAsync(false);
-            // Act
-            var result = await controller.SendCustomEvents(customEventShells, cancellationToken);
-            // Assert
-            Assert.IsInstanceOf<NotFoundObjectResult>(result);
-            var notFoundResult = result as NotFoundObjectResult;
-            Assert.That(notFoundResult.Value, Is.EqualTo($"Server slot with key '{key}' is not found!"));
-        }
-        #endregion
     }
 }

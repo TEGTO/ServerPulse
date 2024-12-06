@@ -1,50 +1,40 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using Moq;
-using ServerMonitorApi.Controllers;
-using ServerMonitorApi.Services;
+using ServerMonitorApi.Command.DeleteStatisticsByKey;
 
-namespace ServerMonitorApiTests.Controllers
+namespace ServerMonitorApi.Controllers.Tests
 {
     [TestFixture]
     internal class StatisticsControlControllerTests
     {
-        private Mock<IStatisticsControlService> mockStatisticsControlService;
+        private Mock<IMediator> mediatorMock;
         private StatisticsControlController controller;
+        private CancellationToken cancellationToken;
 
         [SetUp]
-        public void Setup()
+        public void SetUp()
         {
-            mockStatisticsControlService = new Mock<IStatisticsControlService>();
-            controller = new StatisticsControlController(
-                mockStatisticsControlService.Object
-            );
+            mediatorMock = new Mock<IMediator>();
+
+            controller = new StatisticsControlController(mediatorMock.Object);
+            cancellationToken = CancellationToken.None;
         }
 
         [Test]
-        public async Task DeleteStatisticsByKey_ShouldCallDeleteStatisticsByKeyAsync()
+        public async Task DeleteStatisticsByKey_ValidKey_ReturnsOk()
         {
             // Arrange
-            var key = "some-key";
-            var cancellationToken = CancellationToken.None;
+            var key = "validKey";
+            mediatorMock.Setup(m => m.Send(It.IsAny<DeleteStatisticsByKeyCommand>(), cancellationToken))
+                .ReturnsAsync(Unit.Value);
+
             // Act
             var result = await controller.DeleteStatisticsByKey(key, cancellationToken);
+
             // Assert
-            mockStatisticsControlService.Verify(
-                x => x.DeleteStatisticsByKeyAsync(key),
-                Times.Once
-            );
-            Assert.IsInstanceOf<OkResult>(result);
-        }
-        [Test]
-        public async Task DeleteStatisticsByKey_ShouldReturnOkResult()
-        {
-            // Arrange
-            var key = "some-key";
-            var cancellationToken = CancellationToken.None;
-            // Act
-            var result = await controller.DeleteStatisticsByKey(key, cancellationToken);
-            // Assert
-            Assert.IsInstanceOf<OkResult>(result);
+            Assert.That(result, Is.TypeOf<OkResult>());
+            mediatorMock.Verify(m => m.Send(It.Is<DeleteStatisticsByKeyCommand>(c => c.Key == key), cancellationToken), Times.Once);
         }
     }
 }

@@ -12,7 +12,6 @@ namespace ServerMonitorApi.Services
         public SlotKeyChecker(IHttpHelper httpHelper, IConfiguration configuration)
         {
             this.httpHelper = httpHelper;
-
             slotCheckerUrl = $"{configuration[Configuration.API_GATEWAY]}{configuration[Configuration.SERVER_SLOT_ALIVE_CHECKER]}";
         }
 

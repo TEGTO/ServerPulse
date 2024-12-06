@@ -43,7 +43,7 @@ namespace ServerMonitorApi.Command.SendLoadEvents
 
                     var message = JsonSerializer.Serialize(events);
 
-                    await SendEventsForStatisticsProcessing(message, cancellationToken);
+                    await SendEventsForStatistics(message, cancellationToken);
                     await producer.ProduceAsync(topic, message, cancellationToken);
                 }
                 else
@@ -59,9 +59,9 @@ namespace ServerMonitorApi.Command.SendLoadEvents
             }
         }
 
-        private async Task SendEventsForStatisticsProcessing(string serializedEvents, CancellationToken cancellationToken)
+        private async Task SendEventsForStatistics(string serializedEvents, CancellationToken cancellationToken)
         {
-            await httpHelper.SendPostRequestAsync<dynamic>(loadAnalyzeUri, serializedEvents, null, cancellationToken);
+            await httpHelper.SendPostRequestAsync(loadAnalyzeUri, serializedEvents, null, cancellationToken);
         }
     }
 }

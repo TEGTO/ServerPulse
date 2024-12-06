@@ -32,6 +32,12 @@ namespace Shared.Helpers
             return await SendHttpRequestAsync<T>(HttpMethod.Post, endpoint, httpContent: httpContent, accessToken: accessToken, cancellationToken: cancellationToken);
         }
 
+        public async Task SendPostRequestAsync(string endpoint, string json, string? accessToken = null, CancellationToken cancellationToken = default)
+        {
+            var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+            await SendHttpRequestAsync<dynamic>(HttpMethod.Post, endpoint, httpContent: httpContent, accessToken: accessToken, cancellationToken: cancellationToken);
+        }
+
         public async Task SendPutRequestAsync(string endpoint, string jsonBody, Dictionary<string, string>? queryParams = null, string? accessToken = null, CancellationToken cancellationToken = default)
         {
             var httpContent = new StringContent(jsonBody, Encoding.UTF8, "application/json");
