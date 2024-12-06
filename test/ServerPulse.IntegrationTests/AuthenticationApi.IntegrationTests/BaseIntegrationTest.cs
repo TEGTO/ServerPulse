@@ -20,6 +20,7 @@ namespace AuthenticationApi.IntegrationTests
             factory = await wrapper.GetFactoryAsync();
             InitializeServices();
         }
+
         [OneTimeTearDown]
         public async Task GlobalTearDown()
         {

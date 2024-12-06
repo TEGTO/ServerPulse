@@ -14,14 +14,10 @@ namespace ServerSlotApi.Infrastructure.Entities
         [Required]
         [MaxLength(256)]
         public string Name { get; set; } = default!;
-        public string SlotKey { get; }
-        public DateTime CreationDate { get; }
-
-        public ServerSlot()
-        {
-            SlotKey = Guid.NewGuid().ToString();
-            CreationDate = DateTime.UtcNow;
-        }
+        [Required]
+        public string SlotKey { get; set; } = default!;
+        [Required]
+        public DateTime CreationDate { get; set; }
 
         public void Copy(ServerSlot other)
         {

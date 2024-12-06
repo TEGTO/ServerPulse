@@ -23,7 +23,7 @@ namespace ServerSlotApi.Infrastructure.Validators.Tests
                 .SetDescription("SlotKey is empty; validation should fail.");
 
             yield return new TestCaseData(new string('A', 257), false, "SlotKey")
-                .SetDescription("SlotKey exceeds maximum length of 256; validation should fdail.");
+                .SetDescription("SlotKey exceeds maximum length of 256; validation should fail.");
 
             yield return new TestCaseData("ValidSlotKey123", true, null)
                 .SetDescription("SlotKey is valid; validation should pass.");

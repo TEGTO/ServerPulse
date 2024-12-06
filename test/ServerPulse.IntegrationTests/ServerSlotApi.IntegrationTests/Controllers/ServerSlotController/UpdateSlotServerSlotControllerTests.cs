@@ -1,4 +1,4 @@
-﻿using ServerSlotApi.Domain.Dtos;
+﻿using ServerSlotApi.Dtos;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
@@ -9,57 +9,96 @@ namespace ServerSlotApi.IntegrationTests.Controllers.ServerSlotController
     internal class UpdateSlotServerSlotControllerTests : BaseServerSlotControllerTest
     {
         [Test]
-        public async Task UpdateSlot_ValidRequest_ReturnsOk()
+        public async Task UpdateSlot_ValidRequest_UpdatesSlot()
         {
             // Arrange
-            var createdSlot = await CreateSampleSlot(new CreateServerSlotRequest { Name = "OriginalSlot" });
-            var updateRequest = new UpdateServerSlotRequest { Id = createdSlot.Id, Name = "UpdatedSlot" };
-            using var request = new HttpRequestMessage(HttpMethod.Put, "/serverslot");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
-            request.Content = new StringContent(JsonSerializer.Serialize(updateRequest), Encoding.UTF8, "application/json");
+            var createdSlot = await CreateSampleSlot(new CreateServerSlotRequest { Name = "OriginalSlot" }, AccessToken);
+            var slotId = createdSlot.Id ?? "";
+
+            var request = new UpdateServerSlotRequest { Id = slotId, Name = "UpdatedSlot" };
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Put, "/serverslot");
+
+            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
             // Act
-            var response = await client.SendAsync(request);
+            var httpResponse = await client.SendAsync(httpRequest);
+            var updatedSlot = await GetSlotByIdAsync(slotId);
+
             // Assert
-            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(updatedSlot.Name, Is.EqualTo("UpdatedSlot"));
         }
+
         [Test]
         public async Task UpdateSlot_UnauthorizedRequest_ReturnsUnauthorized()
         {
             // Arrange
-            var updateRequest = new UpdateServerSlotRequest { Id = "someId", Name = "UpdatedSlot" };
+            var request = new UpdateServerSlotRequest { Id = "someId", Name = "UpdatedSlot" };
 
-            using var request = new HttpRequestMessage(HttpMethod.Put, "/serverslot");
-            request.Content = new StringContent(JsonSerializer.Serialize(updateRequest), Encoding.UTF8, "application/json");
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Put, "/serverslot");
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
             // Act
-            var response = await client.SendAsync(request);
+            var httpResponse = await client.SendAsync(httpRequest);
+
             // Assert
-            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+            Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
         }
+
         [Test]
         public async Task UpdateSlot_InvalidRequest_ReturnsBadRequest()
         {
             // Arrange
-            var updateRequest = new UpdateServerSlotRequest { Id = "", Name = "" };
-            using var request = new HttpRequestMessage(HttpMethod.Put, "/serverslot");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
-            request.Content = new StringContent(JsonSerializer.Serialize(updateRequest), Encoding.UTF8, "application/json");
+            var request = new UpdateServerSlotRequest { Id = "", Name = "" };
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Put, "/serverslot");
+
+            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
             // Act
-            var response = await client.SendAsync(request);
+            var httpResponse = await client.SendAsync(httpRequest);
+
             // Assert
-            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+            Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         }
+
         [Test]
-        public async Task UpdateSlot_NonExistentId_ReturnsNotFound()
+        public async Task UpdateSlot_NonExistentId_ReturnsConflict()
         {
             // Arrange
-            var updateRequest = new UpdateServerSlotRequest { Id = "nonexistentId", Name = "UpdatedSlot" };
-            using var request = new HttpRequestMessage(HttpMethod.Put, "/serverslot");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
-            request.Content = new StringContent(JsonSerializer.Serialize(updateRequest), Encoding.UTF8, "application/json");
+            var request = new UpdateServerSlotRequest { Id = "nonexistentId", Name = "UpdatedSlot" };
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Put, "/serverslot");
+
+            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
             // Act
-            var response = await client.SendAsync(request);
+            var httpResponse = await client.SendAsync(httpRequest);
+
             // Assert
-            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.InternalServerError));
+            Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.Conflict));
+        }
+
+        public async Task<ServerSlotResponse> GetSlotByIdAsync(string id)
+        {
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Get, $"/serverslot/{id}");
+            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+
+            var httpResponse = await client.SendAsync(httpRequest);
+
+            httpResponse.EnsureSuccessStatusCode();
+
+            var content = await httpResponse.Content.ReadAsStringAsync();
+
+            var response = JsonSerializer.Deserialize<ServerSlotResponse>(content, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            ArgumentNullException.ThrowIfNull(response);
+
+            return response;
         }
     }
 }

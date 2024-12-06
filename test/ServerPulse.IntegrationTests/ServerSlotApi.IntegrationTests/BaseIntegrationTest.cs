@@ -13,15 +13,17 @@ namespace ServerSlotApi.IntegrationTests
     {
         protected HttpClient client;
         protected JwtSettings settings;
-        protected Mock<ISlotStatisticsService> mockSlotStatisticsService;
+        protected Mock<ISlotStatisticsService>? mockSlotStatisticsService;
         private WebAppFactoryWrapper wrapper;
         private WebApplicationFactory<Program> factory;
         private IServiceScope scope;
+
 
         [OneTimeSetUp]
         public async Task GlobalSetup()
         {
             wrapper = new WebAppFactoryWrapper();
+
             factory = (await wrapper.GetFactoryAsync()).WithWebHostBuilder(builder =>
             {
                 builder.ConfigureTestServices(services =>
@@ -29,14 +31,14 @@ namespace ServerSlotApi.IntegrationTests
                     services.RemoveAll(typeof(ISlotStatisticsService));
 
                     mockSlotStatisticsService = new Mock<ISlotStatisticsService>();
-                    mockSlotStatisticsService.Setup(x => x.DeleteSlotStatisticsAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
 
-                    services.AddSingleton<ISlotStatisticsService>(mockSlotStatisticsService.Object);
+                    services.AddSingleton(mockSlotStatisticsService.Object);
                 });
             });
+
             InitializeServices();
         }
+
         [OneTimeTearDown]
         public async Task GlobalTearDown()
         {

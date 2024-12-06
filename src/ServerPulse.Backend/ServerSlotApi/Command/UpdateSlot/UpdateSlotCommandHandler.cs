@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using MediatR;
 using ServerSlotApi.Infrastructure.Entities;
+using ServerSlotApi.Infrastructure.Models;
 using ServerSlotApi.Infrastructure.Repositories;
 
 namespace ServerSlotApi.Command.UpdateSlot
@@ -20,10 +21,18 @@ namespace ServerSlotApi.Command.UpdateSlot
         {
             ArgumentException.ThrowIfNullOrEmpty(command.Email);
 
-            var slot = mapper.Map<ServerSlot>(command.Request);
-            slot.UserEmail = command.Email!;
+            var model = new SlotModel() { SlotId = command.Request.Id, UserEmail = command.Email };
+            var slotInDb = await repository.GetSlotAsync(model, cancellationToken);
 
-            await repository.UpdateSlotAsync(slot, cancellationToken);
+            if (slotInDb == null)
+            {
+                throw new InvalidOperationException("The slot you are trying to update does not exist!");
+            }
+
+            var slot = mapper.Map<ServerSlot>(command.Request);
+            slotInDb.Copy(slot);
+
+            await repository.UpdateSlotAsync(slotInDb, cancellationToken);
 
             return Unit.Value;
         }

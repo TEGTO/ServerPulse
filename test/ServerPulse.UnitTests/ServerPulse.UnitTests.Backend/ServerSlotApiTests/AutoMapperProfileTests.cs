@@ -56,8 +56,8 @@ namespace ServerSlotApiTests
             // Assert
             Assert.That(result.Name, Is.EqualTo(createRequest.Name));
             Assert.That(result.UserEmail, Is.EqualTo(default));
-            Assert.That(result.SlotKey, Is.Not.EqualTo(default));
-            Assert.That(result.CreationDate, Is.Not.EqualTo(default(DateTime)));
+            Assert.That(result.SlotKey, Is.EqualTo(default));
+            Assert.That(result.CreationDate, Is.EqualTo(default(DateTime)));
         }
 
         [Test]
@@ -67,7 +67,7 @@ namespace ServerSlotApiTests
             var updateRequest = new UpdateServerSlotRequest
             {
                 Id = "1",
-                Name = "UpdatedSlot"
+                Name = "UpdatedSlot",
             };
 
             // Act
@@ -77,8 +77,8 @@ namespace ServerSlotApiTests
             Assert.That(result.Id, Is.EqualTo(updateRequest.Id));
             Assert.That(result.Name, Is.EqualTo(updateRequest.Name));
             Assert.That(result.UserEmail, Is.EqualTo(default));
-            Assert.That(result.SlotKey, Is.Not.EqualTo(default));
-            Assert.That(result.CreationDate, Is.Not.EqualTo(default(DateTime)));
+            Assert.That(result.SlotKey, Is.EqualTo(default));
+            Assert.That(result.CreationDate, Is.EqualTo(default(DateTime)));
         }
     }
 }

@@ -1,9 +1,8 @@
-﻿using Microsoft.Extensions.Configuration;
-using Moq;
+﻿using Moq;
 using ServerSlotApi.Infrastructure.Entities;
 using ServerSlotApi.Infrastructure.Models;
 using ServerSlotApi.Infrastructure.Repositories;
-using Shared.Helpers;
+using ServerSlotApi.Services;
 
 namespace ServerSlotApi.Command.DeleteSlot.Tests
 {
@@ -11,26 +10,18 @@ namespace ServerSlotApi.Command.DeleteSlot.Tests
     internal class DeleteSlotCommandHandlerTests
     {
         private Mock<IServerSlotRepository> repositoryMock;
-        private Mock<IHttpHelper> httpHelperMock;
-        private Mock<IConfiguration> configurationMock;
+        private Mock<ISlotStatisticsService> slotStatisticsServiceMock;
         private DeleteSlotCommandHandler handler;
-        private const string ApiGateway = "http://api.example.com/";
-        private const string DeleteStatisticsEndpoint = "statistics/delete/";
 
         [SetUp]
         public void Setup()
         {
             repositoryMock = new Mock<IServerSlotRepository>();
-            httpHelperMock = new Mock<IHttpHelper>();
-            configurationMock = new Mock<IConfiguration>();
-
-            configurationMock.Setup(c => c[Configuration.API_GATEWAY]).Returns(ApiGateway);
-            configurationMock.Setup(c => c[Configuration.STATISTICS_DELETE_URL]).Returns(DeleteStatisticsEndpoint);
+            slotStatisticsServiceMock = new Mock<ISlotStatisticsService>();
 
             handler = new DeleteSlotCommandHandler(
                 repositoryMock.Object,
-                httpHelperMock.Object,
-                configurationMock.Object
+                slotStatisticsServiceMock.Object
             );
         }
 
@@ -81,16 +72,12 @@ namespace ServerSlotApi.Command.DeleteSlot.Tests
                 .Setup(r => r.DeleteSlotAsync(slot, It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
 
-            httpHelperMock
-                .Setup(h => h.SendDeleteRequestAsync(It.Is<string>(url => url == $"{ApiGateway}{DeleteStatisticsEndpoint}{slot.SlotKey}"), token, It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask);
-
             // Act
             await handler.Handle(command, CancellationToken.None);
 
             // Assert
             repositoryMock.Verify(r => r.DeleteSlotAsync(slot, It.IsAny<CancellationToken>()), Times.Once);
-            httpHelperMock.Verify(h => h.SendDeleteRequestAsync(It.IsAny<string>(), token, It.IsAny<CancellationToken>()), Times.Once);
+            slotStatisticsServiceMock.Verify(h => h.DeleteSlotStatisticsAsync(It.IsAny<string>(), token, It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Test]
@@ -112,7 +99,7 @@ namespace ServerSlotApi.Command.DeleteSlot.Tests
 
             // Assert
             repositoryMock.Verify(r => r.DeleteSlotAsync(It.IsAny<ServerSlot>(), It.IsAny<CancellationToken>()), Times.Never);
-            httpHelperMock.Verify(h => h.SendDeleteRequestAsync(It.IsAny<string>(), token, It.IsAny<CancellationToken>()), Times.Never);
+            slotStatisticsServiceMock.Verify(h => h.DeleteSlotStatisticsAsync(It.IsAny<string>(), token, It.IsAny<CancellationToken>()), Times.Never);
         }
     }
 }

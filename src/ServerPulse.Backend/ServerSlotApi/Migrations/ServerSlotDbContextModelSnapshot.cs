@@ -2,7 +2,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ServerSlotApi.Infrastructure.Data;
@@ -11,12 +10,10 @@ using ServerSlotApi.Infrastructure.Data;
 
 namespace ServerSlotApi.Migrations
 {
-    [DbContext(typeof(ServerDataDbContext))]
-    [Migration("20240715142722_InitialMigration")]
-    partial class InitialMigration
+    [DbContext(typeof(ServerSlotDbContext))]
+    partial class ServerSlotDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -25,32 +22,38 @@ namespace ServerSlotApi.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("ServerSlotApi.Domain.Entities.ServerSlot", b =>
+            modelBuilder.Entity("ServerSlotApi.Infrastructure.Entities.ServerSlot", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("id");
 
                     b.Property<DateTime>("CreationDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("creation_date");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("name");
 
                     b.Property<string>("SlotKey")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("slot_key");
 
                     b.Property<string>("UserEmail")
                         .IsRequired()
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("user_email");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_server_slots");
 
-                    b.ToTable("ServerSlots");
+                    b.ToTable("server_slots", (string)null);
                 });
 #pragma warning restore 612, 618
         }

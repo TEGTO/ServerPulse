@@ -66,9 +66,9 @@ namespace Authentication.Token
         {
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Email, user.Email ?? throw new ArgumentNullException("Email could not be null!")),
-                new Claim(ClaimTypes.Name, user.UserName ?? throw new ArgumentNullException("UserName could not be null!")),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString() ?? throw new ArgumentNullException("Id could not be null!"))
+                new Claim(ClaimTypes.Email, user.Email ?? throw new ArgumentNullException(nameof(user.Email), "Email could not be null!")),
+                new Claim(ClaimTypes.Name, user.UserName ?? throw new ArgumentNullException(nameof(user.UserName), "UserName could not be null!")),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString() ?? throw new ArgumentNullException(nameof(user.Id), "Id could not be null!"))
             };
 
             return claims;

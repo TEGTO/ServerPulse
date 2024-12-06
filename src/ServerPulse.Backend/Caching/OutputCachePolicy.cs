@@ -41,7 +41,7 @@ namespace Caching
             if (useAuthenticationId)
             {
                 var id = context.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (id != null)
+                if (!string.IsNullOrEmpty(id))
                 {
                     context.CacheVaryByRules.CacheKeyPrefix += id;
                 }
@@ -51,7 +51,6 @@ namespace Caching
             {
                 context.ResponseExpirationTimeSpan = duration;
             }
-
 
             return ValueTask.CompletedTask;
         }

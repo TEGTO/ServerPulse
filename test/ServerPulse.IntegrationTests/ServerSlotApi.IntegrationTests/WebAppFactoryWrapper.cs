@@ -1,25 +1,19 @@
-﻿using Consul;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using ServerSlotApi.Data;
-using System.Text;
-using System.Text.Json;
-using Testcontainers.Consul;
+using ServerSlotApi.Infrastructure.Data;
 using Testcontainers.PostgreSql;
 
 namespace ServerSlotApi.IntegrationTests
 {
     public sealed class WebAppFactoryWrapper : IAsyncDisposable
     {
-        private PostgreSqlContainer dbContainer;
-        private ConsulContainer consulContainer;
-
-        protected WebApplicationFactory<Program> WebApplicationFactory { get; private set; }
+        private PostgreSqlContainer? DbContainer { get; set; }
+        private WebApplicationFactory<Program>? WebApplicationFactory { get; set; }
 
         public async Task<WebApplicationFactory<Program>> GetFactoryAsync()
         {
@@ -30,16 +24,17 @@ namespace ServerSlotApi.IntegrationTests
             }
             return WebApplicationFactory;
         }
+
         public async ValueTask DisposeAsync()
         {
+            if (DbContainer != null)
+            {
+                await DbContainer.StopAsync();
+                await DbContainer.DisposeAsync();
+            }
+
             if (WebApplicationFactory != null)
             {
-                await dbContainer.StopAsync();
-                await consulContainer.StopAsync();
-
-                await dbContainer.DisposeAsync();
-                await consulContainer.DisposeAsync();
-
                 await WebApplicationFactory.DisposeAsync();
                 WebApplicationFactory = null;
             }
@@ -47,22 +42,16 @@ namespace ServerSlotApi.IntegrationTests
 
         private async Task InitializeContainersAsync()
         {
-            dbContainer = new PostgreSqlBuilder()
-                .WithImage("postgres:latest")
+            DbContainer = new PostgreSqlBuilder()
+                .WithImage("postgres:17")
                 .WithDatabase("serverslot-db")
                 .WithUsername("postgres")
                 .WithPassword("postgres")
                 .Build();
 
-            consulContainer = new ConsulBuilder()
-                .WithImage("hashicorp/consul:latest")
-                .Build();
-
-            await dbContainer.StartAsync();
-            await consulContainer.StartAsync();
-
-            await PopulateConsulAsync();
+            await DbContainer.StartAsync();
         }
+
         private WebApplicationFactory<Program> InitializeFactory()
         {
             return new WebApplicationFactory<Program>()
@@ -72,51 +61,31 @@ namespace ServerSlotApi.IntegrationTests
 
                   builder.ConfigureTestServices(services =>
                   {
-                      services.RemoveAll(typeof(IDbContextFactory<ServerDataDbContext>));
+                      services.RemoveAll(typeof(IDbContextFactory<ServerSlotDbContext>));
 
-                      services.AddDbContextFactory<ServerDataDbContext>(options =>
-                          options.UseNpgsql(dbContainer.GetConnectionString()));
+                      services.AddDbContextFactory<ServerSlotDbContext>(options =>
+                          options.UseNpgsql(DbContainer?.GetConnectionString()));
                   });
               });
         }
-        private async Task PopulateConsulAsync()
-        {
-            var consulClient = new ConsulClient(config => config.Address = new Uri(consulContainer.GetBaseAddress()));
 
-            var kvPairs = new Dictionary<string, object>
+        private IConfigurationRoot GetConfiguration()
+        {
+            var configurationBuilder = new ConfigurationBuilder();
+
+            configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                { "ConnectionStrings:ServerSlotConnection", dbContainer.GetConnectionString() },
-                { "SlotsPerUser", 5 },
+                { $"ConnectionStrings:{Configuration.SERVER_SLOT_DATABASE_CONNECTION_STRING}", DbContainer?.GetConnectionString() },
+                { "SlotsPerUser", "5" },
                 { "EFCreateDatabase", "true" },
                 { "AuthSettings:Key", "q57+LXDr4HtynNQaYVs7t50HwzvTNrWM2E/OepoI/D4=" },
                 { "AuthSettings:Issuer", "https://token.issuer.example.com" },
                 { "AuthSettings:ExpiryInMinutes", "30" },
                 { "AuthSettings:Audience", "https://api.example.com" },
-            };
-
-            var developmentJson = JsonSerializer.Serialize(kvPairs);
-            var productionJson = JsonSerializer.Serialize(kvPairs);
-
-            await consulClient.KV.Put(new KVPair("server-slot/appsettings.Development.json")
-            {
-                Value = Encoding.UTF8.GetBytes(developmentJson)
+                { "Cache__GetServerSlotByEmailExpiryInSeconds", "2" },
+                { "Cache__ServerSlotCheckExpiryInSeconds", "2" },
             });
 
-            await consulClient.KV.Put(new KVPair("server-slot/appsettings.Production.json")
-            {
-                Value = Encoding.UTF8.GetBytes(productionJson)
-            });
-        }
-        private IConfigurationRoot GetConfiguration()
-        {
-            var configurationBuilder = new ConfigurationBuilder();
-            var s = consulContainer.GetBaseAddress();
-            configurationBuilder.AddInMemoryCollection(new Dictionary<string, string>
-            {
-                { "Consul:Host", consulContainer.GetBaseAddress() },
-                { "Consul:ServiceName", "server-slot" },
-                { "Consul:ServicePort", "80" }
-            });
             return configurationBuilder.Build();
         }
     }

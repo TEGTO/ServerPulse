@@ -3,6 +3,7 @@ using MediatR;
 using Moq;
 using ServerSlotApi.Dtos;
 using ServerSlotApi.Infrastructure.Entities;
+using ServerSlotApi.Infrastructure.Models;
 using ServerSlotApi.Infrastructure.Repositories;
 
 namespace ServerSlotApi.Command.UpdateSlot.Tests
@@ -33,19 +34,12 @@ namespace ServerSlotApi.Command.UpdateSlot.Tests
                 Id = "123",
                 Name = "Updated Slot Name"
             };
-
             var command = new UpdateSlotCommand(email, updateRequest);
 
-            var mappedSlot = new ServerSlot
-            {
-                Id = updateRequest.Id,
-                UserEmail = email!,
-                Name = updateRequest.Name
-            };
-
-            mapperMock
-                .Setup(m => m.Map<ServerSlot>(updateRequest))
-                .Returns(mappedSlot);
+            mapperMock.Setup(m => m.Map<ServerSlot>(updateRequest))
+                .Returns(new ServerSlot());
+            repositoryMock.Setup(r => r.GetSlotAsync(It.IsAny<SlotModel>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ServerSlot());
 
             if (email == null)
             {
@@ -62,9 +56,34 @@ namespace ServerSlotApi.Command.UpdateSlot.Tests
                 return typeof(ArgumentException);
             }
 
-            // Act
+            repositoryMock.Setup(r => r.GetSlotAsync(It.IsAny<SlotModel>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ServerSlot());
+
             await handler.Handle(command, CancellationToken.None);
             return null;
+        }
+
+        [Test]
+        public void Handle_SlotDoesNotExist_ThrowsInvalidOperationException()
+        {
+            // Arrange
+            var email = "user@example.com";
+            var updateRequest = new UpdateServerSlotRequest
+            {
+                Id = "123",
+                Name = "Updated Slot Name"
+            };
+            var command = new UpdateSlotCommand(email, updateRequest);
+
+            repositoryMock.Setup(r => r.GetSlotAsync(It.IsAny<SlotModel>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((ServerSlot?)null);
+
+            // Act & Assert
+            Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await handler.Handle(command, CancellationToken.None));
+
+            repositoryMock.Verify(r => r.GetSlotAsync(It.IsAny<SlotModel>(), It.IsAny<CancellationToken>()), Times.Once);
+            repositoryMock.Verify(r => r.UpdateSlotAsync(It.IsAny<ServerSlot>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Test]
@@ -79,19 +98,26 @@ namespace ServerSlotApi.Command.UpdateSlot.Tests
             };
             var command = new UpdateSlotCommand(email, updateRequest);
 
-            var mappedSlot = new ServerSlot
+            var existingSlot = new ServerSlot
+            {
+                Id = "123",
+                UserEmail = email,
+                Name = "Old Slot Name"
+            };
+            var updatedSlot = new ServerSlot
             {
                 Id = updateRequest.Id,
                 UserEmail = email,
                 Name = updateRequest.Name
             };
 
-            mapperMock
-                .Setup(m => m.Map<ServerSlot>(updateRequest))
-                .Returns(mappedSlot);
+            repositoryMock.Setup(r => r.GetSlotAsync(It.IsAny<SlotModel>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(existingSlot);
 
-            repositoryMock
-                .Setup(r => r.UpdateSlotAsync(mappedSlot, It.IsAny<CancellationToken>()))
+            mapperMock.Setup(m => m.Map<ServerSlot>(updateRequest))
+                .Returns(updatedSlot);
+
+            repositoryMock.Setup(r => r.UpdateSlotAsync(It.IsAny<ServerSlot>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
 
             // Act
@@ -100,8 +126,9 @@ namespace ServerSlotApi.Command.UpdateSlot.Tests
             // Assert
             Assert.That(result, Is.EqualTo(Unit.Value));
 
+            repositoryMock.Verify(r => r.GetSlotAsync(It.IsAny<SlotModel>(), It.IsAny<CancellationToken>()), Times.Once);
+            repositoryMock.Verify(r => r.UpdateSlotAsync(It.IsAny<ServerSlot>(), It.IsAny<CancellationToken>()), Times.Once);
             mapperMock.Verify(m => m.Map<ServerSlot>(updateRequest), Times.Once);
-            repositoryMock.Verify(r => r.UpdateSlotAsync(mappedSlot, It.IsAny<CancellationToken>()), Times.Once);
         }
     }
 }

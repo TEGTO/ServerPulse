@@ -12,18 +12,18 @@ namespace ServerSlotApi.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "ServerSlots",
+                name: "server_slots",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "text", nullable: false),
-                    UserEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
-                    Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
-                    SlotKey = table.Column<string>(type: "text", nullable: false),
-                    CreationDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    id = table.Column<string>(type: "text", nullable: false),
+                    user_email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
+                    name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
+                    slot_key = table.Column<string>(type: "text", nullable: false),
+                    creation_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ServerSlots", x => x.Id);
+                    table.PrimaryKey("pk_server_slots", x => x.id);
                 });
         }
 
@@ -31,7 +31,7 @@ namespace ServerSlotApi.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "ServerSlots");
+                name: "server_slots");
         }
     }
 }

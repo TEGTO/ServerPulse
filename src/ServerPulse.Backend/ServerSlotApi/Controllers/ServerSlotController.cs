@@ -29,11 +29,11 @@ namespace ServerSlotApi.Controllers
         [Authorize]
         [HttpGet]
         [OutputCache(PolicyName = "GetSlotsByEmailPolicy")]
-        public async Task<ActionResult<IEnumerable<ServerSlotResponse>>> GetSlotsByEmail([FromQuery] string str = "", CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IEnumerable<ServerSlotResponse>>> GetSlotsByEmail([FromQuery] string contains = "", CancellationToken cancellationToken = default)
         {
             var email = GetUserEmail();
 
-            var response = await mediator.Send(new GetSlotsByEmailCommand(email, str), cancellationToken);
+            var response = await mediator.Send(new GetSlotsByEmailCommand(email, contains), cancellationToken);
 
             return Ok(response);
         }
@@ -46,6 +46,11 @@ namespace ServerSlotApi.Controllers
             var email = GetUserEmail();
 
             var response = await mediator.Send(new GetSlotByIdCommand(email, id), cancellationToken);
+
+            if (response == null)
+            {
+                return NotFound();
+            }
 
             return Ok(response);
         }

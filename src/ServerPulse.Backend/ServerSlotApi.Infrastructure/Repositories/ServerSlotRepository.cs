@@ -8,9 +8,9 @@ namespace ServerSlotApi.Infrastructure.Repositories
 {
     public class ServerSlotRepository : IServerSlotRepository
     {
-        private readonly IDatabaseRepository<ServerDataDbContext> repository;
+        private readonly IDatabaseRepository<ServerSlotDbContext> repository;
 
-        public ServerSlotRepository(IDatabaseRepository<ServerDataDbContext> repository)
+        public ServerSlotRepository(IDatabaseRepository<ServerSlotDbContext> repository)
         {
             this.repository = repository;
         }

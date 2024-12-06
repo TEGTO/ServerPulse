@@ -11,14 +11,14 @@ namespace ServerSlotApi.Infrastructure.Repositories.Tests
     [TestFixture]
     internal class ServerSlotRepositoryTests
     {
-        private Mock<IDatabaseRepository<ServerDataDbContext>> repositoryMock;
+        private Mock<IDatabaseRepository<ServerSlotDbContext>> repositoryMock;
         private ServerSlotRepository slotRepository;
         private CancellationToken cancellationToken;
 
         [SetUp]
         public void SetUp()
         {
-            repositoryMock = new Mock<IDatabaseRepository<ServerDataDbContext>>();
+            repositoryMock = new Mock<IDatabaseRepository<ServerSlotDbContext>>();
 
             slotRepository = new ServerSlotRepository(repositoryMock.Object);
             cancellationToken = new CancellationToken();
@@ -82,11 +82,11 @@ namespace ServerSlotApi.Infrastructure.Repositories.Tests
         {
             var slots = new List<ServerSlot>
             {
-                new ServerSlot { Id = "1", UserEmail = "user1@example.com", Name = "Slot1" },
+                new ServerSlot { Id = "1", UserEmail = "user1@example.com", Name = "Slot1", SlotKey = "some valid key" },
                 new ServerSlot { Id = "2", UserEmail = "user1@example.com", Name = "Slot2" }
             };
 
-            yield return new TestCaseData(slots, null, "Slot1", true)
+            yield return new TestCaseData(slots, "some valid key", "Slot1", true)
                 .SetDescription("Slot exists with matching key.");
 
             yield return new TestCaseData(slots, "some invalid key", null, false)
@@ -95,7 +95,7 @@ namespace ServerSlotApi.Infrastructure.Repositories.Tests
 
         [Test]
         [TestCaseSource(nameof(GetSlotByKeyTestCases))]
-        public async Task GetSlotByKeyAsync_TestCases(List<ServerSlot> slots, string? key, string? expectedSlotName, bool shouldExist)
+        public async Task GetSlotByKeyAsync_TestCases(List<ServerSlot> slots, string key, string? expectedSlotName, bool shouldExist)
         {
             // Arrange
             var dbSetMock = GetDbSetMock(slots);
@@ -104,14 +104,14 @@ namespace ServerSlotApi.Infrastructure.Repositories.Tests
                 .ReturnsAsync(dbSetMock.Object);
 
             // Act
-            var result = await slotRepository.GetSlotByKeyAsync(key ?? slots[0].SlotKey, cancellationToken);
+            var result = await slotRepository.GetSlotByKeyAsync(key, cancellationToken);
 
             // Assert
             if (shouldExist)
             {
                 Assert.IsNotNull(result);
                 Assert.That(result.Name, Is.EqualTo(expectedSlotName));
-                Assert.That(result.SlotKey, Is.EqualTo(key ?? slots[0].SlotKey));
+                Assert.That(result.SlotKey, Is.EqualTo(key));
             }
             else
             {
@@ -187,13 +187,13 @@ namespace ServerSlotApi.Infrastructure.Repositories.Tests
 
         private static IEnumerable<TestCaseData> UpdateSlotTestCases()
         {
-            yield return new TestCaseData("Updated Slot", "UpdatedKey")
+            yield return new TestCaseData("Updated Slot")
                 .SetDescription("Updates an existing slot.");
         }
 
         [Test]
         [TestCaseSource(nameof(UpdateSlotTestCases))]
-        public async Task UpdateSlotAsync_TestCases(string updatedName, string updatedKey)
+        public async Task UpdateSlotAsync_TestCases(string updatedName)
         {
             // Arrange
             var slot = new ServerSlot { Id = "1", UserEmail = "user1@example.com", Name = updatedName };

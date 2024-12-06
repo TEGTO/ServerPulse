@@ -26,8 +26,9 @@ namespace ServerSlotApi.Command.CheckSlotKey.Tests
                     Id = "1",
                     UserEmail = "user1@example.com",
                     Name = "Slot1",
+                    SlotKey = "valid-key"
                 },
-                null,
+                "valid-key",
                 true
             ).SetDescription("Slot exists with a matching key.");
 
@@ -40,15 +41,13 @@ namespace ServerSlotApi.Command.CheckSlotKey.Tests
 
         [Test]
         [TestCaseSource(nameof(CheckSlotKeyTestCases))]
-        public async Task Handle_TestCases(ServerSlot? slot, string? key, bool expectedIsExisting)
+        public async Task Handle_TestCases(ServerSlot? slot, string key, bool expectedIsExisting)
         {
             // Arrange
-            var slotKey = key ?? slot?.SlotKey ?? "";
-
-            repositoryMock.Setup(repo => repo.GetSlotByKeyAsync(slotKey, It.IsAny<CancellationToken>()))
+            repositoryMock.Setup(repo => repo.GetSlotByKeyAsync(key, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(slot);
 
-            var request = new CheckSlotKeyRequest { SlotKey = slotKey };
+            var request = new CheckSlotKeyRequest { SlotKey = key };
             var command = new CheckSlotKeyCommand(request);
 
             // Act
@@ -57,9 +56,9 @@ namespace ServerSlotApi.Command.CheckSlotKey.Tests
             // Assert
             Assert.IsNotNull(result);
             Assert.That(result.IsExisting, Is.EqualTo(expectedIsExisting));
-            Assert.That(result.SlotKey, Is.EqualTo(slotKey));
+            Assert.That(result.SlotKey, Is.EqualTo(key));
 
-            repositoryMock.Verify(repo => repo.GetSlotByKeyAsync(slotKey, It.IsAny<CancellationToken>()), Times.Once);
+            repositoryMock.Verify(repo => repo.GetSlotByKeyAsync(key, It.IsAny<CancellationToken>()), Times.Once);
         }
     }
 }

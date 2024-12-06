@@ -11,37 +11,47 @@ namespace ServerSlotApi.IntegrationTests.Controllers.ServerSlotController
         public async Task GetSlotById_ValidId_ReturnsOKWithItem()
         {
             // Arrange
-            var list = await CreateSamplesAsync();
+            var list = await CreateSamplesSlotsAsync(AccessToken);
+
             using var request = new HttpRequestMessage(HttpMethod.Get, $"/serverslot/{list[0].Id}");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+
             // Act 
             var response = await client.SendAsync(request);
+
             // Assert
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
             var content = await response.Content.ReadAsStringAsync();
             var actualServerSlot = JsonSerializer.Deserialize<ServerSlotResponse>(content, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
+
             Assert.NotNull(actualServerSlot);
             Assert.That(actualServerSlot.Name, Is.EqualTo("Slot1"));
         }
+
         [Test]
         public async Task GetSlotById_Unauthorized_ReturnsUnauthorized()
         {
             // Act 
             var response = await client.GetAsync("/serverslot/1");
+
             // Assert
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
         }
+
         [Test]
         public async Task GetSlotById_InvalidId_ReturnsNotFound()
         {
             // Arrange
-            using var request = new HttpRequestMessage(HttpMethod.Get, "/serverslot/1");
+            using var request = new HttpRequestMessage(HttpMethod.Get, "/serverslot/1000");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+
             // Act 
             var response = await client.SendAsync(request);
+
             // Assert
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
         }

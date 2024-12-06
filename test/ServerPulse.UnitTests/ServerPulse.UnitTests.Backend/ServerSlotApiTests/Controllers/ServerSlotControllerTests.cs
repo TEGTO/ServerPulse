@@ -125,11 +125,9 @@ namespace ServerSlotApiTests.Controllers
                 Assert.NotNull(result);
                 Assert.NotNull(result.Result);
 
-                Assert.IsInstanceOf<OkObjectResult>(result.Result);
-                var okResult = result.Result as OkObjectResult;
-                Assert.IsNotNull(okResult);
-
-                Assert.IsNull(okResult.Value);
+                Assert.IsInstanceOf<NotFoundResult>(result.Result);
+                var notFoundResult = result.Result as NotFoundResult;
+                Assert.IsNotNull(notFoundResult);
             }
         }
 

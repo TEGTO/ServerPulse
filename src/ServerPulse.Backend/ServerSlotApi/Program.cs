@@ -9,16 +9,14 @@ using ServerSlotApi.Dtos;
 using ServerSlotApi.Infrastructure.Data;
 using ServerSlotApi.Infrastructure.Repositories;
 using ServerSlotApi.Infrastructure.Validators;
+using ServerSlotApi.Services;
 using Shared;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.AddLogging();
 
-builder.Services.AddDbContextFactory<ServerDataDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString(Configuration.SERVER_SLOT_DATABASE_CONNECTION_STRING)));
-
-builder.Services.AddDbContextFactory<ServerDataDbContext>(
+builder.Services.AddDbContextFactory<ServerSlotDbContext>(
     builder.Configuration.GetConnectionString(Configuration.SERVER_SLOT_DATABASE_CONNECTION_STRING)!,
     "ServerSlotApi"
 );
@@ -28,6 +26,7 @@ builder.Services.AddCustomHttpClientServiceWithResilience(builder.Configuration)
 #region Project Services
 
 builder.Services.AddSingleton<IServerSlotRepository, ServerSlotRepository>();
+builder.Services.AddSingleton<ISlotStatisticsService, SlotStatisticsService>();
 
 #endregion
 
@@ -49,9 +48,10 @@ builder.Services.AddOutputCache((options) =>
 
     options.SetOutputCachePolicy("CheckSlotKeyPolicy", duration: TimeSpan.FromSeconds(expiryTime), type: typeof(CheckSlotKeyRequest));
 });
+
 #endregion
 
-builder.Services.AddRepositoryWithResilience<ServerDataDbContext>(builder.Configuration);
+builder.Services.AddRepositoryWithResilience<ServerSlotDbContext>(builder.Configuration);
 
 builder.Services.ConfigureIdentityServices(builder.Configuration);
 
@@ -76,7 +76,7 @@ var app = builder.Build();
 
 if (app.Configuration[Configuration.EF_CREATE_DATABASE] == "true")
 {
-    await app.ConfigureDatabaseAsync<ServerDataDbContext>(CancellationToken.None);
+    await app.ConfigureDatabaseAsync<ServerSlotDbContext>(CancellationToken.None);
 }
 else
 {
@@ -87,7 +87,8 @@ app.UseSharedMiddleware();
 
 app.UseIdentity();
 
-app.MapHealthChecks("/health");
+app.UseOutputCache(); //Order after UseIdentity
+
 app.MapControllers();
 
 await app.RunAsync();
