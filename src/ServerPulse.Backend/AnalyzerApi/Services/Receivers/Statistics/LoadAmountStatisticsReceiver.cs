@@ -1,4 +1,5 @@
-﻿using AnalyzerApi.Domain.Models;
+﻿using AnalyzerApi.Infrastructure;
+using AnalyzerApi.Infrastructure.Models;
 using AnalyzerApi.Services.Interfaces;
 using AutoMapper;
 using MessageBus.Interfaces;

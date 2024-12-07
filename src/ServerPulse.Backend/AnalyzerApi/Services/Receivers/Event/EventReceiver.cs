@@ -1,4 +1,4 @@
-﻿using AnalyzerApi.Domain.Dtos.Wrappers;
+﻿using AnalyzerApi.Infrastructure.Wrappers;
 using AnalyzerApi.Services.Interfaces;
 using AutoMapper;
 using Confluent.Kafka;
@@ -23,7 +23,7 @@ namespace AnalyzerApi.Services.Receivers.Event
         public virtual async IAsyncEnumerable<TWrapper> ConsumeEventAsync(string key, CancellationToken cancellationToken)
         {
             string topic = GetTopic(topicData.topicOriginName, key);
-            await foreach (var response in ConsumMessageAsync(topic, cancellationToken))
+            await foreach (var response in ConsumeMessageAsync(topic, cancellationToken))
             {
                 var ev = ConvertToEventWrapper(response, mapper);
                 if (ev != null)
@@ -66,7 +66,7 @@ namespace AnalyzerApi.Services.Receivers.Event
 
         #region Protected Helpers
 
-        protected virtual async IAsyncEnumerable<ConsumeResponse> ConsumMessageAsync(string topic, CancellationToken cancellationToken)
+        protected virtual async IAsyncEnumerable<ConsumeResponse> ConsumeMessageAsync(string topic, CancellationToken cancellationToken)
         {
             await foreach (var response in messageConsumer.ConsumeAsync(topic, timeoutInMilliseconds, Offset.End, cancellationToken))
             {

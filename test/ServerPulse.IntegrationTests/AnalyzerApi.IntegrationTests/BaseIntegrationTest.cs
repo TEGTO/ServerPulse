@@ -33,6 +33,7 @@ namespace AnalyzerApi.IntegrationTests
             factory = await wrapper.GetFactoryAsync();
             InitializeServices();
         }
+
         [OneTimeTearDown]
         public async Task GlobalTearDown()
         {
@@ -51,6 +52,7 @@ namespace AnalyzerApi.IntegrationTests
             }
             return null;
         }
+
         protected async Task SendCustomEventsAsync(string topic, string key, string[] serializedEvents)
         {
             foreach (var ev in serializedEvents)
@@ -58,6 +60,7 @@ namespace AnalyzerApi.IntegrationTests
                 await producer.ProduceAsync(topic + key, ev, CancellationToken.None);
             }
         }
+
         protected async Task SendEventsAsync<T>(string topic, string key, T[] events) where T : BaseEvent
         {
             await Parallel.ForEachAsync(events, async (ev, ct) =>

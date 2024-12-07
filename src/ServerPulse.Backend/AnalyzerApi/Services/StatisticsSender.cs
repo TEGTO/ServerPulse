@@ -1,6 +1,7 @@
-﻿using AnalyzerApi.Domain.Dtos.Responses;
-using AnalyzerApi.Domain.Models;
-using AnalyzerApi.Hubs;
+﻿using AnalyzerApi.Hubs;
+using AnalyzerApi.Infrastructure;
+using AnalyzerApi.Infrastructure.Dtos.Responses.Statistics;
+using AnalyzerApi.Infrastructure.Models;
 using AnalyzerApi.Services.Interfaces;
 using AutoMapper;
 using MessageBus.Interfaces;
@@ -11,17 +12,12 @@ namespace AnalyzerApi.Services
 {
     public class StatisticsSender : IStatisticsSender
     {
-        #region Fields
-
         private readonly IHubContext<StatisticsHub<ServerStatistics>, IStatisticsHubClient> hubStatistics;
         private readonly IHubContext<StatisticsHub<ServerLoadStatistics>, IStatisticsHubClient> hubLoadStatistics;
         private readonly IHubContext<StatisticsHub<ServerCustomStatistics>, IStatisticsHubClient> hubCustomEventStatistics;
         private readonly IMessageProducer producer;
         private readonly IMapper mapper;
-        private readonly ILogger<StatisticsSender> logger;
         private readonly string serverStatisticsTopic;
-
-        #endregion
 
         public StatisticsSender(
             IHubContext<StatisticsHub<ServerStatistics>, IStatisticsHubClient> hubStatistics,
@@ -29,10 +25,8 @@ namespace AnalyzerApi.Services
             IHubContext<StatisticsHub<ServerCustomStatistics>, IStatisticsHubClient> hubCustomEventStatistics,
             IMessageProducer producer,
             IMapper mapper,
-            IConfiguration configuration,
-            ILogger<StatisticsSender> logger)
+            IConfiguration configuration)
         {
-            this.logger = logger;
             this.mapper = mapper;
             this.producer = producer;
             this.hubStatistics = hubStatistics;
@@ -50,13 +44,12 @@ namespace AnalyzerApi.Services
                 case ServerStatistics:
                     return SendServerStatisticsAsync(key, statistics as ServerStatistics, cancellationToken);
                 case ServerLoadStatistics:
-                    return SendServerLoadStatisticsAsync(key, statistics as ServerLoadStatistics, cancellationToken);
+                    return SendServerLoadStatisticsAsync(key, statistics as ServerLoadStatistics);
                 case ServerCustomStatistics:
-                    return SendServerCustomStatisticsAsync(key, statistics as ServerCustomStatistics, cancellationToken);
+                    return SendServerCustomStatisticsAsync(key, statistics as ServerCustomStatistics);
                 default:
                     return Task.CompletedTask;
             }
-
         }
 
         #endregion
@@ -65,28 +58,24 @@ namespace AnalyzerApi.Services
 
         private async Task SendServerStatisticsAsync(string key, ServerStatistics serverStatistics, CancellationToken cancellationToken)
         {
-            var topic = GetTopic(serverStatisticsTopic, key);
+            var topic = serverStatisticsTopic + key;
             await producer.ProduceAsync(topic, JsonSerializer.Serialize(serverStatistics), cancellationToken);
 
-            var resposnse = mapper.Map<ServerStatisticsResponse>(serverStatistics);
-            var serializedData = JsonSerializer.Serialize(resposnse);
+            var response = mapper.Map<ServerStatisticsResponse>(serverStatistics);
+            var serializedData = JsonSerializer.Serialize(response);
             await hubStatistics.Clients.Group(key).ReceiveStatistics(key, serializedData);
         }
-        private async Task SendServerLoadStatisticsAsync(string key, ServerLoadStatistics statistics, CancellationToken cancellationToken)
+        private async Task SendServerLoadStatisticsAsync(string key, ServerLoadStatistics statistics)
         {
             var response = mapper.Map<ServerLoadStatisticsResponse>(statistics);
             var serializedData = JsonSerializer.Serialize(response);
             await hubLoadStatistics.Clients.Group(key).ReceiveStatistics(key, serializedData);
         }
-        private async Task SendServerCustomStatisticsAsync(string key, ServerCustomStatistics statistics, CancellationToken cancellationToken)
+        private async Task SendServerCustomStatisticsAsync(string key, ServerCustomStatistics statistics)
         {
             var response = mapper.Map<CustomEventStatisticsResponse>(statistics);
             var serializedData = JsonSerializer.Serialize(response);
             await hubCustomEventStatistics.Clients.Group(key).ReceiveStatistics(key, serializedData);
-        }
-        private string GetTopic(string topic, string key)
-        {
-            return topic + key;
         }
 
         #endregion

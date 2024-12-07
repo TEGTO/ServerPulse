@@ -1,9 +1,12 @@
-﻿using AnalyzerApi.Domain.Dtos.Requests;
-using AnalyzerApi.Domain.Dtos.Responses;
-using AnalyzerApi.Domain.Dtos.Wrappers;
-using AnalyzerApi.Domain.Models;
-using AnalyzerApi.Services.Interfaces;
-using AutoMapper;
+﻿using AnalyzerApi.Command.GetAmountStatisticsInRange;
+using AnalyzerApi.Command.GetLoadEventsInDataRange;
+using AnalyzerApi.Command.GetSomeCustomEvents;
+using AnalyzerApi.Command.GetSomeLoadEvents;
+using AnalyzerApi.Command.GetWholeAmountStatisticsInDays;
+using AnalyzerApi.Infrastructure.Dtos.Responses.Statistics;
+using AnalyzerApi.Infrastructure.Requests;
+using AnalyzerApi.Infrastructure.Wrappers;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 
@@ -14,25 +17,13 @@ namespace AnalyzerApi.Controllers
     public class AnalyzeController : ControllerBase
     {
         #region Fields
-
-        private readonly IMapper mapper;
-        private readonly IEventReceiver<LoadEventWrapper> loadEventReceiver;
-        private readonly IStatisticsReceiver<LoadAmountStatistics> loadAmountStatisticsReceiver;
-        private readonly IEventReceiver<CustomEventWrapper> customEventReceiver;
+        private readonly IMediator mediator;
 
         #endregion
 
-        public AnalyzeController(
-            IMapper mapper,
-            IEventReceiver<LoadEventWrapper> loadEventReceiver,
-            IStatisticsReceiver<LoadAmountStatistics> loadAmountStatisticsReceiver,
-            IEventReceiver<CustomEventWrapper> eventStatisticsReceiver,
-            IConfiguration configuration)
+        public AnalyzeController(IMediator mediator)
         {
-            this.mapper = mapper;
-            this.loadEventReceiver = loadEventReceiver;
-            this.loadAmountStatisticsReceiver = loadAmountStatisticsReceiver;
-            this.customEventReceiver = eventStatisticsReceiver;
+            this.mediator = mediator;
         }
 
         #region Endpoints
@@ -42,10 +33,8 @@ namespace AnalyzerApi.Controllers
         [HttpPost]
         public async Task<ActionResult<IEnumerable<LoadEventWrapper>>> GetLoadEventsInDataRange(MessagesInRangeRangeRequest request, CancellationToken cancellationToken)
         {
-            var options = new InRangeQueryOptions(request.Key, request.From.ToUniversalTime(), request.To.ToUniversalTime());
-            var events = await loadEventReceiver.ReceiveEventsInRangeAsync(options, cancellationToken);
-
-            return Ok(events);
+            var response = await mediator.Send(new GetLoadEventsInDataRangeQuery(request), cancellationToken);
+            return Ok(response);
         }
 
         [OutputCache(PolicyName = "GetWholeAmountStatisticsInDaysPolicy")]
@@ -53,49 +42,33 @@ namespace AnalyzerApi.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<LoadAmountStatisticsResponse>>> GetWholeAmountStatisticsInDays(string key, CancellationToken cancellationToken)
         {
-            var timeSpan = TimeSpan.FromDays(1);
-
-            var statistics = await loadAmountStatisticsReceiver.GetWholeStatisticsInTimeSpanAsync(key, timeSpan, cancellationToken);
-
-            var options = new InRangeQueryOptions(key, DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
-            var todayStatistics = await loadAmountStatisticsReceiver.GetStatisticsInRangeAsync(options, timeSpan, cancellationToken);
-
-            var response = statistics.Where(x => !todayStatistics.Any(y => x.DateFrom > y.DateFrom || x.DateTo > y.DateFrom)).ToList();
-            response.AddRange(todayStatistics);
-
-            return Ok(response.Select(mapper.Map<LoadAmountStatisticsResponse>));
+            var response = await mediator.Send(new GetWholeAmountStatisticsInDaysQuery(key), cancellationToken);
+            return Ok(response);
         }
-
 
         [OutputCache(PolicyName = "GetAmountStatisticsInRangePolicy")]
         [Route("amountrange")]
         [HttpPost]
         public async Task<ActionResult<IEnumerable<LoadAmountStatisticsResponse>>> GetAmountStatisticsInRange(MessageAmountInRangeRequest request, CancellationToken cancellationToken)
         {
-            var options = new InRangeQueryOptions(request.Key, request.From.ToUniversalTime(), request.To.ToUniversalTime());
-            var statistics = await loadAmountStatisticsReceiver.GetStatisticsInRangeAsync(options, request.TimeSpan, cancellationToken);
-
-            return Ok(statistics.Select(mapper.Map<LoadAmountStatisticsResponse>));
+            var response = await mediator.Send(new GetAmountStatisticsInRangeQuery(request), cancellationToken);
+            return Ok(response);
         }
 
         [Route("someevents")]
         [HttpPost]
         public async Task<ActionResult<IEnumerable<LoadEventWrapper>>> GetSomeLoadEvents(GetSomeMessagesRequest request, CancellationToken cancellationToken)
         {
-            var options = new ReadCertainMessageNumberOptions(request.Key, request.NumberOfMessages, request.StartDate.ToUniversalTime(), request.ReadNew);
-            IEnumerable<LoadEventWrapper>? events = await loadEventReceiver.GetCertainAmountOfEventsAsync(options, cancellationToken);
-
-            return Ok(events);
+            var response = await mediator.Send(new GetSomeLoadEventsQuery(request), cancellationToken);
+            return Ok(response);
         }
 
         [Route("somecustomevents")]
         [HttpPost]
         public async Task<ActionResult<IEnumerable<CustomEventWrapper>>> GetSomeCustomEvents(GetSomeMessagesRequest request, CancellationToken cancellationToken)
         {
-            var options = new ReadCertainMessageNumberOptions(request.Key, request.NumberOfMessages, request.StartDate.ToUniversalTime(), request.ReadNew);
-            IEnumerable<CustomEventWrapper>? events = await customEventReceiver.GetCertainAmountOfEventsAsync(options, cancellationToken);
-
-            return Ok(events);
+            var response = await mediator.Send(new GetSomeCustomEventsQuery(request), cancellationToken);
+            return Ok(response);
         }
 
         #endregion

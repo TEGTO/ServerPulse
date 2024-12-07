@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using AnalyzerApi.Infrastructure;
+using AutoMapper;
 using MessageBus.Interfaces;
 
 namespace AnalyzerApi.Services.Receivers

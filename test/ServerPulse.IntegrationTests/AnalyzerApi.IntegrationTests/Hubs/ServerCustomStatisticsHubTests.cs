@@ -1,4 +1,4 @@
-﻿using AnalyzerApi.Domain.Models;
+﻿using AnalyzerApi.Infrastructure.Models;
 using Microsoft.AspNetCore.SignalR.Client;
 using ServerPulse.EventCommunication.Events;
 using System.Text.Json;
@@ -10,7 +10,7 @@ namespace AnalyzerApi.IntegrationTests.Hubs
         const string KEY = "validKey";
 
         private HubConnection connection;
-        private List<CustomEvent> eventSamples = new List<CustomEvent>();
+        private readonly List<CustomEvent> eventSamples = new List<CustomEvent>();
         private string? receivedKey;
         private string? receivedStatistics;
 
@@ -22,7 +22,9 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             {
                eventSamples[0]
             });
-            Thread.Sleep(1000);
+
+            await Task.Delay(1000);
+
             eventSamples.Add(new CustomEvent(KEY, "name2", "desc2"));
             await SendEventsAsync(CUSTOM_TOPIC, KEY, new[]
             {
@@ -30,11 +32,11 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             });
 
             connection = new HubConnectionBuilder()
-                      .WithUrl("wss://localhost" + "/customstatisticshub", options =>
-                      {
-                          options.HttpMessageHandlerFactory = _ => server.CreateHandler();
-                      })
-                      .Build();
+                .WithUrl("wss://localhost" + "/customstatisticshub", options =>
+                {
+                    options.HttpMessageHandlerFactory = _ => server.CreateHandler();
+                })
+                .Build();
 
             connection.On<string, string>("ReceiveStatistics", (key, serializedStatistics) =>
             {
@@ -44,6 +46,7 @@ namespace AnalyzerApi.IntegrationTests.Hubs
 
             await connection.StartAsync();
         }
+
         [OneTimeTearDown]
         public async Task OneTimeTearDown()
         {
@@ -56,7 +59,9 @@ namespace AnalyzerApi.IntegrationTests.Hubs
         {
             // Act
             await connection.SendAsync("StartListen", KEY);
-            Thread.Sleep(2000);
+
+            await Task.Delay(2000);
+
             // Assert
             Assert.NotNull(receivedKey);
             Assert.That(receivedKey, Is.EqualTo(KEY));
@@ -64,24 +69,27 @@ namespace AnalyzerApi.IntegrationTests.Hubs
 
             var statistics = JsonSerializer.Deserialize<ServerCustomStatistics>(receivedStatistics);
             Assert.NotNull(statistics);
+
             Assert.True(statistics.IsInitial);
             Assert.NotNull(statistics.LastEvent);
             Assert.That(statistics.LastEvent.Id, Is.EqualTo(eventSamples[1].Id));
             Assert.That(statistics.LastEvent.Name, Is.EqualTo(eventSamples[1].Name));
 
-            // Arrange
+            // Act - Adding new statistics
             eventSamples.Add(new CustomEvent(KEY, "name3", "desc3"));
             await SendEventsAsync(CUSTOM_TOPIC, KEY, new[]
             {
                eventSamples[2]
             });
-            // Assert
+
+            // Assert - Consuming new added statistics 
             Assert.NotNull(receivedKey);
             Assert.That(receivedKey, Is.EqualTo(KEY));
             Assert.NotNull(receivedStatistics);
 
             statistics = JsonSerializer.Deserialize<ServerCustomStatistics>(receivedStatistics);
             Assert.NotNull(statistics);
+
             Assert.False(statistics.IsInitial);
             Assert.NotNull(statistics.LastEvent);
             Assert.That(statistics.LastEvent.Id, Is.EqualTo(eventSamples[2].Id));

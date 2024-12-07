@@ -90,11 +90,7 @@ namespace ServerMonitorApi.IntegrationTests
                 { "Kafka:CustomTopic", "CustomEventTopic_" },
                 { "ApiGateway", "http://apigateway:8080" },
                 { "ServerSlotApi:Check", "/serverslot/check" },
-                { "Analyzer:Load", "/eventprocessing/load" },
-                { "AuthSettings:Key", "q57+LXDr4HtynNQaYVs7t50HwzvTNrWM2E/OepoI/D4=" },
-                { "AuthSettings:Issuer", "https://token.issuer.example.com" },
-                { "AuthSettings:ExpiryInMinutes", "30" },
-                { "AuthSettings:Audience", "https://api.example.com" },
+                { "Analyzer:Load", "/eventprocessing/load" }
             });
 
             return configurationBuilder.Build();

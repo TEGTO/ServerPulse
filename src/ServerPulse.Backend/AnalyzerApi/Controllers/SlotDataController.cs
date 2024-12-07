@@ -1,6 +1,6 @@
-﻿using AnalyzerApi.Domain.Dtos.Responses;
-using AnalyzerApi.Services.Interfaces;
-using AutoMapper;
+﻿using AnalyzerApi.Command.GetSlotStatistics;
+using AnalyzerApi.Infrastructure.Dtos.Responses.Statistics;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 
@@ -10,23 +10,19 @@ namespace AnalyzerApi.Controllers
     [ApiController]
     public class SlotDataController : ControllerBase
     {
-        private readonly ISlotDataPicker dataPicker;
-        private readonly IMapper mapper;
+        private readonly IMediator mediator;
 
-        public SlotDataController(ISlotDataPicker dataPicker, IMapper mapper, IConfiguration configuration)
+        public SlotDataController(IMediator mediator)
         {
-            this.dataPicker = dataPicker;
-            this.mapper = mapper;
+            this.mediator = mediator;
         }
 
-        [OutputCache(PolicyName = "GetSlotDataPolicy")]
+        [OutputCache(PolicyName = "GetSlotStatisticsPolicy")]
         [Route("{key}")]
         [HttpGet]
-        public async Task<ActionResult<SlotDataResponse>> GetSlotData(string key, CancellationToken cancellationToken)
+        public async Task<ActionResult<SlotStatisticsResponse>> GetSlotStatistics(string key, CancellationToken cancellationToken)
         {
-            var data = await dataPicker.GetSlotDataAsync(key, cancellationToken);
-
-            var response = mapper.Map<SlotDataResponse>(data);
+            var response = await mediator.Send(new GetSlotStatisticsQuery(key), cancellationToken);
 
             return Ok(response);
         }

@@ -1,7 +1,6 @@
 ﻿using ExceptionHandling;
 using Microsoft.AspNetCore.Builder;
 using Serilog;
-using Shared.Middlewares;
 
 namespace Shared
 {
@@ -11,7 +10,6 @@ namespace Shared
         {
             builder.UseExceptionMiddleware();
             builder.UseSerilogRequestLogging();
-            builder.UseMiddleware<AccessTokenMiddleware>();
 
             return builder;
         }

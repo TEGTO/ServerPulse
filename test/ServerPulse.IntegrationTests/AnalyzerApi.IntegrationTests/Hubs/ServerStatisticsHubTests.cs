@@ -1,4 +1,4 @@
-﻿using AnalyzerApi.Domain.Models;
+﻿using AnalyzerApi.Infrastructure.Models;
 using Microsoft.AspNetCore.SignalR.Client;
 using ServerPulse.EventCommunication.Events;
 using System.Collections.Concurrent;
@@ -16,11 +16,11 @@ namespace AnalyzerApi.IntegrationTests.Hubs
         public async Task OneTimeSetUp()
         {
             connection = new HubConnectionBuilder()
-                      .WithUrl("wss://localhost" + "/statisticshub", options =>
-                      {
-                          options.HttpMessageHandlerFactory = _ => server.CreateHandler();
-                      })
-                      .Build();
+                .WithUrl("wss://localhost" + "/statisticshub", options =>
+                {
+                    options.HttpMessageHandlerFactory = _ => server.CreateHandler();
+                })
+                .Build();
 
             connection.On<string, string>("ReceiveStatistics", (key, serializedStatistics) =>
             {
@@ -29,6 +29,7 @@ namespace AnalyzerApi.IntegrationTests.Hubs
 
             await connection.StartAsync();
         }
+
         [OneTimeTearDown]
         public async Task OneTimeTearDown()
         {
@@ -41,24 +42,31 @@ namespace AnalyzerApi.IntegrationTests.Hubs
         {
             //Arrange
             var key = "key1";
+
             await SendEventsAsync(CONFIGURATION_TOPIC, key, new[]
             {
                 new ConfigurationEvent(key, TimeSpan.FromSeconds(60))
             });
+
             await SendEventsAsync(ALIVE_TOPIC, key, new[]
             {
-              new PulseEvent(key, true)
+                new PulseEvent(key, true)
             });
-            Thread.Sleep(1000);
+
+            await Task.Delay(1000);
+
             // Act
             await connection.SendAsync("StartListen", key);
-            Thread.Sleep(2000);
+
+            await Task.Delay(2000);
+
             // Assert
             Assert.True(receivedStatistics.ContainsKey(key));
             Assert.NotNull(receivedStatistics[key]);
 
             var statistics = JsonSerializer.Deserialize<ServerStatistics>(receivedStatistics[key]);
             Assert.NotNull(statistics);
+
             Assert.True(statistics.IsInitial);
             Assert.True(statistics.IsAlive);
             Assert.True(statistics.DataExists);
@@ -67,29 +75,24 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             Assert.That(statistics.LastServerUptime, Is.EqualTo(TimeSpan.FromSeconds(0)));
             Assert.That(statistics.LastPulseDateTimeUTC, Is.GreaterThan(DateTime.UtcNow.AddMinutes(-1)));
         }
+
         [Test]
-        public async Task StartListen_ValidKey_ClientAddedToGroupAndDontGetInitialStatistics()
+        public async Task StartListen_ValidKey_ClientAddedToGroupAndDoesNotGetInitialStatistics()
         {
             //Arrange
             var key = "key2";
-            Thread.Sleep(1000);
+
+            await Task.Delay(1000);
+
             // Act
             await connection.SendAsync("StartListen", key);
-            Thread.Sleep(2000);
-            // Assert
-            Assert.True(receivedStatistics.ContainsKey(key));
-            Assert.NotNull(receivedStatistics[key]);
 
-            var statistics = JsonSerializer.Deserialize<ServerStatistics>(receivedStatistics[key]);
-            Assert.NotNull(statistics);
-            Assert.True(statistics.IsInitial);
-            Assert.False(statistics.IsAlive);
-            Assert.False(statistics.DataExists);
-            Assert.That(statistics.ServerLastStartDateTimeUTC, Is.Null);
-            Assert.That(statistics.ServerUptime, Is.Null);
-            Assert.That(statistics.LastServerUptime, Is.Null);
-            Assert.That(statistics.LastPulseDateTimeUTC, Is.Null);
+            await Task.Delay(2000);
+
+            // Assert
+            Assert.False(receivedStatistics.ContainsKey(key));
         }
+
         [Test]
         public async Task StartListen_ValidKey_ClientAddedToGroupAndGetsStatistics()
         {
@@ -99,25 +102,33 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             {
                 new ConfigurationEvent(key, TimeSpan.FromSeconds(5))
             });
+
             await SendEventsAsync(ALIVE_TOPIC, key, new[]
             {
               new PulseEvent(key, true)
             });
-            Thread.Sleep(1000);
+
+            await Task.Delay(1000);
+
             // Act
             await connection.SendAsync("StartListen", key);
-            Thread.Sleep(7000);
+
+            await Task.Delay(7000);
+
             await SendEventsAsync(ALIVE_TOPIC, key, new[]
             {
-              new PulseEvent(key, true)
+                new PulseEvent(key, true)
             });
-            Thread.Sleep(2000);
+
+            await Task.Delay(2000);
+
             // Assert
             Assert.True(receivedStatistics.ContainsKey(key));
             Assert.NotNull(receivedStatistics[key]);
 
             var statistics = JsonSerializer.Deserialize<ServerStatistics>(receivedStatistics[key]);
             Assert.NotNull(statistics);
+
             Assert.False(statistics.IsInitial);
             Assert.True(statistics.IsAlive);
             Assert.True(statistics.DataExists);
@@ -126,15 +137,16 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             Assert.That(statistics.LastServerUptime, Is.GreaterThan(TimeSpan.FromSeconds(0)));
             Assert.That(statistics.LastPulseDateTimeUTC, Is.GreaterThan(DateTime.UtcNow.AddMinutes(-1)));
 
-            //Act
-            Thread.Sleep(5000); // Wait for the next statistics
+            //Act - Wait for the next statistics
+            await Task.Delay(5000);
 
-            // Assert
+            // Assert - Consuming the next statistics
             Assert.True(receivedStatistics.ContainsKey(key));
             Assert.NotNull(receivedStatistics[key]);
 
             statistics = JsonSerializer.Deserialize<ServerStatistics>(receivedStatistics[key]);
             Assert.NotNull(statistics);
+
             Assert.False(statistics.IsInitial);
             Assert.False(statistics.IsAlive);
             Assert.True(statistics.DataExists);
@@ -143,13 +155,15 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             Assert.That(statistics.LastServerUptime, Is.GreaterThan(TimeSpan.FromSeconds(0)));
             Assert.That(statistics.LastPulseDateTimeUTC, Is.GreaterThan(DateTime.UtcNow.AddMinutes(-1)));
 
-            //Act
+            //Act - Adding new event
             await SendEventsAsync(ALIVE_TOPIC, key, new[]
             {
-              new PulseEvent(key, true)
+                new PulseEvent(key, true)
             });
-            Thread.Sleep(7000);
-            // Assert
+
+            await Task.Delay(7000);
+
+            // Assert - Consuming new statistics with the added event
             Assert.True(receivedStatistics.ContainsKey(key));
             Assert.NotNull(receivedStatistics[key]);
 

@@ -1,4 +1,5 @@
-﻿using AnalyzerApi.Services.Interfaces;
+﻿using AnalyzerApi.Command.ProcessLoadEvent;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using ServerPulse.EventCommunication.Events;
 
@@ -8,23 +9,18 @@ namespace AnalyzerApi.Controllers
     [ApiController]
     public class EventProcessingController : ControllerBase
     {
-        private readonly IEventProcessor eventProcessor;
+        private readonly IMediator mediator;
 
-        public EventProcessingController(IEventProcessor eventProcessor)
+        public EventProcessingController(IMediator mediator)
         {
-            this.eventProcessor = eventProcessor;
+            this.mediator = mediator;
         }
 
         [Route("load")]
         [HttpPost]
-        public async Task<IActionResult> ProcessLoad(LoadEvent[] events, CancellationToken cancellationToken)
+        public async Task<IActionResult> ProcessLoadEvents(LoadEvent[] events, CancellationToken cancellationToken)
         {
-            if (events == null || events.Length == 0 || !events.All(x => x.Key == events[0].Key))
-            {
-                return BadRequest();
-            }
-
-            await eventProcessor.ProcessEventsAsync(events, cancellationToken);
+            await mediator.Send(new ProcessLoadEventsCommand(events), cancellationToken);
             return Ok();
         }
     }

@@ -1,4 +1,4 @@
-﻿using AnalyzerApi.Domain.Dtos.Wrappers;
+﻿using AnalyzerApi.Infrastructure.Wrappers;
 using AutoMapper;
 using MessageBus.Interfaces;
 using ServerPulse.EventCommunication.Events;

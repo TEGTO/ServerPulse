@@ -1,4 +1,4 @@
-﻿using AnalyzerApi.Domain.Models;
+﻿using AnalyzerApi.Infrastructure.Models;
 
 namespace AnalyzerApi.Services.Interfaces
 {

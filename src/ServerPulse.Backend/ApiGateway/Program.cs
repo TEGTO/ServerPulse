@@ -6,6 +6,7 @@ using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Provider.Polly;
 using Shared;
+using Shared.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -65,10 +66,15 @@ if (useCors)
     app.UseCors(myAllowSpecificOrigins);
 }
 
+app.UseRouting();
+
+app.UseAuthentication();
+
+app.UseMiddleware<AccessTokenMiddleware>();
 app.UseSharedMiddleware();
 app.UseMiddleware<TokenFromQueryMiddleware>();
 
-app.UseRouting();
+app.UseAuthorization();
 
 if (!app.Environment.IsDevelopment())
 {
@@ -86,8 +92,6 @@ else
     });
 }
 
-app.UseAuthentication();
-app.UseAuthorization();
 
 app.UseEndpoints(_ => { });
 app.MapHealthChecks("/health");

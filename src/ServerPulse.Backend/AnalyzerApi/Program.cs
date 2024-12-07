@@ -1,8 +1,9 @@
-using AnalyzerApi;
-using AnalyzerApi.Domain.Dtos.Requests;
-using AnalyzerApi.Domain.Dtos.Wrappers;
-using AnalyzerApi.Domain.Models;
 using AnalyzerApi.Hubs;
+using AnalyzerApi.Infrastructure;
+using AnalyzerApi.Infrastructure.Models;
+using AnalyzerApi.Infrastructure.Requests;
+using AnalyzerApi.Infrastructure.Validators;
+using AnalyzerApi.Infrastructure.Wrappers;
 using AnalyzerApi.Services;
 using AnalyzerApi.Services.Collectors;
 using AnalyzerApi.Services.Consumers;
@@ -62,7 +63,7 @@ builder.Services.AddOutputCache((options) =>
     options.SetOutputCachePolicy("GetLoadEventsInDataRangePolicy", duration: TimeSpan.FromMinutes(expiryTime), types: typeof(MessagesInRangeRangeRequest));
     options.SetOutputCachePolicy("GetWholeAmountStatisticsInDaysPolicy", duration: TimeSpan.FromMinutes(expiryTime));
     options.SetOutputCachePolicy("GetAmountStatisticsInRangePolicy", duration: TimeSpan.FromMinutes(expiryTime), types: typeof(MessageAmountInRangeRequest));
-    options.SetOutputCachePolicy("GetSlotDataPolicy", duration: TimeSpan.FromMinutes(expiryTime));
+    options.SetOutputCachePolicy("GetSlotStatisticsPolicy", duration: TimeSpan.FromMinutes(expiryTime));
 });
 
 #endregion
@@ -92,8 +93,6 @@ builder.Services.AddSingleton<IStatisticsReceiver<ServerLoadStatistics>, Statist
 builder.Services.AddSingleton<IStatisticsReceiver<ServerStatistics>, StatisticsReceiver<ServerStatistics>>();
 
 builder.Services.AddSingleton<IStatisticsSender, StatisticsSender>();
-builder.Services.AddSingleton<IEventProcessor, EventProcessor>();
-builder.Services.AddSingleton<ISlotDataPicker, SlotDataPicker>();
 
 builder.Services.AddSingleton<IStatisticsConsumer<ServerStatistics>, ServerStatisticsConsumer>();
 builder.Services.AddSingleton<IStatisticsConsumer<ServerLoadStatistics>, StatisticsConsumer<ServerLoadStatistics, LoadEventWrapper>>();
@@ -107,7 +106,12 @@ builder.Services.AddSingleton<IStatisticsCollector<ServerCustomStatistics>, Cust
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
-builder.Services.AddSharedFluentValidation(typeof(Program));
+builder.Services.AddMediatR(conf =>
+{
+    conf.RegisterServicesFromAssembly(typeof(Program).Assembly);
+});
+
+builder.Services.AddSharedFluentValidation(typeof(Program), typeof(GetSomeMessagesRequestValidator));
 
 builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -132,7 +136,6 @@ else
     app.UseSwagger("Analyzer API V1");
 }
 
-app.MapHealthChecks("/health");
 app.MapControllers();
 
 app.UseOutputCache(); //Order after Identity

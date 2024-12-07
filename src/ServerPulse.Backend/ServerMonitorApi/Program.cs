@@ -1,4 +1,3 @@
-using Authentication;
 using Confluent.Kafka;
 using ExceptionHandling;
 using Logging;
@@ -46,8 +45,6 @@ builder.Services.AddSingleton<IStatisticsEventSender, StatisticsEventSender>();
 builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-builder.Services.ConfigureIdentityServices(builder.Configuration);
-
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 builder.Services.AddMediatR(conf =>
@@ -74,8 +71,6 @@ else
 {
     app.UseSwagger("Server Monitor API V1");
 }
-
-app.UseIdentity();
 
 app.MapControllers();
 

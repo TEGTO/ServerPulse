@@ -1,5 +1,6 @@
-﻿using AnalyzerApi.Domain.Dtos.Wrappers;
-using AnalyzerApi.Domain.Models;
+﻿using AnalyzerApi.Infrastructure;
+using AnalyzerApi.Infrastructure.Models;
+using AnalyzerApi.Infrastructure.Wrappers;
 using AnalyzerApi.Services.Interfaces;
 using System.Collections.Concurrent;
 
