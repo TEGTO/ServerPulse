@@ -6,6 +6,7 @@ using MessageBus;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using ServerMonitorApi;
 using ServerMonitorApi.Services;
+using ServerPulse.EventCommunication.Events;
 using Shared;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,11 +39,14 @@ builder.Services.AddKafkaProducer(producerConfig, adminConfig);
 #region Project Services
 
 builder.Services.AddSingleton<ISlotKeyChecker, SlotKeyChecker>();
+builder.Services.AddSingleton<IStatisticsEventSender, StatisticsEventSender>();
 
 #endregion
 
 builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.ConfigureIdentityServices(builder.Configuration);
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
@@ -51,7 +55,7 @@ builder.Services.AddMediatR(conf =>
     conf.RegisterServicesFromAssembly(typeof(Program).Assembly);
 });
 
-builder.Services.AddSharedFluentValidation(typeof(Program));
+builder.Services.AddSharedFluentValidation(typeof(Program), typeof(LoadEvent));
 
 if (builder.Environment.IsDevelopment())
 {

@@ -14,8 +14,7 @@
         public static string KAFKA_LOAD_METHOD_STATISTICS_TOPIC { get; } = "Kafka:LoadMethodStatisticsTopic";
         public static string KAFKA_TOPIC_DATA_SAVE_IN_DAYS { get; } = "Kafka:TopicDataSaveInDays";
         public static string STATISTICS_COLLECT_INTERVAL_IN_MILLISECONDS { get; } = "StatisticsCollectIntervalInMilliseconds";
-        public static string CACHE_EXPIRY_IN_MINUTES { get; } = "Cache:ServerLoadStatisticsPerDayExpiryInMinutes";
-        public static string CACHE_KEY { get; } = "Cache:StatisticsKey";
+        public static string CACHE_EXPIRY_IN_MINUTES { get; } = "Cache:ExpiryInMinutes";
         public static string MIN_STATISTICS_TIMESPAN_IN_SECONDS { get; } = "MinimumStatisticsTimeSpanInSeconds";
         public static string MAX_EVENT_AMOUNT_TO_GET_IN_SLOT_DATA { get; } = "MaxEventAmountToGetInSlotData";
     }

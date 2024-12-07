@@ -1,7 +1,6 @@
 ﻿using MediatR;
 using MessageBus.Interfaces;
 using ServerMonitorApi.Services;
-using Shared.Helpers;
 using System.Text.Json;
 
 namespace ServerMonitorApi.Command.SendLoadEvents
@@ -10,18 +9,16 @@ namespace ServerMonitorApi.Command.SendLoadEvents
     {
         private readonly ISlotKeyChecker serverSlotChecker;
         private readonly IMessageProducer producer;
-        private readonly IHttpHelper httpHelper;
+        private readonly IStatisticsEventSender statisticsEventSender;
         private readonly string loadTopic;
-        private readonly string loadAnalyzeUri;
 
-        public SendLoadEventsCommandHandler(ISlotKeyChecker serverSlotChecker, IMessageProducer producer, IHttpHelper httpHelper, IConfiguration configuration)
+        public SendLoadEventsCommandHandler(ISlotKeyChecker serverSlotChecker, IMessageProducer producer, IStatisticsEventSender statisticsEventSender, IConfiguration configuration)
         {
             this.serverSlotChecker = serverSlotChecker;
             this.producer = producer;
-            this.httpHelper = httpHelper;
+            this.statisticsEventSender = statisticsEventSender;
 
             loadTopic = configuration[Configuration.KAFKA_LOAD_TOPIC]!;
-            loadAnalyzeUri = $"{configuration[Configuration.API_GATEWAY]}{configuration[Configuration.ANALYZER_LOAD_ANALYZE]}";
         }
 
         public async Task<Unit> Handle(SendLoadEventsCommand command, CancellationToken cancellationToken)
@@ -34,17 +31,20 @@ namespace ServerMonitorApi.Command.SendLoadEvents
 
                 if (!Array.TrueForAll(events, x => x.Key == firstKey))
                 {
-                    throw new InvalidOperationException($"All load events must have the same key per request!");
+                    throw new InvalidOperationException($"All events must have the same key per request!");
                 }
 
                 if (await serverSlotChecker.CheckSlotKeyAsync(firstKey, cancellationToken))
                 {
                     var topic = loadTopic + firstKey;
 
-                    var message = JsonSerializer.Serialize(events);
+                    await Parallel.ForEachAsync(events, cancellationToken, async (ev, ct) =>
+                    {
+                        await statisticsEventSender.SendLoadEventForStatistics(ev, cancellationToken);
 
-                    await SendEventsForStatistics(message, cancellationToken);
-                    await producer.ProduceAsync(topic, message, cancellationToken);
+                        var serializedEvent = JsonSerializer.Serialize(ev);
+                        await producer.ProduceAsync(topic, serializedEvent, cancellationToken);
+                    });
                 }
                 else
                 {
@@ -57,11 +57,6 @@ namespace ServerMonitorApi.Command.SendLoadEvents
             {
                 throw new InvalidDataException("Event array could not be null or empty!");
             }
-        }
-
-        private async Task SendEventsForStatistics(string serializedEvents, CancellationToken cancellationToken)
-        {
-            await httpHelper.SendPostRequestAsync(loadAnalyzeUri, serializedEvents, null, cancellationToken);
         }
     }
 }

@@ -42,11 +42,17 @@ namespace Caching
             }
         }
 
-        public static void SetOutputCachePolicy(this OutputCacheOptions options, string name, TimeSpan? duration = null, bool useAuthId = false, Type? type = null)
+        public static void SetOutputCachePolicy(this OutputCacheOptions options, string name, TimeSpan? duration = null, bool useAuthId = false, params Type[] types)
         {
-            if (type != null)
+            if (types != null && types.Any())
             {
-                PropertyInfo[] properties = type.GetProperties();
+                var properties = new List<PropertyInfo>();
+
+                foreach (var type in types)
+                {
+                    properties.AddRange(type.GetProperties());
+                }
+
                 options.AddPolicy(name,
                     new OutputCachePolicy(
                         duration,

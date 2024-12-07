@@ -15,11 +15,14 @@ namespace Shared
             services.AddFluentValidationAutoValidation();
             services.AddFluentValidationClientsideAdapters();
             services.AddValidatorsFromAssemblyContaining(typeof(ServiceCollectionExtensions));
+
             foreach (var type in types)
             {
                 services.AddValidatorsFromAssemblyContaining(type);
             }
+
             ValidatorOptions.Global.LanguageManager.Enabled = false;
+
             return services;
         }
 

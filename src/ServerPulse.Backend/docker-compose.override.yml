@@ -51,6 +51,10 @@ services:
       - ServerSlotApi__Check=${ServerSlotApi__Check}
       - Analyzer__Load=${Analyzer__Load}
       - ConnectionStrings__RedisServer=${ConnectionStrings__RedisServer}
+      - AuthSettings__Key=${AuthSettings__Key}
+      - AuthSettings__Audience=${AuthSettings__Audience}
+      - AuthSettings__Issuer=${AuthSettings__Issuer}
+      - AuthSettings__ExpiryInMinutes=${AuthSettings__ExpiryInMinutes}
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
@@ -71,8 +75,7 @@ services:
       - PulseEventIntervalInMilliseconds=${PulseEventIntervalInMilliseconds}
       - StatisticsCollectIntervalInMilliseconds=${StatisticsCollectIntervalInMilliseconds}
       - ConnectionStrings__RedisServer=${ConnectionStrings__RedisServer}
-      - Cache__ServerLoadStatisticsPerDayExpiryInMinutes=${Cache__ServerLoadStatisticsPerDayExpiryInMinutes}
-      - Cache__StatisticsKey=${Cache__StatisticsKey}
+      - Cache__ExpiryInMinutes=${Cache__ExpiryInMinutes}
       - MinimumStatisticsTimeSpanInSeconds=${MinimumStatisticsTimeSpanInSeconds}
       - MaxEventAmountToGetInSlotData=${MaxEventAmountToGetInSlotData}
     volumes:

@@ -17,9 +17,9 @@ namespace AnalyzerApi.Controllers
 
         [Route("load")]
         [HttpPost]
-        public async Task<IActionResult> ProcessLoad([FromBody] LoadEvent[] events, CancellationToken cancellationToken)
+        public async Task<IActionResult> ProcessLoad(LoadEvent[] events, CancellationToken cancellationToken)
         {
-            if (events == null || events.Length == 0 || !events.All(x => x.Key == events.First().Key))
+            if (events == null || events.Length == 0 || !events.All(x => x.Key == events[0].Key))
             {
                 return BadRequest();
             }

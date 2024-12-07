@@ -1,10 +1,8 @@
 ﻿using AnalyzerApi.Domain.Dtos.Responses;
-using AnalyzerApi.Domain.Models;
 using AnalyzerApi.Services.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using ServerMonitorApi.Services;
-using System.Text.Json;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace AnalyzerApi.Controllers
 {
@@ -14,31 +12,19 @@ namespace AnalyzerApi.Controllers
     {
         private readonly ISlotDataPicker dataPicker;
         private readonly IMapper mapper;
-        private readonly ICacheService cacheService;
-        private readonly double cacheExpiryInMinutes;
-        private readonly string cacheKey;
 
-        public SlotDataController(ISlotDataPicker dataPicker, IMapper mapper, ICacheService cacheService, IConfiguration configuration)
+        public SlotDataController(ISlotDataPicker dataPicker, IMapper mapper, IConfiguration configuration)
         {
             this.dataPicker = dataPicker;
             this.mapper = mapper;
-            this.cacheService = cacheService;
-            cacheExpiryInMinutes = double.Parse(configuration[Configuration.CACHE_EXPIRY_IN_MINUTES]!);
-            cacheKey = configuration[Configuration.CACHE_KEY]!;
         }
 
+        [OutputCache(PolicyName = "GetSlotDataPolicy")]
         [Route("{key}")]
         [HttpGet]
-        public async Task<ActionResult<SlotDataResponse>> GetData([FromRoute] string key, CancellationToken cancellationToken)
+        public async Task<ActionResult<SlotDataResponse>> GetSlotData(string key, CancellationToken cancellationToken)
         {
-            var cacheKey = $"{this.cacheKey}-{key}-slotdata";
-            SlotData? data = await cacheService.GetInCacheAsync<SlotData>(cacheKey);
-            if (data == null)
-            {
-                data = await dataPicker.GetSlotDataAsync(key, cancellationToken);
-            }
-
-            await cacheService.SetValueAsync(cacheKey, JsonSerializer.Serialize(data), cacheExpiryInMinutes);
+            var data = await dataPicker.GetSlotDataAsync(key, cancellationToken);
 
             var response = mapper.Map<SlotDataResponse>(data);
 

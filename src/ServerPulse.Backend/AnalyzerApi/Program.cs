@@ -1,4 +1,5 @@
 using AnalyzerApi;
+using AnalyzerApi.Domain.Dtos.Requests;
 using AnalyzerApi.Domain.Dtos.Wrappers;
 using AnalyzerApi.Domain.Models;
 using AnalyzerApi.Hubs;
@@ -8,7 +9,7 @@ using AnalyzerApi.Services.Consumers;
 using AnalyzerApi.Services.Interfaces;
 using AnalyzerApi.Services.Receivers.Event;
 using AnalyzerApi.Services.Receivers.Statistics;
-using CacheUtils;
+using Caching;
 using Confluent.Kafka;
 using ExceptionHandling;
 using Logging;
@@ -48,7 +49,23 @@ builder.Services.AddKafkaConsumer(consumerConfig, adminConfig);
 
 #endregion 
 
-builder.Services.AddCache(builder.Configuration);
+#region Caching
+
+builder.Services.AddOutputCache((options) =>
+{
+    options.AddPolicy("BasePolicy", new OutputCachePolicy());
+
+    var expiryTime = int.TryParse(
+        builder.Configuration[Configuration.CACHE_EXPIRY_IN_MINUTES],
+        out var getByEmailExpiry) ? getByEmailExpiry : 1;
+
+    options.SetOutputCachePolicy("GetLoadEventsInDataRangePolicy", duration: TimeSpan.FromMinutes(expiryTime), types: typeof(MessagesInRangeRangeRequest));
+    options.SetOutputCachePolicy("GetWholeAmountStatisticsInDaysPolicy", duration: TimeSpan.FromMinutes(expiryTime));
+    options.SetOutputCachePolicy("GetAmountStatisticsInRangePolicy", duration: TimeSpan.FromMinutes(expiryTime), types: typeof(MessageAmountInRangeRequest));
+    options.SetOutputCachePolicy("GetSlotDataPolicy", duration: TimeSpan.FromMinutes(expiryTime));
+});
+
+#endregion
 
 #region Project Services
 
@@ -117,6 +134,8 @@ else
 
 app.MapHealthChecks("/health");
 app.MapControllers();
+
+app.UseOutputCache(); //Order after Identity
 
 #region Hubs
 

@@ -3,7 +3,7 @@ version: '3.4'
 services:
   serverpulse-db:
     container_name: serverpulse-db
-    image: postgres
+    image: postgres:17
     restart: always
     ports:
     - "54303:5432"

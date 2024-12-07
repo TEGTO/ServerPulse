@@ -11,7 +11,7 @@ namespace ServerPulse.EventCommunication.Events
         public string Id { get; init; }
         public string Key { get; init; }
 
-        public BaseEvent(string Key)
+        protected BaseEvent(string Key)
         {
             Id = Guid.NewGuid().ToString();
             this.Key = Key;

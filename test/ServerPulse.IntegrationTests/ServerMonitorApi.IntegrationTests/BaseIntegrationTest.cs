@@ -21,8 +21,8 @@ namespace ServerMonitorApi.IntegrationTests
 
         protected HttpClient client;
         protected IMessageConsumer messageConsumer;
-        protected Mock<ISlotKeyChecker> mockSlotKeyChecker;
-        protected Mock<IEventProcessing> mockEventProcessing;
+        protected Mock<ISlotKeyChecker>? mockSlotKeyChecker;
+        protected Mock<IStatisticsEventSender>? mockStatisticsEventSender;
         private WebAppFactoryWrapper wrapper;
         private WebApplicationFactory<Program> factory;
         private IServiceScope scope;
@@ -31,6 +31,7 @@ namespace ServerMonitorApi.IntegrationTests
         public async Task GlobalSetup()
         {
             wrapper = new WebAppFactoryWrapper();
+
             factory = (await wrapper.GetFactoryAsync()).WithWebHostBuilder(builder =>
             {
                 builder.ConfigureTestServices(services =>
@@ -39,19 +40,22 @@ namespace ServerMonitorApi.IntegrationTests
 
                     mockSlotKeyChecker = new Mock<ISlotKeyChecker>();
                     mockSlotKeyChecker.Setup(x => x.CheckSlotKeyAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
+                        .ReturnsAsync(true);
 
-                    services.AddSingleton<ISlotKeyChecker>(mockSlotKeyChecker.Object);
+                    services.AddSingleton(mockSlotKeyChecker.Object);
 
-                    services.RemoveAll(typeof(IEventProcessing));
+                    services.RemoveAll(typeof(IStatisticsEventSender));
 
-                    mockEventProcessing = new Mock<IEventProcessing>();
+                    mockStatisticsEventSender = new Mock<IStatisticsEventSender>();
 
-                    services.AddSingleton<IEventProcessing>(mockEventProcessing.Object);
+                    services.AddSingleton(mockStatisticsEventSender.Object);
+
                 });
             });
+
             InitializeServices();
         }
+
         [OneTimeTearDown]
         public async Task GlobalTearDown()
         {
@@ -64,13 +68,16 @@ namespace ServerMonitorApi.IntegrationTests
         protected async Task<T?> ReceiveLastTopicEventAsync<T>(string topic, string key) where T : BaseEvent
         {
             var response = await messageConsumer.ReadLastTopicMessageAsync(topic + key, TIMEOUT_IN_MILLISECONDS, CancellationToken.None);
+
             if (response != null)
             {
                 response.Message.TryToDeserialize(out T? ev);
                 return ev;
             }
+
             return null;
         }
+
         private void InitializeServices()
         {
             scope = factory.Services.CreateScope();

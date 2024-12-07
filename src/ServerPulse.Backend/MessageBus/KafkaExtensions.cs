@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MessageBus
 {
-    public static class KafkaExtenstions
+    public static class KafkaExtensions
     {
         public static IServiceCollection AddKafkaConsumer(this IServiceCollection services, ConsumerConfig consumerConfig, AdminClientConfig adminConfig)
         {
@@ -15,6 +15,7 @@ namespace MessageBus
             services.AddSingleton<IMessageConsumer, KafkaConsumer>();
             return services;
         }
+
         public static IServiceCollection AddKafkaProducer(this IServiceCollection services, ProducerConfig producerConfig, AdminClientConfig adminConfig)
         {
             services.AddSingleton(producerConfig);

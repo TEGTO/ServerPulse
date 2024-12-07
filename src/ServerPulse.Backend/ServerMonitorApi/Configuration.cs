@@ -10,6 +10,6 @@
         public static string KAFKA_CUSTOM_TOPIC { get; } = "Kafka:CustomTopic";
         public static string API_GATEWAY { get; } = "ApiGateway";
         public static string SERVER_SLOT_ALIVE_CHECKER { get; } = "ServerSlotApi:Check";
-        public static string ANALYZER_LOAD_ANALYZE { get; } = "Analyzer:Load";
+        public static string ANALYZER_LOAD_EVENT { get; } = "Analyzer:Load";
     }
 }

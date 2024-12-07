@@ -1,5 +1,4 @@
-﻿using Moq;
-using ServerSlotApi.Dtos;
+﻿using ServerSlotApi.Dtos;
 using System.Net;
 using System.Net.Http.Headers;
 
@@ -21,8 +20,6 @@ namespace ServerSlotApi.IntegrationTests.Controllers.ServerSlotController
 
             // Assert
             Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-
-            mockSlotStatisticsService?.Verify(x => x.DeleteSlotStatisticsAsync(createdSlot.SlotKey ?? "", AccessToken, It.IsAny<CancellationToken>()), Times.Once);
 
             await CheckServerSlotNotFound(createdSlot.Id ?? "");
         }

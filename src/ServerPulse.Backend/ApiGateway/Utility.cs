@@ -32,6 +32,7 @@ namespace ApiGateway
             var mergedJson = JsonSerializer.Serialize(mergedDict, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(outputPath, mergedJson);
         }
+
         private static JsonElement MergeArrays(JsonElement existingValue, JsonElement newValue)
         {
             existingValue.GetRawText().TryToDeserialize(out List<JsonElement>? existingList);

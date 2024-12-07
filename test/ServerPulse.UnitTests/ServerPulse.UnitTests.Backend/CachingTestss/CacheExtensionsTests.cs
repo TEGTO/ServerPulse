@@ -83,16 +83,16 @@ namespace Caching.Tests
 
         [Test]
         [TestCase("PolicyWithType", 30, true, typeof(TestObject), Description = "With type and properties")]
-        [TestCase("PolicyWithoutType", null, false, null, Description = "Without type")]
-        [TestCase("PolicyDefaultDuration", null, true, null, Description = "Without type, useAuthId true")]
-        public void SetOutputCachePolicy_WithVariousInputs_DoesNotThrowExceptions(string name, int? durationSeconds, bool useAuthId, Type? type)
+        [TestCase("PolicyWithoutType", null, false, Description = "Without type")]
+        [TestCase("PolicyDefaultDuration", null, true, Description = "Without type, useAuthId true")]
+        public void SetOutputCachePolicy_WithVariousInputs_DoesNotThrowExceptions(string name, int? durationSeconds, bool useAuthId, params Type[] types)
         {
             // Arrange
             TimeSpan? duration = durationSeconds.HasValue ? TimeSpan.FromSeconds(durationSeconds.Value) : null;
 
             // Act + Assert
             Assert.DoesNotThrow(() =>
-              CacheExtensions.SetOutputCachePolicy(mockOptions.Object, name, duration, useAuthId, type));
+              CacheExtensions.SetOutputCachePolicy(mockOptions.Object, name, duration, useAuthId, types));
         }
 
         [Test]

@@ -8,14 +8,14 @@ namespace ServerMonitorApi.Command.SendCustomEvents
     {
         private readonly ISlotKeyChecker serverSlotChecker;
         private readonly IMessageProducer producer;
-        private readonly string configurationTopic;
+        private readonly string customTopic;
 
         public SendCustomEventsCommandHandler(ISlotKeyChecker serverSlotChecker, IMessageProducer producer, IConfiguration configuration)
         {
             this.serverSlotChecker = serverSlotChecker;
             this.producer = producer;
 
-            configurationTopic = configuration[Configuration.KAFKA_CONFIGURATION_TOPIC]!;
+            customTopic = configuration[Configuration.KAFKA_CUSTOM_TOPIC]!;
         }
 
         public async Task<Unit> Handle(SendCustomEventsCommand command, CancellationToken cancellationToken)
@@ -35,7 +35,7 @@ namespace ServerMonitorApi.Command.SendCustomEvents
 
                 if (await serverSlotChecker.CheckSlotKeyAsync(firstKey, cancellationToken))
                 {
-                    var topic = configurationTopic + firstKey;
+                    var topic = customTopic + firstKey;
 
                     await Parallel.ForEachAsync(customSerializedEvents, cancellationToken, async (ev, ct) =>
                     {

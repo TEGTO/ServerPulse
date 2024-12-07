@@ -1,4 +1,5 @@
-﻿using Confluent.Kafka;
+﻿#pragma warning disable CS8424 
+using Confluent.Kafka;
 using System.Runtime.CompilerServices;
 
 namespace MessageBus.Interfaces

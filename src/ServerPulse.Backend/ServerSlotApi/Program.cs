@@ -9,7 +9,6 @@ using ServerSlotApi.Dtos;
 using ServerSlotApi.Infrastructure.Data;
 using ServerSlotApi.Infrastructure.Repositories;
 using ServerSlotApi.Infrastructure.Validators;
-using ServerSlotApi.Services;
 using Shared;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,7 +25,6 @@ builder.Services.AddCustomHttpClientServiceWithResilience(builder.Configuration)
 #region Project Services
 
 builder.Services.AddSingleton<IServerSlotRepository, ServerSlotRepository>();
-builder.Services.AddSingleton<ISlotStatisticsService, SlotStatisticsService>();
 
 #endregion
 
@@ -46,7 +44,7 @@ builder.Services.AddOutputCache((options) =>
         builder.Configuration[Configuration.CACHE_CHECK_SERVER_SLOT_EXPIRY_IN_SECONDS],
         out var checkSlotExpiry) ? checkSlotExpiry : 1;
 
-    options.SetOutputCachePolicy("CheckSlotKeyPolicy", duration: TimeSpan.FromSeconds(expiryTime), type: typeof(CheckSlotKeyRequest));
+    options.SetOutputCachePolicy("CheckSlotKeyPolicy", duration: TimeSpan.FromSeconds(expiryTime), types: typeof(CheckSlotKeyRequest));
 });
 
 #endregion
@@ -87,7 +85,7 @@ app.UseSharedMiddleware();
 
 app.UseIdentity();
 
-app.UseOutputCache(); //Order after UseIdentity
+app.UseOutputCache(); //Order after Identity
 
 app.MapControllers();
 

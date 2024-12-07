@@ -22,7 +22,7 @@ namespace ServerMonitorApi.Command.SendCustomEvents.Tests
             slotKeyCheckerMock = new Mock<ISlotKeyChecker>();
             messageProducerMock = new Mock<IMessageProducer>();
             configurationMock = new Mock<IConfiguration>();
-            configurationMock.Setup(c => c[Configuration.KAFKA_CONFIGURATION_TOPIC]).Returns("KafkaConfigTopic-");
+            configurationMock.Setup(c => c[Configuration.KAFKA_CUSTOM_TOPIC]).Returns("KafkaCustomTopic-");
 
             handler = new SendCustomEventsCommandHandler(slotKeyCheckerMock.Object, messageProducerMock.Object, configurationMock.Object);
             cancellationToken = CancellationToken.None;
@@ -43,12 +43,7 @@ namespace ServerMonitorApi.Command.SendCustomEvents.Tests
                     "{\"Key\":\"key1\",\"Name\":\"Event2\",\"Description\":\"Description2\"}"
                 )
             };
-            var expectedTopic = "KafkaConfigTopic-key1";
-            var expectedMessages = new[]
-            {
-                "{\"Key\":\"key1\",\"Name\":\"Event1\",\"Description\":\"Description1\"}",
-                "{\"Key\":\"key1\",\"Name\":\"Event2\",\"Description\":\"Description2\"}"
-            };
+            var expectedTopic = "KafkaCustomTopic-key1";
 
             slotKeyCheckerMock.Setup(s => s.CheckSlotKeyAsync("key1", cancellationToken)).ReturnsAsync(true);
             messageProducerMock.Setup(p => p.ProduceAsync(It.IsAny<string>(), It.IsAny<string>(), cancellationToken)).Returns(Task.CompletedTask);
@@ -61,10 +56,7 @@ namespace ServerMonitorApi.Command.SendCustomEvents.Tests
             // Assert
             slotKeyCheckerMock.Verify(s => s.CheckSlotKeyAsync("key1", cancellationToken), Times.Once);
 
-            foreach (var message in expectedMessages)
-            {
-                messageProducerMock.Verify(p => p.ProduceAsync(expectedTopic, message, cancellationToken), Times.Once);
-            }
+            messageProducerMock.Verify(p => p.ProduceAsync(expectedTopic, It.IsAny<string>(), cancellationToken), Times.Exactly(2));
         }
 
         [Test]

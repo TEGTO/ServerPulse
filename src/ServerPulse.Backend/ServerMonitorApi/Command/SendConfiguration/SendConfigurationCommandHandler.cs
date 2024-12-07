@@ -26,7 +26,7 @@ namespace ServerMonitorApi.Command.SendConfiguration
             {
                 var topic = configurationTopic + ev.Key;
 
-                var message = JsonSerializer.Serialize(new[] { ev });
+                var message = JsonSerializer.Serialize(ev);
 
                 await producer.ProduceAsync(topic, message, cancellationToken);
             }

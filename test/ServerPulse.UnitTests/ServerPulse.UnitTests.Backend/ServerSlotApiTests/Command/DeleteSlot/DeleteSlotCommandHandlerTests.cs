@@ -2,7 +2,6 @@
 using ServerSlotApi.Infrastructure.Entities;
 using ServerSlotApi.Infrastructure.Models;
 using ServerSlotApi.Infrastructure.Repositories;
-using ServerSlotApi.Services;
 
 namespace ServerSlotApi.Command.DeleteSlot.Tests
 {
@@ -10,18 +9,15 @@ namespace ServerSlotApi.Command.DeleteSlot.Tests
     internal class DeleteSlotCommandHandlerTests
     {
         private Mock<IServerSlotRepository> repositoryMock;
-        private Mock<ISlotStatisticsService> slotStatisticsServiceMock;
         private DeleteSlotCommandHandler handler;
 
         [SetUp]
         public void Setup()
         {
             repositoryMock = new Mock<IServerSlotRepository>();
-            slotStatisticsServiceMock = new Mock<ISlotStatisticsService>();
 
             handler = new DeleteSlotCommandHandler(
-                repositoryMock.Object,
-                slotStatisticsServiceMock.Object
+                repositoryMock.Object
             );
         }
 
@@ -77,7 +73,6 @@ namespace ServerSlotApi.Command.DeleteSlot.Tests
 
             // Assert
             repositoryMock.Verify(r => r.DeleteSlotAsync(slot, It.IsAny<CancellationToken>()), Times.Once);
-            slotStatisticsServiceMock.Verify(h => h.DeleteSlotStatisticsAsync(It.IsAny<string>(), token, It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Test]
@@ -99,7 +94,6 @@ namespace ServerSlotApi.Command.DeleteSlot.Tests
 
             // Assert
             repositoryMock.Verify(r => r.DeleteSlotAsync(It.IsAny<ServerSlot>(), It.IsAny<CancellationToken>()), Times.Never);
-            slotStatisticsServiceMock.Verify(h => h.DeleteSlotStatisticsAsync(It.IsAny<string>(), token, It.IsAny<CancellationToken>()), Times.Never);
         }
     }
 }
