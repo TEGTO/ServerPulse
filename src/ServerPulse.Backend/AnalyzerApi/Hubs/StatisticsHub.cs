@@ -7,9 +7,8 @@ namespace AnalyzerApi.Hubs
 {
     public sealed class StatisticsHub<T> : Hub<IStatisticsHubClient> where T : BaseStatistics
     {
-        private static readonly ConcurrentDictionary<string, List<string>> ConnectedClients = new();
-        private static readonly ConcurrentDictionary<string, int> ListenerAmount = new();
-
+        private readonly ConcurrentDictionary<string, List<string>> connectedClients = new();
+        private readonly ConcurrentDictionary<string, int> listenerAmount = new();
         private readonly IStatisticsConsumer<T> serverStatisticsCollector;
         private readonly ILogger<StatisticsHub<T>> logger;
 
@@ -21,46 +20,64 @@ namespace AnalyzerApi.Hubs
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            if (ConnectedClients.TryGetValue(Context.ConnectionId, out var keys))
+            if (connectedClients.TryGetValue(Context.ConnectionId, out var keys))
             {
                 await RemoveClientFromGroupAsync(keys);
             }
+
+            await base.OnDisconnectedAsync(exception);
         }
+
         public async Task StartListen(string key)
         {
             await AddClientToGroupAsync(key);
-            logger.LogInformation($"Start listening key '{key}'");
+
+            string message = $"Start listening to key '{key}'";
+            logger.LogInformation(message);
+
             serverStatisticsCollector.StartConsumingStatistics(key);
         }
+
         private async Task AddClientToGroupAsync(string key)
         {
-            ListenerAmount.AddOrUpdate(key, 1, (k, count) => count + 1);
-            ConnectedClients.AddOrUpdate(Context.ConnectionId, new List<string>() { key },
-            (k, keys) =>
-            {
-                keys.Add(key);
-                return keys;
-            });
+            listenerAmount.AddOrUpdate(key, 1, (k, count) => count + 1);
+
+            connectedClients.AddOrUpdate(
+                Context.ConnectionId,
+                [key],
+                (_, keys) =>
+                {
+                    if (!keys.Contains(key)) keys.Add(key);
+                    return keys;
+                }
+            );
+
             await Groups.AddToGroupAsync(Context.ConnectionId, key);
         }
-        private async Task RemoveClientFromGroupAsync(List<string> keys)
+
+        private async Task RemoveClientFromGroupAsync(IEnumerable<string> keys)
         {
             foreach (var key in keys)
             {
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, key);
-                if (ListenerAmount.TryGetValue(key, out var count))
-                {
-                    if (count <= 1)
-                    {
-                        logger.LogInformation($"Stop listening key '{key}'");
-                        ListenerAmount.TryRemove(key, out _);
-                        serverStatisticsCollector.StopConsumingStatistics(key);
-                    }
-                    else
-                    {
-                        ListenerAmount[key] = count - 1;
-                    }
-                }
+
+                listenerAmount.AddOrUpdate(
+                   key,
+                   0,
+                   (k, count) =>
+                   {
+                       if (count <= 1)
+                       {
+                           string message = $"Stop listening to key '{k}'";
+                           logger.LogInformation(message);
+
+                           serverStatisticsCollector.StopConsumingStatistics(k);
+
+                           return 0;
+                       }
+                       return count - 1;
+                   }
+                );
             }
         }
     }

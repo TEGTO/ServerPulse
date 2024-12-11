@@ -1,7 +1,7 @@
 ﻿using AnalyzerApi.Command.ProcessLoadEvent;
+using EventCommunication.Events;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using ServerPulse.EventCommunication.Events;
 
 namespace AnalyzerApi.Controllers
 {

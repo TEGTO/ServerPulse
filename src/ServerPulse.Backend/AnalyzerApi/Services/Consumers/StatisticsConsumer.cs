@@ -9,15 +9,11 @@ namespace AnalyzerApi.Services.Consumers
         where TStatistics : BaseStatistics
         where TEventWrapper : BaseEventWrapper
     {
-        #region Fields
-
         protected readonly IStatisticsCollector<TStatistics> collector;
         protected readonly IEventReceiver<TEventWrapper> receiver;
         protected readonly IStatisticsSender statisticsSender;
         protected readonly ILogger<StatisticsConsumer<TStatistics, TEventWrapper>> logger;
         protected readonly ConcurrentDictionary<string, CancellationTokenSource> statisticsListeners = new();
-
-        #endregion
 
         public StatisticsConsumer(
             IStatisticsCollector<TStatistics> collector,

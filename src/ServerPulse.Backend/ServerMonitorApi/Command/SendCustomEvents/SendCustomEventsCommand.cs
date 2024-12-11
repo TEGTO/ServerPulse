@@ -1,5 +1,5 @@
-﻿using MediatR;
-using ServerPulse.EventCommunication;
+﻿using EventCommunication.Wrappers;
+using MediatR;
 
 namespace ServerMonitorApi.Command.SendCustomEvents
 {

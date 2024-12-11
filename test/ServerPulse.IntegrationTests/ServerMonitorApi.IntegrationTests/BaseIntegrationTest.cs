@@ -1,11 +1,11 @@
-﻿using MessageBus.Interfaces;
+﻿using EventCommunication.Events;
+using MessageBus.Interfaces;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Moq;
 using ServerMonitorApi.Services;
-using ServerPulse.EventCommunication.Events;
 using Shared;
 
 namespace ServerMonitorApi.IntegrationTests

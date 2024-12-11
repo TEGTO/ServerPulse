@@ -1,9 +1,9 @@
 ﻿using AnalyzerApi.Infrastructure;
 using AnalyzerApi.Infrastructure.Models;
 using AnalyzerApi.Services.Interfaces;
+using EventCommunication.Events;
 using MediatR;
 using MessageBus.Interfaces;
-using ServerPulse.EventCommunication.Events;
 using System.Text.Json;
 
 namespace AnalyzerApi.Command.ProcessLoadEvent

@@ -1,11 +1,11 @@
-﻿using MediatR;
+﻿using EventCommunication.Events;
+using EventCommunication.Wrappers;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using ServerMonitorApi.Command.SendConfiguration;
 using ServerMonitorApi.Command.SendCustomEvents;
 using ServerMonitorApi.Command.SendLoadEvents;
 using ServerMonitorApi.Command.SendPulse;
-using ServerPulse.EventCommunication;
-using ServerPulse.EventCommunication.Events;
 
 namespace ServerMonitorApi.Controllers
 {

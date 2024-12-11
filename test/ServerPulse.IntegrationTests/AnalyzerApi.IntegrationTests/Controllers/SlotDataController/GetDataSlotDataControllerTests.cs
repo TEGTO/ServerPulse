@@ -1,5 +1,5 @@
 ﻿using AnalyzerApi.Infrastructure.Dtos.Responses.Statistics;
-using ServerPulse.EventCommunication.Events;
+using EventCommunication.Events;
 using System.Net;
 using System.Text;
 using System.Text.Json;

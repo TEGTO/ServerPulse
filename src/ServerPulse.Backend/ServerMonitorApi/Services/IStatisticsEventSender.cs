@@ -1,5 +1,4 @@
-﻿
-using ServerPulse.EventCommunication.Events;
+﻿using EventCommunication.Events;
 
 namespace ServerMonitorApi.Services
 {

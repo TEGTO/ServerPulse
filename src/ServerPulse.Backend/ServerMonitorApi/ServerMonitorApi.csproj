@@ -17,7 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ServerPulse.EventCommunication\ServerPulse.EventCommunication.csproj" />
+    <ProjectReference Include="..\..\ServerPulse.EventCommunication\EventCommunication.Validators\EventCommunication.Validators.csproj" />
+    <ProjectReference Include="..\..\ServerPulse.EventCommunication\EventCommunication\EventCommunication.csproj" />
     <ProjectReference Include="..\Authentication\Authentication.csproj" />
     <ProjectReference Include="..\MessageBus\MessageBus.csproj" />
     <ProjectReference Include="..\ServerSlotApi.Dtos\ServerSlotApi.Dtos.csproj" />

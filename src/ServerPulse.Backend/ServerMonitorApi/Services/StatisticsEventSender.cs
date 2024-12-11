@@ -1,4 +1,4 @@
-﻿using ServerPulse.EventCommunication.Events;
+﻿using EventCommunication.Events;
 using Shared.Helpers;
 using System.Text.Json;
 

@@ -1,8 +1,8 @@
-﻿using MessageBus.Interfaces;
+﻿using EventCommunication.Events;
+using MessageBus.Interfaces;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using ServerPulse.EventCommunication.Events;
 using Shared;
 using System.Text.Json;
 

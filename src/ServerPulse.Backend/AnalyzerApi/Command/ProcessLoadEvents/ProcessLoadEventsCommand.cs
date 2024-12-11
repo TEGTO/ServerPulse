@@ -1,5 +1,5 @@
-﻿using MediatR;
-using ServerPulse.EventCommunication.Events;
+﻿using EventCommunication.Events;
+using MediatR;
 
 namespace AnalyzerApi.Command.ProcessLoadEvent
 {

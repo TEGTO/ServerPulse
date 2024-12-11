@@ -1,7 +1,7 @@
 ﻿using AnalyzerApi.Infrastructure.Wrappers;
 using AutoMapper;
+using EventCommunication.Events;
 using MessageBus.Interfaces;
-using ServerPulse.EventCommunication.Events;
 using Shared;
 
 namespace AnalyzerApi

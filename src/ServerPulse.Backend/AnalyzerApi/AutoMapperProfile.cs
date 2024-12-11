@@ -2,7 +2,7 @@
 using AnalyzerApi.Infrastructure.Models;
 using AnalyzerApi.Infrastructure.Wrappers;
 using AutoMapper;
-using ServerPulse.EventCommunication.Events;
+using EventCommunication.Events;
 
 namespace AuthenticationApi
 {

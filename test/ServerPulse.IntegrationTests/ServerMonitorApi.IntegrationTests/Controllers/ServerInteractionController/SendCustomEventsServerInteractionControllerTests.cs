@@ -1,6 +1,6 @@
-﻿using Moq;
-using ServerPulse.EventCommunication;
-using ServerPulse.EventCommunication.Events;
+﻿using EventCommunication.Events;
+using EventCommunication.Wrappers;
+using Moq;
 using System.Net;
 using System.Text;
 using System.Text.Json;

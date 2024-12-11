@@ -1,11 +1,11 @@
 using Confluent.Kafka;
+using EventCommunication.Events;
 using ExceptionHandling;
 using Logging;
 using MessageBus;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using ServerMonitorApi;
 using ServerMonitorApi.Services;
-using ServerPulse.EventCommunication.Events;
 using Shared;
 
 var builder = WebApplication.CreateBuilder(args);

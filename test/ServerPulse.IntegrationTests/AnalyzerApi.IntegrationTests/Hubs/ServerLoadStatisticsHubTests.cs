@@ -1,6 +1,6 @@
 ﻿using AnalyzerApi.Infrastructure.Models;
+using EventCommunication.Events;
 using Microsoft.AspNetCore.SignalR.Client;
-using ServerPulse.EventCommunication.Events;
 using System.Text.Json;
 
 namespace AnalyzerApi.IntegrationTests.Hubs

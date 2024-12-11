@@ -2,8 +2,8 @@
 using AnalyzerApi.Services.Interfaces;
 using AutoMapper;
 using Confluent.Kafka;
+using EventCommunication.Events;
 using MessageBus.Interfaces;
-using ServerPulse.EventCommunication.Events;
 
 namespace AnalyzerApi.Services.Receivers.Event
 {

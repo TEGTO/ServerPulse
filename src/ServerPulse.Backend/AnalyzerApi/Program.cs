@@ -12,10 +12,11 @@ using AnalyzerApi.Services.Receivers.Event;
 using AnalyzerApi.Services.Receivers.Statistics;
 using Caching;
 using Confluent.Kafka;
+using EventCommunication.Events;
+using EventCommunication.Validators;
 using ExceptionHandling;
 using Logging;
 using MessageBus;
-using ServerPulse.EventCommunication.Events;
 using Shared;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -111,7 +112,7 @@ builder.Services.AddMediatR(conf =>
     conf.RegisterServicesFromAssembly(typeof(Program).Assembly);
 });
 
-builder.Services.AddSharedFluentValidation(typeof(Program), typeof(GetSomeMessagesRequestValidator));
+builder.Services.AddSharedFluentValidation(typeof(Program), typeof(GetSomeMessagesRequestValidator), typeof(ConfigurationEventValidator));
 
 builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
 builder.Services.AddEndpointsApiExplorer();
