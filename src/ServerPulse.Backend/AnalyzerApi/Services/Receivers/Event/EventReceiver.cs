@@ -1,64 +1,82 @@
-﻿using AnalyzerApi.Infrastructure.Wrappers;
-using AnalyzerApi.Services.Interfaces;
+﻿using AnalyzerApi.Infrastructure.Configurations;
+using AnalyzerApi.Infrastructure.Models;
+using AnalyzerApi.Infrastructure.Models.Wrappers;
+using AnalyzerApi.Services.SerializeStrategies;
 using AutoMapper;
 using Confluent.Kafka;
-using EventCommunication.Events;
 using MessageBus.Interfaces;
+using System.Runtime.CompilerServices;
 
 namespace AnalyzerApi.Services.Receivers.Event
 {
-    public record class EventReceiverTopicData<TWrapper>(string topicOriginName) where TWrapper : BaseEventWrapper;
-    public class EventReceiver<TEvent, TWrapper> : BaseReceiver, IEventReceiver<TWrapper>
-        where TEvent : BaseEvent where TWrapper : BaseEventWrapper
+    public class EventReceiver<TWrapper> : BaseReceiver, IEventReceiver<TWrapper> where TWrapper : BaseEventWrapper
     {
-        protected readonly EventReceiverTopicData<TWrapper> topicData;
+        protected readonly IEventSerializeStrategy<TWrapper> eventSerializeStrategy;
+        protected readonly EventReceiverTopicConfiguration<TWrapper> topicData;
 
-        public EventReceiver(IMessageConsumer messageConsumer, IMapper mapper, IConfiguration configuration, EventReceiverTopicData<TWrapper> topicData) : base(messageConsumer, mapper, configuration)
+        public EventReceiver(
+            IMessageConsumer messageConsumer,
+            IMapper mapper,
+            IConfiguration configuration,
+            IEventSerializeStrategy<TWrapper> eventSerializeStrategy,
+            EventReceiverTopicConfiguration<TWrapper> topicData) : base(messageConsumer, mapper, configuration)
         {
             this.topicData = topicData;
+            this.eventSerializeStrategy = eventSerializeStrategy;
         }
 
         #region IEventReceiver<TWrapper> Members
 
-        public virtual async IAsyncEnumerable<TWrapper> ConsumeEventAsync(string key, CancellationToken cancellationToken)
+        public async IAsyncEnumerable<TWrapper> GetEventStreamAsync(string key, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            string topic = GetTopic(topicData.topicOriginName, key);
-            await foreach (var response in ConsumeMessageAsync(topic, cancellationToken))
+            var topic = GetTopic(topicData.TopicOriginName, key);
+
+            await foreach (var response in messageConsumer.ConsumeAsync(topic, timeoutInMilliseconds, Offset.End, cancellationToken))
             {
-                var ev = ConvertToEventWrapper(response, mapper);
+                var ev = eventSerializeStrategy.SerializeResponse(response);
                 if (ev != null)
                 {
                     yield return ev;
                 }
             }
         }
-        public virtual async Task<IEnumerable<TWrapper>> GetCertainAmountOfEventsAsync(ReadCertainMessageNumberOptions options, CancellationToken cancellationToken)
+
+        public async Task<IEnumerable<TWrapper>> GetCertainAmountOfEventsAsync(ReadCertainMessageNumber options, CancellationToken cancellationToken)
         {
-            string topic = GetTopic(topicData.topicOriginName, options.Key);
+            var topic = GetTopic(topicData.TopicOriginName, options.Key);
+
             var messageOptions = new ReadSomeMessagesOptions(topic, timeoutInMilliseconds, options.NumberOfMessages, options.StartDate, options.ReadNew);
-            List<ConsumeResponse> responses = await messageConsumer.ReadSomeMessagesAsync(messageOptions, cancellationToken);
+            var responses = await messageConsumer.ReadSomeMessagesAsync(messageOptions, cancellationToken);
+
             return ConvertToEventWrappers(responses, mapper);
         }
-        public virtual async Task<IEnumerable<TWrapper>> ReceiveEventsInRangeAsync(InRangeQueryOptions options, CancellationToken cancellationToken)
+
+        public async Task<IEnumerable<TWrapper>> GetEventsInRangeAsync(InRangeQuery options, CancellationToken cancellationToken)
         {
-            string topic = GetTopic(topicData.topicOriginName, options.Key);
+            var topic = GetTopic(topicData.TopicOriginName, options.Key);
+
             var messageOptions = new MessageInRangeQueryOptions(topic, timeoutInMilliseconds, options.From, options.To);
-            List<ConsumeResponse> responses = await messageConsumer.ReadMessagesInDateRangeAsync(messageOptions, cancellationToken);
+            var responses = await messageConsumer.ReadMessagesInDateRangeAsync(messageOptions, cancellationToken);
+
             return ConvertToEventWrappers(responses, mapper);
         }
-        public virtual async Task<TWrapper?> ReceiveLastEventByKeyAsync(string key, CancellationToken cancellationToken)
+
+        public async Task<TWrapper?> GetLastEventByKeyAsync(string key, CancellationToken cancellationToken)
         {
-            string topic = GetTopic(topicData.topicOriginName, key);
-            var response = await ReceiveLastMessageByKeyAsync(topic, cancellationToken);
+            var topic = GetTopic(topicData.TopicOriginName, key);
+
+            var response = await GetLastMessageByKeyAsync(topic, cancellationToken);
             if (response != null)
             {
-                return ConvertToEventWrapper(response, mapper);
+                return eventSerializeStrategy.SerializeResponse(response);
             }
+
             return null;
         }
-        public virtual async Task<int> ReceiveEventAmountByKeyAsync(string key, CancellationToken cancellationToken)
+
+        public async Task<int> GetEventAmountByKeyAsync(string key, CancellationToken cancellationToken)
         {
-            string topic = GetTopic(topicData.topicOriginName, key);
+            var topic = GetTopic(topicData.TopicOriginName, key);
             return await messageConsumer.GetAmountTopicMessagesAsync(topic, timeoutInMilliseconds, cancellationToken);
         }
 
@@ -66,34 +84,22 @@ namespace AnalyzerApi.Services.Receivers.Event
 
         #region Protected Helpers
 
-        protected virtual async IAsyncEnumerable<ConsumeResponse> ConsumeMessageAsync(string topic, CancellationToken cancellationToken)
+        protected IEnumerable<TWrapper> ConvertToEventWrappers(List<ConsumeResponse> responses, IMapper mapper)
         {
-            await foreach (var response in messageConsumer.ConsumeAsync(topic, timeoutInMilliseconds, Offset.End, cancellationToken))
-            {
-                yield return response;
-            }
-        }
-        protected virtual IEnumerable<TWrapper> ConvertToEventWrappers(List<ConsumeResponse> responses, IMapper mapper)
-        {
-            List<TWrapper> events = new List<TWrapper>();
+            var events = new List<TWrapper>();
+
             foreach (var response in responses)
             {
-                var ev = ConvertToEventWrapper(response, mapper);
+                var ev = eventSerializeStrategy.SerializeResponse(response);
                 if (ev != null)
                 {
                     events.Add(ev);
                 }
             }
+
             return events;
         }
-        protected virtual TWrapper? ConvertToEventWrapper(ConsumeResponse response, IMapper mapper)
-        {
-            if (response.TryDeserializeEventWrapper<TEvent, TWrapper>(mapper, out TWrapper ev))
-            {
-                return ev;
-            }
-            return null;
-        }
+
 
         #endregion
     }

@@ -1,4 +1,4 @@
-﻿using AnalyzerApi.Infrastructure.Models;
+﻿using AnalyzerApi.Infrastructure.Models.Statistics;
 using EventCommunication.Events;
 using System.Net;
 using System.Text;

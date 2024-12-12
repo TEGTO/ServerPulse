@@ -1,5 +1,5 @@
-﻿using AnalyzerApi.Infrastructure.Models;
-using AnalyzerApi.Services.Interfaces;
+﻿using AnalyzerApi.Infrastructure.Models.Statistics;
+using AnalyzerApi.Services.StatisticsDispatchers;
 using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
 
@@ -9,10 +9,10 @@ namespace AnalyzerApi.Hubs
     {
         private readonly ConcurrentDictionary<string, List<string>> connectedClients = new();
         private readonly ConcurrentDictionary<string, int> listenerAmount = new();
-        private readonly IStatisticsConsumer<T> serverStatisticsCollector;
+        private readonly IStatisticsDispatcher<T> serverStatisticsCollector;
         private readonly ILogger<StatisticsHub<T>> logger;
 
-        public StatisticsHub(IStatisticsConsumer<T> serverStatisticsCollector, ILogger<StatisticsHub<T>> logger)
+        public StatisticsHub(IStatisticsDispatcher<T> serverStatisticsCollector, ILogger<StatisticsHub<T>> logger)
         {
             this.serverStatisticsCollector = serverStatisticsCollector;
             this.logger = logger;
@@ -35,7 +35,7 @@ namespace AnalyzerApi.Hubs
             string message = $"Start listening to key '{key}'";
             logger.LogInformation(message);
 
-            serverStatisticsCollector.StartConsumingStatistics(key);
+            serverStatisticsCollector.StartStatisticsDispatching(key);
         }
 
         private async Task AddClientToGroupAsync(string key)
@@ -71,7 +71,7 @@ namespace AnalyzerApi.Hubs
                            string message = $"Stop listening to key '{k}'";
                            logger.LogInformation(message);
 
-                           serverStatisticsCollector.StopConsumingStatistics(k);
+                           serverStatisticsCollector.StopStatisticsDispatching(k);
 
                            return 0;
                        }

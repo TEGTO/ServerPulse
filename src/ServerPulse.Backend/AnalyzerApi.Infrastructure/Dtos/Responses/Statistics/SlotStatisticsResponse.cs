@@ -1,15 +1,14 @@
-﻿using AnalyzerApi.Infrastructure.Models;
-using AnalyzerApi.Infrastructure.Wrappers;
+﻿using AnalyzerApi.Infrastructure.Dtos.Responses.Events;
 
 namespace AnalyzerApi.Infrastructure.Dtos.Responses.Statistics
 {
     public class SlotStatisticsResponse
     {
         public DateTime CollectedDateUTC { get; set; }
-        public ServerStatistics? GeneralStatistics { get; set; }
-        public ServerLoadStatistics? LoadStatistics { get; set; }
-        public ServerCustomStatistics? CustomEventStatistics { get; set; }
-        public IEnumerable<LoadEventWrapper> LastLoadEvents { get; set; } = [];
-        public IEnumerable<CustomEventWrapper> LastCustomEvents { get; set; } = [];
+        public ServerLifecycleStatisticsResponse? GeneralStatistics { get; set; }
+        public ServerLoadStatisticsResponse? LoadStatistics { get; set; }
+        public ServerCustomStatisticsResponse? CustomEventStatistics { get; set; }
+        public IEnumerable<LoadEventResponse> LastLoadEvents { get; set; } = [];
+        public IEnumerable<CustomEventResponse> LastCustomEvents { get; set; } = [];
     }
 }

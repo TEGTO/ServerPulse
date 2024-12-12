@@ -1,18 +1,16 @@
 using AnalyzerApi.Hubs;
 using AnalyzerApi.Infrastructure;
-using AnalyzerApi.Infrastructure.Models;
+using AnalyzerApi.Infrastructure.Configurations;
+using AnalyzerApi.Infrastructure.Models.Statistics;
+using AnalyzerApi.Infrastructure.Models.Wrappers;
 using AnalyzerApi.Infrastructure.Requests;
 using AnalyzerApi.Infrastructure.Validators;
-using AnalyzerApi.Infrastructure.Wrappers;
-using AnalyzerApi.Services;
-using AnalyzerApi.Services.Collectors;
-using AnalyzerApi.Services.Consumers;
-using AnalyzerApi.Services.Interfaces;
 using AnalyzerApi.Services.Receivers.Event;
 using AnalyzerApi.Services.Receivers.Statistics;
+using AnalyzerApi.Services.SerializeStrategies;
+using AnalyzerApi.Services.StatisticsDispatchers;
 using Caching;
 using Confluent.Kafka;
-using EventCommunication.Events;
 using EventCommunication.Validators;
 using ExceptionHandling;
 using Logging;
@@ -71,45 +69,54 @@ builder.Services.AddOutputCache((options) =>
 
 #region Project Services
 
-builder.Services.AddSingleton(new EventReceiverTopicData<ConfigurationEventWrapper>(builder.Configuration[Configuration.KAFKA_CONFIGURATION_TOPIC]!));
-builder.Services.AddSingleton(new EventReceiverTopicData<CustomEventWrapper>(builder.Configuration[Configuration.KAFKA_CUSTOM_TOPIC]!));
-builder.Services.AddSingleton(new EventReceiverTopicData<LoadEventWrapper>(builder.Configuration[Configuration.KAFKA_LOAD_TOPIC]!));
-builder.Services.AddSingleton(new EventReceiverTopicData<PulseEventWrapper>(builder.Configuration[Configuration.KAFKA_ALIVE_TOPIC]!));
+#region Event Receiver
 
-builder.Services.AddSingleton<IEventReceiver<ConfigurationEventWrapper>, EventReceiver<ConfigurationEvent, ConfigurationEventWrapper>>();
-builder.Services.AddSingleton<IEventReceiver<CustomEventWrapper>, CustomEventReceiver>();
-builder.Services.AddSingleton<IEventReceiver<LoadEventWrapper>, EventReceiver<LoadEvent, LoadEventWrapper>>();
-builder.Services.AddSingleton<IEventReceiver<PulseEventWrapper>, EventReceiver<PulseEvent, PulseEventWrapper>>();
+builder.Services.AddSingleton(new EventReceiverTopicConfiguration<ConfigurationEventWrapper>(builder.Configuration[Configuration.KAFKA_CONFIGURATION_TOPIC]!));
+builder.Services.AddSingleton(new EventReceiverTopicConfiguration<CustomEventWrapper>(builder.Configuration[Configuration.KAFKA_CUSTOM_TOPIC]!));
+builder.Services.AddSingleton(new EventReceiverTopicConfiguration<LoadEventWrapper>(builder.Configuration[Configuration.KAFKA_LOAD_TOPIC]!));
+builder.Services.AddSingleton(new EventReceiverTopicConfiguration<PulseEventWrapper>(builder.Configuration[Configuration.KAFKA_ALIVE_TOPIC]!));
 
-builder.Services.AddSingleton(new StatisticsReceiverTopicData<ServerCustomStatistics>(builder.Configuration[Configuration.KAFKA_CUSTOM_TOPIC]!));
-builder.Services.AddSingleton(new StatisticsReceiverTopicData<LoadAmountStatistics>(builder.Configuration[Configuration.KAFKA_LOAD_TOPIC]!));
-builder.Services.AddSingleton(new StatisticsReceiverTopicData<LoadMethodStatistics>(builder.Configuration[Configuration.KAFKA_LOAD_METHOD_STATISTICS_TOPIC]!));
-builder.Services.AddSingleton(new StatisticsReceiverTopicData<ServerLoadStatistics>(builder.Configuration[Configuration.KAFKA_LOAD_TOPIC]!));
-builder.Services.AddSingleton(new StatisticsReceiverTopicData<ServerStatistics>(builder.Configuration[Configuration.KAFKA_SERVER_STATISTICS_TOPIC]!));
+builder.Services.AddSingleton<IEventSerializeStrategy<ConfigurationEventWrapper>, ConfigurationEventSerializeStrategy>();
+builder.Services.AddSingleton<IEventSerializeStrategy<CustomEventWrapper>, CustomEventSerializeStrategy>();
+builder.Services.AddSingleton<IEventSerializeStrategy<LoadEventWrapper>, LoadEventSerializeStrategy>();
+builder.Services.AddSingleton<IEventSerializeStrategy<PulseEventWrapper>, PulseEventSerializeStrategy>();
+
+builder.Services.AddSingleton<IEventReceiver<ConfigurationEventWrapper>, EventReceiver<ConfigurationEventWrapper>>();
+builder.Services.AddSingleton<IEventReceiver<CustomEventWrapper>, EventReceiver<CustomEventWrapper>>();
+builder.Services.AddSingleton<IEventReceiver<LoadEventWrapper>, EventReceiver<LoadEventWrapper>>();
+builder.Services.AddSingleton<IEventReceiver<PulseEventWrapper>, EventReceiver<PulseEventWrapper>>();
+
+#endregion
+
+#region Statistics Receiver
+
+builder.Services.AddSingleton(new StatisticsReceiverTopicConfiguration<ServerCustomStatistics>(builder.Configuration[Configuration.KAFKA_CUSTOM_TOPIC]!));
+builder.Services.AddSingleton(new StatisticsReceiverTopicConfiguration<LoadAmountStatistics>(builder.Configuration[Configuration.KAFKA_LOAD_TOPIC]!));
+builder.Services.AddSingleton(new StatisticsReceiverTopicConfiguration<LoadMethodStatistics>(builder.Configuration[Configuration.KAFKA_LOAD_METHOD_STATISTICS_TOPIC]!));
+builder.Services.AddSingleton(new StatisticsReceiverTopicConfiguration<ServerLoadStatistics>(builder.Configuration[Configuration.KAFKA_LOAD_TOPIC]!));
+builder.Services.AddSingleton(new StatisticsReceiverTopicConfiguration<ServerLifecycleStatistics>(builder.Configuration[Configuration.KAFKA_SERVER_STATISTICS_TOPIC]!));
 
 builder.Services.AddSingleton<IStatisticsReceiver<ServerCustomStatistics>, StatisticsReceiver<ServerCustomStatistics>>();
-builder.Services.AddSingleton<IStatisticsReceiver<LoadAmountStatistics>, LoadAmountStatisticsReceiver>();
 builder.Services.AddSingleton<IStatisticsReceiver<LoadMethodStatistics>, StatisticsReceiver<LoadMethodStatistics>>();
 builder.Services.AddSingleton<IStatisticsReceiver<ServerLoadStatistics>, StatisticsReceiver<ServerLoadStatistics>>();
-builder.Services.AddSingleton<IStatisticsReceiver<ServerStatistics>, StatisticsReceiver<ServerStatistics>>();
+builder.Services.AddSingleton<IStatisticsReceiver<ServerLifecycleStatistics>, StatisticsReceiver<ServerLifecycleStatistics>>();
+builder.Services.AddSingleton<LoadAmountStatisticsReceiver>();
+builder.Services.AddSingleton<IStatisticsReceiver<LoadAmountStatistics>>(provider => provider.GetRequiredService<LoadAmountStatisticsReceiver>());
+builder.Services.AddSingleton<ILoadAmountStatisticsReceiver>(provider => provider.GetRequiredService<LoadAmountStatisticsReceiver>());
 
-builder.Services.AddSingleton<IStatisticsSender, StatisticsSender>();
+#endregion
 
-builder.Services.AddSingleton<IStatisticsConsumer<ServerStatistics>, ServerStatisticsConsumer>();
-builder.Services.AddSingleton<IStatisticsConsumer<ServerLoadStatistics>, StatisticsConsumer<ServerLoadStatistics, LoadEventWrapper>>();
-builder.Services.AddSingleton<IStatisticsConsumer<ServerCustomStatistics>, StatisticsConsumer<ServerCustomStatistics, CustomEventWrapper>>();
-
-builder.Services.AddSingleton<IStatisticsCollector<ServerStatistics>, ServerStatisticsCollector>();
-builder.Services.AddSingleton<IStatisticsCollector<ServerLoadStatistics>, LoadStatisticsCollector>();
-builder.Services.AddSingleton<IStatisticsCollector<ServerCustomStatistics>, CustomStatisticsCollector>();
+builder.Services.AddSingleton<IStatisticsDispatcher<ServerLifecycleStatistics>, ServerStatisticsDispatcher>();
+builder.Services.AddSingleton<IStatisticsDispatcher<ServerLoadStatistics>, StatisticsDispatcher<ServerLoadStatistics, LoadEventWrapper>>();
+builder.Services.AddSingleton<IStatisticsDispatcher<ServerCustomStatistics>, StatisticsDispatcher<ServerCustomStatistics, CustomEventWrapper>>();
 
 #endregion
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
-builder.Services.AddMediatR(conf =>
+builder.Services.AddMediatR(cfg =>
 {
-    conf.RegisterServicesFromAssembly(typeof(Program).Assembly);
+    cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
 });
 
 builder.Services.AddSharedFluentValidation(typeof(Program), typeof(GetSomeMessagesRequestValidator), typeof(ConfigurationEventValidator));
@@ -143,7 +150,7 @@ app.UseOutputCache(); //Order after Identity
 
 #region Hubs
 
-app.MapHub<StatisticsHub<ServerStatistics>>("/statisticshub");
+app.MapHub<StatisticsHub<ServerLifecycleStatistics>>("/statisticshub");
 app.MapHub<StatisticsHub<ServerLoadStatistics>>("/loadstatisticshub");
 app.MapHub<StatisticsHub<ServerCustomStatistics>>("/customstatisticshub");
 

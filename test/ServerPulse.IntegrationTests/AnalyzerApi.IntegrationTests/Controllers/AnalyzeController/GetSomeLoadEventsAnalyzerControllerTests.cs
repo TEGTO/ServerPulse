@@ -1,5 +1,5 @@
-﻿using AnalyzerApi.Infrastructure.Requests;
-using AnalyzerApi.Infrastructure.Wrappers;
+﻿using AnalyzerApi.Infrastructure.Models.Wrappers;
+using AnalyzerApi.Infrastructure.Requests;
 using EventCommunication.Events;
 using System.Net;
 using System.Text;

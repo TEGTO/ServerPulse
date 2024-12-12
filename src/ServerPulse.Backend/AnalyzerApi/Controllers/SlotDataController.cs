@@ -1,4 +1,4 @@
-﻿using AnalyzerApi.Command.GetSlotStatistics;
+﻿using AnalyzerApi.Command.Controllers.GetSlotStatistics;
 using AnalyzerApi.Infrastructure.Dtos.Responses.Statistics;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
