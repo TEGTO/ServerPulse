@@ -12,7 +12,6 @@
   <ItemGroup>
     <Compile Remove="Controllers\**" />
     <Compile Remove="Services\Collectors\**" />
-    <Compile Remove="Services\Receivers\**" />
     <Compile Remove="Validators\**" />
     <EmbeddedResource Remove="Controllers\**" />
     <EmbeddedResource Remove="Services\**" />
@@ -27,7 +26,6 @@
     <Compile Remove="AnalyzeControllerTests.cs" />
     <Compile Remove="AutoMapperProfileTests.cs" />
     <Compile Remove="EventProcessingControllerTests.cs" />
-    <Compile Remove="Services\BaseReceiverTests.cs" />
     <Compile Remove="Services\EventProcessorTests.cs" />
     <Compile Remove="Services\SlotDataPickerTests.cs" />
     <Compile Remove="Services\StatisticsSenderTests.cs" />

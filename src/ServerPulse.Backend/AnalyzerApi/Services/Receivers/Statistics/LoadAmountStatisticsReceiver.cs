@@ -2,7 +2,6 @@
 using AnalyzerApi.Infrastructure.Configurations;
 using AnalyzerApi.Infrastructure.Models;
 using AnalyzerApi.Infrastructure.Models.Statistics;
-using AutoMapper;
 using MessageBus.Interfaces;
 
 namespace AnalyzerApi.Services.Receivers.Statistics
@@ -11,7 +10,7 @@ namespace AnalyzerApi.Services.Receivers.Statistics
     {
         private readonly int statisticsSaveDataInDays;
 
-        public LoadAmountStatisticsReceiver(IMessageConsumer messageConsumer, IMapper mapper, IConfiguration configuration, StatisticsReceiverTopicConfiguration<LoadAmountStatistics> topicData) : base(messageConsumer, mapper, configuration, topicData)
+        public LoadAmountStatisticsReceiver(IMessageConsumer messageConsumer, IConfiguration configuration, StatisticsReceiverTopicConfiguration<LoadAmountStatistics> topicData) : base(messageConsumer, configuration, topicData)
         {
             statisticsSaveDataInDays = int.Parse(configuration[Configuration.KAFKA_TOPIC_DATA_SAVE_IN_DAYS]!);
         }
@@ -55,7 +54,7 @@ namespace AnalyzerApi.Services.Receivers.Statistics
             return ConvertToAmountStatistics(messagesPerDay, timeSpan);
         }
 
-        private IEnumerable<LoadAmountStatistics> ConvertToAmountStatistics(Dictionary<DateTime, int> messageAmount, TimeSpan timeSpan)
+        private IEnumerable<LoadAmountStatistics> ConvertToAmountStatistics(IDictionary<DateTime, int> messageAmount, TimeSpan timeSpan)
         {
             return messageAmount
                 .Where(kv => kv.Value > 0)

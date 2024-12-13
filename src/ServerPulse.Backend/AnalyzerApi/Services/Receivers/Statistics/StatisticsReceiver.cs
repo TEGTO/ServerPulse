@@ -1,6 +1,5 @@
 ﻿using AnalyzerApi.Infrastructure.Configurations;
 using AnalyzerApi.Infrastructure.Models.Statistics;
-using AutoMapper;
 using MessageBus.Interfaces;
 using Shared;
 
@@ -10,7 +9,7 @@ namespace AnalyzerApi.Services.Receivers.Statistics
     {
         protected readonly StatisticsReceiverTopicConfiguration<TStatistics> topicData;
 
-        public StatisticsReceiver(IMessageConsumer messageConsumer, IMapper mapper, IConfiguration configuration, StatisticsReceiverTopicConfiguration<TStatistics> topicData) : base(messageConsumer, mapper, configuration)
+        public StatisticsReceiver(IMessageConsumer messageConsumer, IConfiguration configuration, StatisticsReceiverTopicConfiguration<TStatistics> topicData) : base(messageConsumer, configuration)
         {
             this.topicData = topicData;
         }

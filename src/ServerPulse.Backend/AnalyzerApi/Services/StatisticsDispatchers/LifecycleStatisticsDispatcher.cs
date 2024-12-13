@@ -61,10 +61,10 @@ namespace AnalyzerApi.Services.StatisticsDispatchers
                     await mediator.Send(new SendStatisticsCommand<ServerLifecycleStatistics>(key, statistics), cancellationToken);
                 }
 
-                var conf = await confReceiver.GetLastEventByKeyAsync(key, cancellationToken);
-                if (conf != null)
+                var cnf = await confReceiver.GetLastEventByKeyAsync(key, cancellationToken);
+                if (cnf != null)
                 {
-                    listenerState[key] = (timer, (int)conf.ServerKeepAliveInterval.TotalMilliseconds, isAlive);
+                    listenerState[key] = (timer, (int)cnf.ServerKeepAliveInterval.TotalMilliseconds, isAlive);
                 }
 
                 await Task.Delay(listenerState[key].ServerUpdateInterval, cancellationToken);

@@ -2,7 +2,6 @@
 using AnalyzerApi.Infrastructure.Models;
 using AnalyzerApi.Infrastructure.Models.Wrappers;
 using AnalyzerApi.Services.SerializeStrategies;
-using AutoMapper;
 using Confluent.Kafka;
 using MessageBus.Interfaces;
 using System.Runtime.CompilerServices;
@@ -16,10 +15,9 @@ namespace AnalyzerApi.Services.Receivers.Event
 
         public EventReceiver(
             IMessageConsumer messageConsumer,
-            IMapper mapper,
             IConfiguration configuration,
             IEventSerializeStrategy<TWrapper> eventSerializeStrategy,
-            EventReceiverTopicConfiguration<TWrapper> topicData) : base(messageConsumer, mapper, configuration)
+            EventReceiverTopicConfiguration<TWrapper> topicData) : base(messageConsumer, configuration)
         {
             this.topicData = topicData;
             this.eventSerializeStrategy = eventSerializeStrategy;
@@ -41,6 +39,12 @@ namespace AnalyzerApi.Services.Receivers.Event
             }
         }
 
+        public async Task<int> GetEventAmountByKeyAsync(string key, CancellationToken cancellationToken)
+        {
+            var topic = GetTopic(topicData.TopicOriginName, key);
+            return await messageConsumer.GetAmountTopicMessagesAsync(topic, timeoutInMilliseconds, cancellationToken);
+        }
+
         public async Task<IEnumerable<TWrapper>> GetCertainAmountOfEventsAsync(ReadCertainMessageNumber options, CancellationToken cancellationToken)
         {
             var topic = GetTopic(topicData.TopicOriginName, options.Key);
@@ -48,7 +52,7 @@ namespace AnalyzerApi.Services.Receivers.Event
             var messageOptions = new ReadSomeMessagesOptions(topic, timeoutInMilliseconds, options.NumberOfMessages, options.StartDate, options.ReadNew);
             var responses = await messageConsumer.ReadSomeMessagesAsync(messageOptions, cancellationToken);
 
-            return ConvertToEventWrappers(responses, mapper);
+            return ConvertToEventWrappers(responses);
         }
 
         public async Task<IEnumerable<TWrapper>> GetEventsInRangeAsync(InRangeQuery options, CancellationToken cancellationToken)
@@ -58,7 +62,7 @@ namespace AnalyzerApi.Services.Receivers.Event
             var messageOptions = new MessageInRangeQueryOptions(topic, timeoutInMilliseconds, options.From, options.To);
             var responses = await messageConsumer.ReadMessagesInDateRangeAsync(messageOptions, cancellationToken);
 
-            return ConvertToEventWrappers(responses, mapper);
+            return ConvertToEventWrappers(responses);
         }
 
         public async Task<TWrapper?> GetLastEventByKeyAsync(string key, CancellationToken cancellationToken)
@@ -74,17 +78,11 @@ namespace AnalyzerApi.Services.Receivers.Event
             return null;
         }
 
-        public async Task<int> GetEventAmountByKeyAsync(string key, CancellationToken cancellationToken)
-        {
-            var topic = GetTopic(topicData.TopicOriginName, key);
-            return await messageConsumer.GetAmountTopicMessagesAsync(topic, timeoutInMilliseconds, cancellationToken);
-        }
-
         #endregion
 
         #region Protected Helpers
 
-        protected IEnumerable<TWrapper> ConvertToEventWrappers(List<ConsumeResponse> responses, IMapper mapper)
+        protected IEnumerable<TWrapper> ConvertToEventWrappers(List<ConsumeResponse> responses)
         {
             var events = new List<TWrapper>();
 

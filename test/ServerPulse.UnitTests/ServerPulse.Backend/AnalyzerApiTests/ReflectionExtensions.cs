@@ -2,7 +2,7 @@
 
 namespace AnalyzerApiTests
 {
-    public static class ReflectionExtensions
+    internal static class ReflectionExtensions
     {
         public static T? GetFieldValue<T>(this object obj, string name)
         {

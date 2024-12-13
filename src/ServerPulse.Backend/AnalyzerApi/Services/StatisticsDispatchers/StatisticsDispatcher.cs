@@ -91,13 +91,15 @@ namespace AnalyzerApi.Services.StatisticsDispatchers
                 var tasks = DispatchingTasks(key, cancellationToken);
                 await Task.WhenAll(tasks);
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException ex)
             {
-                logger.LogInformation($"Dispatching for key '{key}' was canceled.");
+                var message = $"Dispatching for key '{key}' was canceled.";
+                logger.LogInformation(ex, message);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Error occurred while dispatching for key '{key}'.");
+                var message = $"Error occurred while dispatching for key '{key}'.";
+                logger.LogError(ex, message);
             }
         }
 
@@ -111,7 +113,8 @@ namespace AnalyzerApi.Services.StatisticsDispatchers
 
         protected virtual void OnListenerRemoved(string key)
         {
-            logger.LogInformation($"Stopped listening for key '{key}'.");
+            var message = $"Stopped listening for key '{key}'.";
+            logger.LogInformation(message);
         }
 
         private async Task SendNewStatisticsOnEveryUpdateAsync(string key, CancellationToken cancellationToken)
