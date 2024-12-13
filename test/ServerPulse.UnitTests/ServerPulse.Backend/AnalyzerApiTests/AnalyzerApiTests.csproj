@@ -30,7 +30,6 @@
     <Compile Remove="Services\BaseReceiverTests.cs" />
     <Compile Remove="Services\EventProcessorTests.cs" />
     <Compile Remove="Services\SlotDataPickerTests.cs" />
-    <Compile Remove="Services\StatisticsDispatchers\LifecycleStatisticsDispatcherTests.cs" />
     <Compile Remove="Services\StatisticsSenderTests.cs" />
     <Compile Remove="SlotDataControllerTests.cs" />
   </ItemGroup>
@@ -50,6 +49,10 @@
 
   <ItemGroup>
     <Using Include="NUnit.Framework" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Services\StatisticsDispatchers\" />
   </ItemGroup>
 
 </Project>

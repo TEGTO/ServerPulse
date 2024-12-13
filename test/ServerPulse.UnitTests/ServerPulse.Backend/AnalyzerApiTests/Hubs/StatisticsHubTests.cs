@@ -64,8 +64,47 @@ namespace AnalyzerApi.Hubs.Tests
             Assert.That(amount, Is.EqualTo(1));
 
             mockGroups.Verify(g => g.AddToGroupAsync(connectionId, key, default), Times.Once);
-            mockStatisticsDispatcher.Verify(s => s.StartStatisticsDispatching(key), Times.Once);
-            mockStatisticsDispatcher.Verify(s => s.DispatchInitialStatistics(key), Times.Once);
+            mockStatisticsDispatcher.Verify(s => s.StartStatisticsDispatchingAsync(key), Times.Once);
+            mockStatisticsDispatcher.Verify(s => s.DispatchInitialStatisticsAsync(key, It.IsAny<CancellationToken>()), Times.Once);
+            mockLogger.Verify(l => l.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains($"Start listening to key '{key}'")),
+                null,
+                It.IsAny<Func<It.IsAnyType, Exception, string>>()!),
+                Times.Once);
+        }
+
+        [Test]
+        public async Task StartListen_AddsClientToGroupAndStartListeningAmountIsZero()
+        {
+            // Arrange
+            var key = "testKey";
+            var connectionId = "testConnectionId";
+
+            var listenerAmount = statisticsHub.GetFieldValue<ConcurrentDictionary<string, int>>("listenerAmount");
+            Assert.IsNotNull(listenerAmount);
+
+            listenerAmount[key] = 0;
+
+            mockContext.SetupGet(c => c.ConnectionId).Returns(connectionId);
+
+            // Act
+            await statisticsHub.StartListen(key);
+
+            // Assert
+            var connectedClients = statisticsHub.GetFieldValue<ConcurrentDictionary<string, List<string>>>("connectedClients");
+            Assert.IsNotNull(connectedClients);
+            connectedClients.TryGetValue(connectionId, out var idKeys);
+            Assert.IsNotNull(idKeys);
+            Assert.IsTrue(idKeys.Contains(key));
+
+            listenerAmount.TryGetValue(key, out var amount);
+            Assert.That(amount, Is.EqualTo(1));
+
+            mockGroups.Verify(g => g.AddToGroupAsync(connectionId, key, default), Times.Once);
+            mockStatisticsDispatcher.Verify(s => s.StartStatisticsDispatchingAsync(key), Times.Once);
+            mockStatisticsDispatcher.Verify(s => s.DispatchInitialStatisticsAsync(key, It.IsAny<CancellationToken>()), Times.Once);
             mockLogger.Verify(l => l.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
@@ -104,8 +143,8 @@ namespace AnalyzerApi.Hubs.Tests
             Assert.That(amount, Is.EqualTo(2));
 
             mockGroups.Verify(g => g.AddToGroupAsync(connectionId, key, default), Times.Once);
-            mockStatisticsDispatcher.Verify(s => s.DispatchInitialStatistics(key), Times.Once);
-            mockStatisticsDispatcher.Verify(s => s.StartStatisticsDispatching(key), Times.Never);
+            mockStatisticsDispatcher.Verify(s => s.DispatchInitialStatisticsAsync(key, It.IsAny<CancellationToken>()), Times.Once);
+            mockStatisticsDispatcher.Verify(s => s.StartStatisticsDispatchingAsync(key), Times.Never);
             mockLogger.Verify(l => l.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
@@ -137,7 +176,7 @@ namespace AnalyzerApi.Hubs.Tests
 
             // Assert
             mockGroups.Verify(g => g.RemoveFromGroupAsync(connectionId, key, default), Times.Once);
-            mockStatisticsDispatcher.Verify(s => s.StopStatisticsDispatching(key), Times.Once);
+            mockStatisticsDispatcher.Verify(s => s.StopStatisticsDispatchingAsync(key), Times.Once);
             mockLogger.Verify(l => l.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
@@ -174,7 +213,7 @@ namespace AnalyzerApi.Hubs.Tests
 
             // Assert
             mockGroups.Verify(g => g.RemoveFromGroupAsync(connectionId2, key, default), Times.Once);
-            mockStatisticsDispatcher.Verify(s => s.StopStatisticsDispatching(key), Times.Never);
+            mockStatisticsDispatcher.Verify(s => s.StopStatisticsDispatchingAsync(key), Times.Never);
             mockLogger.Verify(l => l.Log(
                LogLevel.Information,
                It.IsAny<EventId>(),
@@ -213,7 +252,7 @@ namespace AnalyzerApi.Hubs.Tests
 
             // Assert
             mockGroups.Verify(g => g.RemoveFromGroupAsync(connectionId2, key, default), Times.Never);
-            mockStatisticsDispatcher.Verify(s => s.StopStatisticsDispatching(key), Times.Never);
+            mockStatisticsDispatcher.Verify(s => s.StopStatisticsDispatchingAsync(key), Times.Never);
             mockLogger.Verify(l => l.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
@@ -263,8 +302,8 @@ namespace AnalyzerApi.Hubs.Tests
             }
 
             mockGroups.Verify(g => g.AddToGroupAsync(It.IsAny<string>(), It.IsAny<string>(), default), Times.Exactly(1000));
-            mockStatisticsDispatcher.Verify(s => s.StartStatisticsDispatching(It.IsAny<string>()), Times.Exactly(10));
-            mockStatisticsDispatcher.Verify(s => s.DispatchInitialStatistics(It.IsAny<string>()), Times.Exactly(1000));
+            mockStatisticsDispatcher.Verify(s => s.StartStatisticsDispatchingAsync(It.IsAny<string>()), Times.Exactly(10));
+            mockStatisticsDispatcher.Verify(s => s.DispatchInitialStatisticsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Exactly(1000));
             mockLogger.Verify(l => l.Log(
             LogLevel.Information,
                 It.IsAny<EventId>(),
@@ -318,6 +357,8 @@ namespace AnalyzerApi.Hubs.Tests
             {
                 Assert.IsTrue(listenerAmount[key] == 0);
             }
+
+            mockStatisticsDispatcher.Verify(s => s.StopStatisticsDispatchingAsync(It.IsAny<string>()), Times.Exactly(keys.Count));
         }
     }
 

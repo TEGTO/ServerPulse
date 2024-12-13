@@ -27,7 +27,7 @@ namespace AnalyzerApi.Services.StatisticsDispatchers
             sendPeriodInMilliseconds = int.Parse(configuration[Configuration.STATISTICS_COLLECT_INTERVAL_IN_MILLISECONDS]!);
         }
 
-        protected override Task[] DispathingTasks(string key, CancellationToken cancellationToken)
+        protected override Task[] DispatchingTasks(string key, CancellationToken cancellationToken)
         {
             return
             [

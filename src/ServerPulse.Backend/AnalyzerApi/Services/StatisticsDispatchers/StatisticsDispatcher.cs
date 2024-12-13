@@ -8,9 +8,9 @@ using System.Collections.Concurrent;
 
 namespace AnalyzerApi.Services.StatisticsDispatchers
 {
-    public class StatisticsDispatcher<TStatistics, TEventWrapper> : IStatisticsDispatcher<TStatistics>
-      where TStatistics : BaseStatistics
-      where TEventWrapper : BaseEventWrapper
+    public class StatisticsDispatcher<TStatistics, TEventWrapper> : IStatisticsDispatcher<TStatistics>, IAsyncDisposable
+        where TStatistics : BaseStatistics
+        where TEventWrapper : BaseEventWrapper
     {
         protected readonly IEventReceiver<TEventWrapper> receiver;
         protected readonly IMediator mediator;
@@ -27,60 +27,81 @@ namespace AnalyzerApi.Services.StatisticsDispatchers
             this.logger = logger;
         }
 
-        public async Task DispatchInitialStatistics(string key)
+        public async ValueTask DisposeAsync()
         {
-            await SendInitialStatisticsAsync(key);
+            var tasks = listeners.Keys.Select(StopStatisticsDispatchingAsync).ToArray();
+            await Task.WhenAll(tasks);
         }
 
-        public void StartStatisticsDispatching(string key)
+        public async Task DispatchInitialStatisticsAsync(string key, CancellationToken cancellationToken = default)
         {
-            Task.Run(() => DispatchStatisticsAsync(key));
+            var statistics = await mediator.Send(new BuildStatisticsCommand<TStatistics>(key), cancellationToken);
+            if (statistics != null)
+            {
+                await mediator.Send(new SendStatisticsCommand<TStatistics>(key, statistics), cancellationToken);
+            }
         }
 
-        public void StopStatisticsDispatching(string key)
+        public Task StartStatisticsDispatchingAsync(string key)
+        {
+            if (listeners.ContainsKey(key))
+            {
+                return Task.CompletedTask;
+            }
+
+            var cancellationTokenSource = new CancellationTokenSource();
+
+            if (listeners.TryAdd(key, cancellationTokenSource))
+            {
+                Task.Factory.StartNew(
+                    () => DispatchStatisticsAsync(key, cancellationTokenSource.Token),
+                    cancellationTokenSource.Token,
+                    TaskCreationOptions.LongRunning,
+                    TaskScheduler.Default
+                );
+            }
+            return Task.CompletedTask;
+        }
+
+        public async Task StopStatisticsDispatchingAsync(string key)
         {
             if (listeners.TryRemove(key, out var tokenSource))
             {
-                tokenSource.Cancel();
-                tokenSource.Dispose();
-                OnListenerRemoved(key);
+                try
+                {
+                    await tokenSource.CancelAsync();
+                    tokenSource.Dispose();
+                    OnListenerRemoved(key);
+                }
+                catch (Exception ex)
+                {
+                    var message = $"Failed to stop dispatching for key '{key}'.";
+                    logger.LogError(ex, message);
+                }
             }
         }
 
-        private async Task DispatchStatisticsAsync(string key)
+        private async Task DispatchStatisticsAsync(string key, CancellationToken cancellationToken)
         {
             try
             {
-                using var cancellationTokenSource = new CancellationTokenSource();
-                var cancellationToken = cancellationTokenSource.Token;
+                var message = $"Started dispatching for key '{key}'.";
+                logger.LogInformation(message);
 
-                if (!listeners.TryAdd(key, cancellationTokenSource))
-                    return;
-
-                await Task.WhenAll(DispathingTasks(key, cancellationToken));
+                var tasks = DispatchingTasks(key, cancellationToken);
+                await Task.WhenAll(tasks);
             }
-            catch (OperationCanceledException ex)
+            catch (OperationCanceledException)
             {
-                string message = $"Dispatching for key '{key}' was canceled.";
-                logger.LogInformation(ex, message);
+                logger.LogInformation($"Dispatching for key '{key}' was canceled.");
             }
             catch (Exception ex)
             {
-                string message = $"Error occurred while dispatching for key '{key}'.";
-                logger.LogError(ex, message);
+                logger.LogError(ex, $"Error occurred while dispatching for key '{key}'.");
             }
         }
 
-        protected virtual async Task SendInitialStatisticsAsync(string key)
-        {
-            var statistics = await mediator.Send(new BuildStatisticsCommand<TStatistics>(key));
-            if (statistics != null)
-            {
-                await mediator.Send(new SendStatisticsCommand<TStatistics>(key, statistics));
-            }
-        }
-
-        protected virtual Task[] DispathingTasks(string key, CancellationToken cancellationToken)
+        protected virtual Task[] DispatchingTasks(string key, CancellationToken cancellationToken)
         {
             return
             [
@@ -90,13 +111,12 @@ namespace AnalyzerApi.Services.StatisticsDispatchers
 
         protected virtual void OnListenerRemoved(string key)
         {
-            string message = $"Stopped listening for key '{key}'.";
-            logger.LogInformation(message);
+            logger.LogInformation($"Stopped listening for key '{key}'.");
         }
 
         private async Task SendNewStatisticsOnEveryUpdateAsync(string key, CancellationToken cancellationToken)
         {
-            await foreach (var load in receiver.GetEventStreamAsync(key, cancellationToken))
+            await foreach (var ev in receiver.GetEventStreamAsync(key, cancellationToken))
             {
                 var statistics = await mediator.Send(new BuildStatisticsCommand<TStatistics>(key), cancellationToken);
                 await mediator.Send(new SendStatisticsCommand<TStatistics>(key, statistics), cancellationToken);

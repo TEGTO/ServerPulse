@@ -9,13 +9,12 @@ namespace AnalyzerApi.Hubs
     {
         private readonly ConcurrentDictionary<string, List<string>> connectedClients = new();
         private readonly ConcurrentDictionary<string, int> listenerAmount = new();
-        private readonly ConcurrentDictionary<string, SemaphoreSlim> keyLocks = new();
         private readonly IStatisticsDispatcher<T> statisticsDispatcher;
         private readonly ILogger<StatisticsHub<T>> logger;
 
-        public StatisticsHub(IStatisticsDispatcher<T> serverStatisticsCollector, ILogger<StatisticsHub<T>> logger)
+        public StatisticsHub(IStatisticsDispatcher<T> statisticsDispatcher, ILogger<StatisticsHub<T>> logger)
         {
-            this.statisticsDispatcher = serverStatisticsCollector;
+            this.statisticsDispatcher = statisticsDispatcher;
             this.logger = logger;
         }
 
@@ -36,86 +35,64 @@ namespace AnalyzerApi.Hubs
 
         private async Task StartIdListeningKey(string key, string connectionId)
         {
+            await Groups.AddToGroupAsync(connectionId, key);
+
+            await statisticsDispatcher.DispatchInitialStatisticsAsync(key);
+
             connectedClients.AddOrUpdate(
                 connectionId,
                 [key],
                 (_, keys) =>
                 {
-                    if (!keys.Contains(key)) keys.Add(key);
+                    if (!keys.Contains(key))
+                    {
+                        keys.Add(key);
+                    }
                     return keys;
                 }
             );
 
-            await Groups.AddToGroupAsync(connectionId, key);
-
-            await statisticsDispatcher.DispatchInitialStatistics(key);
-
-            var keyLock = keyLocks.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
-
-            await keyLock.WaitAsync();
-            try
-            {
-                var isKeyBeingListening = listenerAmount.ContainsKey(key) && listenerAmount[key] > 0;
-
-                if (!isKeyBeingListening)
-                {
-                    string message = $"Start listening to key '{key}'";
-                    logger.LogInformation(message);
-
-                    statisticsDispatcher.StartStatisticsDispatching(key);
-                }
-
-                listenerAmount.AddOrUpdate(key, 1, (k, count) => count + 1);
-            }
-            finally
-            {
-                keyLock.Release();
-            }
-        }
-
-        private async Task AddClientToGroupAsync(string key, string connectionId)
-        {
             listenerAmount.AddOrUpdate(key, 1, (k, count) => count + 1);
 
-            connectedClients.AddOrUpdate(
-                connectionId,
-                [key],
-                (_, keys) =>
-                {
-                    if (!keys.Contains(key)) keys.Add(key);
-                    return keys;
-                }
-            );
-
-            await Groups.AddToGroupAsync(connectionId, key);
+            if (listenerAmount.GetValueOrDefault(key) == 1)
+            {
+                await StartDispatchingAsync(key);
+            }
         }
 
         private async Task RemoveClientFromGroupAsync(IEnumerable<string> keys, string connectionId)
         {
-            foreach (var key in keys)
+            await Task.WhenAll(keys.Select(async key =>
             {
                 await Groups.RemoveFromGroupAsync(connectionId, key);
 
                 listenerAmount.AddOrUpdate(
-                   key,
-                   0,
-                   (k, count) =>
-                   {
-                       if (count <= 1)
-                       {
-                           string message = $"Stop listening to key '{k}'";
-                           logger.LogInformation(message);
-
-                           statisticsDispatcher.StopStatisticsDispatching(k);
-
-                           return 0;
-                       }
-                       return count - 1;
-                   }
+                    key,
+                    0,
+                    (k, count) => count <= 1 ? 0 : count - 1
                 );
-            }
+
+                if (listenerAmount.GetValueOrDefault(key) == 0)
+                {
+                    await StopDispatchingAsync(key);
+                }
+            }));
 
             connectedClients.TryRemove(connectionId, out _);
+        }
+
+        private async Task StartDispatchingAsync(string dispatchKey)
+        {
+            var message = $"Start listening to key '{dispatchKey}'";
+            logger.LogInformation(message);
+            await statisticsDispatcher.StartStatisticsDispatchingAsync(dispatchKey);
+        }
+
+        private async Task StopDispatchingAsync(string dispatchKey)
+        {
+            var message = $"Stop listening to key '{dispatchKey}'";
+            logger.LogInformation(message);
+            await statisticsDispatcher.StopStatisticsDispatchingAsync(dispatchKey);
         }
     }
 }

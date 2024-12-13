@@ -4,8 +4,8 @@ namespace AnalyzerApi.Services.StatisticsDispatchers
 {
     public interface IStatisticsDispatcher<T> where T : BaseStatistics
     {
-        public void StartStatisticsDispatching(string key);
-        public void StopStatisticsDispatching(string key);
-        public Task DispatchInitialStatistics(string key);
+        public Task StartStatisticsDispatchingAsync(string key);
+        public Task StopStatisticsDispatchingAsync(string key);
+        public Task DispatchInitialStatisticsAsync(string key, CancellationToken cancellationToken = default);
     }
 }
