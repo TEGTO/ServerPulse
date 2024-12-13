@@ -9,12 +9,13 @@ namespace AnalyzerApi.Hubs
     {
         private readonly ConcurrentDictionary<string, List<string>> connectedClients = new();
         private readonly ConcurrentDictionary<string, int> listenerAmount = new();
-        private readonly IStatisticsDispatcher<T> serverStatisticsCollector;
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> keyLocks = new();
+        private readonly IStatisticsDispatcher<T> statisticsDispatcher;
         private readonly ILogger<StatisticsHub<T>> logger;
 
         public StatisticsHub(IStatisticsDispatcher<T> serverStatisticsCollector, ILogger<StatisticsHub<T>> logger)
         {
-            this.serverStatisticsCollector = serverStatisticsCollector;
+            this.statisticsDispatcher = serverStatisticsCollector;
             this.logger = logger;
         }
 
@@ -22,7 +23,7 @@ namespace AnalyzerApi.Hubs
         {
             if (connectedClients.TryGetValue(Context.ConnectionId, out var keys))
             {
-                await RemoveClientFromGroupAsync(keys);
+                await RemoveClientFromGroupAsync(keys, Context.ConnectionId);
             }
 
             await base.OnDisconnectedAsync(exception);
@@ -30,20 +31,13 @@ namespace AnalyzerApi.Hubs
 
         public async Task StartListen(string key)
         {
-            await AddClientToGroupAsync(key);
-
-            string message = $"Start listening to key '{key}'";
-            logger.LogInformation(message);
-
-            serverStatisticsCollector.StartStatisticsDispatching(key);
+            await StartIdListeningKey(key, Context.ConnectionId);
         }
 
-        private async Task AddClientToGroupAsync(string key)
+        private async Task StartIdListeningKey(string key, string connectionId)
         {
-            listenerAmount.AddOrUpdate(key, 1, (k, count) => count + 1);
-
             connectedClients.AddOrUpdate(
-                Context.ConnectionId,
+                connectionId,
                 [key],
                 (_, keys) =>
                 {
@@ -52,14 +46,55 @@ namespace AnalyzerApi.Hubs
                 }
             );
 
-            await Groups.AddToGroupAsync(Context.ConnectionId, key);
+            await Groups.AddToGroupAsync(connectionId, key);
+
+            await statisticsDispatcher.DispatchInitialStatistics(key);
+
+            var keyLock = keyLocks.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
+
+            await keyLock.WaitAsync();
+            try
+            {
+                var isKeyBeingListening = listenerAmount.ContainsKey(key) && listenerAmount[key] > 0;
+
+                if (!isKeyBeingListening)
+                {
+                    string message = $"Start listening to key '{key}'";
+                    logger.LogInformation(message);
+
+                    statisticsDispatcher.StartStatisticsDispatching(key);
+                }
+
+                listenerAmount.AddOrUpdate(key, 1, (k, count) => count + 1);
+            }
+            finally
+            {
+                keyLock.Release();
+            }
         }
 
-        private async Task RemoveClientFromGroupAsync(IEnumerable<string> keys)
+        private async Task AddClientToGroupAsync(string key, string connectionId)
+        {
+            listenerAmount.AddOrUpdate(key, 1, (k, count) => count + 1);
+
+            connectedClients.AddOrUpdate(
+                connectionId,
+                [key],
+                (_, keys) =>
+                {
+                    if (!keys.Contains(key)) keys.Add(key);
+                    return keys;
+                }
+            );
+
+            await Groups.AddToGroupAsync(connectionId, key);
+        }
+
+        private async Task RemoveClientFromGroupAsync(IEnumerable<string> keys, string connectionId)
         {
             foreach (var key in keys)
             {
-                await Groups.RemoveFromGroupAsync(Context.ConnectionId, key);
+                await Groups.RemoveFromGroupAsync(connectionId, key);
 
                 listenerAmount.AddOrUpdate(
                    key,
@@ -71,7 +106,7 @@ namespace AnalyzerApi.Hubs
                            string message = $"Stop listening to key '{k}'";
                            logger.LogInformation(message);
 
-                           serverStatisticsCollector.StopStatisticsDispatching(k);
+                           statisticsDispatcher.StopStatisticsDispatching(k);
 
                            return 0;
                        }
@@ -79,6 +114,8 @@ namespace AnalyzerApi.Hubs
                    }
                 );
             }
+
+            connectedClients.TryRemove(connectionId, out _);
         }
     }
 }

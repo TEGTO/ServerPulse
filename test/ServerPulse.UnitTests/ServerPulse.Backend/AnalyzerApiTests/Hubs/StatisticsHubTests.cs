@@ -1,5 +1,6 @@
-﻿using AnalyzerApi.Domain.Models;
-using AnalyzerApi.Services.Interfaces;
+﻿using AnalyzerApi.Infrastructure.Models.Statistics;
+using AnalyzerApi.Services.StatisticsDispatchers;
+using AnalyzerApiTests;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -11,7 +12,7 @@ namespace AnalyzerApi.Hubs.Tests
     [TestFixture]
     internal class StatisticsHubTests
     {
-        private Mock<IStatisticsConsumer<TestStatistics>> mockStatisticsConsumer;
+        private Mock<IStatisticsDispatcher<TestStatistics>> mockStatisticsDispatcher;
         private Mock<ILogger<StatisticsHub<TestStatistics>>> mockLogger;
         private Mock<HubCallerContext> mockContext;
         private Mock<IGroupManager> mockGroups;
@@ -20,17 +21,18 @@ namespace AnalyzerApi.Hubs.Tests
         [SetUp]
         public void Setup()
         {
-            mockStatisticsConsumer = new Mock<IStatisticsConsumer<TestStatistics>>();
+            mockStatisticsDispatcher = new Mock<IStatisticsDispatcher<TestStatistics>>();
             mockLogger = new Mock<ILogger<StatisticsHub<TestStatistics>>>();
             mockContext = new Mock<HubCallerContext>();
             mockGroups = new Mock<IGroupManager>();
 
-            statisticsHub = new StatisticsHub<TestStatistics>(mockStatisticsConsumer.Object, mockLogger.Object)
+            statisticsHub = new StatisticsHub<TestStatistics>(mockStatisticsDispatcher.Object, mockLogger.Object)
             {
                 Context = mockContext.Object,
                 Groups = mockGroups.Object
             };
         }
+
         [TearDown]
         public void TearDown()
         {
@@ -38,93 +40,286 @@ namespace AnalyzerApi.Hubs.Tests
         }
 
         [Test]
-        public async Task StartListen_ShouldAddClientToGroupAndStartListening()
+        public async Task StartListen_AddsClientToGroupAndStartListening()
         {
             // Arrange
             var key = "testKey";
             var connectionId = "testConnectionId";
+
             mockContext.SetupGet(c => c.ConnectionId).Returns(connectionId);
+
             // Act
             await statisticsHub.StartListen(key);
+
             // Assert
+            var connectedClients = statisticsHub.GetFieldValue<ConcurrentDictionary<string, List<string>>>("connectedClients");
+            Assert.IsNotNull(connectedClients);
+            connectedClients.TryGetValue(connectionId, out var idKeys);
+            Assert.IsNotNull(idKeys);
+            Assert.IsTrue(idKeys.Contains(key));
+
+            var listenerAmount = statisticsHub.GetFieldValue<ConcurrentDictionary<string, int>>("listenerAmount");
+            Assert.IsNotNull(listenerAmount);
+            listenerAmount.TryGetValue(key, out var amount);
+            Assert.That(amount, Is.EqualTo(1));
+
             mockGroups.Verify(g => g.AddToGroupAsync(connectionId, key, default), Times.Once);
-            mockStatisticsConsumer.Verify(s => s.StartConsumingStatistics(key), Times.Once);
+            mockStatisticsDispatcher.Verify(s => s.StartStatisticsDispatching(key), Times.Once);
+            mockStatisticsDispatcher.Verify(s => s.DispatchInitialStatistics(key), Times.Once);
             mockLogger.Verify(l => l.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString().Contains($"Start listening key '{key}'")),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains($"Start listening to key '{key}'")),
                 null,
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                It.IsAny<Func<It.IsAnyType, Exception, string>>()!),
                 Times.Once);
         }
+
         [Test]
-        public async Task OnDisconnectedAsync_ShouldRemoveClientFromGroupAndStopListening()
+        public async Task StartListen_KeyIsAlreadyBeingListening_AddsIdToListAndIncreasesKeyListenerAmount()
         {
             // Arrange
-            var connectionId = "testConnectionId";
             var key = "testKey";
-            var connectedClients = GetConnectedClients();
-            var listenerAmount = GetListenerAmount();
+            var connectionId = "testConnectionId";
+
+            var connectedClients = statisticsHub.GetFieldValue<ConcurrentDictionary<string, List<string>>>("connectedClients");
+            var listenerAmount = statisticsHub.GetFieldValue<ConcurrentDictionary<string, int>>("listenerAmount");
+            Assert.IsNotNull(connectedClients);
+            Assert.IsNotNull(listenerAmount);
+
             connectedClients[connectionId] = new List<string> { key };
             listenerAmount[key] = 1;
+
             mockContext.SetupGet(c => c.ConnectionId).Returns(connectionId);
+
             // Act
-            await statisticsHub.OnDisconnectedAsync(null);
+            await statisticsHub.StartListen(key);
+
             // Assert
-            mockGroups.Verify(g => g.RemoveFromGroupAsync(connectionId, key, default), Times.Once);
-            mockStatisticsConsumer.Verify(s => s.StopConsumingStatistics(key), Times.Once);
+            connectedClients.TryGetValue(connectionId, out var idKeys);
+            Assert.IsNotNull(idKeys);
+            Assert.IsTrue(idKeys.Contains(key));
+
+            listenerAmount.TryGetValue(key, out var amount);
+            Assert.That(amount, Is.EqualTo(2));
+
+            mockGroups.Verify(g => g.AddToGroupAsync(connectionId, key, default), Times.Once);
+            mockStatisticsDispatcher.Verify(s => s.DispatchInitialStatistics(key), Times.Once);
+            mockStatisticsDispatcher.Verify(s => s.StartStatisticsDispatching(key), Times.Never);
             mockLogger.Verify(l => l.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString().Contains($"Stop listening key '{key}'")),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains($"Start listening to key '{key}'")),
                 null,
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-                Times.Once);
+                It.IsAny<Func<It.IsAnyType, Exception, string>>()!),
+                Times.Never);
         }
+
         [Test]
-        public async Task RemoveClientFromGroupAsync_ShouldNotStopListeningIfOtherListenersExist()
+        public async Task OnDisconnectedAsync_RemovesClientFromGroupAndStopListening()
         {
             // Arrange
             var connectionId = "testConnectionId";
             var key = "testKey";
-            var connectedClients = GetConnectedClients();
-            var listenerAmount = GetListenerAmount();
+
+            var connectedClients = statisticsHub.GetFieldValue<ConcurrentDictionary<string, List<string>>>("connectedClients");
+            var listenerAmount = statisticsHub.GetFieldValue<ConcurrentDictionary<string, int>>("listenerAmount");
+            Assert.IsNotNull(connectedClients);
+            Assert.IsNotNull(listenerAmount);
+
             connectedClients[connectionId] = new List<string> { key };
-            listenerAmount[key] = 2;
+            listenerAmount[key] = 1;
+
             mockContext.SetupGet(c => c.ConnectionId).Returns(connectionId);
 
             // Act
-            await InvokePrivateMethodAsync(statisticsHub, "RemoveClientFromGroupAsync", new List<string> { key });
+            await statisticsHub.OnDisconnectedAsync(null);
 
             // Assert
             mockGroups.Verify(g => g.RemoveFromGroupAsync(connectionId, key, default), Times.Once);
-            Assert.That(listenerAmount[key], Is.EqualTo(1));
-            mockStatisticsConsumer.Verify(s => s.StopConsumingStatistics(key), Times.Never);
+            mockStatisticsDispatcher.Verify(s => s.StopStatisticsDispatching(key), Times.Once);
+            mockLogger.Verify(l => l.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains($"Stop listening to key '{key}'")),
+                null,
+                It.IsAny<Func<It.IsAnyType, Exception, string>>()!),
+                Times.Once);
+
+            Assert.That(listenerAmount[key], Is.EqualTo(0));
+            Assert.IsFalse(connectedClients.ContainsKey(connectionId));
         }
 
-        private async Task InvokePrivateMethodAsync(object obj, string methodName, params object[] parameters)
+        [Test]
+        public async Task OnDisconnectedAsync_DoesNotStopListeningIfOtherListenersExist()
         {
-            var method = obj.GetType().GetMethod(methodName, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (method != null)
+            // Arrange
+            var connectionId1 = "testConnectionId1";
+            var connectionId2 = "testConnectionId2";
+            var key = "testKey";
+
+            var connectedClients = statisticsHub.GetFieldValue<ConcurrentDictionary<string, List<string>>>("connectedClients");
+            var listenerAmount = statisticsHub.GetFieldValue<ConcurrentDictionary<string, int>>("listenerAmount");
+            Assert.IsNotNull(connectedClients);
+            Assert.IsNotNull(listenerAmount);
+
+            connectedClients[connectionId1] = new List<string> { key };
+            connectedClients[connectionId2] = new List<string> { key };
+            listenerAmount[key] = 2;
+
+            mockContext.SetupGet(c => c.ConnectionId).Returns(connectionId2);
+
+            // Act
+            await statisticsHub.OnDisconnectedAsync(null);
+
+            // Assert
+            mockGroups.Verify(g => g.RemoveFromGroupAsync(connectionId2, key, default), Times.Once);
+            mockStatisticsDispatcher.Verify(s => s.StopStatisticsDispatching(key), Times.Never);
+            mockLogger.Verify(l => l.Log(
+               LogLevel.Information,
+               It.IsAny<EventId>(),
+               It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains($"Stop listening to key '{key}'")),
+               null,
+               It.IsAny<Func<It.IsAnyType, Exception, string>>()!),
+               Times.Never);
+
+            Assert.That(listenerAmount[key], Is.EqualTo(1));
+
+            Assert.IsTrue(connectedClients.ContainsKey(connectionId1));
+            Assert.IsTrue(connectedClients[connectionId1].Contains(key));
+            Assert.IsFalse(connectedClients.ContainsKey(connectionId2));
+        }
+
+        [Test]
+        public async Task OnDisconnectedAsync_IdIsNotInConnectedClients_NoChanges()
+        {
+            // Arrange
+            var connectionId1 = "testConnectionId1";
+            var connectionId2 = "testConnectionId2";
+            var key = "testKey";
+
+            var connectedClients = statisticsHub.GetFieldValue<ConcurrentDictionary<string, List<string>>>("connectedClients");
+            var listenerAmount = statisticsHub.GetFieldValue<ConcurrentDictionary<string, int>>("listenerAmount");
+            Assert.IsNotNull(connectedClients);
+            Assert.IsNotNull(listenerAmount);
+
+            connectedClients[connectionId1] = new List<string> { key };
+            listenerAmount[key] = 1;
+
+            mockContext.SetupGet(c => c.ConnectionId).Returns(connectionId2);
+
+            // Act
+            await statisticsHub.OnDisconnectedAsync(null);
+
+            // Assert
+            mockGroups.Verify(g => g.RemoveFromGroupAsync(connectionId2, key, default), Times.Never);
+            mockStatisticsDispatcher.Verify(s => s.StopStatisticsDispatching(key), Times.Never);
+            mockLogger.Verify(l => l.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains($"Stop listening to key '{key}'")),
+                null,
+                It.IsAny<Func<It.IsAnyType, Exception, string>>()!),
+                Times.Never);
+
+            Assert.That(listenerAmount[key], Is.EqualTo(1));
+            Assert.IsTrue(connectedClients.ContainsKey(connectionId1));
+            Assert.IsTrue(connectedClients[connectionId1].Contains(key));
+            Assert.IsFalse(connectedClients.ContainsKey(connectionId2));
+        }
+
+        [Test]
+        public async Task ConcurrentUpdates_MultipleClients_ThreadSafeOperation()
+        {
+            // Arrange
+            var connectionIds = Enumerable.Range(1, 100).Select(i => $"connectionId{i}").ToList();
+            var keys = Enumerable.Range(1, 10).Select(i => $"key{i}").ToList();
+
+            var startIdListeningKeyMethod = statisticsHub.GetType().GetMethod("StartIdListeningKey", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.IsNotNull(startIdListeningKeyMethod);
+
+            var tasks = connectionIds.Select(connectionId => Task.Run(async () =>
             {
-                var task = (Task)method.Invoke(obj, parameters);
-                await task;
+                foreach (var key in keys)
+                {
+                    var task = (Task)startIdListeningKeyMethod.Invoke(statisticsHub, [key, connectionId])!;
+                    await task!;
+                }
+            }));
+
+            // Act
+            await Task.WhenAll(tasks);
+
+            // Assert
+            var connectedClients = statisticsHub.GetFieldValue<ConcurrentDictionary<string, List<string>>>("connectedClients");
+            var listenerAmount = statisticsHub.GetFieldValue<ConcurrentDictionary<string, int>>("listenerAmount");
+            Assert.IsNotNull(connectedClients);
+            Assert.IsNotNull(listenerAmount);
+
+            Assert.That(connectedClients.Count, Is.EqualTo(connectionIds.Count));
+            foreach (var key in keys)
+            {
+                Assert.IsTrue(listenerAmount[key] > 0);
+            }
+
+            mockGroups.Verify(g => g.AddToGroupAsync(It.IsAny<string>(), It.IsAny<string>(), default), Times.Exactly(1000));
+            mockStatisticsDispatcher.Verify(s => s.StartStatisticsDispatching(It.IsAny<string>()), Times.Exactly(10));
+            mockStatisticsDispatcher.Verify(s => s.DispatchInitialStatistics(It.IsAny<string>()), Times.Exactly(1000));
+            mockLogger.Verify(l => l.Log(
+            LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains($"Start listening to key")),
+                null,
+                It.IsAny<Func<It.IsAnyType, Exception, string>>()!),
+               Times.Exactly(10));
+        }
+
+        [Test]
+        public async Task ConcurrentRemovals_MultipleClients_ThreadSafeOperation()
+        {
+            // Arrange
+            var connectionIds = Enumerable.Range(1, 100).Select(i => $"connectionId{i}").ToList();
+            var keys = Enumerable.Range(1, 10).Select(i => $"key{i}").ToList();
+
+            var startIdListeningKeyMethod = statisticsHub.GetType().GetMethod("StartIdListeningKey", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.IsNotNull(startIdListeningKeyMethod);
+
+            var removeClientFromGroupMethod = statisticsHub.GetType().GetMethod("RemoveClientFromGroupAsync", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.IsNotNull(removeClientFromGroupMethod);
+
+            var addTasks = connectionIds.Select(connectionId => Task.Run(async () =>
+            {
+                foreach (var key in keys)
+                {
+                    var task = (Task)startIdListeningKeyMethod.Invoke(statisticsHub, [key, connectionId])!;
+                    await task!;
+                }
+            }));
+            await Task.WhenAll(addTasks);
+
+            // Act
+            var removeTasks = connectionIds.Select(connectionId => Task.Run(async () =>
+            {
+                var task = (Task)removeClientFromGroupMethod.Invoke(statisticsHub, [keys, connectionId])!;
+                await task!;
+            }));
+            await Task.WhenAll(removeTasks);
+
+            // Assert
+            var connectedClients = statisticsHub.GetFieldValue<ConcurrentDictionary<string, List<string>>>("connectedClients");
+            var listenerAmount = statisticsHub.GetFieldValue<ConcurrentDictionary<string, int>>("listenerAmount");
+
+            Assert.IsNotNull(connectedClients);
+            Assert.IsNotNull(listenerAmount);
+
+            Assert.That(connectedClients.Count, Is.EqualTo(0));
+
+            foreach (var key in keys)
+            {
+                Assert.IsTrue(listenerAmount[key] == 0);
             }
         }
-        private ConcurrentDictionary<string, List<string>> GetConnectedClients()
-        {
-            Type type = typeof(StatisticsHub<TestStatistics>);
-            FieldInfo info = type.GetField("ConnectedClients", BindingFlags.NonPublic | BindingFlags.Static);
-            object value = info.GetValue(null);
-            return value as ConcurrentDictionary<string, List<string>>;
-        }
-        private ConcurrentDictionary<string, int> GetListenerAmount()
-        {
-            Type type = typeof(StatisticsHub<TestStatistics>);
-            FieldInfo info = type.GetField("ListenerAmount", BindingFlags.NonPublic | BindingFlags.Static);
-            object value = info.GetValue(null);
-            return value as ConcurrentDictionary<string, int>;
-        }
     }
+
     public class TestStatistics : BaseStatistics { };
 }

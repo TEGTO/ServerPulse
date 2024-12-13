@@ -27,6 +27,11 @@ namespace AnalyzerApi.Services.StatisticsDispatchers
             this.logger = logger;
         }
 
+        public async Task DispatchInitialStatistics(string key)
+        {
+            await SendInitialStatisticsAsync(key);
+        }
+
         public void StartStatisticsDispatching(string key)
         {
             Task.Run(() => DispatchStatisticsAsync(key));
@@ -52,9 +57,7 @@ namespace AnalyzerApi.Services.StatisticsDispatchers
                 if (!listeners.TryAdd(key, cancellationTokenSource))
                     return;
 
-                await SendInitialStatisticsAsync(key, cancellationToken);
-
-                await Task.WhenAll(GetEventSubscriptionTasks(key, cancellationToken));
+                await Task.WhenAll(DispathingTasks(key, cancellationToken));
             }
             catch (OperationCanceledException ex)
             {
@@ -68,17 +71,16 @@ namespace AnalyzerApi.Services.StatisticsDispatchers
             }
         }
 
-        protected virtual async Task SendInitialStatisticsAsync(string key, CancellationToken cancellationToken)
+        protected virtual async Task SendInitialStatisticsAsync(string key)
         {
-            var statistics = await mediator.Send(new BuildStatisticsCommand<TStatistics>(key), cancellationToken);
+            var statistics = await mediator.Send(new BuildStatisticsCommand<TStatistics>(key));
             if (statistics != null)
             {
-                statistics.IsInitial = true;
-                await mediator.Send(new SendStatisticsCommand<TStatistics>(key, statistics), cancellationToken);
+                await mediator.Send(new SendStatisticsCommand<TStatistics>(key, statistics));
             }
         }
 
-        protected virtual Task[] GetEventSubscriptionTasks(string key, CancellationToken cancellationToken)
+        protected virtual Task[] DispathingTasks(string key, CancellationToken cancellationToken)
         {
             return
             [
@@ -100,7 +102,5 @@ namespace AnalyzerApi.Services.StatisticsDispatchers
                 await mediator.Send(new SendStatisticsCommand<TStatistics>(key, statistics), cancellationToken);
             }
         }
-
     }
-
 }

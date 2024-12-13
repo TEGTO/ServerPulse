@@ -106,7 +106,7 @@ builder.Services.AddSingleton<ILoadAmountStatisticsReceiver>(provider => provide
 
 #endregion
 
-builder.Services.AddSingleton<IStatisticsDispatcher<ServerLifecycleStatistics>, ServerStatisticsDispatcher>();
+builder.Services.AddSingleton<IStatisticsDispatcher<ServerLifecycleStatistics>, LifecycleStatisticsDispatcher>();
 builder.Services.AddSingleton<IStatisticsDispatcher<ServerLoadStatistics>, StatisticsDispatcher<ServerLoadStatistics, LoadEventWrapper>>();
 builder.Services.AddSingleton<IStatisticsDispatcher<ServerCustomStatistics>, StatisticsDispatcher<ServerCustomStatistics, CustomEventWrapper>>();
 

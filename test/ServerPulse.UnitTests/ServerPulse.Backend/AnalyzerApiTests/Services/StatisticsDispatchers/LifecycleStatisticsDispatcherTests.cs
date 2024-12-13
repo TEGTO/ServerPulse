@@ -1,16 +1,13 @@
-﻿using AnalyzerApi.Domain.Dtos.Wrappers;
-using AnalyzerApi.Domain.Models;
-using AnalyzerApi.Services.Interfaces;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System.Collections.Concurrent;
 using System.Reflection;
 
-namespace AnalyzerApi.Services.Consumers.Tests
+namespace AnalyzerApi.Services.StatisticsDispatchers.Tests
 {
     [TestFixture]
-    internal class ServerStatisticsConsumerTests
+    internal class LifecycleStatisticsDispatcherTests
     {
         private const int STATISTICS_COLLECT_INTERVAL = 1000;
 

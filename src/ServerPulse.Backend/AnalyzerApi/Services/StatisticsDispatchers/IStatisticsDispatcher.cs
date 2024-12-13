@@ -6,5 +6,6 @@ namespace AnalyzerApi.Services.StatisticsDispatchers
     {
         public void StartStatisticsDispatching(string key);
         public void StopStatisticsDispatching(string key);
+        public Task DispatchInitialStatistics(string key);
     }
 }

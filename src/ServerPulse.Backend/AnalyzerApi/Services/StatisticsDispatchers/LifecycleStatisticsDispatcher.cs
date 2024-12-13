@@ -9,25 +9,25 @@ using System.Collections.Concurrent;
 
 namespace AnalyzerApi.Services.StatisticsDispatchers
 {
-    public sealed class ServerStatisticsDispatcher : StatisticsDispatcher<ServerLifecycleStatistics, PulseEventWrapper>
+    public sealed class LifecycleStatisticsDispatcher : StatisticsDispatcher<ServerLifecycleStatistics, PulseEventWrapper>
     {
         private readonly IEventReceiver<ConfigurationEventWrapper> confReceiver;
         private readonly ConcurrentDictionary<string, (PeriodicTimer Timer, int ServerUpdateInterval, bool IsAlive)> listenerState = new();
         private readonly int sendPeriodInMilliseconds;
 
-        public ServerStatisticsDispatcher(
+        public LifecycleStatisticsDispatcher(
             IEventReceiver<PulseEventWrapper> receiver,
             IEventReceiver<ConfigurationEventWrapper> confReceiver,
             IMediator mediator,
             IConfiguration configuration,
-            ILogger<ServerStatisticsDispatcher> logger)
+            ILogger<LifecycleStatisticsDispatcher> logger)
             : base(receiver, mediator, logger)
         {
             this.confReceiver = confReceiver;
             sendPeriodInMilliseconds = int.Parse(configuration[Configuration.STATISTICS_COLLECT_INTERVAL_IN_MILLISECONDS]!);
         }
 
-        protected override Task[] GetEventSubscriptionTasks(string key, CancellationToken cancellationToken)
+        protected override Task[] DispathingTasks(string key, CancellationToken cancellationToken)
         {
             return
             [

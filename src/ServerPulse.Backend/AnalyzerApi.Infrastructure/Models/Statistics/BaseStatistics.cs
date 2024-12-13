@@ -2,10 +2,9 @@
 {
     public abstract class BaseStatistics
     {
-        public bool IsInitial { get; set; }
         public DateTime CollectedDateUTC { get; init; }
 
-        public BaseStatistics()
+        protected BaseStatistics()
         {
             CollectedDateUTC = DateTime.UtcNow;
         }
