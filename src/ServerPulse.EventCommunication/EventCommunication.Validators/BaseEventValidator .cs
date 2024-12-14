@@ -1,5 +1,4 @@
-﻿using EventCommunication.Events;
-using FluentValidation;
+﻿using FluentValidation;
 
 namespace EventCommunication.Validators
 {

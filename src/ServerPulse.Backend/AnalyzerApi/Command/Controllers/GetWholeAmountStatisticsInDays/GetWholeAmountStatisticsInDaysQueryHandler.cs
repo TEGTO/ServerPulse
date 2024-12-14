@@ -1,5 +1,6 @@
 ﻿using AnalyzerApi.Infrastructure.Dtos.Responses.Statistics;
 using AnalyzerApi.Infrastructure.Models;
+using AnalyzerApi.Infrastructure.Models.Statistics;
 using AnalyzerApi.Services.Receivers.Statistics;
 using AutoMapper;
 using MediatR;
@@ -23,15 +24,24 @@ namespace AnalyzerApi.Command.Controllers.GetWholeAmountStatisticsInDays
 
             var timeSpan = TimeSpan.FromDays(1);
 
-            var statistics = await receiver.GetWholeStatisticsInTimeSpanAsync(key, timeSpan, cancellationToken);
+            var statisticsInRangeCollection = await receiver.GetWholeStatisticsInTimeSpanAsync(key, timeSpan, cancellationToken);
 
-            var options = new InRangeQuery(key, DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
-            var todayStatistics = await receiver.GetStatisticsInRangeAsync(options, timeSpan, cancellationToken);
+            var options = new GetInRangeOptions(key, DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
+            var todayStatisticsCollection = await receiver.GetStatisticsInRangeAsync(options, timeSpan, cancellationToken);
 
-            var response = statistics.Where(x => !todayStatistics.Any(y => x.DateFrom > y.DateFrom || x.DateTo > y.DateFrom)).ToList();
-            response.AddRange(todayStatistics);
+            var mergedStatisticsCollection = MergeStatisticsCollections(statisticsInRangeCollection, todayStatisticsCollection);
 
-            return response.Select(mapper.Map<LoadAmountStatisticsResponse>);
+            return mergedStatisticsCollection.Select(mapper.Map<LoadAmountStatisticsResponse>);
+        }
+
+        private static IEnumerable<LoadAmountStatistics> MergeStatisticsCollections(
+            IEnumerable<LoadAmountStatistics> statisticsInRangeCollection, IEnumerable<LoadAmountStatistics> todayStatisticsCollection)
+        {
+            var mergedStatisticsCollection = statisticsInRangeCollection
+                .Where(x => !todayStatisticsCollection.Any(y => x.DateFrom > y.DateFrom || x.DateTo > y.DateFrom)).ToList();
+            mergedStatisticsCollection.AddRange(todayStatisticsCollection);
+
+            return mergedStatisticsCollection;
         }
     }
 }

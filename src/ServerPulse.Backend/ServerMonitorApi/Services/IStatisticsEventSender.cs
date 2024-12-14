@@ -1,4 +1,4 @@
-﻿using EventCommunication.Events;
+﻿using EventCommunication;
 
 namespace ServerMonitorApi.Services
 {

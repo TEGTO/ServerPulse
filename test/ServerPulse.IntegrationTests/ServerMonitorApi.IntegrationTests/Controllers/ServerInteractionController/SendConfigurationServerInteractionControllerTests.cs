@@ -1,4 +1,4 @@
-﻿using EventCommunication.Events;
+﻿using EventCommunication;
 using Moq;
 using System.Net;
 using System.Text;

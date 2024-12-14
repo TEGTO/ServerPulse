@@ -1,5 +1,4 @@
-﻿using EventCommunication.Events;
-using EventCommunication.Wrappers;
+﻿using EventCommunication;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using ServerMonitorApi.Command.SendConfiguration;
@@ -42,7 +41,7 @@ namespace ServerMonitorApi.Controllers
         }
 
         [HttpPost("custom")]
-        public async Task<IActionResult> SendCustomEvents(CustomEventWrapper[] customEventWrappers, CancellationToken cancellationToken)
+        public async Task<IActionResult> SendCustomEvents(CustomEventContainer[] customEventWrappers, CancellationToken cancellationToken)
         {
             await mediator.Send(new SendCustomEventsCommand(customEventWrappers), cancellationToken);
             return Ok();

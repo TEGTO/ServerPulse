@@ -45,7 +45,7 @@ namespace AnalyzerApi.Services.Receivers.Event
             return await messageConsumer.GetAmountTopicMessagesAsync(topic, timeoutInMilliseconds, cancellationToken);
         }
 
-        public async Task<IEnumerable<TWrapper>> GetCertainAmountOfEventsAsync(ReadCertainMessageNumber options, CancellationToken cancellationToken)
+        public async Task<IEnumerable<TWrapper>> GetCertainAmountOfEventsAsync(GetCertainMessageNumberOptions options, CancellationToken cancellationToken)
         {
             var topic = GetTopic(topicData.TopicOriginName, options.Key);
 
@@ -55,7 +55,7 @@ namespace AnalyzerApi.Services.Receivers.Event
             return ConvertToEventWrappers(responses);
         }
 
-        public async Task<IEnumerable<TWrapper>> GetEventsInRangeAsync(InRangeQuery options, CancellationToken cancellationToken)
+        public async Task<IEnumerable<TWrapper>> GetEventsInRangeAsync(GetInRangeOptions options, CancellationToken cancellationToken)
         {
             var topic = GetTopic(topicData.TopicOriginName, options.Key);
 

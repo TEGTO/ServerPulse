@@ -1,4 +1,4 @@
-﻿using EventCommunication.Events;
+﻿using EventCommunication;
 using MessageBus.Interfaces;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;

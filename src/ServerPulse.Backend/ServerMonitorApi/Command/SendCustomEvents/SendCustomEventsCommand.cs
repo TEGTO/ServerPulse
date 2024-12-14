@@ -1,7 +1,7 @@
-﻿using EventCommunication.Wrappers;
+﻿using EventCommunication;
 using MediatR;
 
 namespace ServerMonitorApi.Command.SendCustomEvents
 {
-    public record SendCustomEventsCommand(CustomEventWrapper[] Events) : IRequest<Unit>;
+    public record SendCustomEventsCommand(CustomEventContainer[] Events) : IRequest<Unit>;
 }

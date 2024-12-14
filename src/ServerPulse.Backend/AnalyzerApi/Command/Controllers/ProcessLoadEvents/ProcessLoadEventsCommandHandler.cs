@@ -1,7 +1,7 @@
 ﻿using AnalyzerApi.Infrastructure;
 using AnalyzerApi.Infrastructure.Models.Statistics;
 using AnalyzerApi.Services.Receivers.Statistics;
-using EventCommunication.Events;
+using EventCommunication;
 using MediatR;
 using MessageBus.Interfaces;
 using System.Text.Json;

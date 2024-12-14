@@ -1,5 +1,5 @@
 ﻿using AnalyzerApi.Infrastructure.Models.Statistics;
-using EventCommunication.Events;
+using EventCommunication;
 using System.Net;
 using System.Text;
 using System.Text.Json;

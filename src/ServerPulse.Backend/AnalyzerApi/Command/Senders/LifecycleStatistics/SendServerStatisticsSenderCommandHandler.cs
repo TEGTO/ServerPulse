@@ -28,10 +28,12 @@ namespace AnalyzerApi.Command.Senders.LifecycleStatistics
         public async Task<Unit> Handle(SendServerStatisticsSenderCommand command, CancellationToken cancellationToken)
         {
             var topic = serverStatisticsTopic + command.Key;
+
             await producer.ProduceAsync(topic, JsonSerializer.Serialize(command.Statistics), cancellationToken);
 
             var response = mapper.Map<ServerLifecycleStatisticsResponse>(command.Statistics);
             var serializedData = JsonSerializer.Serialize(response);
+
             await hubStatistics.Clients.Group(command.Key).ReceiveStatistics(command.Key, serializedData);
 
             return Unit.Value;

@@ -44,7 +44,7 @@ namespace AnalyzerApi.Services.Receivers.Statistics
             return ConvertToAmountStatistics(messagesPerDay, timeSpan);
         }
 
-        public async Task<IEnumerable<LoadAmountStatistics>> GetStatisticsInRangeAsync(InRangeQuery options, TimeSpan timeSpan, CancellationToken cancellationToken)
+        public async Task<IEnumerable<LoadAmountStatistics>> GetStatisticsInRangeAsync(GetInRangeOptions options, TimeSpan timeSpan, CancellationToken cancellationToken)
         {
             string topic = GetTopic(topicData.TopicOriginName, options.Key);
 

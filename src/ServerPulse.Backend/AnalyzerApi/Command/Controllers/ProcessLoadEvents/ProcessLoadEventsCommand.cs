@@ -1,4 +1,4 @@
-﻿using EventCommunication.Events;
+﻿using EventCommunication;
 using MediatR;
 
 namespace AnalyzerApi.Command.Controllers.ProcessLoadEvents

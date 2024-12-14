@@ -1,6 +1,6 @@
 ﻿using AnalyzerApi.Infrastructure.Dtos.Responses.Statistics;
 using AnalyzerApi.Infrastructure.Requests;
-using EventCommunication.Events;
+using EventCommunication;
 using System.Net;
 using System.Text;
 using System.Text.Json;

@@ -1,47 +1,44 @@
-﻿using AnalyzerApi.Services.Interfaces;
+﻿using AnalyzerApi.Command.Controllers.ProcessLoadEvents;
+using EventCommunication;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using ServerPulse.EventCommunication.Events;
 
 namespace AnalyzerApi.Controllers.Tests
 {
     [TestFixture]
     internal class EventProcessingControllerTests
     {
-        private Mock<IEventProcessor> mockEventProcessor;
+        private Mock<IMediator> mockMediator;
         private EventProcessingController controller;
 
         [SetUp]
         public void Setup()
         {
-            mockEventProcessor = new Mock<IEventProcessor>();
-
-            controller = new EventProcessingController(
-                mockEventProcessor.Object
-            );
+            mockMediator = new Mock<IMediator>();
+            controller = new EventProcessingController(mockMediator.Object);
         }
 
         [Test]
-        public async Task ProcessLoad_ValidRequests_CallProcessor()
+        public async Task ProcessLoadEvents_ValidEvents_ReturnsOk()
         {
             // Arrange
-            var request = new LoadEvent[] { new LoadEvent("key", "endpoint", "method", 200, TimeSpan.Zero, DateTime.MinValue) };
+            var events = new[]
+            {
+                new LoadEvent("key1", "/api/test", "GET", 200, TimeSpan.FromMilliseconds(150), DateTime.UtcNow),
+                new LoadEvent("key1", "/api/test", "POST", 201, TimeSpan.FromMilliseconds(300), DateTime.UtcNow)
+            };
+
+            mockMediator
+                .Setup(m => m.Send(It.IsAny<ProcessLoadEventsCommand>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Unit.Value);
+
             // Act
-            var result = await controller.ProcessLoad(request, CancellationToken.None);
+            var result = await controller.ProcessLoadEvents(events, CancellationToken.None);
+
             // Assert
             Assert.IsInstanceOf<OkResult>(result);
-            mockEventProcessor.Verify(x => x.ProcessEventsAsync(request, It.IsAny<CancellationToken>()), Times.Once);
-        }
-        [Test()]
-        public async Task ProcessLoad_InvalidRequests_BadRequest()
-        {
-            // Arrange
-            var request = new LoadEvent[] { };
-            // Act
-            var result = await controller.ProcessLoad(request, CancellationToken.None);
-            // Assert
-            Assert.IsInstanceOf<BadRequestResult>(result);
-            mockEventProcessor.Verify(x => x.ProcessEventsAsync(It.IsAny<LoadEvent[]>(), It.IsAny<CancellationToken>()), Times.Never);
+            mockMediator.Verify(m => m.Send(It.IsAny<ProcessLoadEventsCommand>(), It.IsAny<CancellationToken>()), Times.Once);
         }
     }
 }

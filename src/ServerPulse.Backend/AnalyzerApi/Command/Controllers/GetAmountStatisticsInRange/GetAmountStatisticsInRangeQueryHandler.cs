@@ -21,7 +21,7 @@ namespace AnalyzerApi.Command.Controllers.GetAmountStatisticsInRange
         {
             var request = command.Request;
 
-            var options = new InRangeQuery(request.Key, request.From.ToUniversalTime(), request.To.ToUniversalTime());
+            var options = new GetInRangeOptions(request.Key, request.From.ToUniversalTime(), request.To.ToUniversalTime());
             var statistics = await receiver.GetStatisticsInRangeAsync(options, request.TimeSpan, cancellationToken);
 
             return statistics.Select(mapper.Map<LoadAmountStatisticsResponse>);

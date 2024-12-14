@@ -22,7 +22,7 @@ namespace AnalyzerApi.Command.Controllers.GetLoadEventsInDataRange
         {
             var request = command.Request;
 
-            var options = new InRangeQuery(request.Key, request.From.ToUniversalTime(), request.To.ToUniversalTime());
+            var options = new GetInRangeOptions(request.Key, request.From.ToUniversalTime(), request.To.ToUniversalTime());
             var events = await receiver.GetEventsInRangeAsync(options, cancellationToken);
 
             return events.Select(mapper.Map<LoadEventResponse>);

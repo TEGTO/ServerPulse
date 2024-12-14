@@ -105,7 +105,7 @@ namespace AnalyzerApi.Services.Receivers.Statistics.Tests
             // Arrange
             var cancellationToken = CancellationToken.None;
             var timeSpan = TimeSpan.FromDays(1);
-            var options = new InRangeQuery("key", DateTime.UtcNow.AddDays(-2), DateTime.UtcNow);
+            var options = new GetInRangeOptions("key", DateTime.UtcNow.AddDays(-2), DateTime.UtcNow);
             var messagesPerDay = new Dictionary<DateTime, int>
             {
                 { DateTime.UtcNow.Date.AddDays(-2), 200 },

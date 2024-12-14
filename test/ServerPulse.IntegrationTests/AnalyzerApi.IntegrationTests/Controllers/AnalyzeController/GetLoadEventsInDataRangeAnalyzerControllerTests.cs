@@ -1,6 +1,6 @@
 ﻿using AnalyzerApi.Infrastructure.Models.Wrappers;
 using AnalyzerApi.Infrastructure.Requests;
-using EventCommunication.Events;
+using EventCommunication;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -27,7 +27,7 @@ namespace AnalyzerApi.IntegrationTests.Controllers.AnalyzeController
         public async Task GetLoadEventsInDataRange_ValidRequest_ReturnsOkWithEvents()
         {
             // Arrange
-            var request = new MessagesInRangeRangeRequest { Key = KEY, From = DateTime.MinValue, To = DateTime.MaxValue };
+            var request = new MessagesInRangeRequest { Key = KEY, From = DateTime.MinValue, To = DateTime.MaxValue };
 
             using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/analyze/daterange");
             using var httpRequest2 = new HttpRequestMessage(HttpMethod.Post, "/analyze/daterange");
@@ -66,7 +66,7 @@ namespace AnalyzerApi.IntegrationTests.Controllers.AnalyzeController
         public async Task GetLoadEventsInDataRange_InvalidRequest_ReturnsBadRequest()
         {
             // Arrange
-            var request = new MessagesInRangeRangeRequest { Key = "", From = DateTime.MinValue, To = DateTime.MinValue };
+            var request = new MessagesInRangeRequest { Key = "", From = DateTime.MinValue, To = DateTime.MinValue };
 
             using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/analyze/daterange");
             httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
@@ -82,7 +82,7 @@ namespace AnalyzerApi.IntegrationTests.Controllers.AnalyzeController
         public async Task GetLoadEventsInDataRange_InvalidKey_ReturnsOkWithEmptyArray()
         {
             // Arrange
-            var request = new MessagesInRangeRangeRequest { Key = "InvalidKey", From = DateTime.MinValue, To = DateTime.MaxValue };
+            var request = new MessagesInRangeRequest { Key = "InvalidKey", From = DateTime.MinValue, To = DateTime.MaxValue };
 
             using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/analyze/daterange");
             httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");

@@ -1,4 +1,4 @@
-﻿using EventCommunication.Events;
+﻿using EventCommunication;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Shared.Helpers;

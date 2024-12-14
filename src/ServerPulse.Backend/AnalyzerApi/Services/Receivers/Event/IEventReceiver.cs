@@ -7,8 +7,8 @@ namespace AnalyzerApi.Services.Receivers.Event
     {
         public IAsyncEnumerable<TEvent> GetEventStreamAsync(string key, CancellationToken cancellationToken);
         public Task<int> GetEventAmountByKeyAsync(string key, CancellationToken cancellationToken);
-        public Task<IEnumerable<TEvent>> GetCertainAmountOfEventsAsync(ReadCertainMessageNumber options, CancellationToken cancellationToken);
-        public Task<IEnumerable<TEvent>> GetEventsInRangeAsync(InRangeQuery options, CancellationToken cancellationToken);
+        public Task<IEnumerable<TEvent>> GetCertainAmountOfEventsAsync(GetCertainMessageNumberOptions options, CancellationToken cancellationToken);
+        public Task<IEnumerable<TEvent>> GetEventsInRangeAsync(GetInRangeOptions options, CancellationToken cancellationToken);
         public Task<TEvent?> GetLastEventByKeyAsync(string key, CancellationToken cancellationToken);
     }
 }

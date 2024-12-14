@@ -1,5 +1,5 @@
 using Confluent.Kafka;
-using EventCommunication.Events;
+using EventCommunication;
 using ExceptionHandling;
 using Logging;
 using MessageBus;

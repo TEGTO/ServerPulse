@@ -23,6 +23,7 @@ namespace AnalyzerApi.Command.Senders.LoadStatistics
         {
             var response = mapper.Map<ServerLoadStatisticsResponse>(command.Statistics);
             var serializedData = JsonSerializer.Serialize(response);
+
             await hubStatistics.Clients.Group(command.Key).ReceiveStatistics(command.Key, serializedData);
 
             return Unit.Value;

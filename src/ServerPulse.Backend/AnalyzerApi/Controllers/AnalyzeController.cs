@@ -23,12 +23,10 @@ namespace AnalyzerApi.Controllers
             this.mediator = mediator;
         }
 
-        #region Endpoints
-
         [OutputCache(PolicyName = "GetLoadEventsInDataRangePolicy")]
         [Route("daterange")]
         [HttpPost]
-        public async Task<ActionResult<IEnumerable<LoadEventResponse>>> GetLoadEventsInDataRange(MessagesInRangeRangeRequest request, CancellationToken cancellationToken)
+        public async Task<ActionResult<IEnumerable<LoadEventResponse>>> GetLoadEventsInDataRange(MessagesInRangeRequest request, CancellationToken cancellationToken)
         {
             var response = await mediator.Send(new GetLoadEventsInDataRangeQuery(request), cancellationToken);
             return Ok(response);
@@ -67,7 +65,5 @@ namespace AnalyzerApi.Controllers
             var response = await mediator.Send(new GetSomeCustomEventsQuery(request), cancellationToken);
             return Ok(response);
         }
-
-        #endregion
     }
 }

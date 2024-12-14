@@ -1,5 +1,5 @@
 ﻿using AnalyzerApi.Command.Controllers.ProcessLoadEvents;
-using EventCommunication.Events;
+using EventCommunication;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

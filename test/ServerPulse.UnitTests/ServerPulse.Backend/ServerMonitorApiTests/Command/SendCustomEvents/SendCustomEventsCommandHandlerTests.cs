@@ -1,5 +1,4 @@
-﻿using EventCommunication.Events;
-using EventCommunication.Wrappers;
+﻿using EventCommunication;
 using MessageBus.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Moq;
@@ -34,11 +33,11 @@ namespace ServerMonitorApi.Command.SendCustomEvents.Tests
             // Arrange
             var events = new[]
             {
-                new CustomEventWrapper(
+                new CustomEventContainer(
                     new CustomEvent("key1", "Event1", "Description1"),
                     "{\"Key\":\"key1\",\"Name\":\"Event1\",\"Description\":\"Description1\"}"
                 ),
-                new CustomEventWrapper(
+                new CustomEventContainer(
                     new CustomEvent("key1", "Event2", "Description2"),
                     "{\"Key\":\"key1\",\"Name\":\"Event2\",\"Description\":\"Description2\"}"
                 )
@@ -63,7 +62,7 @@ namespace ServerMonitorApi.Command.SendCustomEvents.Tests
         public void Handle_EmptyEventArray_ThrowsInvalidDataException()
         {
             // Arrange
-            var command = new SendCustomEventsCommand(Array.Empty<CustomEventWrapper>());
+            var command = new SendCustomEventsCommand(Array.Empty<CustomEventContainer>());
 
             // Act & Assert
             Assert.ThrowsAsync<InvalidDataException>(() => handler.Handle(command, cancellationToken));
@@ -91,8 +90,8 @@ namespace ServerMonitorApi.Command.SendCustomEvents.Tests
             // Arrange
             var events = new[]
             {
-                new CustomEventWrapper(new CustomEvent("key1", "Event1", "Description1"), "Serialized1"),
-                new CustomEventWrapper(new CustomEvent("key2", "Event2", "Description2"), "Serialized2")
+                new CustomEventContainer(new CustomEvent("key1", "Event1", "Description1"), "Serialized1"),
+                new CustomEventContainer(new CustomEvent("key2", "Event2", "Description2"), "Serialized2")
             };
 
             var command = new SendCustomEventsCommand(events);
@@ -111,7 +110,7 @@ namespace ServerMonitorApi.Command.SendCustomEvents.Tests
             // Arrange
             var events = new[]
             {
-                new CustomEventWrapper(new CustomEvent("key1", "Event1", "Description1"), "Serialized1")
+                new CustomEventContainer(new CustomEvent("key1", "Event1", "Description1"), "Serialized1")
             };
 
             slotKeyCheckerMock.Setup(s => s.CheckSlotKeyAsync("key1", cancellationToken)).ReturnsAsync(false);

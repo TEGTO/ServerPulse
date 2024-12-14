@@ -3,7 +3,7 @@ using AnalyzerApi.Infrastructure.Dtos.Responses.Statistics;
 using AnalyzerApi.Infrastructure.Models.Statistics;
 using AnalyzerApi.Infrastructure.Models.Wrappers;
 using AutoMapper;
-using EventCommunication.Events;
+using EventCommunication;
 
 namespace AuthenticationApi
 {
@@ -21,8 +21,8 @@ namespace AuthenticationApi
             CreateMap<LoadEventWrapper, LoadEventResponse>();
             CreateMap<CustomEventWrapper, CustomEventResponse>();
 
-            CreateMap<LoadMethodStatistics, LoadMethodStatisticsResponse>();
             CreateMap<BaseStatistics, BaseStatisticsResponse>();
+            CreateMap<LoadMethodStatistics, LoadMethodStatisticsResponse>();
             CreateMap<ServerLifecycleStatistics, ServerLifecycleStatisticsResponse>();
             CreateMap<ServerLoadStatistics, ServerLoadStatisticsResponse>();
             CreateMap<LoadAmountStatistics, LoadAmountStatisticsResponse>();

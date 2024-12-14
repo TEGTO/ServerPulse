@@ -1,5 +1,4 @@
-﻿using EventCommunication.Events;
-using EventCommunication.Wrappers;
+﻿using EventCommunication;
 using Moq;
 using System.Net;
 using System.Text;
@@ -18,8 +17,8 @@ namespace ServerMonitorApi.IntegrationTests.Controllers.ServerInteractionControl
 
             var customEventWrappers = new[]
             {
-                new CustomEventWrapper(ev1, JsonSerializer.Serialize(ev1)),
-                new CustomEventWrapper(ev2, JsonSerializer.Serialize(ev2))
+                new CustomEventContainer(ev1, JsonSerializer.Serialize(ev1)),
+                new CustomEventContainer(ev2, JsonSerializer.Serialize(ev2))
             };
 
             using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/serverinteraction/custom");
@@ -49,8 +48,8 @@ namespace ServerMonitorApi.IntegrationTests.Controllers.ServerInteractionControl
 
             var customEventWrappers = new[]
             {
-                new CustomEventWrapper(ev1, JsonSerializer.Serialize(ev1)),
-                new CustomEventWrapper(ev2, JsonSerializer.Serialize(ev2))
+                new CustomEventContainer(ev1, JsonSerializer.Serialize(ev1)),
+                new CustomEventContainer(ev2, JsonSerializer.Serialize(ev2))
             };
 
             using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/serverinteraction/custom");
@@ -79,7 +78,7 @@ namespace ServerMonitorApi.IntegrationTests.Controllers.ServerInteractionControl
 
             var customEventWrappers = new[]
             {
-               new CustomEventWrapper(ev1, JsonSerializer.Serialize(ev1))
+               new CustomEventContainer(ev1, JsonSerializer.Serialize(ev1))
             };
 
             using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/serverinteraction/custom");
@@ -108,7 +107,7 @@ namespace ServerMonitorApi.IntegrationTests.Controllers.ServerInteractionControl
             // Arrange
             var customEventWrappers = new[]
             {
-                new CustomEventWrapper(null!, null!)
+                new CustomEventContainer(null!, null!)
             };
 
             using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/serverinteraction/custom");
@@ -152,8 +151,8 @@ namespace ServerMonitorApi.IntegrationTests.Controllers.ServerInteractionControl
 
             var customEventWrappers = new[]
             {
-                new CustomEventWrapper(ev1, JsonSerializer.Serialize(ev1)),
-                new CustomEventWrapper(ev2, JsonSerializer.Serialize(ev2))
+                new CustomEventContainer(ev1, JsonSerializer.Serialize(ev1)),
+                new CustomEventContainer(ev2, JsonSerializer.Serialize(ev2))
             };
 
             using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/serverinteraction/custom");

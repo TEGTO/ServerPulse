@@ -1,4 +1,4 @@
-﻿using EventCommunication.Events;
+﻿using EventCommunication;
 using MessageBus.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Moq;

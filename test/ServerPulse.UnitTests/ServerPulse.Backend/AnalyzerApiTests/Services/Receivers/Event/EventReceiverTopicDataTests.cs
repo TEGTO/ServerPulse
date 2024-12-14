@@ -4,7 +4,7 @@ using AnalyzerApi.Infrastructure.Models;
 using AnalyzerApi.Infrastructure.Models.Wrappers;
 using AnalyzerApi.Services.SerializeStrategies;
 using Confluent.Kafka;
-using EventCommunication.Events;
+using EventCommunication;
 using MessageBus.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Moq;
@@ -131,7 +131,7 @@ namespace AnalyzerApi.Services.Receivers.Event.Tests
             // Arrange
             var cancellationToken = CancellationToken.None;
             var key = "test-key";
-            var options = new ReadCertainMessageNumber(key, 5, DateTime.UtcNow, true);
+            var options = new GetCertainMessageNumberOptions(key, 5, DateTime.UtcNow, true);
             var consumeResponses = new List<ConsumeResponse>
             {
                 new ConsumeResponse(JsonSerializer.Serialize(new MockEvent("")), DateTime.UtcNow),
@@ -160,7 +160,7 @@ namespace AnalyzerApi.Services.Receivers.Event.Tests
             // Arrange
             var cancellationToken = CancellationToken.None;
             var key = "test-key";
-            var options = new ReadCertainMessageNumber(key, 5, DateTime.UtcNow, true);
+            var options = new GetCertainMessageNumberOptions(key, 5, DateTime.UtcNow, true);
             var consumeResponses = new List<ConsumeResponse>
             {
                 new ConsumeResponse(JsonSerializer.Serialize(new MockEvent("")), DateTime.UtcNow),
@@ -188,7 +188,7 @@ namespace AnalyzerApi.Services.Receivers.Event.Tests
             // Arrange
             var cancellationToken = CancellationToken.None;
             var key = "test-key";
-            var options = new InRangeQuery(key, DateTime.UtcNow.AddHours(-1), DateTime.UtcNow);
+            var options = new GetInRangeOptions(key, DateTime.UtcNow.AddHours(-1), DateTime.UtcNow);
             var consumeResponses = new List<ConsumeResponse>
             {
                 new ConsumeResponse(JsonSerializer.Serialize(new MockEvent("")), DateTime.UtcNow),
@@ -216,7 +216,7 @@ namespace AnalyzerApi.Services.Receivers.Event.Tests
             // Arrange
             var cancellationToken = CancellationToken.None;
             var key = "test-key";
-            var options = new InRangeQuery(key, DateTime.UtcNow.AddHours(-1), DateTime.UtcNow);
+            var options = new GetInRangeOptions(key, DateTime.UtcNow.AddHours(-1), DateTime.UtcNow);
             var consumeResponses = new List<ConsumeResponse>
             {
                 new ConsumeResponse(JsonSerializer.Serialize(new MockEvent("")), DateTime.UtcNow),

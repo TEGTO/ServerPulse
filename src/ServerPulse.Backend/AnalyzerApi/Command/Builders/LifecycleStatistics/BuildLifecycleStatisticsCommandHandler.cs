@@ -53,11 +53,15 @@ namespace AnalyzerApi.Command.Builders.LifecycleStatistics
         {
             if (pulseEvent != null && configurationEvent != null)
             {
-                bool isEventInInterval = pulseEvent.CreationDateUTC >= DateTime.UtcNow.AddMilliseconds(-1 * configurationEvent.ServerKeepAliveInterval.TotalMilliseconds);
-                return pulseEvent.IsAlive && isEventInInterval;
+                var stayAliveThreshold = DateTime.UtcNow - configurationEvent.ServerKeepAliveInterval;
+
+                var isPulseWithinStayAliveInterval = pulseEvent.CreationDateUTC >= stayAliveThreshold;
+
+                return pulseEvent.IsAlive && isPulseWithinStayAliveInterval;
             }
             return false;
         }
+
         private static TimeSpan? CalculateServerUptime(ServerLifecycleStatistics? lastStatistics)
         {
             if (lastStatistics != null && lastStatistics.IsAlive)
@@ -68,11 +72,9 @@ namespace AnalyzerApi.Command.Builders.LifecycleStatistics
                 }
                 return lastStatistics.ServerUptime;
             }
-            else
-            {
-                return TimeSpan.Zero;
-            }
+            return TimeSpan.Zero;
         }
+
         private static TimeSpan? CalculateLastUptime(bool isAlive, ServerLifecycleStatistics? lastStatistics, TimeSpan? currentUptime)
         {
             if (isAlive)
@@ -90,10 +92,7 @@ namespace AnalyzerApi.Command.Builders.LifecycleStatistics
                     return lastStatistics.LastServerUptime;
                 }
             }
-            else
-            {
-                return null;
-            }
+            return null;
         }
     }
 }

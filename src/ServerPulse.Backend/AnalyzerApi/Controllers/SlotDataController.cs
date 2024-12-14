@@ -23,7 +23,6 @@ namespace AnalyzerApi.Controllers
         public async Task<ActionResult<SlotStatisticsResponse>> GetSlotStatistics(string key, CancellationToken cancellationToken)
         {
             var response = await mediator.Send(new GetSlotStatisticsQuery(key), cancellationToken);
-
             return Ok(response);
         }
     }

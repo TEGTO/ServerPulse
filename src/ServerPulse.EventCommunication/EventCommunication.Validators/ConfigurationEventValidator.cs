@@ -1,6 +1,4 @@
-﻿using EventCommunication.Events;
-
-namespace EventCommunication.Validators
+﻿namespace EventCommunication.Validators
 {
     public class ConfigurationEventValidator : BaseEventValidator<ConfigurationEvent>
     {

@@ -1,6 +1,6 @@
 ﻿using AnalyzerApi.Infrastructure.Models.Wrappers;
 using AutoMapper;
-using EventCommunication.Events;
+using EventCommunication;
 using MessageBus.Interfaces;
 using Moq;
 using System.Text.Json;

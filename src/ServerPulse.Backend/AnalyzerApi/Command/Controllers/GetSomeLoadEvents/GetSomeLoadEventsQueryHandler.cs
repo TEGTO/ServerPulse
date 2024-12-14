@@ -22,7 +22,7 @@ namespace AnalyzerApi.Command.Controllers.GetSomeLoadEvents
         {
             var request = command.Request;
 
-            var options = new ReadCertainMessageNumber(request.Key, request.NumberOfMessages, request.StartDate.ToUniversalTime(), request.ReadNew);
+            var options = new GetCertainMessageNumberOptions(request.Key, request.NumberOfMessages, request.StartDate.ToUniversalTime(), request.ReadNew);
             var events = await receiver.GetCertainAmountOfEventsAsync(options, cancellationToken);
 
             return events.Select(mapper.Map<LoadEventResponse>);

@@ -4,5 +4,5 @@ using MediatR;
 
 namespace AnalyzerApi.Command.Controllers.GetLoadEventsInDataRange
 {
-    public record GetLoadEventsInDataRangeQuery(MessagesInRangeRangeRequest Request) : IRequest<IEnumerable<LoadEventResponse>>;
+    public record GetLoadEventsInDataRangeQuery(MessagesInRangeRequest Request) : IRequest<IEnumerable<LoadEventResponse>>;
 }

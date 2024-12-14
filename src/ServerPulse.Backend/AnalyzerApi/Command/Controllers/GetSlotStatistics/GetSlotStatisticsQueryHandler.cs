@@ -38,7 +38,7 @@ namespace AnalyzerApi.Command.Controllers.GetSlotStatistics
         {
             var key = command.Key;
 
-            var options = new ReadCertainMessageNumber(key, maxLastEventAmount, DateTime.UtcNow, false);
+            var options = new GetCertainMessageNumberOptions(key, maxLastEventAmount, DateTime.UtcNow, false);
 
             var generalStatsTask = mediator.Send(new BuildLifecycleStatisticsCommand(key), cancellationToken);
             var loadStatsTask = mediator.Send(new BuildLoadStatisticsCommand(key), cancellationToken);

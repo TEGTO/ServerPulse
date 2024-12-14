@@ -1,4 +1,4 @@
-﻿using EventCommunication.Events;
+﻿using EventCommunication;
 using Shared.Helpers;
 using System.Text.Json;
 

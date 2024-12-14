@@ -1,5 +1,4 @@
-﻿using EventCommunication.Events;
-using EventCommunication.Wrappers;
+﻿using EventCommunication;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -87,8 +86,8 @@ namespace ServerMonitorApi.Controllers.Tests
             // Arrange
             var customEventWrappers = new[]
             {
-                new CustomEventWrapper(new CustomEvent("key1", "Event1", "Description1"), "Serialized1"),
-                new CustomEventWrapper(new CustomEvent("key1", "Event2", "Description2"), "Serialized2")
+                new CustomEventContainer(new CustomEvent("key1", "Event1", "Description1"), "Serialized1"),
+                new CustomEventContainer(new CustomEvent("key1", "Event2", "Description2"), "Serialized2")
             };
 
             mediatorMock.Setup(m => m.Send(It.IsAny<SendCustomEventsCommand>(), cancellationToken))

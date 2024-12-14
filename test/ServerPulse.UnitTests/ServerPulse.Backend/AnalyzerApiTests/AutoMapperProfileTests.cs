@@ -1,9 +1,11 @@
-﻿using AnalyzerApi.Domain.Dtos.Responses;
-using AnalyzerApi.Domain.Dtos.Wrappers;
-using AnalyzerApi.Domain.Models;
+﻿using AnalyzerApi.Infrastructure.Dtos.Responses.Events;
+using AnalyzerApi.Infrastructure.Dtos.Responses.Statistics;
+using AnalyzerApi.Infrastructure.Models.Statistics;
+using AnalyzerApi.Infrastructure.Models.Wrappers;
 using AuthenticationApi;
 using AutoMapper;
-using ServerPulse.EventCommunication.Events;
+using EventCommunication;
+using System.Globalization;
 
 namespace AnalyzerApi.Tests
 {
@@ -11,166 +13,148 @@ namespace AnalyzerApi.Tests
     internal class AutoMapperProfileTests
     {
         private IMapper mapper;
+        private MapperConfiguration configuration;
 
         [SetUp]
-        public void Setup()
+        public void SetUp()
         {
-            var config = new MapperConfiguration(cfg => cfg.AddProfile<AutoMapperProfile>());
-            mapper = config.CreateMapper();
+            configuration = new MapperConfiguration(cfg => cfg.AddProfile<AutoMapperProfile>());
+            mapper = configuration.CreateMapper();
+        }
+
+        [TestCase(typeof(ConfigurationEvent), typeof(ConfigurationEventWrapper), "testKey", "00:10:00")]
+        [TestCase(typeof(PulseEvent), typeof(PulseEventWrapper), "testKey", true)]
+        [TestCase(typeof(LoadEvent), typeof(LoadEventWrapper), "testKey", "/endpoint", "GET", 200, "00:00:10", "2024-01-01T00:00:00Z")]
+        [TestCase(typeof(CustomEvent), typeof(CustomEventWrapper), "testKey", "Custom Name", "Custom Description")]
+        public void Map_BaseEvent_To_Wrapper(Type sourceType, Type destinationType, params object[] constructorArgs)
+        {
+            // Arrange
+            for (int i = 0; i < constructorArgs.Length; i++)
+            {
+                if (constructorArgs[i] is string str)
+                {
+                    if (TimeSpan.TryParse(str, new CultureInfo("en-US"), out var timeSpan))
+                    {
+                        constructorArgs[i] = timeSpan;
+                    }
+                    else if (DateTime.TryParse(str, new CultureInfo("en-US"), out var dateTime))
+                    {
+                        constructorArgs[i] = dateTime;
+                    }
+                }
+            }
+
+            var source = Activator.CreateInstance(sourceType, constructorArgs);
+
+            // Act
+            var result = mapper.Map(source, sourceType, destinationType);
+
+            // Assert
+            Assert.IsInstanceOf(destinationType, result);
+        }
+
+        [TestCase(typeof(ConfigurationEventWrapper), typeof(ConfigurationEventResponse))]
+        [TestCase(typeof(PulseEventWrapper), typeof(PulseEventResponse))]
+        [TestCase(typeof(LoadEventWrapper), typeof(LoadEventResponse))]
+        [TestCase(typeof(CustomEventWrapper), typeof(CustomEventResponse))]
+        public void Map_EventWrapper_To_Response(Type sourceType, Type destinationType)
+        {
+            // Arrange
+            var source = Activator.CreateInstance(sourceType);
+            if (source is BaseEventWrapper baseWrapper)
+            {
+                baseWrapper.Id = Guid.NewGuid().ToString();
+                baseWrapper.Key = "testKey";
+                baseWrapper.CreationDateUTC = DateTime.UtcNow;
+            }
+
+            // Act
+            var result = mapper.Map(source, sourceType, destinationType);
+
+            // Assert
+            Assert.IsInstanceOf(destinationType, result);
+        }
+
+        [TestCase(typeof(LoadMethodStatistics), typeof(LoadMethodStatisticsResponse))]
+        [TestCase(typeof(ServerLifecycleStatistics), typeof(ServerLifecycleStatisticsResponse))]
+        [TestCase(typeof(ServerLoadStatistics), typeof(ServerLoadStatisticsResponse))]
+        [TestCase(typeof(LoadAmountStatistics), typeof(LoadAmountStatisticsResponse))]
+        [TestCase(typeof(ServerCustomStatistics), typeof(ServerCustomStatisticsResponse))]
+        public void Map_Statistics_To_StatisticsResponse(Type sourceType, Type destinationType)
+        {
+            // Arrange
+            var source = Activator.CreateInstance(sourceType);
+
+            // Act
+            var result = mapper.Map(source, sourceType, destinationType);
+
+            // Assert
+            Assert.IsInstanceOf(destinationType, result);
         }
 
         [Test]
-        public void AutoMapperProfile_ConfigurationEventMapping_MapsToConfigurationEventWrapper()
+        public void Map_ConfigurationEvent_To_ConfigurationEventWrapper_ValidData()
         {
             // Arrange
-            var configEvent = new ConfigurationEvent("TestKey", TimeSpan.FromMinutes(5));
+            var source = new ConfigurationEvent("testKey", TimeSpan.FromMinutes(30));
+
             // Act
-            var result = mapper.Map<ConfigurationEventWrapper>(configEvent);
+            var result = mapper.Map<ConfigurationEventWrapper>(source);
+
             // Assert
-            Assert.That(result.Key, Is.EqualTo(configEvent.Key));
-            Assert.That(result.ServerKeepAliveInterval, Is.EqualTo(configEvent.ServerKeepAliveInterval));
+            Assert.NotNull(result);
+            Assert.That(result.Key, Is.EqualTo(source.Key));
+            Assert.That(result.ServerKeepAliveInterval, Is.EqualTo(source.ServerKeepAliveInterval));
         }
+
         [Test]
-        public void AutoMapperProfile_PulseEventMapping_MapsToPulseEventWrapper()
+        public void Map_PulseEvent_To_PulseEventWrapper_ValidData()
         {
             // Arrange
-            var pulseEvent = new PulseEvent("TestKey", true);
+            var source = new PulseEvent("testKey", true);
+
             // Act
-            var result = mapper.Map<PulseEventWrapper>(pulseEvent);
+            var result = mapper.Map<PulseEventWrapper>(source);
+
             // Assert
-            Assert.That(result.Key, Is.EqualTo(pulseEvent.Key));
-            Assert.That(result.IsAlive, Is.EqualTo(pulseEvent.IsAlive));
+            Assert.NotNull(result);
+            Assert.That(result.Key, Is.EqualTo(source.Key));
+            Assert.That(result.IsAlive, Is.EqualTo(source.IsAlive));
         }
+
         [Test]
-        public void AutoMapperProfile_LoadEventMapping_MapsToLoadEventWrapper()
+        public void Map_LoadEvent_To_LoadEventWrapper_ValidData()
         {
             // Arrange
-            var loadEvent = new LoadEvent("TestKey", "Endpoint", "GET", 200, TimeSpan.FromSeconds(1), DateTime.UtcNow);
+            var source = new LoadEvent("testKey", "/api/test", "GET", 200, TimeSpan.FromMilliseconds(150), DateTime.UtcNow);
+
             // Act
-            var result = mapper.Map<LoadEventWrapper>(loadEvent);
+            var result = mapper.Map<LoadEventWrapper>(source);
+
             // Assert
-            Assert.That(result.Key, Is.EqualTo(loadEvent.Key));
-            Assert.That(result.Endpoint, Is.EqualTo(loadEvent.Endpoint));
-            Assert.That(result.Method, Is.EqualTo(loadEvent.Method));
-            Assert.That(result.StatusCode, Is.EqualTo(loadEvent.StatusCode));
-            Assert.That(result.Duration, Is.EqualTo(loadEvent.Duration));
-            Assert.That(result.TimestampUTC, Is.EqualTo(loadEvent.TimestampUTC));
+            Assert.NotNull(result);
+            Assert.That(result.Key, Is.EqualTo(source.Key));
+            Assert.That(result.Endpoint, Is.EqualTo(source.Endpoint));
+            Assert.That(result.Method, Is.EqualTo(source.Method));
+            Assert.That(result.StatusCode, Is.EqualTo(source.StatusCode));
+            Assert.That(result.Duration, Is.EqualTo(source.Duration));
+            Assert.That(result.TimestampUTC, Is.EqualTo(source.TimestampUTC));
         }
+
         [Test]
-        public void AutoMapperProfile_LoadMethodStatisticsMapping_MapsToLoadMethodStatisticsResponse()
+        public void Map_CustomEvent_To_CustomEventWrapper_ValidData()
         {
             // Arrange
-            var methodStats = new LoadMethodStatistics
-            {
-                GetAmount = 5,
-                PostAmount = 3,
-                PutAmount = 2,
-                PatchAmount = 1,
-                DeleteAmount = 0
-            };
+            var source = new CustomEvent("testKey", "CustomName", "CustomDescription");
+
             // Act
-            var result = mapper.Map<LoadMethodStatisticsResponse>(methodStats);
+            var result = mapper.Map<CustomEventWrapper>(source);
+
             // Assert
-            Assert.That(result.GetAmount, Is.EqualTo(methodStats.GetAmount));
-            Assert.That(result.PostAmount, Is.EqualTo(methodStats.PostAmount));
-            Assert.That(result.PutAmount, Is.EqualTo(methodStats.PutAmount));
-            Assert.That(result.PatchAmount, Is.EqualTo(methodStats.PatchAmount));
-            Assert.That(result.DeleteAmount, Is.EqualTo(methodStats.DeleteAmount));
-        }
-        [Test]
-        public void AutoMapperProfile_ServerStatisticsMapping_MapsToServerStatisticsResponse()
-        {
-            // Arrange
-            var serverStats = new ServerStatistics
-            {
-                IsAlive = true,
-                DataExists = true,
-                ServerLastStartDateTimeUTC = DateTime.UtcNow.AddHours(-2),
-                ServerUptime = TimeSpan.FromHours(2),
-                LastServerUptime = TimeSpan.FromHours(1),
-                LastPulseDateTimeUTC = DateTime.UtcNow.AddMinutes(-10)
-            };
-            // Act
-            var result = mapper.Map<ServerStatisticsResponse>(serverStats);
-            // Assert
-            Assert.That(result.IsAlive, Is.EqualTo(serverStats.IsAlive));
-            Assert.That(result.DataExists, Is.EqualTo(serverStats.DataExists));
-            Assert.That(result.ServerLastStartDateTimeUTC, Is.EqualTo(serverStats.ServerLastStartDateTimeUTC));
-            Assert.That(result.ServerUptime, Is.EqualTo(serverStats.ServerUptime));
-            Assert.That(result.LastServerUptime, Is.EqualTo(serverStats.LastServerUptime));
-            Assert.That(result.LastPulseDateTimeUTC, Is.EqualTo(serverStats.LastPulseDateTimeUTC));
-        }
-        [Test]
-        public void AutoMapperProfile_LoadAmountStatisticsMapping_MapsToLoadAmountStatisticsResponse()
-        {
-            // Arrange
-            var loadAmountStats = new LoadAmountStatistics
-            {
-                AmountOfEvents = 100,
-                DateFrom = DateTime.UtcNow.AddDays(-1),
-                DateTo = DateTime.UtcNow
-            };
-            // Act
-            var result = mapper.Map<LoadAmountStatisticsResponse>(loadAmountStats);
-            // Assert
-            Assert.That(result.AmountOfEvents, Is.EqualTo(loadAmountStats.AmountOfEvents));
-            Assert.That(result.DateFrom, Is.EqualTo(loadAmountStats.DateFrom));
-            Assert.That(result.DateTo, Is.EqualTo(loadAmountStats.DateTo));
-        }
-        [Test]
-        public void AutoMapperProfile_CustomEventMapping_MapsToCustomEventWrapper()
-        {
-            // Arrange
-            var customEvent = new CustomEvent("TestKey", "TestName", "TestDescription");
-            // Act
-            var result = mapper.Map<CustomEventWrapper>(customEvent);
-            // Assert
-            Assert.That(result.Key, Is.EqualTo(customEvent.Key));
-            Assert.That(result.Name, Is.EqualTo(customEvent.Name));
-            Assert.That(result.Description, Is.EqualTo(customEvent.Description));
-        }
-        [Test]
-        public void AutoMapperProfile_CustomEventStatisticsMapping_MapsToCustomEventStatisticsResponse()
-        {
-            // Arrange
-            var customEventStats = new ServerCustomStatistics
-            {
-                LastEvent = new CustomEventWrapper
-                {
-                    Id = "123",
-                    Key = "TestKey",
-                    Name = "TestName",
-                    Description = "TestDescription"
-                }
-            };
-            // Act
-            var result = mapper.Map<CustomEventStatisticsResponse>(customEventStats);
-            // Assert
-            Assert.NotNull(result.LastEvent);
-            Assert.That(result.LastEvent.Key, Is.EqualTo(customEventStats.LastEvent.Key));
-            Assert.That(result.LastEvent.Name, Is.EqualTo(customEventStats.LastEvent.Name));
-            Assert.That(result.LastEvent.Description, Is.EqualTo(customEventStats.LastEvent.Description));
-        }
-        [Test]
-        public void AutoMapperProfile_SlotDataMapping_MapsToSlotDataResponse()
-        {
-            // Arrange
-            var slotData = new SlotData
-            {
-                GeneralStatistics = new ServerStatistics { IsAlive = true },
-                LoadStatistics = new ServerLoadStatistics { AmountOfEvents = 5 },
-                CustomEventStatistics = new ServerCustomStatistics(),
-                LastLoadEvents = new List<LoadEventWrapper> { new LoadEventWrapper() },
-                LastCustomEvents = new List<CustomEventWrapper> { new CustomEventWrapper() }
-            };
-            // Act
-            var result = mapper.Map<SlotDataResponse>(slotData);
-            // Assert
-            Assert.NotNull(result.GeneralStatistics);
-            Assert.NotNull(result.LoadStatistics);
-            Assert.NotNull(result.CustomEventStatistics);
-            Assert.IsNotEmpty(result.LastLoadEvents);
-            Assert.IsNotEmpty(result.LastCustomEvents);
+            Assert.NotNull(result);
+            Assert.That(result.Key, Is.EqualTo(source.Key));
+            Assert.That(result.Name, Is.EqualTo(source.Name));
+            Assert.That(result.Description, Is.EqualTo(source.Description));
         }
     }
 }
