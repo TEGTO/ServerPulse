@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AuthenticationApi.Migrations
 {
     [DbContext(typeof(AuthIdentityDbContext))]
-    [Migration("20241202145135_InitialMigration")]
+    [Migration("20241214170725_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />

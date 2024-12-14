@@ -12,7 +12,7 @@ using ServerSlotApi.Infrastructure.Data;
 namespace ServerSlotApi.Migrations
 {
     [DbContext(typeof(ServerSlotDbContext))]
-    [Migration("20241206174126_InitialMigration")]
+    [Migration("20241214170822_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />

@@ -2,6 +2,7 @@ using ApiGateway;
 using ApiGateway.Middlewares;
 using Authentication;
 using ExceptionHandling;
+using Logging;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Provider.Polly;
@@ -9,6 +10,8 @@ using Shared;
 using Shared.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.AddLogging();
 
 #region Cors
 
