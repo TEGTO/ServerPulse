@@ -30,19 +30,17 @@ namespace AuthenticationApi.Command.Tests
             var validPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "valid-user-id") }));
             var validRequest = new UserUpdateDataRequest
             {
-                OldEmail = "old@example.com",
-                NewEmail = "new@example.com",
+                Email = "new@example.com",
                 OldPassword = "oldpass",
-                NewPassword = "newpass"
+                Password = "newpass"
             };
 
             var validUpdateModel = new UserUpdateModel
             {
                 UserName = "newuser",
-                OldEmail = "old@example.com",
-                NewEmail = "new@example.com",
+                Email = "new@example.com",
                 OldPassword = "oldpass",
-                NewPassword = "newpass"
+                Password = "newpass"
             };
 
             var validUser = new User { Id = "valid-user-id", UserName = "olduser", Email = "old@example.com" };
@@ -58,10 +56,9 @@ namespace AuthenticationApi.Command.Tests
             var invalidPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "invalid-user-id") }));
             var invalidRequest = new UserUpdateDataRequest
             {
-                OldEmail = "invalid@example.com",
-                NewEmail = "invalidnew@example.com",
+                Email = "invalidnew@example.com",
                 OldPassword = "wrongpass",
-                NewPassword = "invalidnewpass"
+                Password = "invalidnewpass"
             };
 
             yield return new TestCaseData(
@@ -69,10 +66,9 @@ namespace AuthenticationApi.Command.Tests
                 new UserUpdateModel()
                 {
                     UserName = "notfounduser",
-                    OldEmail = "old@example.com",
-                    NewEmail = "new@example.com",
+                    Email = "new@example.com",
                     OldPassword = "oldpass",
-                    NewPassword = "newpass"
+                    Password = "newpass"
                 },
                 null,
                 null,

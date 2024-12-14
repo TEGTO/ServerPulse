@@ -35,7 +35,6 @@ namespace AuthenticationApi.Command.LoginUser
             {
                 AuthToken = tokenDto,
                 Email = user.Email,
-                UserName = user.UserName,
             };
         }
     }

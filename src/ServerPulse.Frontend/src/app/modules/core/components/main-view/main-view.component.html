@@ -1,9 +1,9 @@
 <ng-container *ngIf="isAuthenticated$ | async; else unauthenticatedView">
     <div class="root">
         <header class="root__header">
-            <nav class="bg-white dark:bg-gray-900 w-full border-b border-gray-200 dark:border-gray-600">
+            <nav class="w-full shadow-md bg-zinc-50/90">
                 <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-                    <a href="" class="flex items-center space-x-3 rtl:space-x-reverse">
+                    <a routerLink="" class="text-gray-800 font-semibold text-4xl flex gap-1 items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" height="40px" viewBox="0 -960 960 960" width="40px"
                             fill="#EA3323">
                             <path
@@ -13,7 +13,8 @@
                             Server Pulse
                         </span>
                     </a>
-                    <div class="root__toolbar-buttons flex gap-1">
+
+                    <div class="flex gap-2">
                         <a mat-icon-button [href]="projectUrl">
                             <div style="transform: scale(1.2);">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -25,7 +26,7 @@
                         <a mat-icon-button>
                             <span class="icon__material-icons material-icons">import_contacts</span>
                         </a>
-                        <button mat-icon-button (click)="openLoginMenu()">
+                        <button mat-icon-button (click)="startLogin()">
                             <span class="icon__material-icons material-icons">person</span>
                         </button>
                     </div>
@@ -40,5 +41,5 @@
 </ng-container>
 
 <ng-template #unauthenticatedView>
-    <auth-unauthenticated></auth-unauthenticated>
+    <app-unauthenticated></app-unauthenticated>
 </ng-template>

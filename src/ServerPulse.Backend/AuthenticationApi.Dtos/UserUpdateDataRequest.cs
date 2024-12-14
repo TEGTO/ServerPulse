@@ -2,9 +2,8 @@
 {
     public class UserUpdateDataRequest
     {
-        public string OldEmail { get; set; } = string.Empty;
-        public string? NewEmail { get; set; }
-        public string OldPassword { get; set; } = string.Empty;
-        public string? NewPassword { get; set; }
+        public string Email { get; set; } = string.Empty;
+        public string? OldPassword { get; set; }
+        public string? Password { get; set; }
     }
 }

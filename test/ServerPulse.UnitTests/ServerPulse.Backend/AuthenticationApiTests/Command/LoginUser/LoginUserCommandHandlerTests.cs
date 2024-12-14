@@ -26,14 +26,13 @@ namespace AuthenticationApi.Command.LoginUser.Tests
 
         private static IEnumerable<TestCaseData> LoginUserTestCases()
         {
-            var validUser = new User { UserName = "validuser", Email = "validuser@example.com" };
+            var validUser = new User { Email = "validuser@example.com" };
             var validRequest = new UserAuthenticationRequest { Login = "validuser", Password = "validpassword" };
             var validToken = new AuthToken { AccessToken = "valid_token", RefreshToken = "valid_refresh_token" };
             var validResponse = new UserAuthenticationResponse
             {
                 AuthToken = validToken,
                 Email = validUser.Email,
-                UserName = validUser.UserName
             };
 
             yield return new TestCaseData(
@@ -96,7 +95,6 @@ namespace AuthenticationApi.Command.LoginUser.Tests
 
                 Assert.That(result.AuthToken, Is.EqualTo(expectedResponse.AuthToken));
                 Assert.That(result.Email, Is.EqualTo(expectedResponse.Email));
-                Assert.That(result.UserName, Is.EqualTo(expectedResponse.UserName));
 
                 mockUserService.Verify(x => x.GetUserByLoginAsync(request.Login, It.IsAny<CancellationToken>()), Times.Once);
                 mockAuthService.Verify(x => x.LoginUserAsync(It.IsAny<LoginUserModel>(), It.IsAny<CancellationToken>()), Times.Once);

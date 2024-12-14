@@ -98,20 +98,18 @@ namespace AuthenticationApi.Tests
             //Arrange
             var request = new UserUpdateDataRequest
             {
-                OldEmail = "old@example.com",
-                NewEmail = "new@example.com",
+                Email = "new@example.com",
                 OldPassword = "OldPassword123",
-                NewPassword = "NewPassword123"
+                Password = "NewPassword123"
             };
 
             //Act
             var result = mapper.Map<UserUpdateModel>(request);
 
             //Assert
-            Assert.That(result.OldEmail, Is.EqualTo(request.OldEmail));
-            Assert.That(result.NewEmail, Is.EqualTo(request.NewEmail));
+            Assert.That(result.Email, Is.EqualTo(request.Email));
             Assert.That(result.OldPassword, Is.EqualTo(request.OldPassword));
-            Assert.That(result.NewPassword, Is.EqualTo(request.NewPassword));
+            Assert.That(result.Password, Is.EqualTo(request.Password));
         }
     }
 }

@@ -1,80 +1,76 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { catchError, of, Subject, switchMap, takeUntil, tap } from 'rxjs';
-import { AuthenticationService } from '../..';
-import { SnackbarManager, UserUpdateDataRequest } from '../../../shared';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
+import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
+import { Store } from '@ngrx/store';
+import { Subject, takeUntil } from 'rxjs';
+import { changePasswordValidator, logOutUser, selectAuthData, updateUserData, UserUpdateRequest } from '../..';
+import { noSpaces, notEmptyString, ValidationMessage } from '../../../shared';
 
 @Component({
   selector: 'app-authenticated',
   templateUrl: './authenticated.component.html',
-  styleUrl: './authenticated.component.scss'
+  styleUrl: './authenticated.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AuthenticatedComponent implements OnInit, OnDestroy {
-  hideNewPassword: boolean = true;
-  userEmail: string = "";
+  hideNewPassword = true;
   formGroup: FormGroup = null!;
-  private destroy$ = new Subject<void>();
+  private readonly destroy$ = new Subject<void>();
 
-  get nameInput() { return this.formGroup.get('userName')!; }
   get emailInput() { return this.formGroup.get('email')!; }
-  get oldPassword() { return this.formGroup.get('oldPassword')!; }
-  get newPassword() { return this.formGroup.get('newPassword')!; }
+  get oldPasswordInput() { return this.formGroup.get('oldPassword')!; }
+  get passwordInput() { return this.formGroup.get('password')!; }
 
   constructor(
-    private readonly authService: AuthenticationService,
-    private readonly snackbarManager: SnackbarManager
+    private readonly store: Store,
+    private readonly validateInput: ValidationMessage
   ) { }
 
   ngOnInit(): void {
-    this.authService.getUserData()
+    this.store.select(selectAuthData)
       .pipe(takeUntil(this.destroy$))
       .subscribe(data => {
-        this.userEmail = data.email;
         this.formGroup = new FormGroup(
           {
-            userName: new FormControl(data.userName, [Validators.required, Validators.maxLength(256)]),
-            email: new FormControl(data.email, [Validators.email, Validators.required, Validators.maxLength(256)]),
-            oldPassword: new FormControl('', [Validators.required, Validators.maxLength(256)]),
-            newPassword: new FormControl('', [Validators.minLength(8), Validators.maxLength(256)])
+            email: new FormControl(data.email, [Validators.required, notEmptyString, noSpaces, Validators.email, Validators.maxLength(256)]),
+            oldPassword: new FormControl('', [Validators.required, notEmptyString, noSpaces, Validators.maxLength(256)]),
+            password: new FormControl('', [noSpaces, changePasswordValidator, Validators.maxLength(256)])
           });
       })
   }
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  logOutUser() {
-    this.authService.logOutUser();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  validateInputField(input: AbstractControl<any, any>) {
+    return this.validateInput.getValidationMessage(input);
   }
+
+  hidePasswordOnKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.hideNewPassword = !this.hideNewPassword;
+    }
+  }
+
   updateUser() {
     if (this.formGroup.valid) {
-      const userData: UserUpdateDataRequest = {
-        userName: this.formGroup.value.userName,
-        oldEmail: this.userEmail,
-        newEmail: this.formGroup.value.email,
-        oldPassword: this.formGroup.value.oldPassword,
-        newPassword: this.formGroup.value.newPassword,
+      const formValues = { ...this.formGroup.value };
+      const req: UserUpdateRequest = {
+        email: formValues.email,
+        oldPassword: formValues.oldPassword,
+        password: formValues.password,
       };
-
-      this.authService.updateUser(userData).pipe(
-        takeUntil(this.destroy$),
-        tap(isSuccess => {
-          if (isSuccess) {
-            this.snackbarManager.openInfoSnackbar("✔️ The update is successful!", 5);
-          }
-        }),
-        switchMap(() => this.authService.getUserErrors()),
-        tap(errors => {
-          if (errors) {
-            this.snackbarManager.openErrorSnackbar(errors.split("\n"));
-          }
-        }),
-        catchError(err => {
-          this.snackbarManager.openErrorSnackbar(["An error occurred while updating."]);
-          return of(null);
-        })
-      ).subscribe();
+      this.store.dispatch(updateUserData({ req: req }));
     }
+    else {
+      this.formGroup.markAllAsTouched();
+    }
+  }
+
+  logOutUser() {
+    this.store.dispatch(logOutUser());
   }
 }

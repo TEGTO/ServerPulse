@@ -41,7 +41,6 @@ namespace AuthenticationApi.Command.RegisterUser
             {
                 AuthToken = tokenDto,
                 Email = user.Email,
-                UserName = user.UserName
             };
         }
     }

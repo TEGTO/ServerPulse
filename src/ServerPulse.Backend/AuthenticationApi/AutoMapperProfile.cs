@@ -18,7 +18,8 @@ namespace AuthenticationApi
             CreateMap<AuthToken, AccessTokenData>();
 
             CreateMap<UserUpdateDataRequest, UserUpdateModel>()
-                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.NewEmail));
+           .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email))
+           .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
         }
     }
 }

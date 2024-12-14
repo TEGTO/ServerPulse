@@ -77,7 +77,7 @@ namespace AuthenticationApi.Controllers.Tests
         public async Task Update_SendsCommandAndReturnsOk()
         {
             // Arrange
-            var updateRequest = new UserUpdateDataRequest { NewEmail = "newemail@example.com", OldPassword = "oldpass", NewPassword = "newpass" };
+            var updateRequest = new UserUpdateDataRequest { Email = "newemail@example.com", OldPassword = "oldpass", Password = "newpass" };
 
             // Act
             var result = await authController.Update(updateRequest, CancellationToken.None);

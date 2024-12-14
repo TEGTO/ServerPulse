@@ -8,11 +8,15 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
-import { AuthInterceptor, AuthenticatedComponent, AuthenticationControllerService, AuthenticationDialogManager, AuthenticationDialogManagerService, AuthenticationService, LoginComponent, RegisterComponent, RegistrationEffects, SignInEffects, authReducer, registrationReducer, userDataReducer } from '.';
-import { UnauthenticatedComponent } from './components/unauthenticated/unauthenticated.component';
+import { AuthEffects, AuthenticatedComponent, AuthenticationDialogManager, AuthenticationDialogManagerService, AuthInterceptor, authReducer, LoginComponent, RegisterComponent, UnauthenticatedComponent } from '.';
 
 @NgModule({
-  declarations: [LoginComponent, RegisterComponent, AuthenticatedComponent, UnauthenticatedComponent],
+  declarations: [
+    LoginComponent,
+    AuthenticatedComponent,
+    RegisterComponent,
+    UnauthenticatedComponent
+  ],
   imports: [
     CommonModule,
     MatDialogModule,
@@ -21,19 +25,16 @@ import { UnauthenticatedComponent } from './components/unauthenticated/unauthent
     MatFormFieldModule,
     ReactiveFormsModule,
     MatButtonModule,
-    StoreModule.forFeature('registration', registrationReducer),
     StoreModule.forFeature('authentication', authReducer),
-    StoreModule.forFeature('userdata', userDataReducer),
-    EffectsModule.forFeature([RegistrationEffects, SignInEffects]),
+    EffectsModule.forFeature([AuthEffects]),
   ],
   providers: [
     provideHttpClient(
       withInterceptorsFromDi(),
     ),
-    { provide: AuthenticationDialogManager, useClass: AuthenticationDialogManagerService },
-    { provide: AuthenticationService, useClass: AuthenticationControllerService },
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+    { provide: AuthenticationDialogManager, useClass: AuthenticationDialogManagerService },
   ],
-  exports: [LoginComponent, UnauthenticatedComponent],
+  exports: [UnauthenticatedComponent]
 })
 export class AuthenticationModule { }

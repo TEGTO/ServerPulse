@@ -6,47 +6,29 @@
 <mat-dialog-content>
     <form id="updateForm" [formGroup]="formGroup" class="content__form space-y-1">
         <mat-form-field>
-            <mat-label>Name</mat-label>
-            <input type="text" autocomplete="user-name" matInput formControlName="userName" placeholder="John"
+            <mat-label>Email</mat-label>
+            <input type="email" autocomplete="email" matInput formControlName="email" placeholder="example@example.com"
                 maxlength="256">
-            @if (nameInput.hasError('required')) {
-            <mat-error>Name is <strong>required</strong></mat-error>
-            }
+            <mat-error
+                *ngIf="validateInputField(emailInput).hasError">{{validateInputField(emailInput).message}}</mat-error>
         </mat-form-field>
         <mat-form-field>
-            <mat-label>Email</mat-label>
-            <input type="email" autocomplete="user-email" matInput formControlName="email"
-                placeholder="example@example.com" maxlength="256">
-            @if (emailInput.hasError('email') && !emailInput.hasError('required')) {
-            <mat-error>Please enter a valid email address</mat-error>
-            }
-            @if (emailInput.hasError('required')) {
-            <mat-error>Email is <strong>required</strong></mat-error>
-            }
+            <mat-label>Old Password</mat-label>
+            <input [type]="'password'" autocomplete="off" matInput formControlName="oldPassword" maxlength="256">
+            <mat-error
+                *ngIf="validateInputField(oldPasswordInput).hasError">{{validateInputField(oldPasswordInput).message}}</mat-error>
         </mat-form-field>
-        <div class="flex gap-2">
-            <mat-form-field>
-                <mat-label>Old Password</mat-label>
-                <input [type]="'password'" autocomplete="off" matInput formControlName="oldPassword" maxlength="256">
-                @if (oldPassword.hasError('required')) {
-                <mat-error>Old Password is <strong>required</strong></mat-error>
-                }
-            </mat-form-field>
-            <mat-form-field>
-                <mat-label>New Password</mat-label>
-                <input [type]="hideNewPassword ? 'password' : 'text'" autocomplete="off" matInput
-                    formControlName="newPassword" maxlength="256">
-                <span class="material-icons me-2" matSuffix (click)="hideNewPassword = !hideNewPassword">
-                    {{hideNewPassword
-                    ? 'visibility_off'
-                    : 'visibility'
-                    }}
-                </span>
-                @if (newPassword.hasError('minlength')) {
-                <mat-error>Password must be <strong>at least 8</strong> characters</mat-error>
-                }
-            </mat-form-field>
-        </div>
+        <mat-form-field>
+            <mat-label>New Password</mat-label>
+            <input [type]="hideNewPassword ? 'password' : 'text'" autocomplete="off" matInput formControlName="password"
+                maxlength="256">
+            <button class="material-icons me-2" matSuffix tabindex="0" (click)="hideNewPassword = !hideNewPassword"
+                (keydown)="hidePasswordOnKeydown($event)">
+                {{ hideNewPassword ? 'visibility_off' : 'visibility' }}
+            </button>
+            <mat-error
+                *ngIf="validateInputField(passwordInput).hasError">{{validateInputField(passwordInput).message}}</mat-error>
+        </mat-form-field>
     </form>
 </mat-dialog-content>
 <mat-dialog-actions class="actions__bottom-container">

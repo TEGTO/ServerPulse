@@ -105,19 +105,17 @@ namespace AuthenticationApi.Services.Tests
             var validUpdate = new UserUpdateModel
             {
                 UserName = "newuser",
-                OldEmail = "test@example.com",
-                NewEmail = "newemail@example.com",
+                Email = "newemail@example.com",
                 OldPassword = "oldpass",
-                NewPassword = "newpass"
+                Password = "newpass"
             };
 
             var invalidUpdate = new UserUpdateModel
             {
                 UserName = "newuser",
-                OldEmail = "test@example.com",
-                NewEmail = "newemail@example.com",
+                Email = "newemail@example.com",
                 OldPassword = "oldpass",
-                NewPassword = "weakpass"
+                Password = "weakpass"
             };
 
             yield return new TestCaseData(
@@ -150,15 +148,15 @@ namespace AuthenticationApi.Services.Tests
             if (isValid)
             {
                 userManagerMock.Setup(x => x.SetUserNameAsync(user, updateModel.UserName)).ReturnsAsync(IdentityResult.Success);
-                userManagerMock.Setup(x => x.GenerateChangeEmailTokenAsync(user, updateModel.NewEmail!)).ReturnsAsync("emailToken");
-                userManagerMock.Setup(x => x.ChangeEmailAsync(user, updateModel.NewEmail!, "emailToken")).ReturnsAsync(IdentityResult.Success);
+                userManagerMock.Setup(x => x.GenerateChangeEmailTokenAsync(user, updateModel.Email)).ReturnsAsync("emailToken");
+                userManagerMock.Setup(x => x.ChangeEmailAsync(user, updateModel.Email, "emailToken")).ReturnsAsync(IdentityResult.Success);
 
-                userManagerMock.Setup(x => x.ChangePasswordAsync(user, updateModel.OldPassword, updateModel.NewPassword!))
+                userManagerMock.Setup(x => x.ChangePasswordAsync(user, updateModel.OldPassword!, updateModel.Password!))
                     .ReturnsAsync(IdentityResult.Success);
 
                 userManagerMock.Setup(x => x.GeneratePasswordResetTokenAsync(user))
                     .ReturnsAsync("passwordResetToken");
-                userManagerMock.Setup(x => x.ResetPasswordAsync(user, "passwordResetToken", updateModel.NewPassword!))
+                userManagerMock.Setup(x => x.ResetPasswordAsync(user, "passwordResetToken", updateModel.Password!))
                     .ReturnsAsync(IdentityResult.Success);
             }
             else
@@ -166,15 +164,15 @@ namespace AuthenticationApi.Services.Tests
                 var identityErrors = new List<IdentityError> { new IdentityError { Description = "Password too weak" } };
 
                 userManagerMock.Setup(x => x.SetUserNameAsync(user, updateModel.UserName)).ReturnsAsync(IdentityResult.Success);
-                userManagerMock.Setup(x => x.GenerateChangeEmailTokenAsync(user, updateModel.NewEmail!)).ReturnsAsync("emailToken");
-                userManagerMock.Setup(x => x.ChangeEmailAsync(user, updateModel.NewEmail!, "emailToken")).ReturnsAsync(IdentityResult.Success);
+                userManagerMock.Setup(x => x.GenerateChangeEmailTokenAsync(user, updateModel.Email)).ReturnsAsync("emailToken");
+                userManagerMock.Setup(x => x.ChangeEmailAsync(user, updateModel.Email, "emailToken")).ReturnsAsync(IdentityResult.Success);
 
-                userManagerMock.Setup(x => x.ChangePasswordAsync(user, updateModel.OldPassword, updateModel.NewPassword!))
+                userManagerMock.Setup(x => x.ChangePasswordAsync(user, updateModel.OldPassword!, updateModel.Password!))
                     .ReturnsAsync(IdentityResult.Failed(identityErrors.ToArray()));
 
                 userManagerMock.Setup(x => x.GeneratePasswordResetTokenAsync(user))
                    .ReturnsAsync("passwordResetToken");
-                userManagerMock.Setup(x => x.ResetPasswordAsync(user, "passwordResetToken", updateModel.NewPassword!))
+                userManagerMock.Setup(x => x.ResetPasswordAsync(user, "passwordResetToken", updateModel.Password!))
                    .ReturnsAsync(IdentityResult.Failed(identityErrors.ToArray()));
             }
 

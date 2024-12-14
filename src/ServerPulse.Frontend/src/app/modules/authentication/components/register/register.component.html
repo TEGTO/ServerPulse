@@ -6,54 +6,38 @@
 <mat-dialog-content>
     <form id="registrationForm" class="content__form space-y-1" [formGroup]="formGroup" (ngSubmit)="registerUser()">
         <mat-form-field>
-            <mat-label>Name</mat-label>
-            <input type="text" autocomplete="user-name" matInput formControlName="userName" placeholder="John Doe"
-                maxlength="256">
-            @if (nameInput.hasError('required')) {
-            <mat-error>Name is <strong>required</strong></mat-error>
-            }
-        </mat-form-field>
-        <mat-form-field>
             <mat-label>Email</mat-label>
-            <input type="email" autocomplete="user-email" matInput formControlName="email"
-                placeholder="example@example.com" maxlength="256">
-            @if (emailInput.hasError('email') && !emailInput.hasError('required')) {
-            <mat-error>Please enter a valid email address</mat-error>
-            }
-            @if (emailInput.hasError('required')) {
-            <mat-error>Email is <strong>required</strong></mat-error>
-            }
+            <input matInput type="text" autocomplete="email" formControlName="email" placeholder="example@gmail.com"
+                maxlength="256">
+            <mat-error
+                *ngIf="validateInputField(emailInput).hasError">{{validateInputField(emailInput).message}}</mat-error>
         </mat-form-field>
         <mat-form-field>
             <mat-label>Password</mat-label>
-            <input [type]="hidePassword ? 'password' : 'text'" autocomplete="user-password" matInput
+            <input matInput [type]="hidePassword ? 'password' : 'text'" type="password" autocomplete="new-password"
                 formControlName="password" maxlength="256">
-            <span class="material-icons me-2" matSuffix (click)="hidePassword = !hidePassword">
-                {{hidePassword
-                ? 'visibility_off'
-                : 'visibility'
-                }}
-            </span>
-            @if (passwordInput.hasError('required')) {
-            <mat-error>Password is <strong>required</strong></mat-error>
-            }
-            @if (passwordInput.hasError('minlength')) {
-            <mat-error>Password must be <strong>at least 8</strong> characters</mat-error>
-            }
+            <button class="material-icons me-2" matSuffix tabindex="0" (click)="hidePassword = !hidePassword"
+                (keydown)="hidePasswordOnKeydown($event)">
+                {{ hidePassword ? 'visibility_off' : 'visibility' }}
+            </button>
+            <mat-error
+                *ngIf="validateInputField(passwordInput).hasError">{{validateInputField(passwordInput).message}}</mat-error>
         </mat-form-field>
         <mat-form-field>
             <mat-label>Confirm Password</mat-label>
-            <input [type]="hidePassword ? 'password' : 'text'" autocomplete="user-confirm-password" matInput
+            <input matInput [type]="hidePassword ? 'password' : 'text'" type="password"
                 formControlName="passwordConfirm" maxlength="256">
-            @if (passwordConfirmInput.hasError('required')) {
-            <mat-error><strong>Confirm password.</strong></mat-error>
-            }
-            @if (passwordConfirmInput.hasError('passwordNoMatch')) {
-            <mat-error><strong>Passwords don't match.</strong></mat-error>
-            }
+            <mat-error
+                *ngIf="validateInputField(passwordConfirmInput).hasError">{{validateInputField(passwordConfirmInput).message}}</mat-error>
         </mat-form-field>
     </form>
+    <div class="actions__bottom-container">
+        <button mat-flat-button id="send-button" form="registrationForm" type="submit" color="primary">Create</button>
+        <span>
+            Already have an account?
+            <button mat-dialog-close id="to-login-link" (click)="openLoginMenu()">
+                Sign in here.
+            </button>
+        </span>
+    </div>
 </mat-dialog-content>
-<mat-dialog-actions class="actions__bottom-container flex-col">
-    <button mat-flat-button id="send-button" form="registrationForm" type="submit" color="primary">Create</button>
-</mat-dialog-actions>

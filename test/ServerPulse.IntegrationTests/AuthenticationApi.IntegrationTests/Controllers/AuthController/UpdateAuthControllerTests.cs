@@ -25,10 +25,9 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
             // Arrange
             var updateRequest = new UserUpdateDataRequest
             {
-                OldEmail = "olduser1@example.com",
-                NewEmail = "updateduser1@example.com",
+                Email = "updateduser1@example.com",
                 OldPassword = "123456;QWERTY",
-                NewPassword = "NEW123456;QWERTY"
+                Password = "NEW123456;QWERTY"
             };
 
             var accessKey = await GetAccessKeyForUserAsync(new UserAuthenticationRequest
@@ -73,10 +72,9 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
             // Arrange
             var updateRequest = new UserUpdateDataRequest
             {
-                OldEmail = "olduser1@example.com",
-                NewEmail = "updateduser2@example.com",
+                Email = "updateduser2@example.com",
                 OldPassword = "123456;QWERTY",
-                NewPassword = "NEW123456;QWERTY"
+                Password = "NEW123456;QWERTY"
             };
 
             using var request = new HttpRequestMessage(HttpMethod.Put, "/auth/update");
@@ -95,10 +93,9 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
             // Arrange
             var updateRequest = new UserUpdateDataRequest
             {
-                OldEmail = "",
-                NewEmail = "updateduser2@example.com",
+                Email = "",
                 OldPassword = "",
-                NewPassword = "NEW123456;QWERTY"
+                Password = "NEW123456;QWERTY"
             };
 
             var accessKey = await GetAccessKeyForUserAsync(new UserAuthenticationRequest
@@ -138,10 +135,9 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
 
             var updateRequest = new UserUpdateDataRequest
             {
-                OldEmail = "conflict@example.com",  // Conflicting email with another user
-                NewEmail = "conflict2@example.com",
+                Email = "conflict2@example.com",
                 OldPassword = "123456;QWERTY",
-                NewPassword = "123456;QWERTY"
+                Password = "123456;QWERTY"
             };
 
             using var request = new HttpRequestMessage(HttpMethod.Put, "/auth/update");

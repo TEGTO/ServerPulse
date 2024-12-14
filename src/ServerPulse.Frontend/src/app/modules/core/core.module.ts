@@ -12,7 +12,7 @@ import { StoreModule } from '@ngrx/store';
 import { AuthenticationModule } from '../authentication/authentication.module';
 import { ServerSlotInfoComponent, SlotBoardComponent } from '../server-slots';
 import { ServerSlotsModule } from '../server-slots/server-slots.module';
-import { CustomErrorHandler, ErrorHandler, JsonDownloader, JsonDownloaderService } from '../shared';
+import { CustomErrorHandler, ErrorHandler, JsonDownloader, JsonDownloaderService, ValidationMessage, ValidationMessageService } from '../shared';
 import { AppComponent, MainViewComponent } from './index';
 
 const routes: Routes = [
@@ -48,6 +48,7 @@ const routes: Routes = [
       withInterceptorsFromDi(),
     ),
     { provide: ErrorHandler, useClass: CustomErrorHandler },
+    { provide: ValidationMessage, useClass: ValidationMessageService },
     { provide: JsonDownloader, useClass: JsonDownloaderService },
   ],
   bootstrap: [AppComponent]

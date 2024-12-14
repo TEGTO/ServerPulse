@@ -31,32 +31,32 @@ namespace AuthenticationApi.Services
 
         public async Task<IEnumerable<IdentityError>> UpdateUserAsync(User user, UserUpdateModel updateModel, bool resetPassword, CancellationToken cancellationToken)
         {
-            List<IdentityError> identityErrors = new List<IdentityError>();
+            var identityErrors = new List<IdentityError>();
 
-            if (updateModel.UserName != null && !updateModel.UserName.Equals(user.UserName))
+            if (!string.IsNullOrEmpty(updateModel.UserName) && !updateModel.UserName.Equals(user.UserName))
             {
                 var result = await userManager.SetUserNameAsync(user, updateModel.UserName);
                 identityErrors.AddRange(result.Errors);
             }
 
-            if (updateModel.NewEmail != null && !updateModel.NewEmail.Equals(user.Email))
+            if (!string.IsNullOrEmpty(updateModel.Email) && !updateModel.Email.Equals(user.Email))
             {
-                var token = await userManager.GenerateChangeEmailTokenAsync(user, updateModel.NewEmail);
-                var result = await userManager.ChangeEmailAsync(user, updateModel.NewEmail, token);
+                var token = await userManager.GenerateChangeEmailTokenAsync(user, updateModel.Email);
+                var result = await userManager.ChangeEmailAsync(user, updateModel.Email, token);
                 identityErrors.AddRange(result.Errors);
             }
 
-            if (!string.IsNullOrEmpty(updateModel.NewPassword) && !string.IsNullOrEmpty(updateModel.OldPassword))
+            if (!string.IsNullOrEmpty(updateModel.Password) && !string.IsNullOrEmpty(updateModel.OldPassword))
             {
                 if (resetPassword)
                 {
                     var token = await userManager.GeneratePasswordResetTokenAsync(user);
-                    var result = await userManager.ResetPasswordAsync(user, token, updateModel.NewPassword);
+                    var result = await userManager.ResetPasswordAsync(user, token, updateModel.Password);
                     identityErrors.AddRange(result.Errors);
                 }
                 else
                 {
-                    var result = await userManager.ChangePasswordAsync(user, updateModel.OldPassword, updateModel.NewPassword);
+                    var result = await userManager.ChangePasswordAsync(user, updateModel.OldPassword, updateModel.Password);
                     identityErrors.AddRange(result.Errors);
                 }
             }

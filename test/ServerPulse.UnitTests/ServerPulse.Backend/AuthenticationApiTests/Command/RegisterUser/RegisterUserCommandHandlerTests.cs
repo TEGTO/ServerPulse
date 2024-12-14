@@ -43,7 +43,6 @@ namespace AuthenticationApi.Command.RegisterUser.Tests
             {
                 AuthToken = validToken,
                 Email = validUser.Email,
-                UserName = validUser.UserName
             };
 
             yield return new TestCaseData(
@@ -116,7 +115,6 @@ namespace AuthenticationApi.Command.RegisterUser.Tests
 
                 Assert.That(result.AuthToken, Is.EqualTo(expectedResponse.AuthToken));
                 Assert.That(result.Email, Is.EqualTo(expectedResponse.Email));
-                Assert.That(result.UserName, Is.EqualTo(expectedResponse.UserName));
 
                 mockAuthService.Verify(x => x.RegisterUserAsync(registerModel, It.IsAny<CancellationToken>()), Times.Once);
                 mockAuthService.Verify(x => x.LoginUserAsync(It.IsAny<LoginUserModel>(), It.IsAny<CancellationToken>()), Times.Once);
