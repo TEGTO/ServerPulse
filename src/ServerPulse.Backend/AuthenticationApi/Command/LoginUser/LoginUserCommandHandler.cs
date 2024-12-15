@@ -9,32 +9,27 @@ namespace AuthenticationApi.Command.LoginUser
     public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, UserAuthenticationResponse>
     {
         private readonly IAuthService authService;
-        private readonly IUserService userService;
         private readonly IMapper mapper;
 
-        public LoginUserCommandHandler(IAuthService authService, IUserService userService, IMapper mapper)
+        public LoginUserCommandHandler(IAuthService authService, IMapper mapper)
         {
             this.authService = authService;
-            this.userService = userService;
             this.mapper = mapper;
         }
 
         public async Task<UserAuthenticationResponse> Handle(LoginUserCommand command, CancellationToken cancellationToken)
         {
             var request = command.Request;
-            var user = await userService.GetUserByLoginAsync(request.Login, cancellationToken);
 
-            if (user == null) throw new UnauthorizedAccessException("Invalid authentication! Wrong password or login!");
-
-            var loginModel = new LoginUserModel(user, request.Password);
+            var loginModel = new LoginUserModel { Login = request.Login, Password = request.Password };
             var token = await authService.LoginUserAsync(loginModel, cancellationToken);
 
-            var tokenDto = mapper.Map<AuthToken>(token);
+            var tokenDto = mapper.Map<AccessTokenDataDto>(token);
 
             return new UserAuthenticationResponse
             {
                 AuthToken = tokenDto,
-                Email = user.Email,
+                Email = request.Login,
             };
         }
     }

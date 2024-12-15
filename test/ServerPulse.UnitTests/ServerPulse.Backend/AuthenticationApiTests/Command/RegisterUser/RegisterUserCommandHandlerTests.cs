@@ -21,6 +21,7 @@ namespace AuthenticationApi.Command.RegisterUser.Tests
         {
             mockAuthService = new Mock<IAuthService>();
             mockMapper = new Mock<IMapper>();
+
             handler = new RegisterUserCommandHandler(mockAuthService.Object, mockMapper.Object);
         }
 
@@ -35,9 +36,9 @@ namespace AuthenticationApi.Command.RegisterUser.Tests
 
             var validUser = new User { Email = validRequest.Email };
 
-            var validRegisterModel = new RegisterUserModel(validUser, validRequest.Password);
+            var validRegisterModel = new RegisterUserModel { User = validUser, Password = validRequest.Password };
 
-            var validToken = new AuthToken { AccessToken = "valid_token", RefreshToken = "valid_refresh_token" };
+            var validToken = new AccessTokenDataDto { AccessToken = "valid_token", RefreshToken = "valid_refresh_token" };
 
             var validResponse = new UserAuthenticationResponse
             {
@@ -67,7 +68,7 @@ namespace AuthenticationApi.Command.RegisterUser.Tests
             yield return new TestCaseData(
                 invalidRequest,
                 invalidUser,
-                new RegisterUserModel(invalidUser, invalidRequest.Password),
+                new RegisterUserModel { User = invalidUser, Password = invalidRequest.Password },
                 IdentityResult.Failed(new IdentityError { Description = "Invalid password" }),
                 null,
                 null,
@@ -82,7 +83,7 @@ namespace AuthenticationApi.Command.RegisterUser.Tests
             User user,
             RegisterUserModel registerModel,
             IdentityResult registerResult,
-            AuthToken? token,
+            AccessTokenDataDto? token,
             UserAuthenticationResponse? expectedResponse,
             bool isValid)
         {
@@ -98,7 +99,7 @@ namespace AuthenticationApi.Command.RegisterUser.Tests
                 mockAuthService.Setup(m => m.LoginUserAsync(It.IsAny<LoginUserModel>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(new AccessTokenData { AccessToken = token?.AccessToken!, RefreshToken = token?.RefreshToken! });
 
-                mockMapper.Setup(m => m.Map<AuthToken>(It.IsAny<AccessTokenData>())).Returns(token!);
+                mockMapper.Setup(m => m.Map<AccessTokenDataDto>(It.IsAny<AccessTokenData>())).Returns(token!);
             }
 
             // Act & Assert
@@ -118,7 +119,7 @@ namespace AuthenticationApi.Command.RegisterUser.Tests
 
                 mockAuthService.Verify(x => x.RegisterUserAsync(registerModel, It.IsAny<CancellationToken>()), Times.Once);
                 mockAuthService.Verify(x => x.LoginUserAsync(It.IsAny<LoginUserModel>(), It.IsAny<CancellationToken>()), Times.Once);
-                mockMapper.Verify(x => x.Map<AuthToken>(It.IsAny<AccessTokenData>()), Times.Once);
+                mockMapper.Verify(x => x.Map<AccessTokenDataDto>(It.IsAny<AccessTokenData>()), Times.Once);
             }
         }
     }

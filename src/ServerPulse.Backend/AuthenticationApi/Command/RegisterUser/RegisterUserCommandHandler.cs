@@ -4,7 +4,6 @@ using AuthenticationApi.Services;
 using AutoMapper;
 using ExceptionHandling;
 using MediatR;
-using Microsoft.AspNetCore.Identity;
 
 namespace AuthenticationApi.Command.RegisterUser
 {
@@ -25,17 +24,15 @@ namespace AuthenticationApi.Command.RegisterUser
 
             var user = mapper.Map<User>(request);
 
-            var errors = new List<IdentityError>();
+            var registerModel = new RegisterUserModel { User = user, Password = request.Password };
 
-            var registerModel = new RegisterUserModel(user, request.Password);
-
-            errors.AddRange((await authService.RegisterUserAsync(registerModel, cancellationToken)).Errors);
+            var errors = (await authService.RegisterUserAsync(registerModel, cancellationToken)).Errors;
             if (Utilities.HasErrors(errors, out var errorResponse)) throw new AuthorizationException(errorResponse);
 
-            var loginParams = new LoginUserModel(user, request.Password);
-            var token = await authService.LoginUserAsync(loginParams, cancellationToken);
+            var loginModel = new LoginUserModel { Login = request.Email, Password = request.Password };
+            var token = await authService.LoginUserAsync(loginModel, cancellationToken);
 
-            var tokenDto = mapper.Map<AuthToken>(token);
+            var tokenDto = mapper.Map<AccessTokenDataDto>(token);
 
             return new UserAuthenticationResponse
             {

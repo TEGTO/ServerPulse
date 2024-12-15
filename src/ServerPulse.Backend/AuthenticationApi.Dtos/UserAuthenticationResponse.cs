@@ -2,7 +2,7 @@
 {
     public class UserAuthenticationResponse
     {
-        public AuthToken? AuthToken { get; set; }
+        public AccessTokenDataDto? AuthToken { get; set; }
         public string? Email { get; set; }
     }
 }

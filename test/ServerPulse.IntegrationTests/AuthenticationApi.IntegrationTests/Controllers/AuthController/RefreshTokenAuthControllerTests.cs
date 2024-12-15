@@ -7,7 +7,7 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
 {
     internal class RefreshTokenAuthControllerTests : BaseAuthControllerTest
     {
-        private async Task<AuthToken> GetValidAuthToken()
+        private async Task<AccessTokenDataDto> GetValidAuthToken()
         {
             await RegisterSampleUser(new UserRegistrationRequest
             {
@@ -50,19 +50,18 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
             Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
             var content = await httpResponse.Content.ReadAsStringAsync();
-            var response = JsonSerializer.Deserialize<AuthToken>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var response = JsonSerializer.Deserialize<AccessTokenDataDto>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             Assert.IsNotNull(response);
             Assert.IsNotNull(response.AccessToken);
             Assert.IsNotNull(response.RefreshToken);
-            Assert.That(response.RefreshToken, Is.Not.EqualTo(refreshRequest.RefreshToken));
         }
 
         [Test]
         public async Task RefreshToken_InvalidRequest_ReturnsBadRequest()
         {
             // Arrange
-            var refreshRequest = new AuthToken
+            var refreshRequest = new AccessTokenDataDto
             {
                 AccessToken = "",
                 RefreshToken = "validRefreshToken"

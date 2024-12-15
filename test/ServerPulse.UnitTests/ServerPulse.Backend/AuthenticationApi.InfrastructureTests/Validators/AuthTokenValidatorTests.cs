@@ -4,14 +4,14 @@ using FluentValidation.TestHelper;
 
 namespace AuthenticationApi.Validators.Tests
 {
-    public class AuthTokenValidatorTests
+    public class AccessTokenDataDtoValidatorTests
     {
-        private AuthTokenValidator validator;
+        private AccessTokenDataDtoValidator validator;
 
         [SetUp]
         public void SetUp()
         {
-            validator = new AuthTokenValidator();
+            validator = new AccessTokenDataDtoValidator();
         }
 
         private static IEnumerable<TestCaseData> TokenValidationTestCases()
@@ -30,7 +30,7 @@ namespace AuthenticationApi.Validators.Tests
         public void Validate_TokenValidationCases(string? accessToken, string? refreshToken, bool isValid, string? errorProperty)
         {
             // Arrange
-            var request = new AuthToken
+            var request = new AccessTokenDataDto
             {
                 AccessToken = accessToken!,
                 RefreshToken = refreshToken!

@@ -9,7 +9,7 @@ namespace AuthenticationApi.Infrastructure
     {
         [MaxLength(100)]
         public string? RefreshToken { get; set; }
-        public DateTime RefreshTokenExpiryTime { get; set; }
+        public DateTime RefreshTokenExpiryDate { get; set; }
         [Required]
         public DateTime RegistredAtUtc { get; set; }
         [Required]

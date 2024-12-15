@@ -14,8 +14,8 @@ namespace AuthenticationApi
                  .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email)) // Map Email to UserName
                  .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));   // Map Email to Email
 
-            CreateMap<AccessTokenData, AuthToken>();
-            CreateMap<AuthToken, AccessTokenData>();
+            CreateMap<AccessTokenData, AccessTokenDataDto>();
+            CreateMap<AccessTokenDataDto, AccessTokenData>();
 
             CreateMap<UserUpdateDataRequest, UserUpdateModel>()
            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email))

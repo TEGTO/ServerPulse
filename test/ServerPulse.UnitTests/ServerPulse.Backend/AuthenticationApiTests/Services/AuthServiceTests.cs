@@ -1,9 +1,9 @@
 ﻿using Authentication.Models;
 using AuthenticationApi.Infrastructure;
-using ExceptionHandling;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
+using MockQueryable.Moq;
 using Moq;
+using System.Security.Claims;
 
 namespace AuthenticationApi.Services.Tests
 {
@@ -12,7 +12,6 @@ namespace AuthenticationApi.Services.Tests
     {
         private Mock<UserManager<User>> userManagerMock;
         private Mock<ITokenService> tokenServiceMock;
-        private Mock<IConfiguration> configurationMock;
         private AuthService authService;
 
         [SetUp]
@@ -23,42 +22,33 @@ namespace AuthenticationApi.Services.Tests
             userManagerMock = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
             tokenServiceMock = new Mock<ITokenService>();
 
-            configurationMock = new Mock<IConfiguration>();
-
-            configurationMock.Setup(c => c[It.Is<string>(s => s == Configuration.AUTH_REFRESH_TOKEN_EXPIRY_IN_DAYS)])
-                .Returns("7");
-
-            authService = new AuthService(userManagerMock.Object, tokenServiceMock.Object, configurationMock.Object);
+            authService = new AuthService(userManagerMock.Object, tokenServiceMock.Object);
         }
 
         private static IEnumerable<TestCaseData> RegisterUserTestCases()
         {
             yield return new TestCaseData(
-                new User { UserName = "testuser", Email = "test@example.com" },
-                "Password123",
+                new RegisterUserModel { User = new User { UserName = "testuser", Email = "test@example.com" }, Password = "Password123" },
                 IdentityResult.Success,
                 true
             ).SetDescription("Registering a user successfully returns success.");
 
             yield return new TestCaseData(
-                new User { UserName = "testuser", Email = "test@example.com" },
-                "WeakPassword",
-                IdentityResult.Failed(),
+                new RegisterUserModel { User = new User { UserName = "testuser", Email = "test@example.com" }, Password = "WeakPassword" },
+                IdentityResult.Failed(new IdentityError { Description = "Password is too weak." }),
                 false
             ).SetDescription("Registering a user with invalid password returns failure.");
         }
 
         [Test]
         [TestCaseSource(nameof(RegisterUserTestCases))]
-        public async Task RegisterUserAsync_TestCases(User user, string password, IdentityResult identityResult, bool isSuccess)
+        public async Task RegisterUserAsync_TestCases(RegisterUserModel model, IdentityResult identityResult, bool isSuccess)
         {
             // Arrange
-            var registerParams = new RegisterUserModel(user, password);
-
-            userManagerMock.Setup(x => x.CreateAsync(user, password)).ReturnsAsync(identityResult);
+            userManagerMock.Setup(x => x.CreateAsync(model.User, model.Password)).ReturnsAsync(identityResult);
 
             // Act
-            var result = await authService.RegisterUserAsync(registerParams, CancellationToken.None);
+            var result = await authService.RegisterUserAsync(model, CancellationToken.None);
 
             // Assert
             Assert.That(result.Succeeded, Is.EqualTo(isSuccess));
@@ -67,180 +57,265 @@ namespace AuthenticationApi.Services.Tests
         private static IEnumerable<TestCaseData> LoginUserTestCases()
         {
             yield return new TestCaseData(
-                new User { UserName = "testuser", Email = "test@example.com" },
+                "testuser",
                 "CorrectPassword",
-                true,
-                new AccessTokenData { AccessToken = "token123", RefreshToken = "refresh123" }
+                new User { UserName = "testuser", Email = "test@example.com" },
+                new AccessTokenData { AccessToken = "token123", RefreshToken = "refresh123" },
+                true
             ).SetDescription("Login with valid credentials returns a token.");
 
             yield return new TestCaseData(
-                new User { UserName = "testuser", Email = "test@example.com" },
+                "testuser",
+                "CorrectPassword",
+                null,
+                null,
+                false
+            ).SetDescription("User not found, throws UnauthorizedAccessException.");
+
+            yield return new TestCaseData(
+                "testuser",
                 "WrongPassword",
-                false,
-                null
-            ).SetDescription("Login with invalid credentials throws UnauthorizedAccessException.");
+                new User { UserName = "testuser", Email = "test@example.com" },
+                null,
+                false
+          ).SetDescription("Invalid password, throws UnauthorizedAccessException.");
         }
 
         [Test]
         [TestCaseSource(nameof(LoginUserTestCases))]
-        public async Task LoginUserAsync_TestCases(User user, string password, bool isValid, AccessTokenData? expectedToken)
+        public async Task LoginUserAsync_TestCases(string login, string password, User user, AccessTokenData tokenData, bool isValid)
         {
             // Arrange
-            var loginParams = new LoginUserModel(user, password);
-
-            userManagerMock.Setup(x => x.CheckPasswordAsync(user, password)).ReturnsAsync(isValid);
-
-            if (isValid)
+            if (user != null)
             {
-                tokenServiceMock.Setup(x => x.CreateNewTokenDataAsync(
-                    user,
-                    It.IsAny<DateTime>(),
-                    It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(expectedToken!);
+                userManagerMock.Setup(x => x.Users).Returns(new[] { user }.AsQueryable().BuildMockDbSet().Object);
+                userManagerMock.Setup(x => x.CheckPasswordAsync(user, password)).ReturnsAsync(isValid);
 
-                tokenServiceMock.Setup(x => x.SetRefreshTokenAsync(user, It.IsAny<AccessTokenData>(), CancellationToken.None))
-                    .ReturnsAsync(IdentityResult.Success);
-            }
-
-            // Act & Assert
-            if (isValid)
-            {
-                var result = await authService.LoginUserAsync(loginParams, CancellationToken.None);
-                Assert.That(result, Is.EqualTo(expectedToken));
+                if (isValid)
+                {
+                    tokenServiceMock.Setup(x => x.GenerateTokenAsync(user, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(tokenData);
+                }
             }
             else
             {
-                Assert.ThrowsAsync<UnauthorizedAccessException>(() => authService.LoginUserAsync(loginParams, CancellationToken.None));
+                userManagerMock.Setup(x => x.Users).Returns(new User[0].AsQueryable().BuildMockDbSet().Object);
             }
-        }
 
-        [Test]
-        public void LoginUserAsync_UsetRefreshTokenFails_ThrowsError()
-        {
-            // Arrange
-            var loginParams = new LoginUserModel(new User { UserName = "testuser", Email = "test@example.com" }, "password");
-            var token = new AccessTokenData { AccessToken = "token123", RefreshToken = "refresh123" };
-
-            userManagerMock.Setup(x => x.CheckPasswordAsync(loginParams.User, loginParams.Password)).ReturnsAsync(true);
-
-            tokenServiceMock.Setup(x => x.CreateNewTokenDataAsync(
-                   loginParams.User,
-                   It.IsAny<DateTime>(),
-                   It.IsAny<CancellationToken>()))
-                   .ReturnsAsync(token);
-
-            tokenServiceMock.Setup(x => x.SetRefreshTokenAsync(
-                  loginParams.User,
-                  token,
-                  It.IsAny<CancellationToken>()))
-                  .ReturnsAsync(IdentityResult.Failed(new IdentityError()));
+            var loginModel = new LoginUserModel { Login = login, Password = password };
 
             // Act & Assert
-            Assert.ThrowsAsync<AuthorizationException>(() => authService.LoginUserAsync(loginParams, CancellationToken.None));
+            if (isValid)
+            {
+                var result = await authService.LoginUserAsync(loginModel, CancellationToken.None);
+                Assert.That(result, Is.EqualTo(tokenData));
+            }
+            else
+            {
+                Assert.ThrowsAsync<UnauthorizedAccessException>(() => authService.LoginUserAsync(loginModel, CancellationToken.None));
+            }
         }
 
         private static IEnumerable<TestCaseData> RefreshTokenTestCases()
         {
             var validUser = new User
             {
-                UserName = "testuser",
+                Id = "userId123",
                 RefreshToken = "valid-refresh",
-                RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(1)
+                RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(1)
             };
-
-            var expiredUser = new User
-            {
-                UserName = "testuser",
-                RefreshToken = "expired-refresh",
-                RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(-1)
-            };
-
-            var validTokenData = new AccessTokenData { AccessToken = "access-token", RefreshToken = "valid-refresh" };
-            var invalidTokenData = new AccessTokenData { AccessToken = "invalid-access-token", RefreshToken = "invalid-refresh" };
-            var newTokenData = new AccessTokenData { AccessToken = "new-token", RefreshToken = "new-refresh" };
 
             yield return new TestCaseData(
+                new AccessTokenData { AccessToken = "access-token", RefreshToken = "valid-refresh" },
                 validUser,
-                validTokenData,
-                newTokenData,
+                new AccessTokenData { AccessToken = "new-access-token", RefreshToken = "new-refresh-token" },
                 true
-            ).SetDescription("Refresh with valid token and user returns a new token.");
+            ).SetDescription("Refresh token with valid data returns a new token.");
 
             yield return new TestCaseData(
-                expiredUser,
-                validTokenData,
+                new AccessTokenData { AccessToken = "access-token", RefreshToken = "invalid-refresh" },
+                null,
                 null,
                 false
-            ).SetDescription("Refresh with expired token throws UnauthorizedAccessException.");
-
-            yield return new TestCaseData(
-                validUser,
-                invalidTokenData,
-                null,
-                false
-            ).SetDescription("Refresh with invalid token throws UnauthorizedAccessException.");
+            ).SetDescription("User not found, throws UnauthorizedAccessException.");
         }
 
         [Test]
         [TestCaseSource(nameof(RefreshTokenTestCases))]
-        public async Task RefreshTokenAsync_TestCases(User user, AccessTokenData tokenData, AccessTokenData? newTokenData, bool isValid)
+        public async Task RefreshTokenAsync_TestCases(AccessTokenData tokenData, User user, AccessTokenData? newTokenData, bool isValid)
         {
             // Arrange
-            var tokenParams = new RefreshTokenModel(user, tokenData);
-
-            if (isValid)
+            if (user != null)
             {
-                tokenServiceMock.Setup(x => x.CreateNewTokenDataAsync(
-                    user,
-                    It.IsAny<DateTime>(),
-                    It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(newTokenData!);
+                userManagerMock.Setup(x => x.Users).Returns(new[] { user }.AsQueryable().BuildMockDbSet().Object);
 
-                tokenServiceMock.Setup(x => x.SetRefreshTokenAsync(user, It.IsAny<AccessTokenData>(), CancellationToken.None))
-                    .ReturnsAsync(IdentityResult.Success);
+                if (isValid)
+                {
+                    tokenServiceMock.Setup(x => x.RefreshAccessTokenAsync(tokenData, user, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(newTokenData!);
+                }
             }
+            else
+            {
+                userManagerMock.Setup(x => x.Users).Returns(new User[0].AsQueryable().BuildMockDbSet().Object);
+            }
+
+            tokenServiceMock.Setup(x => x.GetPrincipalFromExpiredToken(tokenData.AccessToken))
+                .Returns(new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, user?.Id ?? "")])));
 
             // Act & Assert
             if (isValid)
             {
-                var result = await authService.RefreshTokenAsync(tokenParams, CancellationToken.None);
+                var result = await authService.RefreshTokenAsync(tokenData, CancellationToken.None);
                 Assert.That(result, Is.EqualTo(newTokenData));
             }
             else
             {
-                Assert.ThrowsAsync<UnauthorizedAccessException>(() => authService.RefreshTokenAsync(tokenParams, CancellationToken.None));
+                Assert.ThrowsAsync<UnauthorizedAccessException>(() => authService.RefreshTokenAsync(tokenData, CancellationToken.None));
             }
         }
 
         [Test]
-        public void RefreshTokenAsync_UsetRefreshTokenFails_ThrowsError()
+        public async Task UpdateUserAsync_UserFoundAndValidUpdate_UpdatesSuccessfully()
         {
             // Arrange
-            var token = new AccessTokenData { AccessToken = "token123", RefreshToken = "refresh123" };
-            var tokenParams = new RefreshTokenModel(
-                new User
-                {
-                    UserName = "testuser",
-                    Email = "test@example.com",
-                    RefreshToken = token.RefreshToken,
-                    RefreshTokenExpiryTime = DateTime.MaxValue,
-                },
-                token);
+            var user = new User { UserName = "testuser", Email = "test@example.com" };
+            var updateModel = new UserUpdateModel
+            {
+                UserName = "newuser",
+                Email = "newemail@example.com",
+                OldPassword = "oldpassword",
+                Password = "newpassword"
+            };
+            var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, user.Id)]));
 
-            tokenServiceMock.Setup(x => x.CreateNewTokenDataAsync(
-                   tokenParams.User,
-                   It.IsAny<DateTime>(),
-                   It.IsAny<CancellationToken>()))
-                   .ReturnsAsync(token);
+            userManagerMock.Setup(x => x.Users).Returns(new[] { user }.AsQueryable().BuildMockDbSet().Object);
+            userManagerMock.Setup(x => x.SetUserNameAsync(user, updateModel.UserName)).ReturnsAsync(IdentityResult.Success);
+            userManagerMock.Setup(x => x.GenerateChangeEmailTokenAsync(user, updateModel.Email)).ReturnsAsync("emailToken");
+            userManagerMock.Setup(x => x.ChangeEmailAsync(user, updateModel.Email, "emailToken")).ReturnsAsync(IdentityResult.Success);
+            userManagerMock.Setup(x => x.ChangePasswordAsync(user, updateModel.OldPassword, updateModel.Password)).ReturnsAsync(IdentityResult.Success);
 
-            tokenServiceMock.Setup(x => x.SetRefreshTokenAsync(
-                  tokenParams.User,
-                  token,
-                  It.IsAny<CancellationToken>()))
-                  .ReturnsAsync(IdentityResult.Failed(new IdentityError()));
+            // Act
+            var result = await authService.UpdateUserAsync(claimsPrincipal, updateModel, false, CancellationToken.None);
+
+            // Assert
+            Assert.That(result, Is.Empty);
+        }
+
+        [Test]
+        public async Task UpdateUserAsync_UserFoundButInvalidUserNameUpdate_ReturnsError()
+        {
+            // Arrange
+            var user = new User { UserName = "olduser", Email = "test@example.com" };
+            var updateModel = new UserUpdateModel
+            {
+                UserName = "existinguser",
+                Email = "",
+                Password = "",
+                OldPassword = ""
+            };
+            var identityErrors = new List<IdentityError> { new IdentityError { Description = "Username already exists." } };
+            var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, user.Id)]));
+
+            userManagerMock.Setup(x => x.Users).Returns(new[] { user }.AsQueryable().BuildMockDbSet().Object);
+            userManagerMock.Setup(x => x.SetUserNameAsync(user, updateModel.UserName))
+                .ReturnsAsync(IdentityResult.Failed(identityErrors.ToArray()));
+
+            // Act
+            var result = await authService.UpdateUserAsync(claimsPrincipal, updateModel, false, CancellationToken.None);
+
+            // Assert
+            Assert.That(result, Is.Not.Empty);
+            Assert.That(result.First().Description, Is.EqualTo("Username already exists."));
+            userManagerMock.Verify(x => x.SetUserNameAsync(user, updateModel.UserName), Times.Once);
+        }
+
+        [Test]
+        public async Task UpdateUserAsync_UserFoundButInvalidEmailUpdate_ReturnsErrors()
+        {
+            // Arrange
+            var user = new User { UserName = "testuser", Email = "test@example.com" };
+            var updateModel = new UserUpdateModel
+            {
+                UserName = "",
+                Email = "invalidemail@example.com",
+                Password = "",
+                OldPassword = ""
+            };
+            var identityErrors = new List<IdentityError> { new IdentityError { Description = "Invalid email format" } };
+            var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, user.Id)]));
+
+            userManagerMock.Setup(x => x.Users).Returns(new[] { user }.AsQueryable().BuildMockDbSet().Object);
+            userManagerMock.Setup(x => x.GenerateChangeEmailTokenAsync(user, updateModel.Email)).ReturnsAsync("emailToken");
+            userManagerMock.Setup(x => x.ChangeEmailAsync(user, updateModel.Email, "emailToken")).ReturnsAsync(IdentityResult.Failed(identityErrors.ToArray()));
+
+            // Act
+            var result = await authService.UpdateUserAsync(claimsPrincipal, updateModel, false, CancellationToken.None);
+
+            // Assert
+            Assert.That(result, Is.Not.Empty);
+            Assert.That(result.First().Description, Is.EqualTo("Invalid email format"));
+        }
+
+        [Test]
+        [TestCase(false, null, "newpassword", "Password update failed due to missing old password.", Description = "Old password missing, update fails.")]
+        [TestCase(false, "oldpassword", "newpassword", "Password too weak", Description = "Weak password rejected during ChangePasswordAsync.")]
+        [TestCase(true, null, "newpassword", "Reset token expired.", Description = "Invalid reset token during ResetPasswordAsync.")]
+        public async Task UpdateUserAsync_PasswordUpdate_InvalidScenarios(
+               bool resetPassword,
+               string? oldPassword,
+               string newPassword,
+               string? expectedError)
+        {
+            // Arrange
+            var user = new User { UserName = "testuser", Email = "test@example.com" };
+            var updateModel = new UserUpdateModel
+            {
+                UserName = "",
+                Email = "",
+                Password = newPassword,
+                OldPassword = oldPassword
+            };
+            var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, user.Id) }));
+
+            userManagerMock.Setup(x => x.Users).Returns(new[] { user }.AsQueryable().BuildMockDbSet().Object);
+
+            if (resetPassword)
+            {
+                userManagerMock.Setup(x => x.GeneratePasswordResetTokenAsync(user)).ReturnsAsync("resetToken");
+                userManagerMock.Setup(x => x.ResetPasswordAsync(user, "resetToken", newPassword))
+                    .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = expectedError! }));
+            }
+            else if (!string.IsNullOrEmpty(oldPassword))
+            {
+                userManagerMock.Setup(x => x.ChangePasswordAsync(user, oldPassword, newPassword))
+                    .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = expectedError! }));
+            }
+
+            // Act
+            var result = await authService.UpdateUserAsync(claimsPrincipal, updateModel, resetPassword, CancellationToken.None);
+
+            // Assert
+            Assert.That(result, Is.Not.Empty);
+            Assert.That(result.First().Description, Is.EqualTo(expectedError));
+        }
+
+        [Test]
+        public void UpdateUserAsync_UserNotFound_ThrowsUnauthorizedAccessException()
+        {
+            // Arrange
+            var updateModel = new UserUpdateModel
+            {
+                UserName = "newuser",
+                Email = "invalidemail@example.com",
+                Password = "newpassword",
+                OldPassword = "oldpassword"
+            };
+            userManagerMock.Setup(x => x.Users).Returns(new User[0].AsQueryable().BuildMockDbSet().Object);
 
             // Act & Assert
-            Assert.ThrowsAsync<AuthorizationException>(() => authService.RefreshTokenAsync(tokenParams, CancellationToken.None));
+            Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+                authService.UpdateUserAsync(new ClaimsPrincipal(), updateModel, false, CancellationToken.None));
         }
     }
 }

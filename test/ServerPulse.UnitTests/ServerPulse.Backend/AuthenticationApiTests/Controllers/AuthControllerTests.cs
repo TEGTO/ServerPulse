@@ -1,5 +1,4 @@
 ﻿using AuthenticationApi.Command;
-using AuthenticationApi.Command.ChechAuthData;
 using AuthenticationApi.Command.LoginUser;
 using AuthenticationApi.Command.RefreshToken;
 using AuthenticationApi.Command.RegisterUser;
@@ -92,8 +91,8 @@ namespace AuthenticationApi.Controllers.Tests
         public async Task Refresh_SendsCommandAndReturnsAuthToken()
         {
             // Arrange
-            var token = new AuthToken { AccessToken = "token", RefreshToken = "refreshToken" };
-            var refreshedToken = new AuthToken { AccessToken = "newToken", RefreshToken = "newRefreshToken" };
+            var token = new AccessTokenDataDto { AccessToken = "token", RefreshToken = "refreshToken" };
+            var refreshedToken = new AccessTokenDataDto { AccessToken = "newToken", RefreshToken = "newRefreshToken" };
 
             mediatorMock.Setup(m => m.Send(It.IsAny<RefreshTokenCommand>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(refreshedToken);
@@ -110,30 +109,6 @@ namespace AuthenticationApi.Controllers.Tests
             Assert.That(okResult?.Value, Is.EqualTo(refreshedToken));
 
             mediatorMock.Verify(m => m.Send(It.IsAny<RefreshTokenCommand>(), It.IsAny<CancellationToken>()), Times.Once);
-        }
-
-        [Test]
-        public async Task CheckAuthData_SendsCommandAndReturnsCheckResponse()
-        {
-            // Arrange
-            var request = new CheckAuthDataRequest { Login = "testuser", Password = "Password123" };
-            var checkAuthDataResponse = new CheckAuthDataResponse { IsCorrect = true };
-
-            mediatorMock.Setup(m => m.Send(It.IsAny<CheckAuthDataCommand>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(checkAuthDataResponse);
-
-            // Act
-            var result = await authController.CheckAuthData(request, CancellationToken.None);
-
-            // Assert
-            Assert.IsInstanceOf<OkObjectResult>(result.Result);
-
-            var okResult = result.Result as OkObjectResult;
-            Assert.IsNotNull(okResult);
-
-            Assert.That(okResult?.Value, Is.EqualTo(checkAuthDataResponse));
-
-            mediatorMock.Verify(m => m.Send(It.IsAny<CheckAuthDataCommand>(), It.IsAny<CancellationToken>()), Times.Once);
         }
     }
 }

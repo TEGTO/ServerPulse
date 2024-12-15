@@ -2,6 +2,8 @@
 using Authentication.Token;
 using AuthenticationApi.Infrastructure;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
+using MockQueryable.Moq;
 using Moq;
 using System.Security.Claims;
 
@@ -10,132 +12,136 @@ namespace AuthenticationApi.Services.Tests
     [TestFixture]
     internal class TokenServiceTests
     {
-        private Mock<ITokenHandler> mockTokenHandler;
-        private Mock<UserManager<User>> mockUserManager;
+        private Mock<ITokenHandler> tokenHandlerMock;
+        private Mock<UserManager<User>> userManagerMock;
+        private Mock<IConfiguration> configurationMock;
         private TokenService tokenService;
 
         [SetUp]
         public void SetUp()
         {
+            tokenHandlerMock = new Mock<ITokenHandler>();
             var userStoreMock = new Mock<IUserStore<User>>();
+            userManagerMock = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+            configurationMock = new Mock<IConfiguration>();
 
-            mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+            configurationMock.Setup(c => c[Configuration.AUTH_REFRESH_TOKEN_EXPIRY_IN_DAYS]).Returns("7");
 
-            mockTokenHandler = new Mock<ITokenHandler>();
-            tokenService = new TokenService(mockTokenHandler.Object, mockUserManager.Object);
+            tokenService = new TokenService(tokenHandlerMock.Object, userManagerMock.Object, configurationMock.Object);
         }
 
-        private static IEnumerable<TestCaseData> CreateNewTokenDataTestCases()
+        private static IEnumerable<TestCaseData> GenerateTokenTestCases()
         {
-            var user = new User { UserName = "testuser" };
+            yield return new TestCaseData(
+                new User { UserName = "testuser", RefreshToken = null },
+                true,
+                true
+            ).SetDescription("Generate token for a new user without refresh token.");
 
             yield return new TestCaseData(
-                user,
-                DateTime.MaxValue,
-                new AccessTokenData
-                {
-                    AccessToken = "test_access_token",
-                    RefreshToken = "test_refresh_token",
-                    RefreshTokenExpiryDate = DateTime.MaxValue
-                }
-            ).SetDescription("Valid user with roles should return correct token data.");
+                new User { UserName = "testuser", RefreshToken = "existing-refresh", RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(1) },
+                false,
+                true
+            ).SetDescription("Generate token for a user with valid refresh token.");
 
             yield return new TestCaseData(
-                user,
-                DateTime.MaxValue,
-                new AccessTokenData
-                {
-                    AccessToken = "another_test_access_token",
-                    RefreshToken = "another_test_refresh_token",
-                    RefreshTokenExpiryDate = DateTime.MaxValue
-                }
-            ).SetDescription("Different expiry date should reflect in token data.");
+                new User { UserName = "testuser", RefreshToken = "expired-refresh", RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(-1) },
+                true,
+                false
+            ).SetDescription("Generate token for a user with expired refresh token but fails to update.");
         }
 
         [Test]
-        [TestCaseSource(nameof(CreateNewTokenDataTestCases))]
-        public async Task CreateNewTokenDataAsync_TestCases(User user, DateTime expiryDate, AccessTokenData expectedTokenData)
+        [TestCaseSource(nameof(GenerateTokenTestCases))]
+        public async Task GenerateTokenAsync_TestCases(User user, bool shouldUpdate, bool updateSuccess)
         {
             // Arrange
-            mockTokenHandler.Setup(m => m.CreateToken(user)).Returns(expectedTokenData);
+            var tokenData = new AccessTokenData { AccessToken = "new-token", RefreshToken = "new-refresh" };
+            tokenHandlerMock.Setup(t => t.CreateToken(user)).Returns(tokenData);
 
-            // Act
-            var result = await tokenService.CreateNewTokenDataAsync(user, expiryDate, CancellationToken.None);
+            if (shouldUpdate)
+            {
+                userManagerMock.Setup(u => u.UpdateAsync(user))
+                    .ReturnsAsync(updateSuccess ? IdentityResult.Success : IdentityResult.Failed(new IdentityError { Description = "Update failed." }));
+            }
 
-            // Assert
-            Assert.That(result, Is.EqualTo(expectedTokenData));
-            Assert.That(result.RefreshTokenExpiryDate, Is.EqualTo(expiryDate));
-        }
+            // Act & Assert
+            if (shouldUpdate && !updateSuccess)
+            {
+                Assert.ThrowsAsync<InvalidOperationException>(() => tokenService.GenerateTokenAsync(user, CancellationToken.None));
+            }
+            else
+            {
+                var result = await tokenService.GenerateTokenAsync(user, CancellationToken.None);
 
-        private static IEnumerable<TestCaseData> SetRefreshTokenTestCases()
-        {
-            var user = new User { UserName = "testuser" };
-
-            yield return new TestCaseData(
-                user,
-                new AccessTokenData
-                {
-                    AccessToken = "access_token",
-                    RefreshToken = "refresh_token_1",
-                    RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(5)
-                },
-                IdentityResult.Success
-            ).SetDescription("Valid user and token data should update refresh token successfully.");
-
-            yield return new TestCaseData(
-                user,
-                new AccessTokenData
-                {
-                    AccessToken = "access_token",
-                    RefreshToken = "refresh_token_2",
-                    RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(10)
-                },
-                IdentityResult.Failed(new IdentityError { Description = "Update failed" })
-            ).SetDescription("Failed identity update should result in no token update.");
+                Assert.That(result.AccessToken, Is.EqualTo(tokenData.AccessToken));
+                Assert.That(result.RefreshToken, Is.EqualTo(tokenData.RefreshToken));
+            }
         }
 
         [Test]
-        [TestCaseSource(nameof(SetRefreshTokenTestCases))]
-        public async Task SetRefreshTokenAsync_TestCases(User user, AccessTokenData accessTokenData, IdentityResult updateResult)
+        public void GetPrincipalFromExpiredToken_ValidToken_ReturnsPrincipal()
         {
             // Arrange
-            mockUserManager.Setup(m => m.UpdateAsync(user)).ReturnsAsync(updateResult);
+            var token = "expired-token";
+            var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] { new Claim(ClaimTypes.NameIdentifier, "userId123") }));
+            tokenHandlerMock.Setup(t => t.GetPrincipalFromExpiredToken(token)).Returns(claimsPrincipal);
 
             // Act
-            await tokenService.SetRefreshTokenAsync(user, accessTokenData, CancellationToken.None);
+            var result = tokenService.GetPrincipalFromExpiredToken(token);
 
             // Assert
-            mockUserManager.Verify(m => m.UpdateAsync(It.Is<User>(u => u.RefreshToken == accessTokenData.RefreshToken && u.RefreshTokenExpiryTime == accessTokenData.RefreshTokenExpiryDate)), Times.Once);
+            Assert.That(result, Is.EqualTo(claimsPrincipal));
         }
 
-        private static IEnumerable<TestCaseData> GetPrincipalFromTokenTestCases()
+        private static IEnumerable<TestCaseData> RefreshAccessTokenTestCases()
         {
-            var validToken = "valid_token";
-            var expiredToken = "expired_token";
+            yield return new TestCaseData(
+                new AccessTokenData { AccessToken = "expired-token", RefreshToken = "valid-refresh" },
+                new User { UserName = "testuser", RefreshToken = "valid-refresh", RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(1) },
+                true
+            ).SetDescription("Valid refresh token refreshes access token.");
 
             yield return new TestCaseData(
-                validToken,
-                new ClaimsPrincipal(new ClaimsIdentity(new Claim[] { new Claim(ClaimTypes.Name, "testuser") }))
-            ).SetDescription("Valid token should return the correct ClaimsPrincipal.");
+                new AccessTokenData { AccessToken = "expired-token", RefreshToken = "invalid-refresh" },
+                new User { UserName = "testuser", RefreshToken = "valid-refresh", RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(1) },
+                false
+            ).SetDescription("Invalid refresh token throws UnauthorizedAccessException.");
 
             yield return new TestCaseData(
-                expiredToken,
-                new ClaimsPrincipal(new ClaimsIdentity())
-            ).SetDescription("Expired token should return an empty ClaimsPrincipal.");
+                new AccessTokenData { AccessToken = "expired-token", RefreshToken = "valid-refresh" },
+                new User { UserName = "testuser", RefreshToken = "valid-refresh", RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(-1) },
+                false
+            ).SetDescription("Expired refresh token throws UnauthorizedAccessException.");
         }
 
         [Test]
-        [TestCaseSource(nameof(GetPrincipalFromTokenTestCases))]
-        public void GetPrincipalFromToken_TestCases(string token, ClaimsPrincipal expectedPrincipal)
+        [TestCaseSource(nameof(RefreshAccessTokenTestCases))]
+        public async Task RefreshAccessTokenAsync_TestCases(AccessTokenData tokenData, User user, bool isValid)
         {
             // Arrange
-            mockTokenHandler.Setup(m => m.GetPrincipalFromExpiredToken(token)).Returns(expectedPrincipal);
+            userManagerMock.Setup(u => u.Users).Returns(new[] { user }.AsQueryable().BuildMockDbSet().Object);
 
-            // Act
-            var result = tokenService.GetPrincipalFromToken(token);
+            tokenHandlerMock.Setup(t => t.GetPrincipalFromExpiredToken(tokenData.AccessToken))
+                .Returns(new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, user.UserName!)])));
 
-            // Assert
-            Assert.That(result, Is.EqualTo(expectedPrincipal));
+            if (isValid)
+            {
+                tokenHandlerMock.Setup(t => t.CreateToken(user))
+                    .Returns(new AccessTokenData { AccessToken = "new-access-token", RefreshToken = "new-refresh-token" });
+            }
+
+            // Act & Assert
+            if (isValid)
+            {
+                var result = await tokenService.RefreshAccessTokenAsync(tokenData, user, CancellationToken.None);
+                Assert.That(result.AccessToken, Is.EqualTo("new-access-token"));
+                Assert.That(result.RefreshToken, Is.EqualTo("valid-refresh"));
+            }
+            else
+            {
+                Assert.ThrowsAsync<UnauthorizedAccessException>(() => tokenService.RefreshAccessTokenAsync(tokenData, user, CancellationToken.None));
+            }
         }
     }
 }

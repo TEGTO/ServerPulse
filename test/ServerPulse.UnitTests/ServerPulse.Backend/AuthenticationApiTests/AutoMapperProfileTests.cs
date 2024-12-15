@@ -27,7 +27,7 @@ namespace AuthenticationApi.Tests
                 UserName = "testuser",
                 Email = "testuser@example.com",
                 RefreshToken = "some-refresh-token",
-                RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(1)
+                RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(1)
             };
 
             //Act
@@ -66,7 +66,7 @@ namespace AuthenticationApi.Tests
             };
 
             //Act
-            var result = mapper.Map<AuthToken>(accessTokenData);
+            var result = mapper.Map<AccessTokenDataDto>(accessTokenData);
 
             //Assert
             Assert.That(result.AccessToken, Is.EqualTo(accessTokenData.AccessToken));
@@ -77,7 +77,7 @@ namespace AuthenticationApi.Tests
         public void AuthTokenToAccessTokenData_AuthTokenMappedCorrectly()
         {
             //Arrange
-            var authToken = new AuthToken
+            var authToken = new AccessTokenDataDto
             {
                 AccessToken = "access-token",
                 RefreshToken = "refresh-token",

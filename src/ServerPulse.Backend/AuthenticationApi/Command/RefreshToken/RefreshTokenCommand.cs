@@ -3,5 +3,5 @@ using MediatR;
 
 namespace AuthenticationApi.Command.RefreshToken
 {
-    public record RefreshTokenCommand(AuthToken Request) : IRequest<AuthToken>;
+    public record RefreshTokenCommand(AccessTokenDataDto Request) : IRequest<AccessTokenDataDto>;
 }

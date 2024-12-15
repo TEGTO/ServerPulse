@@ -1,7 +1,8 @@
 ﻿using Authentication.Models;
 using AuthenticationApi.Infrastructure;
-using ExceptionHandling;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace AuthenticationApi.Services
 {
@@ -9,61 +10,120 @@ namespace AuthenticationApi.Services
     {
         private readonly UserManager<User> userManager;
         private readonly ITokenService tokenService;
-        private readonly double expiryInDays;
 
-        public AuthService(UserManager<User> userManager, ITokenService tokenService, IConfiguration configuration)
+        public AuthService(UserManager<User> userManager, ITokenService tokenService)
         {
             this.userManager = userManager;
             this.tokenService = tokenService;
-            expiryInDays = double.Parse(configuration[Configuration.AUTH_REFRESH_TOKEN_EXPIRY_IN_DAYS]!);
         }
 
         #region IAuthService Members
 
-        public async Task<IdentityResult> RegisterUserAsync(RegisterUserModel registerModel, CancellationToken cancellationToken)
+        public async Task<IdentityResult> RegisterUserAsync(RegisterUserModel model, CancellationToken cancellationToken)
         {
-            return await userManager.CreateAsync(registerModel.User, registerModel.Password);
+            return await userManager.CreateAsync(model.User, model.Password);
         }
 
-        public async Task<AccessTokenData> LoginUserAsync(LoginUserModel loginModel, CancellationToken cancellationToken)
+        public async Task<AccessTokenData> LoginUserAsync(LoginUserModel model, CancellationToken cancellationToken)
         {
-            var user = loginModel.User;
+            var user = await GetUserByLoginAsync(model.Login)
+                ?? throw new UnauthorizedAccessException("Invalid login or password.");
 
-            if (!await userManager.CheckPasswordAsync(user, loginModel.Password))
+            if (!await userManager.CheckPasswordAsync(user, model.Password))
             {
                 throw new UnauthorizedAccessException("Invalid authentication. Check Login or password.");
             }
 
-            var refreshTokenExpiryDate = DateTime.UtcNow.AddDays(expiryInDays);
-
-            var tokenData = await tokenService.CreateNewTokenDataAsync(user, refreshTokenExpiryDate, cancellationToken);
-
-            var identityErrors = await tokenService.SetRefreshTokenAsync(user, tokenData, cancellationToken);
-            if (Utilities.HasErrors(identityErrors.Errors, out var errorResponse)) throw new AuthorizationException(errorResponse);
-
-            return tokenData;
+            return await tokenService.GenerateTokenAsync(user, cancellationToken);
         }
 
-        public async Task<AccessTokenData> RefreshTokenAsync(RefreshTokenModel refreshTokenModel, CancellationToken cancellationToken)
+        public async Task<AccessTokenData> RefreshTokenAsync(AccessTokenData accessData, CancellationToken cancellationToken)
         {
-            var user = refreshTokenModel.User;
-            var accessTokenData = refreshTokenModel.AccessTokenData;
+            var principal = tokenService.GetPrincipalFromExpiredToken(accessData.AccessToken);
 
-            if (accessTokenData.RefreshToken == null ||
-                user.RefreshToken != accessTokenData.RefreshToken ||
-                user.RefreshTokenExpiryTime < DateTime.UtcNow)
+            var user = await GetUserFromPrincipalAsync(principal)
+                ?? throw new UnauthorizedAccessException("User not found! Invalid user identity!");
+
+            return await tokenService.RefreshAccessTokenAsync(accessData, user, cancellationToken);
+        }
+
+        public async Task<IEnumerable<IdentityError>> UpdateUserAsync(ClaimsPrincipal principal, UserUpdateModel updateModel, bool resetPassword, CancellationToken cancellationToken)
+        {
+            var user = await GetUserFromPrincipalAsync(principal)
+                ?? throw new UnauthorizedAccessException("User not found!");
+
+            var errors = new List<IdentityError>();
+
+            if (!string.IsNullOrEmpty(updateModel.UserName))
             {
-                throw new UnauthorizedAccessException("Refresh token is not valid!");
+                errors.AddRange(await UpdateUserNameAsync(user, updateModel.UserName));
             }
 
-            var refreshTokenExpiryDate = DateTime.UtcNow.AddDays(expiryInDays);
+            if (!string.IsNullOrEmpty(updateModel.Email))
+            {
+                errors.AddRange(await UpdateEmailAsync(user, updateModel.Email));
+            }
 
-            var tokenData = await tokenService.CreateNewTokenDataAsync(user, refreshTokenExpiryDate, cancellationToken);
+            if (!string.IsNullOrEmpty(updateModel.Password))
+            {
+                errors.AddRange(await UpdatePasswordAsync(user, updateModel.OldPassword, updateModel.Password, resetPassword));
+            }
 
-            var identityErrors = await tokenService.SetRefreshTokenAsync(user, tokenData, cancellationToken);
-            if (Utilities.HasErrors(identityErrors.Errors, out var errorResponse)) throw new AuthorizationException(errorResponse);
+            return errors.DistinctBy(e => e.Description).ToList();
+        }
 
-            return tokenData;
+        #endregion
+
+        #region Private Helpers
+
+        private async Task<User?> GetUserFromPrincipalAsync(ClaimsPrincipal principal)
+        {
+            var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+            return !string.IsNullOrEmpty(userId) ? await GetUserByLoginAsync(userId) : null;
+        }
+
+        private async Task<User?> GetUserByLoginAsync(string login)
+        {
+            return await userManager.Users.SingleOrDefaultAsync(u =>
+                u.Email == login || u.UserName == login || u.Id == login);
+        }
+
+        private async Task<IEnumerable<IdentityError>> UpdateUserNameAsync(User user, string newUserName)
+        {
+            if (user.UserName == newUserName) return Enumerable.Empty<IdentityError>();
+
+            var result = await userManager.SetUserNameAsync(user, newUserName);
+            return result.Errors;
+        }
+
+        private async Task<IEnumerable<IdentityError>> UpdateEmailAsync(User user, string newEmail)
+        {
+            if (user.Email == newEmail) return Enumerable.Empty<IdentityError>();
+
+            var token = await userManager.GenerateChangeEmailTokenAsync(user, newEmail);
+            var result = await userManager.ChangeEmailAsync(user, newEmail, token);
+            return result.Errors;
+        }
+
+        private async Task<IEnumerable<IdentityError>> UpdatePasswordAsync(User user, string? oldPassword, string newPassword, bool resetPassword)
+        {
+            if (resetPassword)
+            {
+                var token = await userManager.GeneratePasswordResetTokenAsync(user);
+                var result = await userManager.ResetPasswordAsync(user, token, newPassword);
+                return result.Errors;
+            }
+
+            if (!string.IsNullOrEmpty(oldPassword))
+            {
+                var result = await userManager.ChangePasswordAsync(user, oldPassword, newPassword);
+                return result.Errors;
+            }
+
+            return new List<IdentityError>
+            {
+                new IdentityError { Description = "Password update failed due to missing old password." }
+            };
         }
 
         #endregion

@@ -13,16 +13,17 @@ namespace AuthenticationApi.Command.Tests
     [TestFixture]
     internal class UpdateUserCommandHandlerTests
     {
-        private Mock<IUserService> mockUserService;
+        private Mock<IAuthService> mockAuthService;
         private Mock<IMapper> mockMapper;
         private UpdateUserCommandHandler handler;
 
         [SetUp]
         public void SetUp()
         {
-            mockUserService = new Mock<IUserService>();
+            mockAuthService = new Mock<IAuthService>();
             mockMapper = new Mock<IMapper>();
-            handler = new UpdateUserCommandHandler(mockUserService.Object, mockMapper.Object);
+
+            handler = new UpdateUserCommandHandler(mockAuthService.Object, mockMapper.Object);
         }
 
         private static IEnumerable<TestCaseData> UpdateUserTestCases()
@@ -43,42 +44,16 @@ namespace AuthenticationApi.Command.Tests
                 Password = "newpass"
             };
 
-            var validUser = new User { Id = "valid-user-id", UserName = "olduser", Email = "old@example.com" };
-
             yield return new TestCaseData(
                 new UpdateUserCommand(validRequest, validPrincipal),
                 validUpdateModel,
-                validUser,
                 new List<IdentityError>(),
                 true
             ).SetDescription("Valid update should succeed without errors.");
 
-            var invalidPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "invalid-user-id") }));
-            var invalidRequest = new UserUpdateDataRequest
-            {
-                Email = "invalidnew@example.com",
-                OldPassword = "wrongpass",
-                Password = "invalidnewpass"
-            };
-
-            yield return new TestCaseData(
-                new UpdateUserCommand(invalidRequest, invalidPrincipal),
-                new UserUpdateModel()
-                {
-                    UserName = "notfounduser",
-                    Email = "new@example.com",
-                    OldPassword = "oldpass",
-                    Password = "newpass"
-                },
-                null,
-                null,
-                false
-            ).SetDescription("User not found should throw InvalidOperationException.");
-
             yield return new TestCaseData(
                 new UpdateUserCommand(validRequest, validPrincipal),
                 validUpdateModel,
-                validUser,
                 new List<IdentityError> { new IdentityError { Description = "Error updating user." } },
                 false
             ).SetDescription("Errors during update should throw AuthorizationException.");
@@ -89,46 +64,26 @@ namespace AuthenticationApi.Command.Tests
         public async Task Handle_UpdateUserCommand_TestCases(
             UpdateUserCommand command,
             UserUpdateModel updateModel,
-            User? user,
             List<IdentityError>? identityErrors,
             bool isValid)
         {
             // Arrange
             mockMapper.Setup(m => m.Map<UserUpdateModel>(command.Request)).Returns(updateModel);
 
-            if (user != null)
-            {
-                mockUserService.Setup(m => m.GetUserAsync(command.UserPrincipal, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(user);
-
-                mockUserService.Setup(m => m.UpdateUserAsync(user, updateModel, false, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(identityErrors ?? new List<IdentityError>());
-            }
-            else
-            {
-                mockUserService.Setup(m => m.GetUserAsync(command.UserPrincipal, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync((User?)null);
-            }
+            mockAuthService.Setup(m => m.UpdateUserAsync(command.UserPrincipal, updateModel, false, It.IsAny<CancellationToken>()))
+                  .ReturnsAsync(identityErrors ?? new List<IdentityError>());
 
             // Act & Assert
             if (!isValid)
             {
-                if (user == null)
-                {
-                    Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(command, CancellationToken.None));
-                }
-                else
-                {
-                    Assert.ThrowsAsync<AuthorizationException>(() => handler.Handle(command, CancellationToken.None));
-                }
+                Assert.ThrowsAsync<AuthorizationException>(() => handler.Handle(command, CancellationToken.None));
             }
             else
             {
                 var result = await handler.Handle(command, CancellationToken.None);
 
                 Assert.That(result, Is.EqualTo(Unit.Value));
-                mockUserService.Verify(m => m.GetUserAsync(command.UserPrincipal, It.IsAny<CancellationToken>()), Times.Once);
-                mockUserService.Verify(m => m.UpdateUserAsync(user!, updateModel, false, It.IsAny<CancellationToken>()), Times.Once);
+                mockAuthService.Verify(m => m.UpdateUserAsync(command.UserPrincipal, updateModel, false, It.IsAny<CancellationToken>()), Times.Once);
             }
         }
     }

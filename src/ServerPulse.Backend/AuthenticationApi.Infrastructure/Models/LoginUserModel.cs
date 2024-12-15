@@ -1,4 +1,8 @@
 ﻿namespace AuthenticationApi.Infrastructure
 {
-    public record class LoginUserModel(User User, string Password);
+    public class LoginUserModel
+    {
+        public required string Login { get; set; }
+        public required string Password { get; set; }
+    }
 }

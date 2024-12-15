@@ -42,7 +42,6 @@ builder.Services.AddScoped<ITokenHandler, JwtHandler>();
 #region Project Services 
 
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
 #endregion
@@ -56,7 +55,7 @@ builder.Services.AddMediatR(conf =>
     conf.RegisterServicesFromAssembly(typeof(Program).Assembly);
 });
 
-builder.Services.AddSharedFluentValidation(typeof(Program), typeof(AuthTokenValidator));
+builder.Services.AddSharedFluentValidation(typeof(Program), typeof(AccessTokenDataDtoValidator));
 
 builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
 builder.Services.AddEndpointsApiExplorer();

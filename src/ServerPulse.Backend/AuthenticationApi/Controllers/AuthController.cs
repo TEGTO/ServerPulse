@@ -1,5 +1,4 @@
 ﻿using AuthenticationApi.Command;
-using AuthenticationApi.Command.ChechAuthData;
 using AuthenticationApi.Command.LoginUser;
 using AuthenticationApi.Command.RefreshToken;
 using AuthenticationApi.Command.RegisterUser;
@@ -44,16 +43,9 @@ namespace AuthenticationApi.Controllers
         }
 
         [HttpPost("refresh")]
-        public async Task<ActionResult<AuthToken>> Refresh(AuthToken request, CancellationToken cancellationToken)
+        public async Task<ActionResult<AccessTokenDataDto>> Refresh(AccessTokenDataDto request, CancellationToken cancellationToken)
         {
             var response = await mediator.Send(new RefreshTokenCommand(request), cancellationToken);
-            return Ok(response);
-        }
-
-        [HttpPost("check")]
-        public async Task<ActionResult<CheckAuthDataResponse>> CheckAuthData([FromBody] CheckAuthDataRequest request, CancellationToken cancellationToken)
-        {
-            var response = await mediator.Send(new CheckAuthDataCommand(request), cancellationToken);
             return Ok(response);
         }
     }

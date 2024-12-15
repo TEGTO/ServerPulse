@@ -6,7 +6,7 @@ namespace AuthenticationApi
     {
         public static bool HasErrors(IEnumerable<IdentityError> identityErrors, out string[] errorResponse)
         {
-            if (identityErrors.Count() > 0)
+            if (identityErrors.Any())
             {
                 var errors = identityErrors.Select(e => e.Description).ToArray();
                 errorResponse = errors;
