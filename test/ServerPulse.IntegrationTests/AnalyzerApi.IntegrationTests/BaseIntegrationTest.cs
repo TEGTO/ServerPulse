@@ -72,6 +72,7 @@ namespace AnalyzerApi.IntegrationTests
                 }
             });
         }
+
         private void InitializeServices()
         {
             scope = factory.Services.CreateScope();

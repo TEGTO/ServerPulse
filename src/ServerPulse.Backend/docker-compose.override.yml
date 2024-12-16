@@ -74,6 +74,7 @@ services:
       - Cache__ExpiryInMinutes=${Cache__ExpiryInMinutes}
       - MinimumStatisticsTimeSpanInSeconds=${MinimumStatisticsTimeSpanInSeconds}
       - MaxEventAmountToGetInSlotData=${MaxEventAmountToGetInSlotData}
+      - MaxEventAmountToReadPerRequest=${MaxEventAmountToReadPerRequest}
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro

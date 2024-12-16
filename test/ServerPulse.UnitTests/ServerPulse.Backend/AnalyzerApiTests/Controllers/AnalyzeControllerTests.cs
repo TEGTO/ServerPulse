@@ -105,7 +105,7 @@ namespace AnalyzerApi.Controllers.Tests
                 .ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await controller.GetAmountStatisticsInRange(request, CancellationToken.None);
+            var result = await controller.GetLoadAmountStatisticsInRange(request, CancellationToken.None);
 
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(result.Result);

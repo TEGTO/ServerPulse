@@ -14,10 +14,10 @@ namespace AnalyzerApi.Command.Controllers.ProcessLoadEvents
         private readonly IStatisticsReceiver<LoadMethodStatistics> receiver;
         private readonly string loadMethodStatisticsTopic;
 
-        public ProcessLoadEventsCommandHandler(IMessageProducer producer, IStatisticsReceiver<LoadMethodStatistics> statisticsReceiver, IConfiguration configuration)
+        public ProcessLoadEventsCommandHandler(IMessageProducer producer, IStatisticsReceiver<LoadMethodStatistics> receiver, IConfiguration configuration)
         {
             this.producer = producer;
-            this.receiver = statisticsReceiver;
+            this.receiver = receiver;
             loadMethodStatisticsTopic = configuration[Configuration.KAFKA_LOAD_METHOD_STATISTICS_TOPIC]!;
         }
 

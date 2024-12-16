@@ -85,9 +85,10 @@ namespace AnalyzerApi.IntegrationTests
                 { "PulseEventIntervalInMilliseconds", "20000" },
                 { "StatisticsCollectIntervalInMilliseconds", "5000" },
                 { "ConnectionStrings:RedisServer",  RedisContainer?.GetConnectionString()},
-                { "Cache:Cache__ExpiryInMinutes", "60" },
+                { "Cache:Cache__ExpiryInMinutes", "5" },
                 { "MinimumStatisticsTimeSpanInSeconds", "0" },
                 { "MaxEventAmountToGetInSlotData", "25" },
+                { "MaxEventAmountToReadPerRequest", "20" },
             });
 
             return configurationBuilder.Build();

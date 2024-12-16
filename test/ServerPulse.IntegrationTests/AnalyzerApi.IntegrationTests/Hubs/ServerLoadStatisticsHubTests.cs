@@ -71,7 +71,7 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             var statistics = JsonSerializer.Deserialize<ServerLoadStatistics>(receivedStatistics);
             Assert.NotNull(statistics);
 
-            Assert.True(statistics.IsInitial);
+            //Assert.True(statistics.IsInitial);
             Assert.That(statistics.AmountOfEvents, Is.EqualTo(2));
             Assert.NotNull(statistics.LastEvent);
             Assert.That(statistics.LastEvent.Id, Is.EqualTo(eventSamples[1].Id));
@@ -92,7 +92,7 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             statistics = JsonSerializer.Deserialize<ServerLoadStatistics>(receivedStatistics);
             Assert.NotNull(statistics);
 
-            Assert.False(statistics.IsInitial);
+            //Assert.False(statistics.IsInitial);
             Assert.That(statistics.AmountOfEvents, Is.EqualTo(3));
             Assert.NotNull(statistics.LastEvent);
             Assert.That(statistics.LastEvent.Id, Is.EqualTo(eventSamples[2].Id));

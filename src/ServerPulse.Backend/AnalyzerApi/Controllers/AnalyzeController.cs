@@ -32,19 +32,19 @@ namespace AnalyzerApi.Controllers
             return Ok(response);
         }
 
-        [OutputCache(PolicyName = "GetWholeAmountStatisticsInDaysPolicy")]
+        [OutputCache(PolicyName = "GetDailyLoadStatisticsPolicy")]
         [Route("perday/{key}")]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<LoadAmountStatisticsResponse>>> GetWholeAmountStatisticsInDays(string key, CancellationToken cancellationToken)
+        public async Task<ActionResult<IEnumerable<LoadAmountStatisticsResponse>>> GetDailyLoadStatistics(string key, CancellationToken cancellationToken)
         {
             var response = await mediator.Send(new GetWholeAmountStatisticsInDaysQuery(key), cancellationToken);
             return Ok(response);
         }
 
-        [OutputCache(PolicyName = "GetAmountStatisticsInRangePolicy")]
+        [OutputCache(PolicyName = "GetLoadAmountStatisticsInRangePolicy")]
         [Route("amountrange")]
         [HttpPost]
-        public async Task<ActionResult<IEnumerable<LoadAmountStatisticsResponse>>> GetAmountStatisticsInRange(MessageAmountInRangeRequest request, CancellationToken cancellationToken)
+        public async Task<ActionResult<IEnumerable<LoadAmountStatisticsResponse>>> GetLoadAmountStatisticsInRange(MessageAmountInRangeRequest request, CancellationToken cancellationToken)
         {
             var response = await mediator.Send(new GetAmountStatisticsInRangeQuery(request), cancellationToken);
             return Ok(response);

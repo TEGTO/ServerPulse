@@ -9,25 +9,45 @@ namespace AnalyzerApi.IntegrationTests.Controllers.AnalyzeController
 {
     internal class GetLoadEventsInDataRangeAnalyzerControllerTests : BaseIntegrationTest
     {
-        const string KEY = "validKey";
-
-        [OneTimeSetUp]
-        public async Task OneTimeSetUp()
-        {
-            var loadEventSamples = new List<LoadEvent>
-            {
-                new LoadEvent(KEY, "/api/resource", "GET", 200, TimeSpan.FromMilliseconds(150), DateTime.UtcNow),
-                new LoadEvent(KEY, "/api/resource", "POST", 201, TimeSpan.FromMilliseconds(200), DateTime.UtcNow)
-            };
-
-            await SendEventsAsync(LOAD_TOPIC, KEY, loadEventSamples.ToArray());
-        }
-
         [Test]
         public async Task GetLoadEventsInDataRange_ValidRequest_ReturnsOkWithEvents()
         {
             // Arrange
-            var request = new MessagesInRangeRequest { Key = KEY, From = DateTime.MinValue, To = DateTime.MaxValue };
+            var key = "key1";
+            await MakeSamplesForKeyAsync(key);
+
+            var request = new MessagesInRangeRequest { Key = key, From = DateTime.MinValue, To = DateTime.MaxValue };
+
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/analyze/daterange");
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
+            // Act
+            var httpResponse = await client.SendAsync(httpRequest);
+
+            // Assert
+            Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+            var content = await httpResponse.Content.ReadAsStringAsync();
+
+            var events = JsonSerializer.Deserialize<List<LoadEventWrapper>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            Assert.NotNull(events);
+
+            Assert.That(events.Count, Is.EqualTo(2));
+
+            Assert.True(events.Any(x => x.Method == "GET"));
+
+            Assert.True(events.Any(x => x.Method == "POST"));
+        }
+
+        [Test]
+        public async Task GetLoadEventsInDataRange_ValidRequest_ReturnsCachedOkWithEvents()
+        {
+            // Arrange
+            var key = "key2";
+            await MakeSamplesForKeyAsync(key);
+
+            var request = new MessagesInRangeRequest { Key = key, From = DateTime.MinValue, To = DateTime.MaxValue };
 
             using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/analyze/daterange");
             using var httpRequest2 = new HttpRequestMessage(HttpMethod.Post, "/analyze/daterange");
@@ -37,6 +57,7 @@ namespace AnalyzerApi.IntegrationTests.Controllers.AnalyzeController
 
             // Act
             var httpResponse = await client.SendAsync(httpRequest);
+            await MakeSamplesForKeyAsync(key);
             var httpResponse2 = await client.SendAsync(httpRequest2);
 
             // Assert
@@ -63,10 +84,13 @@ namespace AnalyzerApi.IntegrationTests.Controllers.AnalyzeController
         }
 
         [Test]
-        public async Task GetLoadEventsInDataRange_InvalidRequest_ReturnsBadRequest()
+        [TestCase("key", 1, Description = "Invalid From, must be less than To.")]
+        [TestCase("", 0, Description = "Invalid Key, must be not empty.")]
+        [TestCase(null, 0, Description = "Invalid Key, must be not null.")]
+        public async Task GetLoadEventsInDataRange_InvalidRequest_ReturnsBadRequest(string? key, int fromAddMinutes)
         {
             // Arrange
-            var request = new MessagesInRangeRequest { Key = "", From = DateTime.MinValue, To = DateTime.MinValue };
+            var request = new MessagesInRangeRequest { Key = key!, From = DateTime.MinValue.AddMinutes(fromAddMinutes), To = DateTime.MinValue };
 
             using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/analyze/daterange");
             httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
@@ -79,10 +103,12 @@ namespace AnalyzerApi.IntegrationTests.Controllers.AnalyzeController
         }
 
         [Test]
-        public async Task GetLoadEventsInDataRange_InvalidKey_ReturnsOkWithEmptyArray()
+        public async Task GetLoadEventsInDataRange_WrongKey_ReturnsOkWithEmptyArray()
         {
             // Arrange
-            var request = new MessagesInRangeRequest { Key = "InvalidKey", From = DateTime.MinValue, To = DateTime.MaxValue };
+            await MakeSamplesForKeyAsync("key3");
+
+            var request = new MessagesInRangeRequest { Key = "WrongKey", From = DateTime.MinValue, To = DateTime.MaxValue };
 
             using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/analyze/daterange");
             httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
@@ -98,6 +124,17 @@ namespace AnalyzerApi.IntegrationTests.Controllers.AnalyzeController
 
             Assert.NotNull(events);
             Assert.That(events.Count, Is.EqualTo(0));
+        }
+
+        private async Task MakeSamplesForKeyAsync(string key)
+        {
+            var loadEventSamples = new List<LoadEvent>
+            {
+                new LoadEvent(key, "/api/resource", "GET", 200, TimeSpan.FromMilliseconds(150), DateTime.UtcNow),
+                new LoadEvent(key, "/api/resource", "POST", 201, TimeSpan.FromMilliseconds(200), DateTime.UtcNow)
+            };
+
+            await SendEventsAsync(LOAD_TOPIC, key, loadEventSamples.ToArray());
         }
     }
 }

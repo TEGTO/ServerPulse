@@ -60,8 +60,8 @@ builder.Services.AddOutputCache((options) =>
         out var getByEmailExpiry) ? getByEmailExpiry : 1;
 
     options.SetOutputCachePolicy("GetLoadEventsInDataRangePolicy", duration: TimeSpan.FromMinutes(expiryTime), types: typeof(MessagesInRangeRequest));
-    options.SetOutputCachePolicy("GetWholeAmountStatisticsInDaysPolicy", duration: TimeSpan.FromMinutes(expiryTime));
-    options.SetOutputCachePolicy("GetAmountStatisticsInRangePolicy", duration: TimeSpan.FromMinutes(expiryTime), types: typeof(MessageAmountInRangeRequest));
+    options.SetOutputCachePolicy("GetDailyLoadStatisticsPolicy", duration: TimeSpan.FromMinutes(expiryTime));
+    options.SetOutputCachePolicy("GetLoadAmountStatisticsInRangePolicy", duration: TimeSpan.FromMinutes(expiryTime), types: typeof(MessageAmountInRangeRequest));
     options.SetOutputCachePolicy("GetSlotStatisticsPolicy", duration: TimeSpan.FromMinutes(expiryTime));
 });
 
