@@ -9,16 +9,16 @@ namespace ServerMonitorApi.Command.SendLoadEvents
     {
         private readonly ISlotKeyChecker serverSlotChecker;
         private readonly IMessageProducer producer;
-        private readonly IStatisticsEventSender statisticsEventSender;
         private readonly string loadTopic;
+        private readonly string processLoadEventTopic;
 
-        public SendLoadEventsCommandHandler(ISlotKeyChecker serverSlotChecker, IMessageProducer producer, IStatisticsEventSender statisticsEventSender, IConfiguration configuration)
+        public SendLoadEventsCommandHandler(ISlotKeyChecker serverSlotChecker, IMessageProducer producer, IConfiguration configuration)
         {
             this.serverSlotChecker = serverSlotChecker;
             this.producer = producer;
-            this.statisticsEventSender = statisticsEventSender;
 
             loadTopic = configuration[Configuration.KAFKA_LOAD_TOPIC]!;
+            processLoadEventTopic = configuration[Configuration.KAFKA_LOAD_TOPIC_PROCESS]!;
         }
 
         public async Task<Unit> Handle(SendLoadEventsCommand command, CancellationToken cancellationToken)
@@ -40,10 +40,9 @@ namespace ServerMonitorApi.Command.SendLoadEvents
 
                     await Parallel.ForEachAsync(events, cancellationToken, async (ev, ct) =>
                     {
-                        await statisticsEventSender.SendLoadEventForStatistics(ev, cancellationToken);
-
                         var serializedEvent = JsonSerializer.Serialize(ev);
                         await producer.ProduceAsync(topic, serializedEvent, cancellationToken);
+                        await producer.ProduceAsync(processLoadEventTopic, serializedEvent, cancellationToken);
                     });
                 }
                 else

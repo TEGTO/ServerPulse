@@ -1,4 +1,5 @@
 ﻿using Authentication.Token;
+using AuthenticationTests;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -23,7 +24,8 @@ namespace Authentication.Tests
 
             expectedJwtSettings = new JwtSettings
             {
-                Key = "A very secret key",
+                PrivateKey = TestRsaKeys.PRIVATE_KEY,
+                PublicKey = TestRsaKeys.PUBLIC_KEY,
                 Issuer = "TestIssuer",
                 Audience = "TestAudience",
                 ExpiryInMinutes = 60
@@ -31,7 +33,8 @@ namespace Authentication.Tests
 
             var inMemorySettings = new Dictionary<string, string>
             {
-                { JwtConfiguration.JWT_SETTINGS_KEY, expectedJwtSettings.Key },
+                { JwtConfiguration.JWT_SETTINGS_PRIVATE_KEY, expectedJwtSettings.PrivateKey },
+                { JwtConfiguration.JWT_SETTINGS_PUBLIC_KEY, expectedJwtSettings.PublicKey },
                 { JwtConfiguration.JWT_SETTINGS_AUDIENCE, expectedJwtSettings.Audience },
                 { JwtConfiguration.JWT_SETTINGS_ISSUER, expectedJwtSettings.Issuer },
                 { JwtConfiguration.JWT_SETTINGS_EXPIRY_IN_MINUTES, expectedJwtSettings.ExpiryInMinutes.ToString() },
@@ -54,7 +57,8 @@ namespace Authentication.Tests
             var jwtSettings = serviceProvider.GetRequiredService<JwtSettings>();
 
             // Assert
-            Assert.That(jwtSettings.Key, Is.EqualTo(expectedJwtSettings.Key));
+            Assert.That(jwtSettings.PrivateKey, Is.EqualTo(expectedJwtSettings.PrivateKey));
+            Assert.That(jwtSettings.PublicKey, Is.EqualTo(expectedJwtSettings.PublicKey));
             Assert.That(jwtSettings.Issuer, Is.EqualTo(expectedJwtSettings.Issuer));
             Assert.That(jwtSettings.Audience, Is.EqualTo(expectedJwtSettings.Audience));
             Assert.That(jwtSettings.ExpiryInMinutes, Is.EqualTo(expectedJwtSettings.ExpiryInMinutes));
@@ -92,7 +96,7 @@ namespace Authentication.Tests
 
             Assert.That(tokenValidationParameters.ValidIssuer, Is.EqualTo(expectedJwtSettings.Issuer));
             Assert.That(tokenValidationParameters.ValidAudience, Is.EqualTo(expectedJwtSettings.Audience));
-            Assert.That(tokenValidationParameters.IssuerSigningKey, Is.TypeOf<SymmetricSecurityKey>());
+            Assert.That(tokenValidationParameters.IssuerSigningKey, Is.TypeOf<RsaSecurityKey>());
 
             Assert.IsTrue(tokenValidationParameters.ValidateIssuer);
             Assert.IsTrue(tokenValidationParameters.ValidateAudience);

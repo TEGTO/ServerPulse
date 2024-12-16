@@ -1,4 +1,5 @@
-﻿using AnalyzerApi.Infrastructure.Models.Wrappers;
+﻿using AnalyzerApi.Infrastructure.Models.Statistics;
+using AnalyzerApi.Infrastructure.Models.Wrappers;
 using AnalyzerApi.Services.Receivers.Event;
 using Moq;
 
@@ -36,7 +37,7 @@ namespace AnalyzerApi.Command.Builders.CustomStatistics.Tests
             mockEventReceiver.Setup(r => r.GetLastEventByKeyAsync(key, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(lastEvent);
 
-            var command = new BuildCustomStatisticsCommand(key);
+            var command = new BuildStatisticsCommand<ServerCustomStatistics>(key);
 
             // Act
             var result = await handler.Handle(command, CancellationToken.None);
@@ -57,7 +58,7 @@ namespace AnalyzerApi.Command.Builders.CustomStatistics.Tests
             mockEventReceiver.Setup(r => r.GetLastEventByKeyAsync(key, It.IsAny<CancellationToken>()))
                 .ReturnsAsync((CustomEventWrapper?)null);
 
-            var command = new BuildCustomStatisticsCommand(key);
+            var command = new BuildStatisticsCommand<ServerCustomStatistics>(key);
 
             // Act
             var result = await handler.Handle(command, CancellationToken.None);

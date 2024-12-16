@@ -39,7 +39,7 @@ namespace MessageBusTests
             mockAdminClient.Setup(x => x.GetMetadata(topic, It.IsAny<TimeSpan>()))
                 .Returns(new Metadata(
                     new List<BrokerMetadata>(),
-                    new List<TopicMetadata> { new TopicMetadata(topic, new List<PartitionMetadata>(), null) },
+                    new List<TopicMetadata> { new TopicMetadata(topic, new List<PartitionMetadata>(), ErrorCode.NoError) },
                     0,
                     "cluster-id"
                 ));

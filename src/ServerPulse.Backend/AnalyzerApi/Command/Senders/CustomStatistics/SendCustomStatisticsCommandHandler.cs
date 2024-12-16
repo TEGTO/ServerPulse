@@ -4,11 +4,10 @@ using AnalyzerApi.Infrastructure.Models.Statistics;
 using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.SignalR;
-using System.Text.Json;
 
 namespace AnalyzerApi.Command.Senders.CustomStatistics
 {
-    public class SendCustomStatisticsCommandHandler : IRequestHandler<SendCustomStatisticsCommand, Unit>
+    public class SendCustomStatisticsCommandHandler : IRequestHandler<SendStatisticsCommand<ServerCustomStatistics>, Unit>
     {
         private readonly IHubContext<StatisticsHub<ServerCustomStatistics>, IStatisticsHubClient> hubStatistics;
         private readonly IMapper mapper;
@@ -19,11 +18,10 @@ namespace AnalyzerApi.Command.Senders.CustomStatistics
             this.mapper = mapper;
         }
 
-        public async Task<Unit> Handle(SendCustomStatisticsCommand command, CancellationToken cancellationToken)
+        public async Task<Unit> Handle(SendStatisticsCommand<ServerCustomStatistics> command, CancellationToken cancellationToken)
         {
             var response = mapper.Map<ServerCustomStatisticsResponse>(command.Statistics);
-            var serializedData = JsonSerializer.Serialize(response);
-            await hubStatistics.Clients.Group(command.Key).ReceiveStatistics(command.Key, serializedData);
+            await hubStatistics.Clients.Group(command.Key).ReceiveStatistics(command.Key, response);
 
             return Unit.Value;
         }

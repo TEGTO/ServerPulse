@@ -1,3 +1,4 @@
+using AnalyzerApi.BackgroundServices;
 using AnalyzerApi.Hubs;
 using AnalyzerApi.Infrastructure;
 using AnalyzerApi.Infrastructure.Configurations;
@@ -36,7 +37,7 @@ var consumerConfig = new ConsumerConfig
 };
 var adminConfig = new AdminClientConfig
 {
-    BootstrapServers = builder.Configuration[Configuration.KAFKA_BOOTSTRAP_SERVERS]
+    BootstrapServers = builder.Configuration[Configuration.KAFKA_BOOTSTRAP_SERVERS],
 };
 var producerConfig = new ProducerConfig
 {
@@ -130,6 +131,8 @@ if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddSwagger("Analyzer API");
 }
+
+builder.Services.AddHostedService<LoadEventStatisticsProcessor>();
 
 var app = builder.Build();
 

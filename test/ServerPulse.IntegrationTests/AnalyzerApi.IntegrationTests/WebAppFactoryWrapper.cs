@@ -80,6 +80,7 @@ namespace AnalyzerApi.IntegrationTests
                 { "Kafka:AliveTopic", "AliveTopic_" },
                 { "Kafka:ConfigurationTopic", "ConfigurationTopic_" },
                 { "Kafka:LoadTopic", "LoadTopic_" },
+                { "Kafka:ProcessLoadEventTopic", "LoadEventProcessTopic" },
                 { "Kafka:CustomTopic", "CustomEventTopic_" },
                 { "Kafka:LoadMethodStatisticsTopic", "LoadMethodStatisticsTopic_" },
                 { "PulseEventIntervalInMilliseconds", "20000" },

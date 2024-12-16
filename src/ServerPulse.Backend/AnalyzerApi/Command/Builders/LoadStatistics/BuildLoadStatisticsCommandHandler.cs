@@ -6,7 +6,7 @@ using MediatR;
 
 namespace AnalyzerApi.Command.Builders.LoadStatistics
 {
-    public class BuildLoadStatisticsCommandHandler : IRequestHandler<BuildLoadStatisticsCommand, ServerLoadStatistics>
+    public class BuildLoadStatisticsCommandHandler : IRequestHandler<BuildStatisticsCommand<ServerLoadStatistics>, ServerLoadStatistics>
     {
         private readonly IEventReceiver<LoadEventWrapper> eventReceiver;
         private readonly IStatisticsReceiver<LoadMethodStatistics> methodStatsReceiver;
@@ -17,7 +17,7 @@ namespace AnalyzerApi.Command.Builders.LoadStatistics
             this.methodStatsReceiver = methodStatsReceiver;
         }
 
-        public async Task<ServerLoadStatistics> Handle(BuildLoadStatisticsCommand command, CancellationToken cancellationToken)
+        public async Task<ServerLoadStatistics> Handle(BuildStatisticsCommand<ServerLoadStatistics> command, CancellationToken cancellationToken)
         {
             var amountTask = eventReceiver.GetEventAmountByKeyAsync(command.Key, cancellationToken);
             var loadTask = eventReceiver.GetLastEventByKeyAsync(command.Key, cancellationToken);

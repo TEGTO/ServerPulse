@@ -5,7 +5,7 @@ using MediatR;
 
 namespace AnalyzerApi.Command.Builders.CustomStatistics
 {
-    public class BuildCustomStatisticsCommandHandler : IRequestHandler<BuildCustomStatisticsCommand, ServerCustomStatistics>
+    public class BuildCustomStatisticsCommandHandler : IRequestHandler<BuildStatisticsCommand<ServerCustomStatistics>, ServerCustomStatistics>
     {
         private readonly IEventReceiver<CustomEventWrapper> eventReceiver;
 
@@ -14,7 +14,7 @@ namespace AnalyzerApi.Command.Builders.CustomStatistics
             this.eventReceiver = eventReceiver;
         }
 
-        public async Task<ServerCustomStatistics> Handle(BuildCustomStatisticsCommand command, CancellationToken cancellationToken)
+        public async Task<ServerCustomStatistics> Handle(BuildStatisticsCommand<ServerCustomStatistics> command, CancellationToken cancellationToken)
         {
             var lastEvent = await eventReceiver.GetLastEventByKeyAsync(command.Key, cancellationToken);
 

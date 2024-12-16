@@ -15,7 +15,8 @@ namespace AuthenticationTests.Token
         {
             var jwtSettings = new JwtSettings
             {
-                Key = "this is super secret key for authentication testing",
+                PrivateKey = TestRsaKeys.PRIVATE_KEY,
+                PublicKey = TestRsaKeys.PUBLIC_KEY,
                 Issuer = "test_issuer",
                 Audience = "test_audience",
                 ExpiryInMinutes = 30

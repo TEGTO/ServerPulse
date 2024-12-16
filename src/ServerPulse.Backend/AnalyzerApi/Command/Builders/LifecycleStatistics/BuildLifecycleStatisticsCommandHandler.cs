@@ -6,7 +6,7 @@ using MediatR;
 
 namespace AnalyzerApi.Command.Builders.LifecycleStatistics
 {
-    public class BuildLifecycleStatisticsCommandHandler : IRequestHandler<BuildLifecycleStatisticsCommand, ServerLifecycleStatistics>
+    public class BuildLifecycleStatisticsCommandHandler : IRequestHandler<BuildStatisticsCommand<ServerLifecycleStatistics>, ServerLifecycleStatistics>
     {
         private readonly IEventReceiver<PulseEventWrapper> pulseReceiver;
         private readonly IEventReceiver<ConfigurationEventWrapper> confReceiver;
@@ -19,7 +19,7 @@ namespace AnalyzerApi.Command.Builders.LifecycleStatistics
             this.statisticsReceiver = statisticsReceiver;
         }
 
-        public async Task<ServerLifecycleStatistics> Handle(BuildLifecycleStatisticsCommand command, CancellationToken cancellationToken)
+        public async Task<ServerLifecycleStatistics> Handle(BuildStatisticsCommand<ServerLifecycleStatistics> command, CancellationToken cancellationToken)
         {
             var configurationTask = confReceiver.GetLastEventByKeyAsync(command.Key, cancellationToken);
             var pulseTask = pulseReceiver.GetLastEventByKeyAsync(command.Key, cancellationToken);

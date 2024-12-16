@@ -99,7 +99,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerSlotApiTests", "..\..
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharedTests", "..\..\test\ServerPulse.UnitTests\ServerPulse.Backend\SharedTests\SharedTests.csproj", "{4220C611-3967-4B0D-9901-6F8D0D01FE69}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnalyzerApi.InfrastructureTests", "..\..\test\ServerPulse.UnitTests\ServerPulse.Backend\AnalyzerApi.InfrastructureTests\AnalyzerApi.InfrastructureTests.csproj", "{792306BF-9DAE-4858-B720-6E1FB38803CA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnalyzerApi.InfrastructureTests", "..\..\test\ServerPulse.UnitTests\ServerPulse.Backend\AnalyzerApi.InfrastructureTests\AnalyzerApi.InfrastructureTests.csproj", "{792306BF-9DAE-4858-B720-6E1FB38803CA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventCommunication.ValidatorsTests", "..\..\test\ServerPulse.UnitTests\ServerPulse.EventCommunication\EventCommunication.ValidatorsTests\EventCommunication.ValidatorsTests.csproj", "{3AF53CDB-A7FC-4C8A-AA85-5E121C4CE305}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -262,6 +264,10 @@ Global
 		{792306BF-9DAE-4858-B720-6E1FB38803CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{792306BF-9DAE-4858-B720-6E1FB38803CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{792306BF-9DAE-4858-B720-6E1FB38803CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3AF53CDB-A7FC-4C8A-AA85-5E121C4CE305}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3AF53CDB-A7FC-4C8A-AA85-5E121C4CE305}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3AF53CDB-A7FC-4C8A-AA85-5E121C4CE305}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3AF53CDB-A7FC-4C8A-AA85-5E121C4CE305}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -311,6 +317,7 @@ Global
 		{B3E10240-DB18-4C3A-AEBD-894341248AFF} = {0282EC42-88AA-4C4E-BCA8-6083EE7CEA7C}
 		{4220C611-3967-4B0D-9901-6F8D0D01FE69} = {0282EC42-88AA-4C4E-BCA8-6083EE7CEA7C}
 		{792306BF-9DAE-4858-B720-6E1FB38803CA} = {0282EC42-88AA-4C4E-BCA8-6083EE7CEA7C}
+		{3AF53CDB-A7FC-4C8A-AA85-5E121C4CE305} = {0282EC42-88AA-4C4E-BCA8-6083EE7CEA7C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {89B7B374-29A5-4E5B-A21F-6FC2B0DE9918}

@@ -8,6 +8,7 @@
         public static string KAFKA_TIMEOUT_IN_MILLISECONDS { get; } = "Kafka:AnalyzerReceiveTimeout";
         public static string KAFKA_ALIVE_TOPIC { get; } = "Kafka:AliveTopic";
         public static string KAFKA_LOAD_TOPIC { get; } = "Kafka:LoadTopic";
+        public static string KAFKA_LOAD_TOPIC_PROCESS { get; } = "Kafka:ProcessLoadEventTopic";
         public static string KAFKA_CONFIGURATION_TOPIC { get; } = "Kafka:ConfigurationTopic";
         public static string KAFKA_SERVER_STATISTICS_TOPIC { get; } = "Kafka:ServerStatisticsTopic";
         public static string KAFKA_CUSTOM_TOPIC { get; } = "Kafka:CustomTopic";

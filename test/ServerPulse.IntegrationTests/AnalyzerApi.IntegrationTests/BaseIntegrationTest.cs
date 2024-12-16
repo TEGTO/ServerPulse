@@ -14,6 +14,7 @@ namespace AnalyzerApi.IntegrationTests
         protected const string ALIVE_TOPIC = "AliveTopic_";
         protected const string CONFIGURATION_TOPIC = "ConfigurationTopic_";
         protected const string LOAD_TOPIC = "LoadTopic_";
+        protected const string LOAD_PROCESS_TOPIC = "LoadEventProcessTopic";
         protected const string CUSTOM_TOPIC = "CustomEventTopic_";
         protected const string LOAD_METHOD_STATISTICS_TOPIC = "LoadMethodStatisticsTopic_";
         private const int TIMEOUT_IN_MILLISECONDS = 5000;

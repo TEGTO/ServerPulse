@@ -1,99 +1,279 @@
-﻿using AnalyzerApi.Infrastructure.Models.Statistics;
+﻿using AnalyzerApi.Infrastructure.Dtos.Responses.Statistics;
 using EventCommunication;
 using Microsoft.AspNetCore.SignalR.Client;
-using System.Text.Json;
 
 namespace AnalyzerApi.IntegrationTests.Hubs
 {
     internal class ServerCustomStatisticsHubTests : BaseIntegrationTest
     {
-        const string KEY = "validKey";
-
-        private HubConnection connection;
-        private readonly List<CustomEvent> eventSamples = new List<CustomEvent>();
-        private string? receivedKey;
-        private string? receivedStatistics;
-
-        [OneTimeSetUp]
-        public async Task OneTimeSetUp()
-        {
-            eventSamples.Add(new CustomEvent(KEY, "name1", "desc1"));
-            await SendEventsAsync(CUSTOM_TOPIC, KEY, new[]
-            {
-               eventSamples[0]
-            });
-
-            await Task.Delay(1000);
-
-            eventSamples.Add(new CustomEvent(KEY, "name2", "desc2"));
-            await SendEventsAsync(CUSTOM_TOPIC, KEY, new[]
-            {
-               eventSamples[1]
-            });
-
-            connection = new HubConnectionBuilder()
-                .WithUrl("wss://localhost" + "/customstatisticshub", options =>
-                {
-                    options.HttpMessageHandlerFactory = _ => server.CreateHandler();
-                })
-                .Build();
-
-            connection.On<string, string>("ReceiveStatistics", (key, serializedStatistics) =>
-            {
-                receivedKey = key;
-                receivedStatistics = serializedStatistics;
-            });
-
-            await connection.StartAsync();
-        }
+        private readonly List<HubConnection> connections = new List<HubConnection>();
 
         [OneTimeTearDown]
         public async Task OneTimeTearDown()
         {
-            await connection.StopAsync();
-            await connection.DisposeAsync();
+            foreach (var connection in connections)
+            {
+                await connection.StopAsync();
+                await connection.DisposeAsync();
+            }
         }
 
         [Test]
-        public async Task StartListen_ValidKey_ClientAddedToGroupAndStartsConsumingStatistics()
+        public async Task StartListen_ValidKey_ClientAddedToGroupAndGetsInitial()
         {
+            // Arrange 
+            var key = "key1";
+            var eventSamples = new List<CustomEvent>();
+            string? receivedKey = null;
+            ServerCustomStatisticsResponse? receivedStatistics = null;
+
+            eventSamples.Add(new CustomEvent(key, "name1", "desc1"));
+            await SendEventsAsync(CUSTOM_TOPIC, key, new[]
+            {
+                eventSamples[0]
+            });
+
+            await Task.Delay(1000);
+
+            eventSamples.Add(new CustomEvent(key, "name2", "desc2"));
+            await SendEventsAsync(CUSTOM_TOPIC, key, new[]
+            {
+                eventSamples[1]
+            });
+
+            var connection = new HubConnectionBuilder()
+            .WithUrl("wss://localhost" + "/customstatisticshub", options =>
+            {
+                options.HttpMessageHandlerFactory = _ => server.CreateHandler();
+            })
+            .Build();
+
+            connections.Add(connection);
+
+            connection.On<string, ServerCustomStatisticsResponse>("ReceiveStatistics", (k, response) =>
+            {
+                receivedKey = k;
+                receivedStatistics = response;
+            });
+
+            await connection.StartAsync();
+
             // Act
-            await connection.SendAsync("StartListen", KEY);
+            await connection.SendAsync("StartListen", key);
 
             await Task.Delay(2000);
 
             // Assert
-            Assert.NotNull(receivedKey);
-            Assert.That(receivedKey, Is.EqualTo(KEY));
-            Assert.NotNull(receivedStatistics);
+            Assert.IsNotNull(receivedKey);
+            Assert.That(receivedKey, Is.EqualTo(key));
 
-            var statistics = JsonSerializer.Deserialize<ServerCustomStatistics>(receivedStatistics);
-            Assert.NotNull(statistics);
+            Assert.IsNotNull(receivedStatistics);
 
-            //Assert.True(statistics.IsInitial);
-            Assert.NotNull(statistics.LastEvent);
-            Assert.That(statistics.LastEvent.Id, Is.EqualTo(eventSamples[1].Id));
-            Assert.That(statistics.LastEvent.Name, Is.EqualTo(eventSamples[1].Name));
+            Assert.IsNotNull(receivedStatistics.LastEvent);
+            Assert.That(receivedStatistics.LastEvent.Id, Is.EqualTo(eventSamples[1].Id));
+            Assert.That(receivedStatistics.LastEvent.Name, Is.EqualTo(eventSamples[1].Name));
+        }
+
+        [Test]
+        public async Task StartListen_ValidKey_ClientAddedToGroupAndGetsNewStatistics()
+        {
+            // Arrange 
+            var key = "key2";
+            var eventSamples = new List<CustomEvent>();
+            string? receivedKey = null;
+            ServerCustomStatisticsResponse? receivedStatistics = null;
+
+            var connection = new HubConnectionBuilder()
+            .WithUrl("wss://localhost" + "/customstatisticshub", options =>
+            {
+                options.HttpMessageHandlerFactory = _ => server.CreateHandler();
+            })
+            .Build();
+
+            connections.Add(connection);
+
+            connection.On<string, ServerCustomStatisticsResponse>("ReceiveStatistics", (k, response) =>
+            {
+                receivedKey = k;
+                receivedStatistics = response;
+            });
+
+            await connection.StartAsync();
+
+            // Act
+            await connection.SendAsync("StartListen", key);
+
+            await Task.Delay(2000);
+
+            // Assert
+            Assert.IsNotNull(receivedKey);
+            Assert.That(receivedKey, Is.EqualTo(key));
+            Assert.IsNotNull(receivedStatistics);
+
+            Assert.IsNull(receivedStatistics.LastEvent);
 
             // Act - Adding new statistics
-            eventSamples.Add(new CustomEvent(KEY, "name3", "desc3"));
-            await SendEventsAsync(CUSTOM_TOPIC, KEY, new[]
+            eventSamples.Add(new CustomEvent(key, "name3", "desc3"));
+            await SendEventsAsync(CUSTOM_TOPIC, key, new[]
+            {
+                eventSamples[0]
+            });
+
+            await Task.Delay(2000);
+
+            // Assert - Gets a new added statistics 
+            Assert.IsNotNull(receivedKey);
+            Assert.That(receivedKey, Is.EqualTo(key));
+
+            Assert.IsNotNull(receivedStatistics);
+
+            Assert.IsNotNull(receivedStatistics.LastEvent);
+            Assert.That(receivedStatistics.LastEvent.Id, Is.EqualTo(eventSamples[0].Id));
+            Assert.That(receivedStatistics.LastEvent.Name, Is.EqualTo(eventSamples[0].Name));
+        }
+
+        [Test]
+        public async Task StartListen_ValidKey_ClientAddedToGroupAndGetsInitialStatisticsAndThenGetsNewStatistics()
+        {
+            // Arrange 
+            var key = "key3";
+            var eventSamples = new List<CustomEvent>();
+            string? receivedKey = null;
+            ServerCustomStatisticsResponse? receivedStatistics = null;
+
+            eventSamples.Add(new CustomEvent(key, "name1", "desc1"));
+            await SendEventsAsync(CUSTOM_TOPIC, key, new[]
+            {
+                eventSamples[0]
+            });
+
+            await Task.Delay(1000);
+
+            eventSamples.Add(new CustomEvent(key, "name2", "desc2"));
+            await SendEventsAsync(CUSTOM_TOPIC, key, new[]
+            {
+                eventSamples[1]
+            });
+
+            var connection = new HubConnectionBuilder()
+            .WithUrl("wss://localhost" + "/customstatisticshub", options =>
+            {
+                options.HttpMessageHandlerFactory = _ => server.CreateHandler();
+            })
+            .Build();
+
+            connections.Add(connection);
+
+            connection.On<string, ServerCustomStatisticsResponse>("ReceiveStatistics", (k, response) =>
+            {
+                receivedKey = k;
+                receivedStatistics = response;
+            });
+
+            await connection.StartAsync();
+
+            // Act
+            await connection.SendAsync("StartListen", key);
+
+            await Task.Delay(2000);
+
+            // Assert
+            Assert.IsNotNull(receivedKey);
+            Assert.That(receivedKey, Is.EqualTo(key));
+            Assert.IsNotNull(receivedStatistics);
+
+            Assert.IsNotNull(receivedStatistics);
+
+            Assert.IsNotNull(receivedStatistics.LastEvent);
+            Assert.That(receivedStatistics.LastEvent.Id, Is.EqualTo(eventSamples[1].Id));
+            Assert.That(receivedStatistics.LastEvent.Name, Is.EqualTo(eventSamples[1].Name));
+
+            // Act - Adding new statistics
+            eventSamples.Add(new CustomEvent(key, "name3", "desc3"));
+            await SendEventsAsync(CUSTOM_TOPIC, key, new[]
             {
                eventSamples[2]
             });
 
-            // Assert - Consuming new added statistics 
-            Assert.NotNull(receivedKey);
-            Assert.That(receivedKey, Is.EqualTo(KEY));
-            Assert.NotNull(receivedStatistics);
+            // Assert - Gets a new added statistics 
+            Assert.IsNotNull(receivedKey);
+            Assert.That(receivedKey, Is.EqualTo(key));
 
-            statistics = JsonSerializer.Deserialize<ServerCustomStatistics>(receivedStatistics);
-            Assert.NotNull(statistics);
+            Assert.IsNotNull(receivedStatistics);
 
-            //Assert.False(statistics.IsInitial);
-            Assert.NotNull(statistics.LastEvent);
-            Assert.That(statistics.LastEvent.Id, Is.EqualTo(eventSamples[2].Id));
-            Assert.That(statistics.LastEvent.Name, Is.EqualTo(eventSamples[2].Name));
+            Assert.IsNotNull(receivedStatistics.LastEvent);
+            Assert.That(receivedStatistics.LastEvent.Id, Is.EqualTo(eventSamples[2].Id));
+            Assert.That(receivedStatistics.LastEvent.Name, Is.EqualTo(eventSamples[2].Name));
+        }
+
+        [Test]
+        public async Task StartListen_WrongKey_ClientAddedToGroupAndGetsEmptyStatistics()
+        {
+            // Arrange 
+            var key = "key4";
+            var wrongKey = "wrong-key";
+            var eventSamples = new List<CustomEvent>();
+            string? receivedKey = null;
+            ServerCustomStatisticsResponse? receivedStatistics = null;
+
+            eventSamples.Add(new CustomEvent(key, "name1", "desc1"));
+            await SendEventsAsync(CUSTOM_TOPIC, key, new[]
+            {
+                eventSamples[0]
+            });
+
+            await Task.Delay(1000);
+
+            eventSamples.Add(new CustomEvent(key, "name2", "desc2"));
+            await SendEventsAsync(CUSTOM_TOPIC, key, new[]
+            {
+                eventSamples[1]
+            });
+
+            var connection = new HubConnectionBuilder()
+            .WithUrl("wss://localhost" + "/customstatisticshub", options =>
+            {
+                options.HttpMessageHandlerFactory = _ => server.CreateHandler();
+            })
+            .Build();
+
+            connections.Add(connection);
+
+            connection.On<string, ServerCustomStatisticsResponse>("ReceiveStatistics", (k, response) =>
+            {
+                receivedKey = k;
+                receivedStatistics = response;
+            });
+
+            await connection.StartAsync();
+
+            // Act
+            await connection.SendAsync("StartListen", wrongKey);
+
+            await Task.Delay(2000);
+
+            // Assert
+            Assert.IsNotNull(receivedKey);
+            Assert.That(receivedKey, Is.EqualTo(wrongKey));
+
+            Assert.IsNotNull(receivedStatistics);
+
+            Assert.IsNull(receivedStatistics.LastEvent);
+
+            // Act - Adding new statistics
+            eventSamples.Add(new CustomEvent(key, "name3", "desc3"));
+            await SendEventsAsync(CUSTOM_TOPIC, key, new[]
+            {
+                eventSamples[2]
+            });
+
+            // Assert - Gets nothing
+            Assert.IsNotNull(receivedKey);
+            Assert.That(receivedKey, Is.EqualTo(wrongKey));
+
+            Assert.IsNotNull(receivedStatistics);
+
+            Assert.IsNull(receivedStatistics.LastEvent);
         }
     }
 }

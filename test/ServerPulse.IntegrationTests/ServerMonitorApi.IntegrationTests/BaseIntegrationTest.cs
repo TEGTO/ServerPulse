@@ -16,13 +16,13 @@ namespace ServerMonitorApi.IntegrationTests
         protected const string ALIVE_TOPIC = "AliveTopic_";
         protected const string CONFIGURATION_TOPIC = "ConfigurationTopic_";
         protected const string LOAD_TOPIC = "LoadTopic_";
+        protected const string LOAD_PROCESS_TOPIC = "LoadEventProcessTopic";
         protected const string CUSTOM_TOPIC = "CustomEventTopic_";
         private const int TIMEOUT_IN_MILLISECONDS = 5000;
 
         protected HttpClient client;
         protected IMessageConsumer messageConsumer;
         protected Mock<ISlotKeyChecker>? mockSlotKeyChecker;
-        protected Mock<IStatisticsEventSender>? mockStatisticsEventSender;
         private WebAppFactoryWrapper wrapper;
         private WebApplicationFactory<Program> factory;
         private IServiceScope scope;
@@ -43,13 +43,6 @@ namespace ServerMonitorApi.IntegrationTests
                         .ReturnsAsync(true);
 
                     services.AddSingleton(mockSlotKeyChecker.Object);
-
-                    services.RemoveAll(typeof(IStatisticsEventSender));
-
-                    mockStatisticsEventSender = new Mock<IStatisticsEventSender>();
-
-                    services.AddSingleton(mockStatisticsEventSender.Object);
-
                 });
             });
 

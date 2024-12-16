@@ -55,7 +55,7 @@ namespace AnalyzerApi.Command.Builders.LoadStatistics.Tests
                 .ReturnsAsync(methodStats);
 
             // Act
-            var result = await handler.Handle(new BuildLoadStatisticsCommand(key), CancellationToken.None);
+            var result = await handler.Handle(new BuildStatisticsCommand<ServerLoadStatistics>(key), CancellationToken.None);
 
             // Assert
             Assert.That(result.AmountOfEvents, Is.EqualTo(eventAmount));
@@ -79,7 +79,7 @@ namespace AnalyzerApi.Command.Builders.LoadStatistics.Tests
                 .ReturnsAsync((LoadMethodStatistics?)null);
 
             // Act
-            var result = await handler.Handle(new BuildLoadStatisticsCommand(key), CancellationToken.None);
+            var result = await handler.Handle(new BuildStatisticsCommand<ServerLoadStatistics>(key), CancellationToken.None);
 
             // Assert
             Assert.That(result.AmountOfEvents, Is.EqualTo(0));
@@ -115,7 +115,7 @@ namespace AnalyzerApi.Command.Builders.LoadStatistics.Tests
                 .ReturnsAsync((LoadMethodStatistics?)null);
 
             // Act
-            var result = await handler.Handle(new BuildLoadStatisticsCommand(key), CancellationToken.None);
+            var result = await handler.Handle(new BuildStatisticsCommand<ServerLoadStatistics>(key), CancellationToken.None);
 
             // Assert
             Assert.That(result.AmountOfEvents, Is.EqualTo(eventAmount));

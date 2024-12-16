@@ -8,7 +8,8 @@ services:
       - ASPNETCORE_HTTP_PORTS=8080
       - ConnectionStrings__AuthenticationDb=${ConnectionStrings__AuthenticationDb}
       - EFCreateDatabase=${EFCreateDatabase}
-      - AuthSettings__Key=${AuthSettings__Key}
+      - AuthSettings__PublicKey=${AuthSettings__PublicKey}
+      - AuthSettings__PrivateKey=${AuthSettings__PrivateKey}
       - AuthSettings__Audience=${AuthSettings__Audience}
       - AuthSettings__Issuer=${AuthSettings__Issuer}
       - AuthSettings__ExpiryInMinutes=${AuthSettings__ExpiryInMinutes}
@@ -27,7 +28,7 @@ services:
       - SlotsPerUser=${SlotsPerUser}
       - ServerMonitorApi__DeleteStatistics=${ServerMonitorApi__DeleteStatistics}
       - ApiGateway=${ApiGateway}
-      - AuthSettings__Key=${AuthSettings__Key}
+      - AuthSettings__PublicKey=${AuthSettings__PublicKey}
       - AuthSettings__Audience=${AuthSettings__Audience}
       - AuthSettings__Issuer=${AuthSettings__Issuer}
       - AuthSettings__ExpiryInMinutes=${AuthSettings__ExpiryInMinutes}
@@ -47,9 +48,9 @@ services:
       - Kafka__AliveTopic=${Kafka__AliveTopic}
       - Kafka__ConfigurationTopic=${Kafka__ConfigurationTopic}
       - Kafka__LoadTopic=${Kafka__LoadTopic}
+      - Kafka__ProcessLoadEventTopic=${Kafka__ProcessLoadEventTopic}
       - Kafka__CustomTopic=${Kafka__CustomTopic}
       - ServerSlotApi__Check=${ServerSlotApi__Check}
-      - Analyzer__Load=${Analyzer__Load}
       - ConnectionStrings__RedisServer=${ConnectionStrings__RedisServer}
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
@@ -66,6 +67,7 @@ services:
       - Kafka__AliveTopic=${Kafka__AliveTopic}
       - Kafka__ConfigurationTopic=${Kafka__ConfigurationTopic}
       - Kafka__LoadTopic=${Kafka__LoadTopic}
+      - Kafka__ProcessLoadEventTopic=${Kafka__ProcessLoadEventTopic}
       - Kafka__ServerStatisticsTopic=${Kafka__ServerStatisticsTopic}
       - Kafka__TopicDataSaveInDays=${Kafka__TopicDataSaveInDays}
       - PulseEventIntervalInMilliseconds=${PulseEventIntervalInMilliseconds}
@@ -87,7 +89,7 @@ services:
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_Kestrel__Certificates__Default__Password=${CertificatePassword}
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/app/certificates/aspnetapp.pfx
-      - AuthSettings__Key=${AuthSettings__Key}
+      - AuthSettings__PublicKey=${AuthSettings__PublicKey}
       - AuthSettings__Audience=${AuthSettings__Audience}
       - AuthSettings__Issuer=${AuthSettings__Issuer}
       - AuthSettings__ExpiryInMinutes=${AuthSettings__ExpiryInMinutes}

@@ -1,8 +1,8 @@
-﻿using AnalyzerApi.Command.Controllers.GetAmountStatisticsInRange;
+﻿using AnalyzerApi.Command.Controllers.GetLoadAmountStatisticsInRange;
 using AnalyzerApi.Command.Controllers.GetLoadEventsInDataRange;
 using AnalyzerApi.Command.Controllers.GetSomeCustomEvents;
 using AnalyzerApi.Command.Controllers.GetSomeLoadEvents;
-using AnalyzerApi.Command.Controllers.GetWholeAmountStatisticsInDays;
+using AnalyzerApi.Command.Controllers.GetDailyLoadStatistics;
 using AnalyzerApi.Infrastructure.Dtos.Responses.Events;
 using AnalyzerApi.Infrastructure.Dtos.Responses.Statistics;
 using AnalyzerApi.Infrastructure.Requests;
@@ -58,7 +58,7 @@ namespace AnalyzerApi.Controllers.Tests
         }
 
         [Test]
-        public async Task GetWholeAmountStatisticsInDays_ValidKey_ReturnsOkWithResponse()
+        public async Task GetDailyLoadStatistics_ValidKey_ReturnsOkWithResponse()
         {
             // Arrange
             var key = "testKey";
@@ -69,18 +69,18 @@ namespace AnalyzerApi.Controllers.Tests
             };
 
             mockMediator
-                .Setup(m => m.Send(It.IsAny<GetWholeAmountStatisticsInDaysQuery>(), It.IsAny<CancellationToken>()))
+                .Setup(m => m.Send(It.IsAny<GetDailyLoadStatisticsQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await controller.GetWholeAmountStatisticsInDays(key, CancellationToken.None);
+            var result = await controller.GetDailyLoadStatistics(key, CancellationToken.None);
 
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(result.Result);
             var okResult = result.Result as OkObjectResult;
             Assert.IsNotNull(okResult);
             Assert.That(okResult.Value, Is.EqualTo(expectedResponse));
-            mockMediator.Verify(m => m.Send(It.IsAny<GetWholeAmountStatisticsInDaysQuery>(), It.IsAny<CancellationToken>()), Times.Once);
+            mockMediator.Verify(m => m.Send(It.IsAny<GetDailyLoadStatisticsQuery>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Test]
@@ -101,7 +101,7 @@ namespace AnalyzerApi.Controllers.Tests
             };
 
             mockMediator
-                .Setup(m => m.Send(It.IsAny<GetAmountStatisticsInRangeQuery>(), It.IsAny<CancellationToken>()))
+                .Setup(m => m.Send(It.IsAny<GetLoadAmountStatisticsInRangeQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedResponse);
 
             // Act
@@ -112,7 +112,7 @@ namespace AnalyzerApi.Controllers.Tests
             var okResult = result.Result as OkObjectResult;
             Assert.IsNotNull(okResult);
             Assert.That(okResult.Value, Is.EqualTo(expectedResponse));
-            mockMediator.Verify(m => m.Send(It.IsAny<GetAmountStatisticsInRangeQuery>(), It.IsAny<CancellationToken>()), Times.Once);
+            mockMediator.Verify(m => m.Send(It.IsAny<GetLoadAmountStatisticsInRangeQuery>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Test]

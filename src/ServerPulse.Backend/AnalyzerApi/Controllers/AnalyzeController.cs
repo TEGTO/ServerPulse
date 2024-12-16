@@ -1,8 +1,8 @@
-﻿using AnalyzerApi.Command.Controllers.GetAmountStatisticsInRange;
+﻿using AnalyzerApi.Command.Controllers.GetDailyLoadStatistics;
+using AnalyzerApi.Command.Controllers.GetLoadAmountStatisticsInRange;
 using AnalyzerApi.Command.Controllers.GetLoadEventsInDataRange;
 using AnalyzerApi.Command.Controllers.GetSomeCustomEvents;
 using AnalyzerApi.Command.Controllers.GetSomeLoadEvents;
-using AnalyzerApi.Command.Controllers.GetWholeAmountStatisticsInDays;
 using AnalyzerApi.Infrastructure.Dtos.Responses.Events;
 using AnalyzerApi.Infrastructure.Dtos.Responses.Statistics;
 using AnalyzerApi.Infrastructure.Requests;
@@ -37,7 +37,7 @@ namespace AnalyzerApi.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<LoadAmountStatisticsResponse>>> GetDailyLoadStatistics(string key, CancellationToken cancellationToken)
         {
-            var response = await mediator.Send(new GetWholeAmountStatisticsInDaysQuery(key), cancellationToken);
+            var response = await mediator.Send(new GetDailyLoadStatisticsQuery(key), cancellationToken);
             return Ok(response);
         }
 
@@ -46,7 +46,7 @@ namespace AnalyzerApi.Controllers
         [HttpPost]
         public async Task<ActionResult<IEnumerable<LoadAmountStatisticsResponse>>> GetLoadAmountStatisticsInRange(MessageAmountInRangeRequest request, CancellationToken cancellationToken)
         {
-            var response = await mediator.Send(new GetAmountStatisticsInRangeQuery(request), cancellationToken);
+            var response = await mediator.Send(new GetLoadAmountStatisticsInRangeQuery(request), cancellationToken);
             return Ok(response);
         }
 

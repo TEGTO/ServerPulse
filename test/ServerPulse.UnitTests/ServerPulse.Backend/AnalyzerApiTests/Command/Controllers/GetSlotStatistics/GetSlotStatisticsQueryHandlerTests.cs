@@ -1,6 +1,4 @@
-﻿using AnalyzerApi.Command.Builders.CustomStatistics;
-using AnalyzerApi.Command.Builders.LifecycleStatistics;
-using AnalyzerApi.Command.Builders.LoadStatistics;
+﻿using AnalyzerApi.Command.Builders;
 using AnalyzerApi.Infrastructure;
 using AnalyzerApi.Infrastructure.Dtos.Responses.Events;
 using AnalyzerApi.Infrastructure.Dtos.Responses.Statistics;
@@ -78,11 +76,11 @@ namespace AnalyzerApi.Command.Controllers.GetSlotStatistics.Tests
                 new CustomEventWrapper {Id = "1", Key = key, Name = "CustomEvent1", Description = "Test description", SerializedMessage = ""}
             };
 
-            mockMediator.Setup(m => m.Send(It.IsAny<BuildLifecycleStatisticsCommand>(), It.IsAny<CancellationToken>()))
+            mockMediator.Setup(m => m.Send(It.IsAny<BuildStatisticsCommand<ServerLifecycleStatistics>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(lifecycleStats);
-            mockMediator.Setup(m => m.Send(It.IsAny<BuildLoadStatisticsCommand>(), It.IsAny<CancellationToken>()))
+            mockMediator.Setup(m => m.Send(It.IsAny<BuildStatisticsCommand<ServerLoadStatistics>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(loadStats);
-            mockMediator.Setup(m => m.Send(It.IsAny<BuildCustomStatisticsCommand>(), It.IsAny<CancellationToken>()))
+            mockMediator.Setup(m => m.Send(It.IsAny<BuildStatisticsCommand<ServerCustomStatistics>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(customStats);
 
             mockLoadEventReceiver.Setup(r => r.GetCertainAmountOfEventsAsync(It.IsAny<GetCertainMessageNumberOptions>(), It.IsAny<CancellationToken>()))
@@ -144,9 +142,9 @@ namespace AnalyzerApi.Command.Controllers.GetSlotStatistics.Tests
             Assert.That(result.LastLoadEvents.Count(), Is.EqualTo(1));
             Assert.That(result.LastCustomEvents.Count(), Is.EqualTo(1));
 
-            mockMediator.Verify(m => m.Send(It.IsAny<BuildLifecycleStatisticsCommand>(), It.IsAny<CancellationToken>()), Times.Once);
-            mockMediator.Verify(m => m.Send(It.IsAny<BuildLoadStatisticsCommand>(), It.IsAny<CancellationToken>()), Times.Once);
-            mockMediator.Verify(m => m.Send(It.IsAny<BuildCustomStatisticsCommand>(), It.IsAny<CancellationToken>()), Times.Once);
+            mockMediator.Verify(m => m.Send(It.IsAny<BuildStatisticsCommand<ServerLifecycleStatistics>>(), It.IsAny<CancellationToken>()), Times.Once);
+            mockMediator.Verify(m => m.Send(It.IsAny<BuildStatisticsCommand<ServerLoadStatistics>>(), It.IsAny<CancellationToken>()), Times.Once);
+            mockMediator.Verify(m => m.Send(It.IsAny<BuildStatisticsCommand<ServerCustomStatistics>>(), It.IsAny<CancellationToken>()), Times.Once);
 
             mockLoadEventReceiver.Verify(m => m.GetCertainAmountOfEventsAsync(It.IsAny<GetCertainMessageNumberOptions>(), It.IsAny<CancellationToken>()), Times.Once);
             mockCustomEventReceiver.Verify(m => m.GetCertainAmountOfEventsAsync(It.IsAny<GetCertainMessageNumberOptions>(), It.IsAny<CancellationToken>()), Times.Once);

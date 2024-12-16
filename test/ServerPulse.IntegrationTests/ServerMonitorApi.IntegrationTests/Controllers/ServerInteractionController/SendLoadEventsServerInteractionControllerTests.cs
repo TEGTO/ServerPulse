@@ -28,13 +28,18 @@ namespace ServerMonitorApi.IntegrationTests.Controllers.ServerInteractionControl
             Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
             var lastMessage = await ReceiveLastTopicEventAsync<LoadEvent>(LOAD_TOPIC, loadEvents[0].Key);
+            var lastProcessMessage = await ReceiveLastTopicEventAsync<LoadEvent>(LOAD_PROCESS_TOPIC, "");
 
             Assert.IsNotNull(lastMessage);
+            Assert.IsNotNull(lastProcessMessage);
+
             Assert.True(loadEvents.Any(x => x.Id == lastMessage.Id)); //Each event will be sent in parallel, so we don't know which one will be the last one
+            Assert.True(loadEvents.Any(x => x.Id == lastProcessMessage.Id));
+
             Assert.True(loadEvents.Any(x => x.Endpoint == lastMessage.Endpoint));
+            Assert.True(loadEvents.Any(x => x.Endpoint == lastProcessMessage.Endpoint));
 
             mockSlotKeyChecker?.Verify(x => x.CheckSlotKeyAsync(loadEvents[0].Key, It.IsAny<CancellationToken>()), Times.Once);
-            mockStatisticsEventSender?.Verify(x => x.SendLoadEventForStatistics(It.IsAny<LoadEvent>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
         }
 
         [Test]
@@ -64,7 +69,6 @@ namespace ServerMonitorApi.IntegrationTests.Controllers.ServerInteractionControl
             Assert.That(messages, Contains.Item($"Server slot with key '{loadEvents[0].Key}' is not found!"));
 
             mockSlotKeyChecker?.Verify(x => x.CheckSlotKeyAsync(loadEvents[0].Key, It.IsAny<CancellationToken>()), Times.Once);
-            mockStatisticsEventSender?.Verify(x => x.SendLoadEventForStatistics(It.IsAny<LoadEvent>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Test]

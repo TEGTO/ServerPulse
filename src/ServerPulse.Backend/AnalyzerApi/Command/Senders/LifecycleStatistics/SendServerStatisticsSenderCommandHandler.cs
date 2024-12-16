@@ -10,7 +10,7 @@ using System.Text.Json;
 
 namespace AnalyzerApi.Command.Senders.LifecycleStatistics
 {
-    public class SendServerStatisticsSenderCommandHandler : IRequestHandler<SendServerStatisticsSenderCommand, Unit>
+    public class SendServerStatisticsSenderCommandHandler : IRequestHandler<SendStatisticsCommand<ServerLifecycleStatistics>, Unit>
     {
         private readonly IMessageProducer producer;
         private readonly IHubContext<StatisticsHub<ServerLifecycleStatistics>, IStatisticsHubClient> hubStatistics;
@@ -25,16 +25,14 @@ namespace AnalyzerApi.Command.Senders.LifecycleStatistics
             serverStatisticsTopic = configuration[Configuration.KAFKA_SERVER_STATISTICS_TOPIC]!;
         }
 
-        public async Task<Unit> Handle(SendServerStatisticsSenderCommand command, CancellationToken cancellationToken)
+        public async Task<Unit> Handle(SendStatisticsCommand<ServerLifecycleStatistics> command, CancellationToken cancellationToken)
         {
             var topic = serverStatisticsTopic + command.Key;
 
             await producer.ProduceAsync(topic, JsonSerializer.Serialize(command.Statistics), cancellationToken);
 
             var response = mapper.Map<ServerLifecycleStatisticsResponse>(command.Statistics);
-            var serializedData = JsonSerializer.Serialize(response);
-
-            await hubStatistics.Clients.Group(command.Key).ReceiveStatistics(command.Key, serializedData);
+            await hubStatistics.Clients.Group(command.Key).ReceiveStatistics(command.Key, response);
 
             return Unit.Value;
         }

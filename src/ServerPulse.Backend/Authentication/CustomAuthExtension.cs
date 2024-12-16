@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using System.Security.Cryptography;
 
 namespace Authentication
 {
@@ -14,7 +14,8 @@ namespace Authentication
         {
             var jwtSettings = new JwtSettings()
             {
-                Key = configuration[JwtConfiguration.JWT_SETTINGS_KEY]!,
+                PrivateKey = configuration[JwtConfiguration.JWT_SETTINGS_PRIVATE_KEY]!,
+                PublicKey = configuration[JwtConfiguration.JWT_SETTINGS_PUBLIC_KEY]!,
                 Audience = configuration[JwtConfiguration.JWT_SETTINGS_AUDIENCE]!,
                 Issuer = configuration[JwtConfiguration.JWT_SETTINGS_ISSUER]!,
                 ExpiryInMinutes = Convert.ToDouble(configuration[JwtConfiguration.JWT_SETTINGS_EXPIRY_IN_MINUTES]!),
@@ -42,7 +43,7 @@ namespace Authentication
                 {
                     ValidIssuer = jwtSettings.Issuer,
                     ValidAudience = jwtSettings.Audience,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
+                    IssuerSigningKey = jwtSettings.GetRsaPublicKeyFromSettings(),
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
@@ -56,8 +57,23 @@ namespace Authentication
         {
             app.UseAuthentication();
             app.UseAuthorization();
-
             return app;
+        }
+
+        public static RsaSecurityKey? GetRsaPublicKeyFromSettings(this JwtSettings jwtSettings)
+        {
+            var rsa = RSA.Create();
+            rsa.ImportFromPem(jwtSettings.PublicKey.ToCharArray());
+
+            return new RsaSecurityKey(rsa);
+        }
+
+        public static RsaSecurityKey? GetRsaPrivateKeyFromSettings(this JwtSettings jwtSettings)
+        {
+            var rsa = RSA.Create();
+            rsa.ImportFromPem(jwtSettings.PrivateKey.ToCharArray());
+
+            return new RsaSecurityKey(rsa);
         }
     }
 }

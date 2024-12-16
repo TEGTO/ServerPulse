@@ -9,9 +9,10 @@ namespace ServerMonitorApi.Command.SendLoadEvents.Tests
     [TestFixture]
     internal class SendLoadEventsCommandHandlerTests
     {
+        const string KAFKA_LOAD_TOPIC_PROCESS = "ProcessLoadEvent";
+
         private Mock<ISlotKeyChecker> slotKeyCheckerMock;
         private Mock<IMessageProducer> messageProducerMock;
-        private Mock<IStatisticsEventSender> statisticsEventSenderMock;
         private Mock<IConfiguration> configurationMock;
         private SendLoadEventsCommandHandler handler;
         private CancellationToken cancellationToken;
@@ -21,15 +22,14 @@ namespace ServerMonitorApi.Command.SendLoadEvents.Tests
         {
             slotKeyCheckerMock = new Mock<ISlotKeyChecker>();
             messageProducerMock = new Mock<IMessageProducer>();
-            statisticsEventSenderMock = new Mock<IStatisticsEventSender>();
             configurationMock = new Mock<IConfiguration>();
 
             configurationMock.Setup(c => c[Configuration.KAFKA_LOAD_TOPIC]).Returns("KafkaLoadTopic-");
+            configurationMock.Setup(c => c[Configuration.KAFKA_LOAD_TOPIC_PROCESS]).Returns(KAFKA_LOAD_TOPIC_PROCESS);
 
             handler = new SendLoadEventsCommandHandler(
                 slotKeyCheckerMock.Object,
                 messageProducerMock.Object,
-                statisticsEventSenderMock.Object,
                 configurationMock.Object
             );
 
@@ -58,7 +58,7 @@ namespace ServerMonitorApi.Command.SendLoadEvents.Tests
             // Assert
             slotKeyCheckerMock.Verify(s => s.CheckSlotKeyAsync("key1", cancellationToken), Times.Once);
             messageProducerMock.Verify(p => p.ProduceAsync(expectedTopic, It.IsAny<string>(), cancellationToken), Times.Exactly(2));
-            statisticsEventSenderMock.Verify(h => h.SendLoadEventForStatistics(It.IsAny<LoadEvent>(), cancellationToken), Times.Exactly(2));
+            messageProducerMock.Verify(h => h.ProduceAsync(KAFKA_LOAD_TOPIC_PROCESS, It.IsAny<string>(), cancellationToken), Times.Exactly(2));
         }
 
         [Test]
@@ -72,7 +72,7 @@ namespace ServerMonitorApi.Command.SendLoadEvents.Tests
 
             slotKeyCheckerMock.Verify(s => s.CheckSlotKeyAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
             messageProducerMock.Verify(p => p.ProduceAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
-            statisticsEventSenderMock.Verify(h => h.SendLoadEventForStatistics(It.IsAny<LoadEvent>(), cancellationToken), Times.Never);
+            messageProducerMock.Verify(h => h.ProduceAsync(KAFKA_LOAD_TOPIC_PROCESS, It.IsAny<string>(), cancellationToken), Times.Never);
         }
 
         [Test]
@@ -86,7 +86,7 @@ namespace ServerMonitorApi.Command.SendLoadEvents.Tests
 
             slotKeyCheckerMock.Verify(s => s.CheckSlotKeyAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
             messageProducerMock.Verify(p => p.ProduceAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
-            statisticsEventSenderMock.Verify(h => h.SendLoadEventForStatistics(It.IsAny<LoadEvent>(), cancellationToken), Times.Never);
+            messageProducerMock.Verify(h => h.ProduceAsync(KAFKA_LOAD_TOPIC_PROCESS, It.IsAny<string>(), cancellationToken), Times.Never);
         }
 
         [Test]
@@ -107,7 +107,7 @@ namespace ServerMonitorApi.Command.SendLoadEvents.Tests
 
             slotKeyCheckerMock.Verify(s => s.CheckSlotKeyAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
             messageProducerMock.Verify(p => p.ProduceAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
-            statisticsEventSenderMock.Verify(h => h.SendLoadEventForStatistics(It.IsAny<LoadEvent>(), cancellationToken), Times.Never);
+            messageProducerMock.Verify(h => h.ProduceAsync(KAFKA_LOAD_TOPIC_PROCESS, It.IsAny<string>(), cancellationToken), Times.Never);
         }
 
         [Test]
@@ -129,7 +129,7 @@ namespace ServerMonitorApi.Command.SendLoadEvents.Tests
 
             slotKeyCheckerMock.Verify(s => s.CheckSlotKeyAsync("key1", cancellationToken), Times.Once);
             messageProducerMock.Verify(p => p.ProduceAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
-            statisticsEventSenderMock.Verify(h => h.SendLoadEventForStatistics(It.IsAny<LoadEvent>(), cancellationToken), Times.Never);
+            messageProducerMock.Verify(h => h.ProduceAsync(KAFKA_LOAD_TOPIC_PROCESS, It.IsAny<string>(), cancellationToken), Times.Never);
         }
     }
 }

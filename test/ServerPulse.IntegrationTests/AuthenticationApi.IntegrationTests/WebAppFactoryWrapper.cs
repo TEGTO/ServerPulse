@@ -77,7 +77,8 @@ namespace AuthenticationApi.IntegrationTests
             {
                 { $"ConnectionStrings:{Configuration.AUTH_DATABASE_CONNECTION_STRING}", DbContainer?.GetConnectionString() },
                 { "EFCreateDatabase", "true" },
-                { "AuthSettings:Key", "q57+LXDr4HtynNQaYVs7t50HwzvTNrWM2E/OepoI/D4=" },
+                { "AuthSettings:PublicKey", TestRsaKeys.PUBLIC_KEY },
+                { "AuthSettings:PrivateKey", TestRsaKeys.PRIVATE_KEY  },
                 { "AuthSettings:Issuer", "https://token.issuer.example.com" },
                 { "AuthSettings:ExpiryInMinutes", "30" },
                 { "AuthSettings:Audience", "https://api.example.com" },

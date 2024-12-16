@@ -73,7 +73,7 @@ namespace AnalyzerApi.Command.Builders.LifecycleStatistics.Tests
                 .ReturnsAsync(lastStatistics);
 
             // Act
-            var result = await handler.Handle(new BuildLifecycleStatisticsCommand(key), CancellationToken.None);
+            var result = await handler.Handle(new BuildStatisticsCommand<ServerLifecycleStatistics>(key), CancellationToken.None);
 
             // Assert
             Assert.That(result.IsAlive, Is.EqualTo(expectedIsAlive));
@@ -120,7 +120,7 @@ namespace AnalyzerApi.Command.Builders.LifecycleStatistics.Tests
                 .ReturnsAsync(lastStatistics);
 
             // Act
-            var result = await handler.Handle(new BuildLifecycleStatisticsCommand(key), CancellationToken.None);
+            var result = await handler.Handle(new BuildStatisticsCommand<ServerLifecycleStatistics>(key), CancellationToken.None);
 
             // Assert
             var expectedUptime = lastStatistics.ServerUptime + TimeSpan.FromSeconds(pulseAgeSeconds);
@@ -186,7 +186,7 @@ namespace AnalyzerApi.Command.Builders.LifecycleStatistics.Tests
                 .ReturnsAsync(lastStatistics);
 
             // Act
-            var result = await handler.Handle(new BuildLifecycleStatisticsCommand(key), CancellationToken.None);
+            var result = await handler.Handle(new BuildStatisticsCommand<ServerLifecycleStatistics>(key), CancellationToken.None);
 
             // Assert
             Assert.That(result.IsAlive, Is.EqualTo(expectedIsAlive));

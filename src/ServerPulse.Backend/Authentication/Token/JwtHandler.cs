@@ -4,17 +4,21 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace Authentication.Token
 {
     public class JwtHandler : ITokenHandler
     {
         private readonly JwtSettings jwtSettings;
+        private readonly RsaSecurityKey? rsaPublicKey;
+        private readonly RsaSecurityKey? rsaPrivateKey;
 
         public JwtHandler(JwtSettings jwtSettings)
         {
             this.jwtSettings = jwtSettings;
+
+            rsaPublicKey = jwtSettings.GetRsaPublicKeyFromSettings();
+            rsaPrivateKey = jwtSettings.GetRsaPrivateKeyFromSettings();
         }
 
         #region ITokenHandler Members
@@ -38,7 +42,7 @@ namespace Authentication.Token
             {
                 ValidIssuer = jwtSettings.Issuer,
                 ValidAudience = jwtSettings.Audience,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
+                IssuerSigningKey = rsaPublicKey,
                 ValidateIssuer = true,
                 ValidateAudience = true,
                 ValidateLifetime = false,
@@ -50,7 +54,8 @@ namespace Authentication.Token
             var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var securityToken);
 
             var jwtSecurityToken = securityToken as JwtSecurityToken;
-            if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+
+            if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.RsaSha256, StringComparison.InvariantCultureIgnoreCase))
             {
                 throw new SecurityTokenException("Invalid Token");
             }
@@ -98,9 +103,7 @@ namespace Authentication.Token
 
         private SigningCredentials GetSigningCredentials()
         {
-            var key = Encoding.UTF8.GetBytes(jwtSettings.Key);
-            var secretKey = new SymmetricSecurityKey(key);
-            return new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
+            return new SigningCredentials(rsaPrivateKey, SecurityAlgorithms.RsaSha256);
         }
 
         #endregion

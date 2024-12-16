@@ -38,7 +38,6 @@ builder.Services.AddKafkaProducer(producerConfig, adminConfig);
 #region Project Services
 
 builder.Services.AddSingleton<ISlotKeyChecker, SlotKeyChecker>();
-builder.Services.AddSingleton<IStatisticsEventSender, StatisticsEventSender>();
 
 #endregion
 

@@ -1,10 +1,9 @@
-﻿using AnalyzerApi.Command.Builders.CustomStatistics;
-using AnalyzerApi.Command.Builders.LifecycleStatistics;
-using AnalyzerApi.Command.Builders.LoadStatistics;
+﻿using AnalyzerApi.Command.Builders;
 using AnalyzerApi.Infrastructure;
 using AnalyzerApi.Infrastructure.Dtos.Responses.Events;
 using AnalyzerApi.Infrastructure.Dtos.Responses.Statistics;
 using AnalyzerApi.Infrastructure.Models;
+using AnalyzerApi.Infrastructure.Models.Statistics;
 using AnalyzerApi.Infrastructure.Models.Wrappers;
 using AnalyzerApi.Services.Receivers.Event;
 using AutoMapper;
@@ -40,9 +39,9 @@ namespace AnalyzerApi.Command.Controllers.GetSlotStatistics
 
             var options = new GetCertainMessageNumberOptions(key, maxLastEventAmount, DateTime.UtcNow, false);
 
-            var generalStatsTask = mediator.Send(new BuildLifecycleStatisticsCommand(key), cancellationToken);
-            var loadStatsTask = mediator.Send(new BuildLoadStatisticsCommand(key), cancellationToken);
-            var customStatsTask = mediator.Send(new BuildCustomStatisticsCommand(key), cancellationToken);
+            var generalStatsTask = mediator.Send(new BuildStatisticsCommand<ServerLifecycleStatistics>(key), cancellationToken);
+            var loadStatsTask = mediator.Send(new BuildStatisticsCommand<ServerLoadStatistics>(key), cancellationToken);
+            var customStatsTask = mediator.Send(new BuildStatisticsCommand<ServerCustomStatistics>(key), cancellationToken);
             var loadEventsTask = loadEventReceiver.GetCertainAmountOfEventsAsync(options, cancellationToken);
             var customEventsTask = customEventReceiver.GetCertainAmountOfEventsAsync(options, cancellationToken);
 

@@ -6,7 +6,6 @@ using AnalyzerApi.Infrastructure.Models.Wrappers;
 using AutoMapper;
 using Microsoft.AspNetCore.SignalR;
 using Moq;
-using System.Text.Json;
 
 namespace AnalyzerApi.Command.Senders.LoadStatistics.Tests
 {
@@ -63,13 +62,11 @@ namespace AnalyzerApi.Command.Senders.LoadStatistics.Tests
             mockMapper.Setup(m => m.Map<ServerLoadStatisticsResponse>(statistics)).Returns(response);
 
             // Act
-            await handler.Handle(new SendLoadStatisticsCommand(key, statistics), CancellationToken.None);
+            await handler.Handle(new SendStatisticsCommand<ServerLoadStatistics>(key, statistics), CancellationToken.None);
 
             // Assert
-            var serializedResponse = JsonSerializer.Serialize(response);
-
             mockMapper.Verify(m => m.Map<ServerLoadStatisticsResponse>(statistics), Times.Once);
-            mockClientProxy.Verify(c => c.ReceiveStatistics(key, serializedResponse), Times.Once);
+            mockClientProxy.Verify(c => c.ReceiveStatistics(key, response), Times.Once);
         }
     }
 }
