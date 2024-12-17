@@ -49,6 +49,8 @@ namespace AnalyzerApi.IntegrationTests
                 .WithImage("redis:latest")
                 .Build();
 
+            var kafkaContainerName = Guid.NewGuid().ToString("D");
+
             KafkaContainer = new KafkaBuilder()
                 .WithImage("confluentinc/cp-kafka:7.5.0")
                 .WithEnvironment("KAFKA_NUM_PARTITIONS", "3")
@@ -57,6 +59,7 @@ namespace AnalyzerApi.IntegrationTests
             await RedisContainer.StartAsync();
             await KafkaContainer.StartAsync();
         }
+
         private WebApplicationFactory<Program> InitializeFactory()
         {
             return new WebApplicationFactory<Program>()
@@ -84,12 +87,14 @@ namespace AnalyzerApi.IntegrationTests
                 { "Kafka:CustomTopic", "CustomEventTopic_" },
                 { "Kafka:LoadMethodStatisticsTopic", "LoadMethodStatisticsTopic_" },
                 { "PulseEventIntervalInMilliseconds", "20000" },
-                { "StatisticsCollectIntervalInMilliseconds", "5000" },
+                { "StatisticsCollectIntervalInMilliseconds", "1000" },
                 { "ConnectionStrings:RedisServer",  RedisContainer?.GetConnectionString()},
                 { "Cache:Cache__ExpiryInMinutes", "5" },
                 { "MinimumStatisticsTimeSpanInSeconds", "0" },
                 { "MaxEventAmountToGetInSlotData", "25" },
                 { "MaxEventAmountToReadPerRequest", "20" },
+                { "LoadEventProcessing:BatchSize", "2" },
+                { "LoadEventProcessing:BatchIntervalInMilliseconds", "1000" },
             });
 
             return configurationBuilder.Build();

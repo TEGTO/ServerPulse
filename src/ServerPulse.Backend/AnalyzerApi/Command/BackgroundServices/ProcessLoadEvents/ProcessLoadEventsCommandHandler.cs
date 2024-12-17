@@ -4,12 +4,15 @@ using AnalyzerApi.Services.Receivers.Statistics;
 using EventCommunication;
 using MediatR;
 using MessageBus.Interfaces;
+using System.Collections.Concurrent;
 using System.Text.Json;
 
 namespace AnalyzerApi.Command.BackgroundServices.ProcessLoadEvents
 {
     public class ProcessLoadEventsCommandHandler : IRequestHandler<ProcessLoadEventsCommand, Unit>
     {
+        private static readonly ConcurrentDictionary<string, SemaphoreSlim> keyLocks = new();
+
         private readonly IMessageProducer producer;
         private readonly IStatisticsReceiver<LoadMethodStatistics> receiver;
         private readonly string loadMethodStatisticsTopic;
@@ -25,48 +28,47 @@ namespace AnalyzerApi.Command.BackgroundServices.ProcessLoadEvents
         {
             var events = command.Events;
 
-            ValidateCommand(command);
+            ValidateCommand(events);
 
-            await ProcessLoadEventsAsync(events, cancellationToken);
+            var groupedEvents = events.GroupBy(e => e.Key);
+
+            var tasks = groupedEvents.Select(group => ProcessLoadEventsForKeyWithLockAsync(group.Key, group.ToArray(), cancellationToken));
+
+            await Task.WhenAll(tasks);
 
             return Unit.Value;
         }
 
-        #region Private Helpers
-
-        private static void ValidateCommand(ProcessLoadEventsCommand command)
+        private static void ValidateCommand(LoadEvent[] events)
         {
-            var events = command.Events;
-
             if (events == null || events.Length == 0)
             {
                 throw new InvalidDataException("Events could not be null or empty!");
             }
-            else if (!events.All(x => x.Key == events[0].Key))
-            {
-                throw new InvalidDataException("All event keys must be the same!");
-            }
         }
 
-        private async Task ProcessLoadEventsAsync(LoadEvent[] events, CancellationToken cancellationToken)
+        private async Task ProcessLoadEventsForKeyWithLockAsync(string key, LoadEvent[] events, CancellationToken cancellationToken)
         {
-            var firstKey = events[0].Key;
+            var semaphore = keyLocks.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
 
-            var statistics = await receiver.GetLastStatisticsAsync(firstKey, cancellationToken);
-
-            if (statistics == null)
+            await semaphore.WaitAsync(cancellationToken);
+            try
             {
-                statistics = new LoadMethodStatistics();
-            }
+                var statistics = await receiver.GetLastStatisticsAsync(key, cancellationToken) ?? new LoadMethodStatistics();
 
-            foreach (var loadEvent in events)
+                foreach (var loadEvent in events)
+                {
+                    AddMethodToStatistics(loadEvent.Method, statistics);
+                }
+
+                var topic = loadMethodStatisticsTopic + key;
+
+                await producer.ProduceAsync(topic, JsonSerializer.Serialize(statistics), cancellationToken);
+            }
+            finally
             {
-                AddMethodToStatistics(loadEvent.Method, statistics);
+                semaphore.Release();
             }
-
-            var topic = loadMethodStatisticsTopic + firstKey;
-
-            await producer.ProduceAsync(topic, JsonSerializer.Serialize(statistics), cancellationToken);
         }
 
         private static void AddMethodToStatistics(string method, LoadMethodStatistics statistics)
@@ -90,7 +92,5 @@ namespace AnalyzerApi.Command.BackgroundServices.ProcessLoadEvents
                     break;
             }
         }
-
-        #endregion
     }
 }

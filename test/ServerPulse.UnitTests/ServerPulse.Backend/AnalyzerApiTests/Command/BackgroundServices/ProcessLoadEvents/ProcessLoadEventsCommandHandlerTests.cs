@@ -88,10 +88,6 @@ namespace AnalyzerApiTests.Command.BackgroundServices.ProcessLoadEvents
                 .Setup(r => r.GetLastStatisticsAsync(key, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(initialStatistics);
 
-            mockProducer
-                .Setup(p => p.ProduceAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask);
-
             // Act
             await handler.Handle(command, CancellationToken.None);
 
@@ -119,19 +115,26 @@ namespace AnalyzerApiTests.Command.BackgroundServices.ProcessLoadEvents
         }
 
         [Test]
-        public void Handle_MismatchedEventKeys_ThrowsInvalidDataException()
+        public async Task Handle_DifferentEventKeys_CreatesStatisticsForEachKey()
         {
             // Arrange
             var events = new[]
             {
-            new LoadEvent("key1", "/api/test", "GET", 200, TimeSpan.FromMilliseconds(100), DateTime.UtcNow),
-            new LoadEvent("key2", "/api/test", "POST", 201, TimeSpan.FromMilliseconds(150), DateTime.UtcNow)
-        };
+                new LoadEvent("key1", "/api/test", "GET", 200, TimeSpan.FromMilliseconds(100), DateTime.UtcNow),
+                new LoadEvent("key2", "/api/test", "POST", 201, TimeSpan.FromMilliseconds(150), DateTime.UtcNow)
+            };
 
             var command = new ProcessLoadEventsCommand(events);
 
-            // Act & Assert
-            Assert.ThrowsAsync<InvalidDataException>(() => handler.Handle(command, CancellationToken.None));
+            // Act
+            await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            mockProducer.Verify(p => p.ProduceAsync(KafkaTopic + "key1", It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+            mockProducer.Verify(p => p.ProduceAsync(KafkaTopic + "key2", It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+
+            mockReceiver.Verify(r => r.GetLastStatisticsAsync("key1", It.IsAny<CancellationToken>()), Times.Once);
+            mockReceiver.Verify(r => r.GetLastStatisticsAsync("key2", It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Test]
@@ -151,10 +154,6 @@ namespace AnalyzerApiTests.Command.BackgroundServices.ProcessLoadEvents
                 .Setup(r => r.GetLastStatisticsAsync(key, It.IsAny<CancellationToken>()))
                 .ReturnsAsync((LoadMethodStatistics?)null);
 
-            mockProducer
-                .Setup(p => p.ProduceAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask);
-
             // Act
             await handler.Handle(command, CancellationToken.None);
 
@@ -168,5 +167,29 @@ namespace AnalyzerApiTests.Command.BackgroundServices.ProcessLoadEvents
 
             mockReceiver.Verify(r => r.GetLastStatisticsAsync(key, It.IsAny<CancellationToken>()), Times.Once);
         }
+
+        [Test]
+        public async Task Handle_ConcurrentEventsForSameKey_ProcessesSequentially()
+        {
+            // Arrange
+            var events = new[]
+            {
+                new LoadEvent("key1", "/api/test", "GET", 200, TimeSpan.FromMilliseconds(100), DateTime.UtcNow),
+                new LoadEvent("key1", "/api/test", "POST", 201, TimeSpan.FromMilliseconds(150), DateTime.UtcNow)
+            };
+
+            var command = new ProcessLoadEventsCommand(events);
+
+            // Act
+            await Task.WhenAll(
+                Task.Run(() => handler.Handle(command, CancellationToken.None)),
+                Task.Run(() => handler.Handle(command, CancellationToken.None))
+            );
+
+            // Assert
+            mockReceiver.Verify(r => r.GetLastStatisticsAsync("key1", It.IsAny<CancellationToken>()), Times.Exactly(2));
+            mockProducer.Verify(p => p.ProduceAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+        }
+
     }
 }

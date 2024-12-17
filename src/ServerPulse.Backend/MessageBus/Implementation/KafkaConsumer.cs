@@ -39,20 +39,21 @@ namespace MessageBus.Kafka
                 {
                     yield return new ConsumeResponse(consumeResult.Message.Value, consumeResult.Message.Timestamp.UtcDateTime);
                 }
+
                 await Task.Yield();
             }
         }
 
         public async Task<ConsumeResponse?> ReadLastTopicMessageAsync(string topicName, int timeoutInMilliseconds, CancellationToken cancellationToken)
         {
-            var partitionMetadata = GetPartitionMetadata(topicName, timeoutInMilliseconds);
-            if (partitionMetadata == null)
+            var partitions = GetTopicPartitions(topicName, timeoutInMilliseconds);
+            if (partitions == null)
             {
                 return null;
             }
 
-            var latestMessages = await Task.WhenAll(partitionMetadata.Select(partition =>
-                Task.Run(() => ReadPartitionLatestMessage(topicName, partition.PartitionId, timeoutInMilliseconds))
+            var latestMessages = await Task.WhenAll(partitions.Select(partition =>
+                Task.Run(() => ReadPartitionLatestMessage(partition, timeoutInMilliseconds))
             ));
 
             var latestMessage = latestMessages
@@ -63,10 +64,9 @@ namespace MessageBus.Kafka
             return latestMessage == null ? null : new ConsumeResponse(latestMessage.Message.Value, latestMessage.Message.Timestamp.UtcDateTime);
         }
 
-        private ConsumeResult<string, string>? ReadPartitionLatestMessage(string topicName, int partitionId, int timeoutInMilliseconds)
+        private ConsumeResult<string, string>? ReadPartitionLatestMessage(TopicPartition partition, int timeoutInMilliseconds)
         {
             using var consumer = consumerFactory.CreateConsumer();
-            var partition = new TopicPartition(topicName, new Partition(partitionId));
             var highOffset = consumer.QueryWatermarkOffsets(partition, TimeSpan.FromMilliseconds(timeoutInMilliseconds)).High;
 
             if (highOffset.Value == 0)
@@ -418,12 +418,6 @@ namespace MessageBus.Kafka
         {
             var metadata = adminClient.GetMetadata(topicName, TimeSpan.FromMilliseconds(timeoutInMilliseconds));
             return metadata.Topics.First(x => x.Topic == topicName).Partitions.Select(p => new TopicPartition(topicName, p.PartitionId));
-        }
-
-        private IEnumerable<PartitionMetadata?>? GetPartitionMetadata(string topicName, int timeoutInMilliseconds)
-        {
-            return adminClient.GetMetadata(topicName, TimeSpan.FromMilliseconds(timeoutInMilliseconds))
-                .Topics.FirstOrDefault(x => x.Topic == topicName)?.Partitions;
         }
 
         private bool IsValidMessage(ConsumeResult<string, string> consumeResult)

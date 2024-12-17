@@ -2,6 +2,6 @@
 {
     public interface IMessageProducer
     {
-        public Task ProduceAsync(string topic, string message, CancellationToken cancellationToken);
+        public Task ProduceAsync(string topic, string value, CancellationToken cancellationToken);
     }
 }

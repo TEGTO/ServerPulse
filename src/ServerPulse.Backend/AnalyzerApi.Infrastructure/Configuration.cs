@@ -19,5 +19,8 @@
         public static string MIN_STATISTICS_TIMESPAN_IN_SECONDS { get; } = "MinimumStatisticsTimeSpanInSeconds";
         public static string MAX_EVENT_AMOUNT_TO_GET_IN_SLOT_DATA { get; } = "MaxEventAmountToGetInSlotData";
         public static string MAX_EVENT_AMOUNT_PER_REQUEST { get; } = "MaxEventAmountToReadPerRequest";
+        public static string LOAD_EVENT_PROCESSING_RESILLIENCE { get; } = "LoadEventProcessing:Resillience";
+        public static string LOAD_EVENT_PROCESSING_BATCH_SIZE { get; } = "LoadEventProcessing:BatchSize";
+        public static string LOAD_EVENT_PROCESSING_BATCH_INTERVAL_IN_MILLISECONDS { get; } = "LoadEventProcessing:BatchIntervalInMilliseconds";
     }
 }

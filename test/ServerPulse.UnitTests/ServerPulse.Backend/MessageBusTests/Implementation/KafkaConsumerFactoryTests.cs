@@ -2,7 +2,7 @@
 using MessageBus.Kafka;
 using Moq;
 
-namespace MessageBusTests.Kafka
+namespace MessageBusTests.Implementation
 {
     [TestFixture]
     internal class KafkaConsumerFactoryTests
@@ -20,11 +20,11 @@ namespace MessageBusTests.Kafka
                 GroupId = "test-group",
                 AutoOffsetReset = AutoOffsetReset.Earliest
             };
-            mockConsumerBuilder = new Mock<ConsumerBuilder<string, string>>(config);
+
             var mockConsumer = new Mock<IConsumer<string, string>>();
-            mockConsumerBuilder
-                .Setup(cb => cb.Build())
-                .Returns(mockConsumer.Object);
+            mockConsumerBuilder = new Mock<ConsumerBuilder<string, string>>(config);
+            mockConsumerBuilder.Setup(cb => cb.Build()).Returns(mockConsumer.Object);
+
             factory = new KafkaConsumerFactory(config);
         }
 
@@ -33,6 +33,7 @@ namespace MessageBusTests.Kafka
         {
             // Act
             var consumer = factory.CreateConsumer();
+
             // Assert
             Assert.IsNotNull(consumer);
             Assert.IsInstanceOf<IConsumer<string, string>>(consumer);

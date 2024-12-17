@@ -5,11 +5,9 @@ namespace Shared
 {
     public static class Extensions
     {
-        private static readonly ILogger logger = new LoggerConfiguration()
-         .WriteTo.Console()
-         .CreateLogger();
+        private static readonly ILogger logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
 
-        public static bool TryToDeserialize<T>(this string? message, out T? obj)
+        public static bool TryToDeserialize<T>(this string? message, out T? obj, JsonSerializerOptions options = default)
         {
             try
             {
@@ -19,7 +17,7 @@ namespace Shared
                     return false;
                 }
 
-                obj = JsonSerializer.Deserialize<T>(message);
+                obj = JsonSerializer.Deserialize<T>(message, options);
 
                 if (object.Equals(obj, default(T)))
                 {

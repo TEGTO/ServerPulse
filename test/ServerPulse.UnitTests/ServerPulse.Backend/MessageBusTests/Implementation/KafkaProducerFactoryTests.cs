@@ -2,7 +2,7 @@
 using MessageBus.Kafka;
 using Moq;
 
-namespace MessageBusTests.Kafka
+namespace MessageBusTests.Implementation
 {
     [TestFixture]
     internal class KafkaProducerFactoryTests
@@ -18,11 +18,11 @@ namespace MessageBusTests.Kafka
             {
                 BootstrapServers = "localhost:9092"
             };
-            mockProducerBuilder = new Mock<ProducerBuilder<string, string>>(config);
+
             var mockProducer = new Mock<IProducer<string, string>>();
-            mockProducerBuilder
-                .Setup(pb => pb.Build())
-                .Returns(mockProducer.Object);
+            mockProducerBuilder = new Mock<ProducerBuilder<string, string>>(config);
+            mockProducerBuilder.Setup(pb => pb.Build()).Returns(mockProducer.Object);
+
             factory = new KafkaProducerFactory(config);
         }
 
@@ -31,6 +31,7 @@ namespace MessageBusTests.Kafka
         {
             // Act
             var producer = factory.CreateProducer();
+
             // Assert
             Assert.IsNotNull(producer);
             Assert.IsInstanceOf<IProducer<string, string>>(producer);

@@ -67,7 +67,7 @@ namespace AnalyzerApi.Services.StatisticsDispatchers
                     listenerState[key] = (timer, (int)cnf.ServerKeepAliveInterval.TotalMilliseconds, isAlive);
                 }
 
-                await Task.Delay(listenerState[key].ServerUpdateInterval, cancellationToken);
+                await Task.Delay(listenerState[key].ServerUpdateInterval / 2, cancellationToken);
             }
         }
 

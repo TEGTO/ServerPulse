@@ -16,6 +16,9 @@ using EventCommunication.Validators;
 using ExceptionHandling;
 using Logging;
 using MessageBus;
+using Polly;
+using Polly.CircuitBreaker;
+using Polly.Retry;
 using Shared;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -64,6 +67,45 @@ builder.Services.AddOutputCache((options) =>
     options.SetOutputCachePolicy("GetDailyLoadStatisticsPolicy", duration: TimeSpan.FromMinutes(expiryTime));
     options.SetOutputCachePolicy("GetLoadAmountStatisticsInRangePolicy", duration: TimeSpan.FromMinutes(expiryTime), types: typeof(MessageAmountInRangeRequest));
     options.SetOutputCachePolicy("GetSlotStatisticsPolicy", duration: TimeSpan.FromMinutes(expiryTime));
+});
+
+#endregion
+
+#region Resilience
+
+builder.Services.AddResiliencePipeline(Configuration.LOAD_EVENT_PROCESSING_RESILLIENCE, (builder, context) =>
+{
+    builder.AddRetry(new RetryStrategyOptions
+    {
+        MaxRetryAttempts = 3,
+        Delay = TimeSpan.FromSeconds(2),
+        OnRetry = args =>
+        {
+            var logger = context.ServiceProvider.GetService<ILogger<ResiliencePipelineBuilder>>();
+            var message = $"Retrying after failure. Attempt {args.AttemptNumber}";
+            logger?.LogWarning(args.Outcome.Exception, message);
+            return ValueTask.CompletedTask;
+        }
+    })
+    .AddCircuitBreaker(new CircuitBreakerStrategyOptions
+    {
+        FailureRatio = 0.5, // Open the circuit if 50% of attempts fail
+        SamplingDuration = TimeSpan.FromSeconds(30),
+        MinimumThroughput = 5,
+        BreakDuration = TimeSpan.FromSeconds(15),
+        OnOpened = args =>
+        {
+            var logger = context.ServiceProvider.GetService<ILogger<ResiliencePipelineBuilder>>();
+            logger?.LogWarning("Circuit breaker opened due to repeated failures.");
+            return ValueTask.CompletedTask;
+        },
+        OnClosed = args =>
+        {
+            var logger = context.ServiceProvider.GetService<ILogger<ResiliencePipelineBuilder>>();
+            logger?.LogInformation("Circuit breaker closed. Resuming normal operations.");
+            return ValueTask.CompletedTask;
+        }
+    });
 });
 
 #endregion

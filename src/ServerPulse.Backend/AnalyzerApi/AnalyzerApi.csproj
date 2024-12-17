@@ -22,6 +22,7 @@
     <ProjectReference Include="..\AnalyzerApi.Infrastructure\AnalyzerApi.Infrastructure.csproj" />
     <ProjectReference Include="..\Caching\Caching.csproj" />
     <ProjectReference Include="..\MessageBus\MessageBus.csproj" />
+    <ProjectReference Include="..\Resilience\Resilience.csproj" />
     <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 

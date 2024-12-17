@@ -39,7 +39,7 @@ namespace AnalyzerApi.IntegrationTests.Controllers.SlotDataController
 
             await SendEventsAsync(LOAD_PROCESS_TOPIC, "", loadEventSamples.ToArray());
 
-            await Task.Delay(1000);
+            await Task.Delay(2000);
         }
 
         [Test]

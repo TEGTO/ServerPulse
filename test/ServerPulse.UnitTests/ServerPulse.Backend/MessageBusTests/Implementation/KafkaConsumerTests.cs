@@ -3,7 +3,7 @@ using MessageBus.Interfaces;
 using MessageBus.Kafka;
 using Moq;
 
-namespace MessageBusTests
+namespace MessageBusTests.Implementation
 {
     [TestFixture]
     internal class KafkaConsumerTests

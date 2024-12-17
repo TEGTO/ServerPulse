@@ -76,9 +76,12 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             // Act
             await connection.SendAsync("StartListen", key);
 
-            await Task.Delay(2000);
-
             // Assert
+            await Utility.WaitUntil(() =>
+            {
+                return receivedKey != null && receivedStatistics != null && receivedStatistics.LastEvent != null;
+            }, TimeSpan.FromSeconds(15), TimeSpan.FromMilliseconds(1000));
+
             Assert.IsNotNull(receivedKey);
             Assert.That(receivedKey, Is.EqualTo(key));
 
@@ -126,9 +129,12 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             // Act
             await connection.SendAsync("StartListen", key);
 
-            await Task.Delay(2000);
-
             // Assert
+            await Utility.WaitUntil(() =>
+            {
+                return receivedKey != null && receivedStatistics != null && receivedStatistics.LastEvent == null;
+            }, TimeSpan.FromSeconds(15), TimeSpan.FromMilliseconds(1000));
+
             Assert.IsNotNull(receivedKey);
             Assert.That(receivedKey, Is.EqualTo(key));
             Assert.IsNotNull(receivedStatistics);
@@ -156,9 +162,12 @@ namespace AnalyzerApi.IntegrationTests.Hubs
                eventSamples[0]
             });
 
-            await Task.Delay(2000);
-
             // Assert - Consuming new event
+            await Utility.WaitUntil(() =>
+            {
+                return receivedKey != null && receivedStatistics != null && receivedStatistics.LastEvent != null;
+            }, TimeSpan.FromSeconds(15), TimeSpan.FromMilliseconds(1000));
+
             Assert.IsNotNull(receivedKey);
             Assert.That(receivedKey, Is.EqualTo(key));
 
@@ -206,9 +215,12 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             // Act
             await connection.SendAsync("StartListen", key);
 
-            await Task.Delay(2000);
-
             // Assert
+            await Utility.WaitUntil(() =>
+            {
+                return receivedKey != null && receivedStatistics != null && receivedStatistics.LastEvent == null;
+            }, TimeSpan.FromSeconds(15), TimeSpan.FromMilliseconds(1000));
+
             Assert.IsNotNull(receivedKey);
             Assert.That(receivedKey, Is.EqualTo(key));
             Assert.IsNotNull(receivedStatistics);
@@ -229,7 +241,7 @@ namespace AnalyzerApi.IntegrationTests.Hubs
                eventSamples[0]
             });
 
-            await Task.Delay(500);
+            await Task.Delay(1500);
 
             await SendEventsAsync(LOAD_TOPIC, key, new[]
             {
@@ -237,6 +249,17 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             });
 
             // Assert - Consuming new event
+            await Utility.WaitUntil(() =>
+            {
+                return
+                receivedKey != null &&
+                receivedStatistics != null &&
+                receivedStatistics.LastEvent != null &&
+                receivedStatistics.AmountOfEvents == 1 &&
+                receivedStatistics.LoadMethodStatistics != null &&
+                receivedStatistics.LoadMethodStatistics.DeleteAmount == 1;
+            }, TimeSpan.FromSeconds(15), TimeSpan.FromMilliseconds(3000));
+
             Assert.IsNotNull(receivedKey);
             Assert.That(receivedKey, Is.EqualTo(key));
 
@@ -268,7 +291,7 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             eventSamples.Add(new LoadEvent(key, "/api/resource", "GET", 200, TimeSpan.FromMilliseconds(150), DateTime.UtcNow));
             await SendEventsAsync(LOAD_PROCESS_TOPIC, "", new[]
             {
-               eventSamples[0]
+                eventSamples[0]
             });
 
             await Task.Delay(500);
@@ -283,7 +306,7 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             eventSamples.Add(new LoadEvent(key, "/api/resource", "POST", 201, TimeSpan.FromMilliseconds(200), DateTime.UtcNow));
             await SendEventsAsync(LOAD_PROCESS_TOPIC, "", new[]
             {
-               eventSamples[0]
+                eventSamples[0]
             });
 
             await Task.Delay(500);
@@ -313,9 +336,12 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             // Act
             await connection.SendAsync("StartListen", wrongKey);
 
-            await Task.Delay(2000);
-
             // Assert
+            await Utility.WaitUntil(() =>
+            {
+                return receivedKey != null && receivedStatistics != null && receivedStatistics.LastEvent == null;
+            }, TimeSpan.FromSeconds(15), TimeSpan.FromMilliseconds(1000));
+
             Assert.IsNotNull(receivedKey);
             Assert.That(receivedKey, Is.EqualTo(wrongKey));
 
@@ -345,6 +371,14 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             });
 
             // Assert - Gets nothing
+            await Utility.WaitUntil(() =>
+            {
+                return receivedKey != null &&
+                receivedStatistics != null &&
+                receivedStatistics.LastEvent == null &&
+                receivedStatistics.LoadMethodStatistics != null;
+            }, TimeSpan.FromSeconds(15), TimeSpan.FromMilliseconds(1000));
+
             Assert.IsNotNull(receivedKey);
             Assert.That(receivedKey, Is.EqualTo(wrongKey));
 
