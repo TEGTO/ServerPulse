@@ -1,8 +1,10 @@
 ﻿using Confluent.Kafka;
 using MessageBus.Interfaces;
 using MessageBus.Kafka;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using Polly.Registry;
 
 namespace MessageBus.Tests
 {
@@ -16,6 +18,12 @@ namespace MessageBus.Tests
             var services = new ServiceCollection();
             var consumerConfig = new Mock<ConsumerConfig>().Object;
             var adminConfig = new Mock<AdminClientConfig>().Object;
+
+            var mockConfiguration = new Mock<IConfiguration>();
+            var mockResiliencePipelineProvider = new Mock<ResiliencePipelineProvider<string>>();
+
+            services.AddSingleton(mockConfiguration.Object);
+            services.AddSingleton(mockResiliencePipelineProvider.Object);
 
             // Act
             services.AddKafkaConsumer(consumerConfig, adminConfig);
@@ -46,6 +54,12 @@ namespace MessageBus.Tests
             var services = new ServiceCollection();
             var producerConfig = new Mock<ProducerConfig>().Object;
             var adminConfig = new Mock<AdminClientConfig>().Object;
+
+            var mockConfiguration = new Mock<IConfiguration>();
+            var mockResiliencePipelineProvider = new Mock<ResiliencePipelineProvider<string>>();
+
+            services.AddSingleton(mockConfiguration.Object);
+            services.AddSingleton(mockResiliencePipelineProvider.Object);
 
             // Act
             services.AddKafkaProducer(producerConfig, adminConfig);

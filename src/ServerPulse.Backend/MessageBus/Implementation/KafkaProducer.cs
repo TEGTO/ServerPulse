@@ -21,7 +21,7 @@ namespace MessageBus.Kafka
                     Value = value
                 };
 
-                await producer.ProduceAsync(topic, message, cancellationToken);
+                await producer.ProduceAsync(topic, message, cancellationToken).ConfigureAwait(false);
             }
         }
     }

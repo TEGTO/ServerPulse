@@ -6,6 +6,7 @@ using AnalyzerApi.Services.SerializeStrategies;
 using Confluent.Kafka;
 using EventCommunication;
 using MessageBus.Interfaces;
+using MessageBus.Models;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using System.Text.Json;
@@ -113,7 +114,7 @@ namespace AnalyzerApi.Services.Receivers.Event.Tests
             var cancellationToken = CancellationToken.None;
             var key = "test-key";
 
-            mockMessageConsumer.Setup(m => m.GetAmountTopicMessagesAsync(It.IsAny<string>(), It.IsAny<int>(), cancellationToken))
+            mockMessageConsumer.Setup(m => m.GetTopicMessageAmountAsync(It.IsAny<string>(), It.IsAny<int>(), cancellationToken))
                 .ReturnsAsync(10);
 
             // Act
@@ -122,7 +123,7 @@ namespace AnalyzerApi.Services.Receivers.Event.Tests
             // Assert
             Assert.That(result, Is.EqualTo(10));
 
-            mockMessageConsumer.Verify(m => m.GetAmountTopicMessagesAsync(It.IsAny<string>(), It.IsAny<int>(), cancellationToken), Times.Once);
+            mockMessageConsumer.Verify(m => m.GetTopicMessageAmountAsync(It.IsAny<string>(), It.IsAny<int>(), cancellationToken), Times.Once);
         }
 
         [Test]
@@ -138,7 +139,7 @@ namespace AnalyzerApi.Services.Receivers.Event.Tests
                 new ConsumeResponse(JsonSerializer.Serialize(new MockEvent("")), DateTime.UtcNow)
             };
 
-            mockMessageConsumer.Setup(m => m.ReadSomeMessagesAsync(It.IsAny<ReadSomeMessagesOptions>(), cancellationToken))
+            mockMessageConsumer.Setup(m => m.GetSomeMessagesStartFromDateAsync(It.IsAny<GetSomeMessagesFromDateOptions>(), cancellationToken))
                 .ReturnsAsync(consumeResponses);
             mockSerializeStrategy.Setup(s => s.SerializeResponse(It.IsAny<ConsumeResponse>()))
                 .Returns<ConsumeResponse>(response => response.Message != null ? new MockEventWrapper() { Id = "someId", Key = key } : null);
@@ -150,7 +151,7 @@ namespace AnalyzerApi.Services.Receivers.Event.Tests
             Assert.That(results.Count(), Is.EqualTo(consumeResponses.Count));
             Assert.That(results.First().Key, Is.EqualTo(key));
 
-            mockMessageConsumer.Verify(m => m.ReadSomeMessagesAsync(It.IsAny<ReadSomeMessagesOptions>(), cancellationToken), Times.Once);
+            mockMessageConsumer.Verify(m => m.GetSomeMessagesStartFromDateAsync(It.IsAny<GetSomeMessagesFromDateOptions>(), cancellationToken), Times.Once);
         }
 
 
@@ -167,7 +168,7 @@ namespace AnalyzerApi.Services.Receivers.Event.Tests
                 new ConsumeResponse(null!, DateTime.UtcNow)
             };
 
-            mockMessageConsumer.Setup(m => m.ReadSomeMessagesAsync(It.IsAny<ReadSomeMessagesOptions>(), cancellationToken))
+            mockMessageConsumer.Setup(m => m.GetSomeMessagesStartFromDateAsync(It.IsAny<GetSomeMessagesFromDateOptions>(), cancellationToken))
                 .ReturnsAsync(consumeResponses);
             mockSerializeStrategy.Setup(s => s.SerializeResponse(It.IsAny<ConsumeResponse>()))
                 .Returns<ConsumeResponse>(response => response.Message != null ? new MockEventWrapper() { Id = "someId", Key = key } : null);
@@ -179,7 +180,7 @@ namespace AnalyzerApi.Services.Receivers.Event.Tests
             Assert.That(results.Count(), Is.EqualTo(1));
             Assert.That(results.First().Key, Is.EqualTo(key));
 
-            mockMessageConsumer.Verify(m => m.ReadSomeMessagesAsync(It.IsAny<ReadSomeMessagesOptions>(), cancellationToken), Times.Once);
+            mockMessageConsumer.Verify(m => m.GetSomeMessagesStartFromDateAsync(It.IsAny<GetSomeMessagesFromDateOptions>(), cancellationToken), Times.Once);
         }
 
         [Test]
@@ -195,7 +196,7 @@ namespace AnalyzerApi.Services.Receivers.Event.Tests
                 new ConsumeResponse(JsonSerializer.Serialize(new MockEvent("")), DateTime.UtcNow)
             };
 
-            mockMessageConsumer.Setup(m => m.ReadMessagesInDateRangeAsync(It.IsAny<MessageInRangeQueryOptions>(), cancellationToken))
+            mockMessageConsumer.Setup(m => m.GetMessagesInDateRangeAsync(It.IsAny<GetMessageInDateRangeOptions>(), cancellationToken))
                 .ReturnsAsync(consumeResponses);
             mockSerializeStrategy.Setup(s => s.SerializeResponse(It.IsAny<ConsumeResponse>()))
                 .Returns<ConsumeResponse>(response => response.Message != null ? new MockEventWrapper() { Id = "someId", Key = key } : null);
@@ -207,7 +208,7 @@ namespace AnalyzerApi.Services.Receivers.Event.Tests
             Assert.That(results.Count(), Is.EqualTo(consumeResponses.Count));
             Assert.That(results.First().Key, Is.EqualTo(key));
 
-            mockMessageConsumer.Verify(m => m.ReadMessagesInDateRangeAsync(It.IsAny<MessageInRangeQueryOptions>(), cancellationToken), Times.Once);
+            mockMessageConsumer.Verify(m => m.GetMessagesInDateRangeAsync(It.IsAny<GetMessageInDateRangeOptions>(), cancellationToken), Times.Once);
         }
 
         [Test]
@@ -223,7 +224,7 @@ namespace AnalyzerApi.Services.Receivers.Event.Tests
                 new ConsumeResponse(null!, DateTime.UtcNow)
             };
 
-            mockMessageConsumer.Setup(m => m.ReadMessagesInDateRangeAsync(It.IsAny<MessageInRangeQueryOptions>(), cancellationToken))
+            mockMessageConsumer.Setup(m => m.GetMessagesInDateRangeAsync(It.IsAny<GetMessageInDateRangeOptions>(), cancellationToken))
                 .ReturnsAsync(consumeResponses);
             mockSerializeStrategy.Setup(s => s.SerializeResponse(It.IsAny<ConsumeResponse>()))
                 .Returns<ConsumeResponse>(response => response.Message != null ? new MockEventWrapper() { Id = "someId", Key = key } : null);
@@ -235,7 +236,7 @@ namespace AnalyzerApi.Services.Receivers.Event.Tests
             Assert.That(results.Count(), Is.EqualTo(1));
             Assert.That(results.First().Key, Is.EqualTo(key));
 
-            mockMessageConsumer.Verify(m => m.ReadMessagesInDateRangeAsync(It.IsAny<MessageInRangeQueryOptions>(), cancellationToken), Times.Once);
+            mockMessageConsumer.Verify(m => m.GetMessagesInDateRangeAsync(It.IsAny<GetMessageInDateRangeOptions>(), cancellationToken), Times.Once);
         }
 
         [Test]
@@ -246,7 +247,7 @@ namespace AnalyzerApi.Services.Receivers.Event.Tests
             var cancellationToken = CancellationToken.None;
             var consumeResponse = new ConsumeResponse(JsonSerializer.Serialize(new MockEvent(key)), DateTime.UtcNow);
 
-            mockMessageConsumer.Setup(m => m.ReadLastTopicMessageAsync(It.IsAny<string>(), It.IsAny<int>(), cancellationToken))
+            mockMessageConsumer.Setup(m => m.GetLastTopicMessageAsync(It.IsAny<string>(), It.IsAny<int>(), cancellationToken))
                 .ReturnsAsync(consumeResponse);
             mockSerializeStrategy.Setup(s => s.SerializeResponse(It.IsAny<ConsumeResponse>()))
                 .Returns<ConsumeResponse>(response => response.Message != null ? new MockEventWrapper() { Id = "someId", Key = key } : null);
@@ -258,7 +259,7 @@ namespace AnalyzerApi.Services.Receivers.Event.Tests
             Assert.IsNotNull(result);
             Assert.That(result.Key, Is.EqualTo(key));
 
-            mockMessageConsumer.Verify(m => m.ReadLastTopicMessageAsync(It.IsAny<string>(), It.IsAny<int>(), cancellationToken), Times.Once);
+            mockMessageConsumer.Verify(m => m.GetLastTopicMessageAsync(It.IsAny<string>(), It.IsAny<int>(), cancellationToken), Times.Once);
         }
 
         [Test]
@@ -268,7 +269,7 @@ namespace AnalyzerApi.Services.Receivers.Event.Tests
             var key = "test-key";
             var cancellationToken = CancellationToken.None;
 
-            mockMessageConsumer.Setup(m => m.ReadLastTopicMessageAsync(It.IsAny<string>(), It.IsAny<int>(), cancellationToken))
+            mockMessageConsumer.Setup(m => m.GetLastTopicMessageAsync(It.IsAny<string>(), It.IsAny<int>(), cancellationToken))
                 .ReturnsAsync((ConsumeResponse)null!);
 
             // Act
@@ -277,7 +278,7 @@ namespace AnalyzerApi.Services.Receivers.Event.Tests
             // Assert
             Assert.IsNull(result);
 
-            mockMessageConsumer.Verify(m => m.ReadLastTopicMessageAsync(It.IsAny<string>(), It.IsAny<int>(), cancellationToken), Times.Once);
+            mockMessageConsumer.Verify(m => m.GetLastTopicMessageAsync(It.IsAny<string>(), It.IsAny<int>(), cancellationToken), Times.Once);
         }
 
         private static async IAsyncEnumerable<T> AsyncEnumerable<T>(IEnumerable<T> items)

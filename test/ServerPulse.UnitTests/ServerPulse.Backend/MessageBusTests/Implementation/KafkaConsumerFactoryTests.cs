@@ -1,42 +1,74 @@
 ﻿using Confluent.Kafka;
+using MessageBus;
+using MessageBus.Implementation;
 using MessageBus.Kafka;
 using Moq;
+using Polly;
+using Polly.Registry;
 
 namespace MessageBusTests.Implementation
 {
     [TestFixture]
     internal class KafkaConsumerFactoryTests
     {
-        private Mock<ConsumerBuilder<string, string>> mockConsumerBuilder;
+        private Mock<ResiliencePipelineProvider<string>> mockResiliencePipelineProvider;
         private ConsumerConfig config;
         private KafkaConsumerFactory factory;
 
         [SetUp]
-        public void Setup()
+        public void SetUp()
         {
             config = new ConsumerConfig
             {
                 BootstrapServers = "localhost:9092",
-                GroupId = "test-group",
-                AutoOffsetReset = AutoOffsetReset.Earliest
+                GroupId = "test-group"
             };
 
-            var mockConsumer = new Mock<IConsumer<string, string>>();
-            mockConsumerBuilder = new Mock<ConsumerBuilder<string, string>>(config);
-            mockConsumerBuilder.Setup(cb => cb.Build()).Returns(mockConsumer.Object);
+            mockResiliencePipelineProvider = new Mock<ResiliencePipelineProvider<string>>();
+            mockResiliencePipelineProvider
+                .Setup(rp => rp.GetPipeline(MessageBusConfiguration.MESSAGE_BUS_RESILIENCE_PIPELINE))
+                .Returns(ResiliencePipeline.Empty);
 
-            factory = new KafkaConsumerFactory(config);
+            factory = new KafkaConsumerFactory(config, mockResiliencePipelineProvider.Object);
         }
 
         [Test]
-        public void CreateConsumer_ReturnsConsumer()
+        public void CreateConsumer_ReturnsResilienceConsumer()
         {
             // Act
             var consumer = factory.CreateConsumer();
 
             // Assert
             Assert.IsNotNull(consumer);
-            Assert.IsInstanceOf<IConsumer<string, string>>(consumer);
+            Assert.IsInstanceOf<ResilienceConsumer>(consumer);
+
+            mockResiliencePipelineProvider.Verify(rp => rp.GetPipeline(MessageBusConfiguration.MESSAGE_BUS_RESILIENCE_PIPELINE), Times.Once);
+        }
+
+        [Test]
+        public void CreateConsumer_UsesCorrectConfig()
+        {
+            // Act
+            var consumer = factory.CreateConsumer();
+
+            // Assert
+            Assert.IsNotNull(consumer);
+        }
+
+        [Test]
+        public void CreateConsumer_BuildsNewConsumerEachTime()
+        {
+            // Arrange
+            var localFactory = new KafkaConsumerFactory(config, mockResiliencePipelineProvider.Object);
+
+            // Act
+            var consumer1 = localFactory.CreateConsumer();
+            var consumer2 = localFactory.CreateConsumer();
+
+            // Assert
+            Assert.IsNotNull(consumer1);
+            Assert.IsNotNull(consumer2);
+            Assert.That(consumer2, Is.Not.SameAs(consumer1));
         }
     }
 }

@@ -30,7 +30,7 @@ namespace MessageBus.Kafka
             if (topicsToCreate.Any())
             {
                 var options = new CreateTopicsOptions() { OperationTimeout = TimeSpan.FromMilliseconds(timeoutInMilliseconds) };
-                await adminClient.CreateTopicsAsync(topicsToCreate, options);
+                await adminClient.CreateTopicsAsync(topicsToCreate, options).ConfigureAwait(false);
             }
         }
 
@@ -41,7 +41,7 @@ namespace MessageBus.Kafka
             var topicsToDelete = topicList.Where(existingTopics.Contains);
             if (topicsToDelete.Any())
             {
-                await adminClient.DeleteTopicsAsync(topicsToDelete);
+                await adminClient.DeleteTopicsAsync(topicsToDelete).ConfigureAwait(false);
             }
         }
 

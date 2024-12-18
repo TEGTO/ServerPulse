@@ -3,6 +3,7 @@ using AnalyzerApi.Infrastructure.Configurations;
 using AnalyzerApi.Infrastructure.Models;
 using AnalyzerApi.Infrastructure.Models.Statistics;
 using MessageBus.Interfaces;
+using MessageBus.Models;
 using Microsoft.Extensions.Configuration;
 using Moq;
 
@@ -49,7 +50,7 @@ namespace AnalyzerApi.Services.Receivers.Statistics.Tests
                 { DateTime.UtcNow.Date.AddDays(-1), 100 }
             };
 
-            mockMessageConsumer.Setup(m => m.GetMessageAmountPerTimespanAsync(It.IsAny<MessageInRangeQueryOptions>(), timeSpan, cancellationToken))
+            mockMessageConsumer.Setup(m => m.GetTopicMessageAmountPerTimespanAsync(It.IsAny<GetMessageInDateRangeOptions>(), timeSpan, cancellationToken))
                 .ReturnsAsync(messagesPerDay);
 
             // Act
@@ -68,7 +69,7 @@ namespace AnalyzerApi.Services.Receivers.Statistics.Tests
             var timeSpan = TimeSpan.FromDays(1);
             var messagesPerDay = new Dictionary<DateTime, int>(); // No messages
 
-            mockMessageConsumer.Setup(m => m.GetMessageAmountPerTimespanAsync(It.IsAny<MessageInRangeQueryOptions>(), timeSpan, cancellationToken))
+            mockMessageConsumer.Setup(m => m.GetTopicMessageAmountPerTimespanAsync(It.IsAny<GetMessageInDateRangeOptions>(), timeSpan, cancellationToken))
                 .ReturnsAsync(messagesPerDay);
 
             // Act
@@ -89,7 +90,7 @@ namespace AnalyzerApi.Services.Receivers.Statistics.Tests
                 { DateTime.UtcNow.Date.AddDays(-1), 50 },
                 { DateTime.UtcNow.Date.AddDays(-2), 150 }
             };
-            mockMessageConsumer.Setup(m => m.GetMessageAmountPerTimespanAsync(It.IsAny<MessageInRangeQueryOptions>(), timeSpan, cancellationToken))
+            mockMessageConsumer.Setup(m => m.GetTopicMessageAmountPerTimespanAsync(It.IsAny<GetMessageInDateRangeOptions>(), timeSpan, cancellationToken))
                                .ReturnsAsync(messagesPerDay);
             // Act
             var result = await loadAmountStatisticsReceiver.GetWholeStatisticsInTimeSpanAsync("key", timeSpan, cancellationToken);
@@ -112,7 +113,7 @@ namespace AnalyzerApi.Services.Receivers.Statistics.Tests
                 { DateTime.UtcNow.Date.AddDays(-1), 100 }
             };
 
-            mockMessageConsumer.Setup(m => m.GetMessageAmountPerTimespanAsync(It.IsAny<MessageInRangeQueryOptions>(), timeSpan, cancellationToken))
+            mockMessageConsumer.Setup(m => m.GetTopicMessageAmountPerTimespanAsync(It.IsAny<GetMessageInDateRangeOptions>(), timeSpan, cancellationToken))
                 .ReturnsAsync(messagesPerDay);
 
             // Act

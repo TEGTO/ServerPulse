@@ -25,6 +25,7 @@ namespace DatabaseControl
 
             return services;
         }
+
         public static IServiceCollection AddDbContextFactory<Context>(
         this IServiceCollection services,
         string connectionString,

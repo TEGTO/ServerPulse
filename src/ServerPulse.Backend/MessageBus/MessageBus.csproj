@@ -9,6 +9,10 @@
 
 	<ItemGroup>
 		<PackageReference Include="Confluent.Kafka" Version="2.5.0" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Resilience\Resilience.csproj" />
 	</ItemGroup>
 </Project>

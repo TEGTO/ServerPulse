@@ -4,6 +4,7 @@ using Confluent.Kafka;
 using EventCommunication;
 using MediatR;
 using MessageBus.Interfaces;
+using MessageBus.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;

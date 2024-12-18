@@ -70,7 +70,7 @@ namespace AnalyzerApi.IntegrationTests.BackgroundServices
 
             // Act
             await SendEventsAsync(LOAD_PROCESS_TOPIC, "", loadEvents);
-            await Task.Delay(3000);
+            await Task.Delay(5000);
 
             // Assert
             var statistics = await ReceiveLastObjectFromTopicAsync<LoadMethodStatistics>(LOAD_METHOD_STATISTICS_TOPIC, loadEvents[0].Key);

@@ -1,7 +1,7 @@
 ﻿using AnalyzerApi.Infrastructure.Models.Wrappers;
 using AutoMapper;
 using EventCommunication;
-using MessageBus.Interfaces;
+using MessageBus.Models;
 
 namespace AnalyzerApi.Services.SerializeStrategies
 {

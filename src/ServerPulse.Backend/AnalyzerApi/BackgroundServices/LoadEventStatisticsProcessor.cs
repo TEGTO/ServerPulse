@@ -4,6 +4,7 @@ using Confluent.Kafka;
 using EventCommunication;
 using MediatR;
 using MessageBus.Interfaces;
+using MessageBus.Models;
 using Polly;
 using Polly.Registry;
 using Shared;

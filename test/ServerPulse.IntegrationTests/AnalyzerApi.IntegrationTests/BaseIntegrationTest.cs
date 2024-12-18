@@ -45,7 +45,7 @@ namespace AnalyzerApi.IntegrationTests
 
         protected async Task<T?> ReceiveLastObjectFromTopicAsync<T>(string topic, string key) where T : class
         {
-            var response = await messageConsumer.ReadLastTopicMessageAsync(topic + key, TIMEOUT_IN_MILLISECONDS, CancellationToken.None);
+            var response = await messageConsumer.GetLastTopicMessageAsync(topic + key, TIMEOUT_IN_MILLISECONDS, CancellationToken.None);
             if (response != null && response.Message.TryToDeserialize(out T? ev))
             {
                 return ev;

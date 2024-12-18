@@ -1,5 +1,6 @@
 ﻿using AnalyzerApi.Infrastructure;
 using MessageBus.Interfaces;
+using MessageBus.Models;
 
 namespace AnalyzerApi.Services.Receivers
 {
@@ -16,7 +17,7 @@ namespace AnalyzerApi.Services.Receivers
 
         protected async Task<ConsumeResponse?> GetLastMessageByKeyAsync(string topic, CancellationToken cancellationToken)
         {
-            return await messageConsumer.ReadLastTopicMessageAsync(topic, timeoutInMilliseconds, cancellationToken);
+            return await messageConsumer.GetLastTopicMessageAsync(topic, timeoutInMilliseconds, cancellationToken);
         }
 
         protected static string GetTopic(string baseTopic, string key)

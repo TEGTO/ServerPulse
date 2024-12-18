@@ -4,6 +4,7 @@ using AnalyzerApi.Infrastructure.Models.Wrappers;
 using AnalyzerApi.Services.SerializeStrategies;
 using Confluent.Kafka;
 using MessageBus.Interfaces;
+using MessageBus.Models;
 using System.Runtime.CompilerServices;
 
 namespace AnalyzerApi.Services.Receivers.Event
@@ -42,15 +43,15 @@ namespace AnalyzerApi.Services.Receivers.Event
         public async Task<int> GetEventAmountByKeyAsync(string key, CancellationToken cancellationToken)
         {
             var topic = GetTopic(topicData.TopicOriginName, key);
-            return await messageConsumer.GetAmountTopicMessagesAsync(topic, timeoutInMilliseconds, cancellationToken);
+            return await messageConsumer.GetTopicMessageAmountAsync(topic, timeoutInMilliseconds, cancellationToken);
         }
 
         public async Task<IEnumerable<TWrapper>> GetCertainAmountOfEventsAsync(GetCertainMessageNumberOptions options, CancellationToken cancellationToken)
         {
             var topic = GetTopic(topicData.TopicOriginName, options.Key);
 
-            var messageOptions = new ReadSomeMessagesOptions(topic, timeoutInMilliseconds, options.NumberOfMessages, options.StartDate, options.ReadNew);
-            var responses = await messageConsumer.ReadSomeMessagesAsync(messageOptions, cancellationToken);
+            var messageOptions = new GetSomeMessagesFromDateOptions(topic, timeoutInMilliseconds, options.NumberOfMessages, options.StartDate, options.ReadNew);
+            var responses = await messageConsumer.GetSomeMessagesStartFromDateAsync(messageOptions, cancellationToken);
 
             return ConvertToEventWrappers(responses);
         }
@@ -59,8 +60,8 @@ namespace AnalyzerApi.Services.Receivers.Event
         {
             var topic = GetTopic(topicData.TopicOriginName, options.Key);
 
-            var messageOptions = new MessageInRangeQueryOptions(topic, timeoutInMilliseconds, options.From, options.To);
-            var responses = await messageConsumer.ReadMessagesInDateRangeAsync(messageOptions, cancellationToken);
+            var messageOptions = new GetMessageInDateRangeOptions(topic, timeoutInMilliseconds, options.From, options.To);
+            var responses = await messageConsumer.GetMessagesInDateRangeAsync(messageOptions, cancellationToken);
 
             return ConvertToEventWrappers(responses);
         }
@@ -82,7 +83,7 @@ namespace AnalyzerApi.Services.Receivers.Event
 
         #region Protected Helpers
 
-        protected IEnumerable<TWrapper> ConvertToEventWrappers(List<ConsumeResponse> responses)
+        protected IEnumerable<TWrapper> ConvertToEventWrappers(IEnumerable<ConsumeResponse> responses)
         {
             var events = new List<TWrapper>();
 

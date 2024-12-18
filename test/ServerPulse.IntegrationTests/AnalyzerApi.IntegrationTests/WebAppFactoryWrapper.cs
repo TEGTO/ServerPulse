@@ -52,6 +52,7 @@ namespace AnalyzerApi.IntegrationTests
             var kafkaContainerName = Guid.NewGuid().ToString("D");
 
             KafkaContainer = new KafkaBuilder()
+                .WithName(kafkaContainerName)
                 .WithImage("confluentinc/cp-kafka:7.5.0")
                 .WithEnvironment("KAFKA_NUM_PARTITIONS", "3")
                 .Build();

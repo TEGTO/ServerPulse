@@ -3,6 +3,7 @@ using AnalyzerApi.Infrastructure.Configurations;
 using AnalyzerApi.Infrastructure.Models;
 using AnalyzerApi.Infrastructure.Models.Statistics;
 using MessageBus.Interfaces;
+using MessageBus.Models;
 
 namespace AnalyzerApi.Services.Receivers.Statistics
 {
@@ -24,9 +25,9 @@ namespace AnalyzerApi.Services.Receivers.Statistics
 
             var timeSpan = TimeSpan.FromDays(1);
 
-            var options = new MessageInRangeQueryOptions(topic, timeoutInMilliseconds, start, end);
+            var options = new GetMessageInDateRangeOptions(topic, timeoutInMilliseconds, start, end);
 
-            var messagesPerDay = await messageConsumer.GetMessageAmountPerTimespanAsync(options, timeSpan, cancellationToken);
+            var messagesPerDay = await messageConsumer.GetTopicMessageAmountPerTimespanAsync(options, timeSpan, cancellationToken);
 
             return ConvertToAmountStatistics(messagesPerDay, timeSpan).FirstOrDefault();
         }
@@ -38,8 +39,8 @@ namespace AnalyzerApi.Services.Receivers.Statistics
             var start = DateTime.UtcNow.Date.AddDays(-statisticsSaveDataInDays);
             var end = DateTime.UtcNow.Date.AddDays(1);
 
-            var options = new MessageInRangeQueryOptions(topic, timeoutInMilliseconds, start, end);
-            var messagesPerDay = await messageConsumer.GetMessageAmountPerTimespanAsync(options, timeSpan, cancellationToken);
+            var options = new GetMessageInDateRangeOptions(topic, timeoutInMilliseconds, start, end);
+            var messagesPerDay = await messageConsumer.GetTopicMessageAmountPerTimespanAsync(options, timeSpan, cancellationToken);
 
             return ConvertToAmountStatistics(messagesPerDay, timeSpan);
         }
@@ -48,8 +49,8 @@ namespace AnalyzerApi.Services.Receivers.Statistics
         {
             string topic = GetTopic(topicData.TopicOriginName, options.Key);
 
-            var messageOptions = new MessageInRangeQueryOptions(topic, timeoutInMilliseconds, options.From, options.To);
-            var messagesPerDay = await messageConsumer.GetMessageAmountPerTimespanAsync(messageOptions, timeSpan, cancellationToken);
+            var messageOptions = new GetMessageInDateRangeOptions(topic, timeoutInMilliseconds, options.From, options.To);
+            var messagesPerDay = await messageConsumer.GetTopicMessageAmountPerTimespanAsync(messageOptions, timeSpan, cancellationToken);
 
             return ConvertToAmountStatistics(messagesPerDay, timeSpan);
         }

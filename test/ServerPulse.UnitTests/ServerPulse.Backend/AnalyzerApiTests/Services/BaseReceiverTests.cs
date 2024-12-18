@@ -1,6 +1,7 @@
 ﻿using AnalyzerApi.Infrastructure;
 using AnalyzerApi.Services.Receivers;
 using MessageBus.Interfaces;
+using MessageBus.Models;
 using Microsoft.Extensions.Configuration;
 using Moq;
 
@@ -35,7 +36,7 @@ namespace AnalyzerApi.Services.Tests
             var cancellationToken = CancellationToken.None;
             var consumeResponse = new ConsumeResponse("message", DateTime.UtcNow);
 
-            mockMessageConsumer.Setup(m => m.ReadLastTopicMessageAsync(TopicName + Key, It.IsAny<int>(), cancellationToken))
+            mockMessageConsumer.Setup(m => m.GetLastTopicMessageAsync(TopicName + Key, It.IsAny<int>(), cancellationToken))
                 .ReturnsAsync(consumeResponse);
 
             // Act
@@ -45,7 +46,7 @@ namespace AnalyzerApi.Services.Tests
             Assert.IsNotNull(result);
             Assert.That(result, Is.EqualTo(consumeResponse));
 
-            mockMessageConsumer.Verify(m => m.ReadLastTopicMessageAsync(TopicName + Key, It.IsAny<int>(), cancellationToken), Times.Once);
+            mockMessageConsumer.Verify(m => m.GetLastTopicMessageAsync(TopicName + Key, It.IsAny<int>(), cancellationToken), Times.Once);
         }
 
         [Test]

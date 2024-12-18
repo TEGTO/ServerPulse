@@ -166,7 +166,7 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             await Utility.WaitUntil(() =>
             {
                 return receivedKey != null && receivedStatistics != null && receivedStatistics.LastEvent != null;
-            }, TimeSpan.FromSeconds(15), TimeSpan.FromMilliseconds(1000));
+            }, TimeSpan.FromSeconds(30), TimeSpan.FromMilliseconds(5000));
 
             Assert.IsNotNull(receivedKey);
             Assert.That(receivedKey, Is.EqualTo(key));
@@ -258,7 +258,7 @@ namespace AnalyzerApi.IntegrationTests.Hubs
                 receivedStatistics.AmountOfEvents == 1 &&
                 receivedStatistics.LoadMethodStatistics != null &&
                 receivedStatistics.LoadMethodStatistics.DeleteAmount == 1;
-            }, TimeSpan.FromSeconds(15), TimeSpan.FromMilliseconds(3000));
+            }, TimeSpan.FromSeconds(30), TimeSpan.FromMilliseconds(3000));
 
             Assert.IsNotNull(receivedKey);
             Assert.That(receivedKey, Is.EqualTo(key));

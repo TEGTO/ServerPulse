@@ -2,6 +2,7 @@
 using AnalyzerApi.Infrastructure.Configurations;
 using AnalyzerApi.Infrastructure.Models.Statistics;
 using MessageBus.Interfaces;
+using MessageBus.Models;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Shared;
@@ -44,7 +45,7 @@ namespace AnalyzerApi.Services.Receivers.Statistics.Tests
             var consumeResponse = new ConsumeResponse(JsonSerializer.Serialize(statistics), DateTime.MinValue);
             consumeResponse.Message.TryToDeserialize(out statistics);
 
-            mockMessageConsumer.Setup(m => m.ReadLastTopicMessageAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            mockMessageConsumer.Setup(m => m.GetLastTopicMessageAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(consumeResponse);
 
             // Act
@@ -61,7 +62,7 @@ namespace AnalyzerApi.Services.Receivers.Statistics.Tests
             // Arrange
             var cancellationToken = CancellationToken.None;
 
-            mockMessageConsumer.Setup(m => m.ReadLastTopicMessageAsync(It.IsAny<string>(), It.IsAny<int>(), cancellationToken))
+            mockMessageConsumer.Setup(m => m.GetLastTopicMessageAsync(It.IsAny<string>(), It.IsAny<int>(), cancellationToken))
                 .ReturnsAsync((ConsumeResponse?)null);
 
             // Act
