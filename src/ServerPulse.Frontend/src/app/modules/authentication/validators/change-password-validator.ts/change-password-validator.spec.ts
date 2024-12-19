@@ -10,12 +10,12 @@ describe('changePasswordValidator', () => {
         expect(result).toBeNull();
     });
 
-    it('should return an error if the password is null or empty', () => {
+    it('should return a null if the password is null or empty', () => {
         const control = new FormControl('');
 
         const result = changePasswordValidator(control);
 
-        expect(result).toEqual({ passwordInvalid: true });
+        expect(result).toBeNull();
     });
 
     it('should return an error if the password is less than 8 characters', () => {

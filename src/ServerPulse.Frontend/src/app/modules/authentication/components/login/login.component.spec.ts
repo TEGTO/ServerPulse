@@ -85,7 +85,7 @@ describe('LoginComponent', () => {
   });
 
   it('should toggle password visibility on button click', () => {
-    const passwordInput = fixture.debugElement.query(By.css('input[formControlName="password"]')).nativeElement;
+    const passwordInput = fixture.debugElement.query(By.css('input[autocomplete="user-password"]')).nativeElement;
     const visibilityToggle = fixture.debugElement.query(By.css('span[matSuffix]')).nativeElement;
 
     expect(passwordInput.type).toBe('password');

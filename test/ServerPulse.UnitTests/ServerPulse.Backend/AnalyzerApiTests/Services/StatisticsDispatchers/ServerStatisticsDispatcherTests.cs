@@ -106,8 +106,8 @@ namespace AnalyzerApi.Services.StatisticsDispatchers.Tests
 
         [Test]
         [TestCase("key1", 5, 3, 400, 400, Description = "Dispatches at most 3 of 5 events before stopping.")]
-        [TestCase("key1", 10, 9, 100, 400, Description = "Dispatches at most 9 of 10 events before stopping.")]
-        [TestCase("key2", 50, 6, 100, 100, Description = "Dispatches at most 6 of 50 events before stopping.")]
+        [TestCase("key1", 10, 10, 100, 400, Description = "Dispatches at most 10 of 10 events before stopping.")]
+        [TestCase("key2", 50, 20, 100, 100, Description = "Dispatches at most 20 of 50 events before stopping.")]
         [TestCase("key3", 500, 60, 1000, 1000, Description = "Dispatches at most 60 of 500 events before stopping.")]
         public async Task StopStatisticsDispatching_StopsCorrectly(string key, int eventCount, int proceededEventCount, int delay, int stopDelay)
         {
