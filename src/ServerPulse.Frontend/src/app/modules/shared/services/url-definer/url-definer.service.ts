@@ -9,7 +9,7 @@ export class URLDefiner {
     return environment.api + "/serverslot" + subpath;
   }
   combineWithAuthApiUrl(subpath: string): string {
-    return environment.api + "/auth" + subpath;
+    return environment.authApi + subpath;
   }
   combineWithStatisticsApiUrl(subpath: string): string {
     return environment.api + "/analyze" + subpath;

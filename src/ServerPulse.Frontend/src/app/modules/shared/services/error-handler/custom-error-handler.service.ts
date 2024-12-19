@@ -1,10 +1,27 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@angular/core';
+import { SnackbarManager } from '../..';
 import { ErrorHandler } from './error-handler';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CustomErrorHandler implements ErrorHandler {
+
+  constructor(
+    private readonly snackbarManager: SnackbarManager
+  ) { }
+
+  handleError(error: any): string {
+    let errorMessage;
+    if (error.message) {
+      errorMessage = error.message;
+    }
+    console.error(errorMessage);
+    this.snackbarManager.openErrorSnackbar([errorMessage]);
+
+    return errorMessage;
+  }
 
   handleApiError(error: any): string {
     let errorMessage;
@@ -20,8 +37,10 @@ export class CustomErrorHandler implements ErrorHandler {
       errorMessage = `An unknown error occurred! (${statusCode})`
     }
     console.error(errorMessage);
+    this.snackbarManager.openErrorSnackbar([errorMessage]);
     return errorMessage;
   }
+
   handleHubError(error: any): string {
     let errorMessage;
     if (error.message) {
@@ -38,7 +57,7 @@ export class CustomErrorHandler implements ErrorHandler {
 export function getStatusCodeDescription(statusCode: number): string {
   return HttpStatusCodes[statusCode] || 'Unknown Status Code';
 }
-export const HttpStatusCodes: { [key: number]: string } = {
+export const HttpStatusCodes: Record<number, string> = {
   400: 'Bad Request',
   401: 'Unauthorized',
   403: 'Forbidden',

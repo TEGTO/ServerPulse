@@ -1,8 +1,9 @@
-﻿using AnalyzerApi.Domain.Dtos.Responses;
-using AnalyzerApi.Domain.Dtos.Wrappers;
-using AnalyzerApi.Domain.Models;
+﻿using AnalyzerApi.Infrastructure.Dtos.Responses.Events;
+using AnalyzerApi.Infrastructure.Dtos.Responses.Statistics;
+using AnalyzerApi.Infrastructure.Models.Statistics;
+using AnalyzerApi.Infrastructure.Models.Wrappers;
 using AutoMapper;
-using ServerPulse.EventCommunication.Events;
+using EventCommunication;
 
 namespace AuthenticationApi
 {
@@ -14,13 +15,18 @@ namespace AuthenticationApi
             CreateMap<PulseEvent, PulseEventWrapper>();
             CreateMap<LoadEvent, LoadEventWrapper>();
             CreateMap<CustomEvent, CustomEventWrapper>();
-            CreateMap<LoadMethodStatistics, LoadMethodStatisticsResponse>();
+
+            CreateMap<ConfigurationEventWrapper, ConfigurationEventResponse>();
+            CreateMap<PulseEventWrapper, PulseEventResponse>();
+            CreateMap<LoadEventWrapper, LoadEventResponse>();
+            CreateMap<CustomEventWrapper, CustomEventResponse>();
+
             CreateMap<BaseStatistics, BaseStatisticsResponse>();
-            CreateMap<ServerStatistics, ServerStatisticsResponse>();
+            CreateMap<LoadMethodStatistics, LoadMethodStatisticsResponse>();
+            CreateMap<ServerLifecycleStatistics, ServerLifecycleStatisticsResponse>();
             CreateMap<ServerLoadStatistics, ServerLoadStatisticsResponse>();
             CreateMap<LoadAmountStatistics, LoadAmountStatisticsResponse>();
-            CreateMap<ServerCustomStatistics, CustomEventStatisticsResponse>();
-            CreateMap<SlotData, SlotDataResponse>();
+            CreateMap<ServerCustomStatistics, ServerCustomStatisticsResponse>();
         }
     }
 }

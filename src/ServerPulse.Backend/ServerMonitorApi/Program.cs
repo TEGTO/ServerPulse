@@ -1,31 +1,23 @@
-using CacheUtils;
 using Confluent.Kafka;
-using ConsulUtils.Extension;
+using EventCommunication;
+using ExceptionHandling;
+using Logging;
 using MessageBus;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using ServerMonitorApi;
 using ServerMonitorApi.Services;
 using Shared;
-using Shared.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
-#region Consul
-
-string environmentName = builder.Environment.EnvironmentName;
-builder.Services.AddHealthChecks();
-var consulSettings = ConsulExtension.GetConsulSettings(builder.Configuration);
-builder.Services.AddConsulService(consulSettings);
-builder.Configuration.ConfigureConsul(consulSettings, environmentName);
-
-#endregion
+builder.Host.AddLogging();
 
 builder.Services.Configure<KestrelServerOptions>(options =>
 {
     options.Limits.MaxRequestBodySize = 1 * 1024 * 1024; //1 MB
 });
 
-builder.Services.AddHttpClient();
+builder.Services.AddCustomHttpClientServiceWithResilience(builder.Configuration);
 
 #region Kafka
 
@@ -43,17 +35,8 @@ builder.Services.AddKafkaProducer(producerConfig, adminConfig);
 
 #endregion
 
-#region Cache
-
-builder.Services.AddCache(builder.Configuration);
-
-#endregion
-
 #region Project Services
 
-builder.Services.AddSingleton<IEventSender, EventSender>();
-builder.Services.AddSingleton<IStatisticsControlService, StatisticsControlService>();
-builder.Services.AddSingleton<IEventProcessing, EventProcessing>();
 builder.Services.AddSingleton<ISlotKeyChecker, SlotKeyChecker>();
 
 #endregion
@@ -63,17 +46,33 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
-builder.Services.AddSharedFluentValidation(typeof(Program));
+builder.Services.AddMediatR(conf =>
+{
+    conf.RegisterServicesFromAssembly(typeof(Program).Assembly);
+});
+
+builder.Services.AddSharedFluentValidation(typeof(Program), typeof(LoadEvent));
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddSwagger("Server Monitor API");
+}
 
 var app = builder.Build();
 
-app.UseExceptionMiddleware();
+app.UseSharedMiddleware();
 
-app.UseAuthorization();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+else
+{
+    app.UseSwagger("Server Monitor API V1");
+}
 
-app.MapHealthChecks("/health");
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();
 
 public partial class Program { }

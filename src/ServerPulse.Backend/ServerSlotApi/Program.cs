@@ -1,63 +1,94 @@
 using Authentication;
-using ConsulUtils.Extension;
+using Caching;
+using DatabaseControl;
+using ExceptionHandling;
+using Logging;
 using Microsoft.EntityFrameworkCore;
 using ServerSlotApi;
-using ServerSlotApi.Data;
-using ServerSlotApi.Services;
+using ServerSlotApi.Dtos;
+using ServerSlotApi.Infrastructure.Data;
+using ServerSlotApi.Infrastructure.Repositories;
+using ServerSlotApi.Infrastructure.Validators;
 using Shared;
-using Shared.Middlewares;
-using Shared.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
-#region Consul 
+builder.Host.AddLogging();
 
-string environmentName = builder.Environment.EnvironmentName;
-builder.Services.AddHealthChecks();
-var consulSettings = ConsulExtension.GetConsulSettings(builder.Configuration);
-builder.Services.AddConsulService(consulSettings);
-builder.Configuration.ConfigureConsul(consulSettings, environmentName);
+builder.Services.AddDbContextFactory<ServerSlotDbContext>(
+    builder.Configuration.GetConnectionString(Configuration.SERVER_SLOT_DATABASE_CONNECTION_STRING)!,
+    "ServerSlotApi"
+);
 
-#endregion
-
-builder.Services.AddDbContextFactory<ServerDataDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString(Configuration.SERVER_SLOT_DATABASE_CONNECTION_STRING)));
-
-builder.Services.AddHttpClient();
+builder.Services.AddCustomHttpClientServiceWithResilience(builder.Configuration);
 
 #region Project Services
 
-builder.Services.AddSingleton<IServerSlotService, ServerSlotService>();
-builder.Services.AddSingleton<IDatabaseRepository<ServerDataDbContext>, DatabaseRepository<ServerDataDbContext>>();
-builder.Services.AddSingleton<ISlotStatisticsService, SlotStatisticsService>();
+builder.Services.AddSingleton<IServerSlotRepository, ServerSlotRepository>();
 
 #endregion
+
+#region Caching
+
+builder.Services.AddOutputCache((options) =>
+{
+    options.AddPolicy("BasePolicy", new OutputCachePolicy());
+
+    var expiryTime = int.TryParse(
+        builder.Configuration[Configuration.CACHE_GET_BY_EMAIL_SERVER_SLOT_EXPIRY_IN_SECONDS],
+        out var getByEmailExpiry) ? getByEmailExpiry : 1;
+
+    options.SetOutputCachePolicy("GetSlotsByEmailPolicy", duration: TimeSpan.FromSeconds(expiryTime), useAuthId: true);
+
+    expiryTime = int.TryParse(
+        builder.Configuration[Configuration.CACHE_CHECK_SERVER_SLOT_EXPIRY_IN_SECONDS],
+        out var checkSlotExpiry) ? checkSlotExpiry : 1;
+
+    options.SetOutputCachePolicy("CheckSlotKeyPolicy", duration: TimeSpan.FromSeconds(expiryTime), types: typeof(CheckSlotKeyRequest));
+});
+
+#endregion
+
+builder.Services.AddRepositoryWithResilience<ServerSlotDbContext>(builder.Configuration);
 
 builder.Services.ConfigureIdentityServices(builder.Configuration);
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
-builder.Services.AddSharedFluentValidation(typeof(Program));
+builder.Services.AddMediatR(conf =>
+{
+    conf.RegisterServicesFromAssembly(typeof(Program).Assembly);
+});
+
+builder.Services.AddSharedFluentValidation(typeof(Program), typeof(CheckServerSlotRequestValidator));
 
 builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddSwagger("Server Slot API");
+}
 
 var app = builder.Build();
 
 if (app.Configuration[Configuration.EF_CREATE_DATABASE] == "true")
 {
-    await app.ConfigureDatabaseAsync<ServerDataDbContext>(CancellationToken.None);
+    await app.ConfigureDatabaseAsync<ServerSlotDbContext>(CancellationToken.None);
+}
+else
+{
+    app.UseSwagger("Server Slot API V1");
 }
 
-app.UseExceptionMiddleware();
-app.UseMiddleware<AccessTokenMiddleware>();
+app.UseSharedMiddleware();
 
-app.UseAuthentication();
-app.UseAuthorization();
+app.UseIdentity();
 
-app.MapHealthChecks("/health");
+app.UseOutputCache(); //Order after Identity
+
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();
 
 public partial class Program { }

@@ -1,7 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
-import { Observable, Subject, takeUntil } from 'rxjs';
-import { AuthenticationService } from '../../../authentication';
+import { Observable, Subject } from 'rxjs';
 import { CustomErrorHandler } from '../../../shared';
 import { RealTimeStatisticsCollector } from './realtime-statistics-collector';
 
@@ -9,22 +8,21 @@ import { RealTimeStatisticsCollector } from './realtime-statistics-collector';
   providedIn: 'root',
 })
 export class StatisticsCollector implements OnDestroy, RealTimeStatisticsCollector {
-  private hubConnections: Map<string, { connection: signalR.HubConnection, promise: Promise<void> }> = new Map();
+  private hubConnections = new Map<string, { connection: signalR.HubConnection, promise: Promise<void> }>();
   private authToken: string | null = null;
   private destroy$ = new Subject<void>();
 
   constructor(
     private readonly errorHandler: CustomErrorHandler,
-    private readonly authService: AuthenticationService
   ) {
-    this.authService.getAuthData()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(data => {
-        if (this.authToken !== data.accessToken && data.accessToken) {
-          this.authToken = data.accessToken;
-          this.deleteOldConnections();
-        }
-      });
+    // this.authService.getAuthData()
+    //   .pipe(takeUntil(this.destroy$))
+    //   .subscribe(data => {
+    //     if (this.authToken !== data.accessToken && data.accessToken) {
+    //       this.authToken = data.accessToken;
+    //       this.deleteOldConnections();
+    //     }
+    //   });
   }
 
   startConnection(hubUrl: string): Observable<void> {

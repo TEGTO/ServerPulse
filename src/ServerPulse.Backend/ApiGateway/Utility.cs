@@ -12,7 +12,7 @@ namespace ApiGateway
             {
                 var json = File.ReadAllText(filePath);
 
-                if (json.TryToDeserialize(out Dictionary<string, JsonElement> dict))
+                if (json.TryToDeserialize(out Dictionary<string, JsonElement>? dict) && dict != null)
                 {
                     foreach (var kvp in dict)
                     {
@@ -32,11 +32,12 @@ namespace ApiGateway
             var mergedJson = JsonSerializer.Serialize(mergedDict, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(outputPath, mergedJson);
         }
+
         private static JsonElement MergeArrays(JsonElement existingValue, JsonElement newValue)
         {
-            existingValue.GetRawText().TryToDeserialize(out List<JsonElement> existingList);
-            newValue.GetRawText().TryToDeserialize(out List<JsonElement> newList);
-            existingList.AddRange(newList);
+            existingValue.GetRawText().TryToDeserialize(out List<JsonElement>? existingList);
+            newValue.GetRawText().TryToDeserialize(out List<JsonElement>? newList);
+            existingList?.AddRange(newList ?? []);
             return JsonDocument.Parse(JsonSerializer.Serialize(existingList)).RootElement;
         }
     }

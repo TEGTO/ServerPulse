@@ -1,94 +1,422 @@
-﻿using AnalyzerApi.Domain.Models;
+﻿using AnalyzerApi.Infrastructure.Models.Statistics;
+using EventCommunication;
 using Microsoft.AspNetCore.SignalR.Client;
-using ServerPulse.EventCommunication.Events;
-using System.Text.Json;
 
 namespace AnalyzerApi.IntegrationTests.Hubs
 {
-    [TestFixture]
+    [TestFixture, Parallelizable(ParallelScope.Children)]
     internal class ServerLoadStatisticsHubTests : BaseIntegrationTest
     {
-        const string KEY = "validKey";
+        private readonly List<HubConnection> connections = new List<HubConnection>();
 
-        private HubConnection connection;
-        private List<LoadEvent> eventSamples = new List<LoadEvent>();
-        private string? receivedKey;
-        private string? receivedStatistics;
-
-        [OneTimeSetUp]
-        public async Task OneTimeSetUp()
+        [OneTimeTearDown]
+        public async Task OneTimeTearDown()
         {
-            eventSamples.Add(new LoadEvent(KEY, "/api/resource", "GET", 200, TimeSpan.FromMilliseconds(150), DateTime.UtcNow));
-            await SendEventsAsync(LOAD_TOPIC, KEY, new[]
+            foreach (var connection in connections)
+            {
+                await connection.StopAsync();
+                await connection.DisposeAsync();
+            }
+        }
+
+        [Test]
+        public async Task StartListen_ValidKey_ClientAddedToGroupAndGetsInitial()
+        {
+            // Arrange 
+            var key = Guid.NewGuid().ToString();
+            var eventSamples = new List<LoadEvent>();
+            string? receivedKey = null;
+            ServerLoadStatistics? receivedStatistics = null;
+
+            eventSamples.Add(new LoadEvent(key, "/api/resource", "GET", 200, TimeSpan.FromMilliseconds(150), DateTime.UtcNow));
+            await SendEventsAsync(LOAD_PROCESS_TOPIC, "", new[]
             {
                eventSamples[0]
             });
-            Thread.Sleep(1000);
-            eventSamples.Add(new LoadEvent(KEY, "/api/resource", "POST", 201, TimeSpan.FromMilliseconds(200), DateTime.UtcNow));
-            await SendEventsAsync(LOAD_TOPIC, KEY, new[]
+
+            eventSamples.Add(new LoadEvent(key, "/api/resource", "POST", 201, TimeSpan.FromMilliseconds(200), DateTime.UtcNow));
+            await SendEventsAsync(LOAD_PROCESS_TOPIC, "", new[]
             {
                eventSamples[1]
             });
 
-            connection = new HubConnectionBuilder()
-                      .WithUrl("wss://localhost" + "/loadstatisticshub", options =>
-                      {
-                          options.HttpMessageHandlerFactory = _ => server.CreateHandler();
-                      })
-                      .Build();
+            await Task.Delay(2000);
 
-            connection.On<string, string>("ReceiveStatistics", (key, serializedStatistics) =>
+            await SendEventsAsync(LOAD_TOPIC, key, new[]
             {
-                receivedKey = key;
-                receivedStatistics = serializedStatistics;
+                eventSamples[0]
+            });
+
+            await SendEventsAsync(LOAD_TOPIC, key, new[]
+            {
+                eventSamples[1]
+            });
+
+            await Task.Delay(1000);
+
+            var connection = new HubConnectionBuilder()
+            .WithUrl("wss://localhost" + "/loadstatisticshub", options =>
+            {
+                options.HttpMessageHandlerFactory = _ => server.CreateHandler();
+            })
+            .Build();
+
+            connections.Add(connection);
+
+            connection.On<string, ServerLoadStatistics>("ReceiveStatistics", (k, response) =>
+            {
+                receivedKey = k;
+                receivedStatistics = response;
             });
 
             await connection.StartAsync();
-        }
-        [OneTimeTearDown]
-        public async Task OneTimeTearDown()
-        {
-            await connection.StopAsync();
-            await connection.DisposeAsync();
+
+            // Act
+            await connection.SendAsync("StartListen", key);
+
+            await Task.Delay(1000);
+
+            // Assert
+            await Utility.WaitUntil(() =>
+            {
+                return receivedKey != null &&
+                receivedStatistics != null &&
+                receivedStatistics.LastEvent != null &&
+                receivedStatistics.LoadMethodStatistics != null &&
+                receivedStatistics.LoadMethodStatistics.GetAmount == 1;
+            }, TimeSpan.FromSeconds(100), TimeSpan.FromSeconds(2));
+
+            Assert.IsNotNull(receivedKey);
+            Assert.That(receivedKey, Is.EqualTo(key));
+
+            Assert.IsNotNull(receivedStatistics);
+            Assert.That(receivedStatistics.AmountOfEvents, Is.EqualTo(2));
+
+            Assert.IsNotNull(receivedStatistics.LastEvent);
+            Assert.That(receivedStatistics.LastEvent.Id, Is.EqualTo(eventSamples[1].Id));
+            Assert.That(receivedStatistics.LastEvent.Method, Is.EqualTo(eventSamples[1].Method));
+
+            Assert.IsNotNull(receivedStatistics.LoadMethodStatistics);
+            Assert.That(receivedStatistics.LoadMethodStatistics.GetAmount, Is.EqualTo(1));
+            Assert.That(receivedStatistics.LoadMethodStatistics.PostAmount, Is.EqualTo(1));
+            Assert.That(receivedStatistics.LoadMethodStatistics.PutAmount, Is.EqualTo(0));
+            Assert.That(receivedStatistics.LoadMethodStatistics.PatchAmount, Is.EqualTo(0));
+            Assert.That(receivedStatistics.LoadMethodStatistics.DeleteAmount, Is.EqualTo(0));
         }
 
         [Test]
-        public async Task StartListen_ValidKey_ClientAddedToGroupAndStartsConsumingStatistics()
+        public async Task StartListen_ValidKey_ClientAddedToGroupAndGetsNewStatistics()
         {
+            // Arrange 
+            var key = Guid.NewGuid().ToString();
+            var eventSamples = new List<LoadEvent>();
+            string? receivedKey = null;
+            ServerLoadStatistics? receivedStatistics = null;
+
+            var connection = new HubConnectionBuilder()
+            .WithUrl("wss://localhost" + "/loadstatisticshub", options =>
+            {
+                options.HttpMessageHandlerFactory = _ => server.CreateHandler();
+            })
+            .Build();
+
+            connections.Add(connection);
+
+            connection.On<string, ServerLoadStatistics>("ReceiveStatistics", (k, response) =>
+            {
+                receivedKey = k;
+                receivedStatistics = response;
+            });
+
+            await connection.StartAsync();
+
             // Act
-            await connection.SendAsync("StartListen", KEY);
-            Thread.Sleep(2000);
+            await connection.SendAsync("StartListen", key);
+
+            await Task.Delay(1000);
+
             // Assert
-            Assert.NotNull(receivedKey);
-            Assert.That(receivedKey, Is.EqualTo(KEY));
-            Assert.NotNull(receivedStatistics);
+            await Utility.WaitUntil(() =>
+            {
+                return receivedKey != null && receivedStatistics != null && receivedStatistics.LastEvent == null;
+            }, TimeSpan.FromSeconds(100), TimeSpan.FromSeconds(2));
 
-            var statistics = JsonSerializer.Deserialize<ServerLoadStatistics>(receivedStatistics);
-            Assert.NotNull(statistics);
-            Assert.True(statistics.IsInitial);
-            Assert.That(statistics.AmountOfEvents, Is.EqualTo(2));
-            Assert.NotNull(statistics.LastEvent);
-            Assert.That(statistics.LastEvent.Id, Is.EqualTo(eventSamples[1].Id));
-            Assert.That(statistics.LastEvent.Method, Is.EqualTo(eventSamples[1].Method));
+            Assert.IsNotNull(receivedKey);
+            Assert.That(receivedKey, Is.EqualTo(key));
+            Assert.IsNotNull(receivedStatistics);
 
-            // Arrange
-            eventSamples.Add(new LoadEvent(KEY, "/api/resource", "DELETE", 200, TimeSpan.FromMilliseconds(200), DateTime.UtcNow));
-            await SendEventsAsync(LOAD_TOPIC, KEY, new[]
+            Assert.IsNull(receivedStatistics.LastEvent);
+
+            Assert.IsNotNull(receivedStatistics.LoadMethodStatistics);
+            Assert.That(receivedStatistics.LoadMethodStatistics.GetAmount, Is.EqualTo(0));
+            Assert.That(receivedStatistics.LoadMethodStatistics.PostAmount, Is.EqualTo(0));
+            Assert.That(receivedStatistics.LoadMethodStatistics.PutAmount, Is.EqualTo(0));
+            Assert.That(receivedStatistics.LoadMethodStatistics.PatchAmount, Is.EqualTo(0));
+            Assert.That(receivedStatistics.LoadMethodStatistics.DeleteAmount, Is.EqualTo(0));
+
+            // Act - Adding new statistics
+            eventSamples.Add(new LoadEvent(key, "/api/resource", "DELETE", 200, TimeSpan.FromMilliseconds(200), DateTime.UtcNow));
+            await SendEventsAsync(LOAD_PROCESS_TOPIC, "", new[]
+            {
+               eventSamples[0]
+            });
+
+            await Task.Delay(5000);
+
+            await SendEventsAsync(LOAD_TOPIC, key, new[]
+            {
+               eventSamples[0]
+            });
+
+            await Task.Delay(1000);
+
+            // Assert - Consuming new event
+            await Utility.WaitUntil(() =>
+            {
+                return
+                receivedKey != null &&
+                receivedStatistics != null &&
+                receivedStatistics.LastEvent != null &&
+                receivedStatistics.LoadMethodStatistics != null &&
+                receivedStatistics.LoadMethodStatistics.DeleteAmount == 1;
+            }, TimeSpan.FromSeconds(100), TimeSpan.FromSeconds(2));
+
+            Assert.IsNotNull(receivedKey);
+            Assert.That(receivedKey, Is.EqualTo(key));
+
+            Assert.IsNotNull(receivedStatistics);
+            Assert.That(receivedStatistics.AmountOfEvents, Is.EqualTo(1));
+
+            Assert.IsNotNull(receivedStatistics.LastEvent);
+            Assert.That(receivedStatistics.LastEvent.Id, Is.EqualTo(eventSamples[0].Id));
+            Assert.That(receivedStatistics.LastEvent.Method, Is.EqualTo(eventSamples[0].Method));
+
+            Assert.IsNotNull(receivedStatistics.LoadMethodStatistics);
+            Assert.That(receivedStatistics.LoadMethodStatistics.GetAmount, Is.EqualTo(0));
+            Assert.That(receivedStatistics.LoadMethodStatistics.PostAmount, Is.EqualTo(0));
+            Assert.That(receivedStatistics.LoadMethodStatistics.PutAmount, Is.EqualTo(0));
+            Assert.That(receivedStatistics.LoadMethodStatistics.PatchAmount, Is.EqualTo(0));
+            Assert.That(receivedStatistics.LoadMethodStatistics.DeleteAmount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public async Task StartListen_ValidKey_ClientAddedToGroupAndGetsInitialStatisticsAndThenGetsNewStatistics()
+        {
+            // Arrange 
+            var key = Guid.NewGuid().ToString();
+            var eventSamples = new List<LoadEvent>();
+            string? receivedKey = null;
+            ServerLoadStatistics? receivedStatistics = null;
+
+            var connection = new HubConnectionBuilder()
+            .WithUrl("wss://localhost" + "/loadstatisticshub", options =>
+            {
+                options.HttpMessageHandlerFactory = _ => server.CreateHandler();
+            })
+            .Build();
+
+            connections.Add(connection);
+
+            connection.On<string, ServerLoadStatistics>("ReceiveStatistics", (k, response) =>
+            {
+                receivedKey = k;
+                receivedStatistics = response;
+            });
+
+            await connection.StartAsync();
+
+            // Act
+            await connection.SendAsync("StartListen", key);
+
+            await Task.Delay(1000);
+
+            // Assert
+            await Utility.WaitUntil(() =>
+            {
+                return
+                receivedKey != null &&
+                receivedStatistics != null &&
+                receivedStatistics.LastEvent == null &&
+                receivedStatistics.LoadMethodStatistics != null;
+            }, TimeSpan.FromSeconds(100), TimeSpan.FromSeconds(2));
+
+            Assert.IsNotNull(receivedKey);
+            Assert.That(receivedKey, Is.EqualTo(key));
+            Assert.IsNotNull(receivedStatistics);
+
+            Assert.IsNull(receivedStatistics.LastEvent);
+
+            Assert.IsNotNull(receivedStatistics.LoadMethodStatistics);
+            Assert.That(receivedStatistics.LoadMethodStatistics.GetAmount, Is.EqualTo(0));
+            Assert.That(receivedStatistics.LoadMethodStatistics.PostAmount, Is.EqualTo(0));
+            Assert.That(receivedStatistics.LoadMethodStatistics.PutAmount, Is.EqualTo(0));
+            Assert.That(receivedStatistics.LoadMethodStatistics.PatchAmount, Is.EqualTo(0));
+            Assert.That(receivedStatistics.LoadMethodStatistics.DeleteAmount, Is.EqualTo(0));
+
+            // Act - Adding new statistics
+            eventSamples.Add(new LoadEvent(key, "/api/resource", "DELETE", 200, TimeSpan.FromMilliseconds(200), DateTime.UtcNow));
+            await SendEventsAsync(LOAD_PROCESS_TOPIC, "", new[]
+            {
+               eventSamples[0]
+            });
+
+            await Task.Delay(5000);
+
+            await SendEventsAsync(LOAD_TOPIC, key, new[]
+            {
+               eventSamples[0]
+            });
+
+            await Task.Delay(2000);
+
+            // Assert - Consuming new event
+            await Utility.WaitUntil(() =>
+            {
+                return
+                receivedKey != null &&
+                receivedStatistics != null &&
+                receivedStatistics.LastEvent != null &&
+                receivedStatistics.AmountOfEvents == 1 &&
+                receivedStatistics.LoadMethodStatistics != null;
+            }, TimeSpan.FromSeconds(100), TimeSpan.FromSeconds(2));
+
+            Assert.IsNotNull(receivedKey);
+            Assert.That(receivedKey, Is.EqualTo(key));
+
+            Assert.IsNotNull(receivedStatistics);
+            Assert.That(receivedStatistics.AmountOfEvents, Is.EqualTo(1));
+
+            Assert.IsNotNull(receivedStatistics.LastEvent);
+            Assert.That(receivedStatistics.LastEvent.Id, Is.EqualTo(eventSamples[0].Id));
+            Assert.That(receivedStatistics.LastEvent.Method, Is.EqualTo(eventSamples[0].Method));
+
+            Assert.IsNotNull(receivedStatistics.LoadMethodStatistics);
+            Assert.That(receivedStatistics.LoadMethodStatistics.GetAmount, Is.EqualTo(0));
+            Assert.That(receivedStatistics.LoadMethodStatistics.PostAmount, Is.EqualTo(0));
+            Assert.That(receivedStatistics.LoadMethodStatistics.PutAmount, Is.EqualTo(0));
+            Assert.That(receivedStatistics.LoadMethodStatistics.PatchAmount, Is.EqualTo(0));
+            Assert.That(receivedStatistics.LoadMethodStatistics.DeleteAmount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public async Task StartListen_WrongKey_ClientAddedToGroupAndGetsEmptyStatistics()
+        {
+            // Arrange 
+            var key = Guid.NewGuid().ToString();
+            var wrongKey = Guid.NewGuid().ToString();
+            var eventSamples = new List<LoadEvent>();
+            string? receivedKey = null;
+            ServerLoadStatistics? receivedStatistics = null;
+
+            eventSamples.Add(new LoadEvent(key, "/api/resource", "GET", 200, TimeSpan.FromMilliseconds(150), DateTime.UtcNow));
+            await SendEventsAsync(LOAD_PROCESS_TOPIC, "", new[]
+            {
+                eventSamples[0]
+            });
+
+            eventSamples.Add(new LoadEvent(key, "/api/resource", "POST", 201, TimeSpan.FromMilliseconds(200), DateTime.UtcNow));
+            await SendEventsAsync(LOAD_PROCESS_TOPIC, "", new[]
+            {
+                eventSamples[0]
+            });
+
+            await Task.Delay(5000);
+
+            await SendEventsAsync(LOAD_TOPIC, key, new[]
+            {
+                eventSamples[0]
+            });
+
+            await SendEventsAsync(LOAD_TOPIC, key, new[]
+            {
+                eventSamples[1]
+            });
+
+            await Task.Delay(1000);
+
+            var connection = new HubConnectionBuilder()
+            .WithUrl("wss://localhost" + "/loadstatisticshub", options =>
+            {
+                options.HttpMessageHandlerFactory = _ => server.CreateHandler();
+            })
+            .Build();
+
+            connections.Add(connection);
+
+            connection.On<string, ServerLoadStatistics>("ReceiveStatistics", (k, response) =>
+            {
+                receivedKey = k;
+                receivedStatistics = response;
+            });
+
+            await connection.StartAsync();
+
+            // Act
+            await connection.SendAsync("StartListen", wrongKey);
+
+            await Task.Delay(1000);
+
+            // Assert
+            await Utility.WaitUntil(() =>
+            {
+                return receivedKey != null &&
+                receivedStatistics != null &&
+                receivedStatistics.LastEvent == null &&
+                receivedStatistics.LoadMethodStatistics != null;
+            }, TimeSpan.FromSeconds(100), TimeSpan.FromSeconds(2));
+
+            Assert.IsNotNull(receivedKey);
+            Assert.That(receivedKey, Is.EqualTo(wrongKey));
+
+            Assert.IsNotNull(receivedStatistics);
+
+            Assert.IsNull(receivedStatistics.LastEvent);
+
+            Assert.IsNotNull(receivedStatistics.LoadMethodStatistics);
+            Assert.That(receivedStatistics.LoadMethodStatistics.GetAmount, Is.EqualTo(0));
+            Assert.That(receivedStatistics.LoadMethodStatistics.PostAmount, Is.EqualTo(0));
+            Assert.That(receivedStatistics.LoadMethodStatistics.PutAmount, Is.EqualTo(0));
+            Assert.That(receivedStatistics.LoadMethodStatistics.PatchAmount, Is.EqualTo(0));
+            Assert.That(receivedStatistics.LoadMethodStatistics.DeleteAmount, Is.EqualTo(0));
+
+            // Act - Adding new statistics
+            eventSamples.Add(new LoadEvent(key, "/api/resource", "DELETE", 200, TimeSpan.FromMilliseconds(200), DateTime.UtcNow));
+            await SendEventsAsync(LOAD_PROCESS_TOPIC, "", new[]
             {
                eventSamples[2]
             });
-            // Assert
-            Assert.NotNull(receivedKey);
-            Assert.That(receivedKey, Is.EqualTo(KEY));
-            Assert.NotNull(receivedStatistics);
 
-            statistics = JsonSerializer.Deserialize<ServerLoadStatistics>(receivedStatistics);
-            Assert.NotNull(statistics);
-            Assert.False(statistics.IsInitial);
-            Assert.That(statistics.AmountOfEvents, Is.EqualTo(3));
-            Assert.NotNull(statistics.LastEvent);
-            Assert.That(statistics.LastEvent.Id, Is.EqualTo(eventSamples[2].Id));
-            Assert.That(statistics.LastEvent.Method, Is.EqualTo(eventSamples[2].Method));
+            await Task.Delay(5000);
+
+            await SendEventsAsync(LOAD_TOPIC, key, new[]
+            {
+               eventSamples[2]
+            });
+
+            await Task.Delay(1000);
+
+            // Assert - Gets nothing
+            await Utility.WaitUntil(() =>
+            {
+                return receivedKey != null &&
+                receivedStatistics != null &&
+                receivedStatistics.LastEvent == null &&
+                receivedStatistics.LoadMethodStatistics != null;
+            }, TimeSpan.FromSeconds(100), TimeSpan.FromSeconds(2));
+
+            Assert.IsNotNull(receivedKey);
+            Assert.That(receivedKey, Is.EqualTo(wrongKey));
+
+            Assert.IsNotNull(receivedStatistics);
+
+            Assert.IsNull(receivedStatistics.LastEvent);
+
+            Assert.IsNotNull(receivedStatistics.LoadMethodStatistics);
+            Assert.That(receivedStatistics.LoadMethodStatistics.GetAmount, Is.EqualTo(0));
+            Assert.That(receivedStatistics.LoadMethodStatistics.PostAmount, Is.EqualTo(0));
+            Assert.That(receivedStatistics.LoadMethodStatistics.PutAmount, Is.EqualTo(0));
+            Assert.That(receivedStatistics.LoadMethodStatistics.PatchAmount, Is.EqualTo(0));
+            Assert.That(receivedStatistics.LoadMethodStatistics.DeleteAmount, Is.EqualTo(0));
         }
     }
 }

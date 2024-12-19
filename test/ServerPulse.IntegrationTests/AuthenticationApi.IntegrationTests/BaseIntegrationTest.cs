@@ -1,4 +1,4 @@
-﻿using Authentication.Configuration;
+﻿using Authentication.Token;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,6 +20,7 @@ namespace AuthenticationApi.IntegrationTests
             factory = await wrapper.GetFactoryAsync();
             InitializeServices();
         }
+
         [OneTimeTearDown]
         public async Task GlobalTearDown()
         {

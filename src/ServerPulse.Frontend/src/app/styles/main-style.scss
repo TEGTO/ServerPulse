@@ -2,7 +2,6 @@
 @import "./partials/global-styles.scss";
 @import "@angular/material/prebuilt-themes/azure-blue.css";
 @import url("https://fonts.googleapis.com/css?family=Nunito:400,700|Lato:400,800,900");
-@include mat.core();
 
 $my-primary: mat.$azure-palette;
 $my-accent: mat.$blue-palette;
@@ -43,5 +42,4 @@ $button-icon-light: mat.define-theme((color: (theme-type: dark,
 :root {
     @include mat.all-component-themes($theme);
     @include square-elements;
-    // @include toolbar-theme($theme);
 }

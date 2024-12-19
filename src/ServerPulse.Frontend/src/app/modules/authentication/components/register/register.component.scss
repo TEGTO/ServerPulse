@@ -12,14 +12,27 @@
     mat-form-field {
         width: 100%;
     }
+
+    margin-bottom: 0.5rem;
 }
 
 .actions__bottom-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    font-size: medium;
+    align-items: flex-end;
+
     #send-button {
         width: 100%;
     }
 
     .primary-color {
         color: colors.$link-light-blue;
+    }
+
+    #to-login-link {
+        color: colors.$link-light-blue;
+        cursor: pointer;
     }
 }

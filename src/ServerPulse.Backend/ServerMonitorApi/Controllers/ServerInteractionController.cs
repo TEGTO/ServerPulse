@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using ServerMonitorApi.Services;
-using ServerPulse.EventCommunication;
-using ServerPulse.EventCommunication.Events;
+﻿using EventCommunication;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using ServerMonitorApi.Command.SendConfiguration;
+using ServerMonitorApi.Command.SendCustomEvents;
+using ServerMonitorApi.Command.SendLoadEvents;
+using ServerMonitorApi.Command.SendPulse;
 
 namespace ServerMonitorApi.Controllers
 {
@@ -9,79 +12,39 @@ namespace ServerMonitorApi.Controllers
     [ApiController]
     public class ServerInteractionController : ControllerBase
     {
-        private readonly IEventSender eventSender;
-        private readonly ISlotKeyChecker serverSlotChecker;
-        private readonly IEventProcessing eventProcessing;
+        private readonly IMediator mediator;
 
-        public ServerInteractionController(IEventSender eventSender, ISlotKeyChecker serverSlotChecker, IEventProcessing eventProcessing)
+        public ServerInteractionController(IMediator mediator)
         {
-            this.eventSender = eventSender;
-            this.serverSlotChecker = serverSlotChecker;
-            this.eventProcessing = eventProcessing;
+            this.mediator = mediator;
         }
 
         [HttpPost("pulse")]
         public async Task<IActionResult> SendPulse(PulseEvent pulseEvent, CancellationToken cancellationToken)
         {
-            if (await serverSlotChecker.CheckSlotKeyAsync(pulseEvent.Key, cancellationToken))
-            {
-                await eventSender.SendEventsAsync(new[] { pulseEvent }, cancellationToken);
-                return Ok();
-            }
-            return NotFound($"Server slot with key '{pulseEvent.Key}' is not found!");
+            await mediator.Send(new SendPulseCommand(pulseEvent), cancellationToken);
+            return Ok();
         }
+
         [HttpPost("configuration")]
         public async Task<IActionResult> SendConfiguration(ConfigurationEvent configurationEvent, CancellationToken cancellationToken)
         {
-            if (await serverSlotChecker.CheckSlotKeyAsync(configurationEvent.Key, cancellationToken))
-            {
-                await eventSender.SendEventsAsync(new[] { configurationEvent }, cancellationToken);
-                return Ok();
-            }
-            return NotFound($"Server slot with key '{configurationEvent.Key}' is not found!");
+            await mediator.Send(new SendConfigurationCommand(configurationEvent), cancellationToken);
+            return Ok();
         }
+
         [HttpPost("load")]
         public async Task<IActionResult> SendLoadEvents(LoadEvent[] loadEvents, CancellationToken cancellationToken)
         {
-            var firstKey = loadEvents.First().Key;
-            if (!loadEvents.All(x => x.Key == firstKey))
-            {
-                return BadRequest($"All load events must have the same key per request!");
-            }
-
-            if (await serverSlotChecker.CheckSlotKeyAsync(firstKey, cancellationToken))
-            {
-                await eventProcessing.SendEventsForProcessingsAsync(loadEvents, cancellationToken);
-                await eventSender.SendEventsAsync(loadEvents, cancellationToken);
-                return Ok();
-            }
-            return NotFound($"Server slot with key '{firstKey}' is not found!");
+            await mediator.Send(new SendLoadEventsCommand(loadEvents), cancellationToken);
+            return Ok();
         }
+
         [HttpPost("custom")]
-        public async Task<IActionResult> SendCustomEvents(CustomEventWrapper[] customEventWrappers, CancellationToken cancellationToken)
+        public async Task<IActionResult> SendCustomEvents(CustomEventContainer[] customEventWrappers, CancellationToken cancellationToken)
         {
-            if (customEventWrappers != null && customEventWrappers.Length > 0)
-            {
-                IEnumerable<CustomEvent> customEvents = customEventWrappers.Select(x => x.CustomEvent);
-                var customSerializedEvents = customEventWrappers.Select(x => x.CustomEventSerialized).ToArray();
-
-                var firstKey = customEvents.First().Key;
-                if (!customEvents.All(x => x.Key == firstKey))
-                {
-                    return BadRequest($"All custom events must have the same key per request!");
-                }
-
-                if (await serverSlotChecker.CheckSlotKeyAsync(firstKey, cancellationToken))
-                {
-                    await eventSender.SendCustomEventsAsync(firstKey, customSerializedEvents, cancellationToken);
-                    return Ok();
-                }
-                return NotFound($"Server slot with key '{firstKey}' is not found!");
-            }
-            else
-            {
-                return BadRequest($"Invalid custom event structure!");
-            }
+            await mediator.Send(new SendCustomEventsCommand(customEventWrappers), cancellationToken);
+            return Ok();
         }
     }
 }

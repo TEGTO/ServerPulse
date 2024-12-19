@@ -1,7 +1,6 @@
 ﻿using Authentication.Models;
-using AuthenticationApi.Domain.Dtos;
-using AuthenticationApi.Domain.Entities;
-using AuthenticationApi.Domain.Models;
+using AuthenticationApi.Dtos;
+using AuthenticationApi.Infrastructure;
 using AutoMapper;
 
 namespace AuthenticationApi
@@ -11,10 +10,16 @@ namespace AuthenticationApi
         public AutoMapperProfile()
         {
             CreateMap<User, UserRegistrationRequest>();
-            CreateMap<UserRegistrationRequest, User>();
-            CreateMap<AccessTokenData, AuthToken>();
-            CreateMap<AuthToken, AccessTokenData>();
-            CreateMap<UserUpdateDataRequest, UserUpdateData>();
+            CreateMap<UserRegistrationRequest, User>()
+                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email)) // Map Email to UserName
+                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));   // Map Email to Email
+
+            CreateMap<AccessTokenData, AccessTokenDataDto>();
+            CreateMap<AccessTokenDataDto, AccessTokenData>();
+
+            CreateMap<UserUpdateDataRequest, UserUpdateModel>()
+           .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email))
+           .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
         }
     }
 }

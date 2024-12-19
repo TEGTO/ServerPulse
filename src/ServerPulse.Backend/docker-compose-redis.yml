@@ -3,7 +3,7 @@ version: '3.4'
 services:
   redis-node-1:
     container_name: serverpulse-redis-node-1
-    image: redis:latest
+    image: redis:7.4
     # command: ["redis-server", "/redis/redis.conf"]
     networks:
       - backend-net
@@ -12,7 +12,7 @@ services:
 
   # redis-node-2:
   #   container_name: serverpulse-redis-node-2
-  #   image: redis:latest
+  #   image: redis:7.4
   #   command: ["redis-server", "/redis/redis.conf"]
   #   networks:
   #     - backend-net
@@ -21,7 +21,7 @@ services:
 
   # redis-node-3:
   #   container_name: serverpulse-redis-node-3
-  #   image: redis:latest
+  #   image: redis:7.4
   #   command: ["redis-server", "/redis/redis.conf"]
   #   networks:
   #     - backend-net
@@ -30,7 +30,7 @@ services:
 
   # redis-node-4:
   #   container_name: serverpulse-redis-node-4
-  #   image: redis:latest
+  #   image: redis:7.4
   #   command: ["redis-server", "/redis/redis.conf"]
   #   networks:
   #     - backend-net
@@ -39,7 +39,7 @@ services:
 
   # redis-node-5:
   #   container_name: serverpulse-redis-node-5
-  #   image: redis:latest
+  #   image: redis:7.4
   #   command: ["redis-server", "/redis/redis.conf"]
   #   networks:
   #     - backend-net
@@ -48,7 +48,7 @@ services:
 
   # redis-node-6:
   #   container_name: serverpulse-redis-node-6
-  #   image: redis:latest
+  #   image: redis:7.4
   #   command: ["redis-server", "/redis/redis.conf"]
   #   networks:
   #     - backend-net
@@ -57,7 +57,7 @@ services:
 
   # redis-cluster-creator:
   #   container_name: serverpulse-redis-cluster-creator-1
-  #   image: redis:latest
+  #   image: redis:7.4
   #   entrypoint: ["sh", "-c", "sleep 20 && redis-cli --cluster create redis-node-1:6379 redis-node-2:6379 redis-node-3:6379 redis-node-4:6379 redis-node-5:6379 redis-node-6:6379 --cluster-replicas 1 --cluster-yes"]
   #   networks:
   #     - backend-net

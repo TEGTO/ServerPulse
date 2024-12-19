@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
-using ServerSlotApi.Domain.Dtos;
-using ServerSlotApi.Domain.Entities;
 using ServerSlotApi.Dtos;
+using ServerSlotApi.Infrastructure.Entities;
 
 namespace ServerSlotApi
 {
@@ -10,7 +9,9 @@ namespace ServerSlotApi
         public AutoMapperProfile()
         {
             CreateMap<ServerSlot, ServerSlotResponse>();
+
             CreateMap<CreateServerSlotRequest, ServerSlot>();
+
             CreateMap<UpdateServerSlotRequest, ServerSlot>();
         }
     }

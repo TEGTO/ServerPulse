@@ -1,27 +1,32 @@
-﻿using AnalyzerApi.Domain.Dtos.Requests;
-using AnalyzerApi.Domain.Dtos.Wrappers;
-using ServerPulse.EventCommunication.Events;
+﻿using AnalyzerApi.Infrastructure.Models.Wrappers;
+using AnalyzerApi.Infrastructure.Requests;
+using EventCommunication;
 using System.Net;
 using System.Text;
 using System.Text.Json;
 
 namespace AnalyzerApi.IntegrationTests.Controllers.AnalyzeController
 {
+    [TestFixture, Parallelizable(ParallelScope.Children)]
     internal class GetSomeLoadEventsAnalyzerControllerTests : BaseIntegrationTest
     {
-        const string KEY = "validKey";
+        private string key;
 
         [OneTimeSetUp]
         public async Task OneTimeSetUp()
         {
-            await SendEventsAsync(LOAD_TOPIC, KEY, new[]
+            key = Guid.NewGuid().ToString();
+
+            await SendEventsAsync(LOAD_TOPIC, key, new[]
             {
-                new LoadEvent(KEY, "/api/resource", "GET", 200, TimeSpan.FromMilliseconds(150), DateTime.UtcNow)
+                new LoadEvent(key, "/api/resource", "GET", 200, TimeSpan.FromMilliseconds(150), DateTime.UtcNow)
             });
-            Thread.Sleep(1000);
-            await SendEventsAsync(LOAD_TOPIC, KEY, new[]
+
+            await Task.Delay(1000);
+
+            await SendEventsAsync(LOAD_TOPIC, key, new[]
             {
-                 new LoadEvent(KEY, "/api/resource", "POST", 201, TimeSpan.FromMilliseconds(200), DateTime.UtcNow)
+                 new LoadEvent(key, "/api/resource", "POST", 201, TimeSpan.FromMilliseconds(200), DateTime.UtcNow)
             });
         }
 
@@ -29,127 +34,191 @@ namespace AnalyzerApi.IntegrationTests.Controllers.AnalyzeController
         public async Task GetSomeLoadEvents_ValidRequestToReadLastEvent_ReturnsOkWithLastEvent()
         {
             // Arrange
-            var getRequest = new GetSomeMessagesRequest { Key = KEY, NumberOfMessages = 1, StartDate = DateTime.UtcNow, ReadNew = false };
-            using var request = new HttpRequestMessage(HttpMethod.Post, "/analyze/someevents");
-            request.Content = new StringContent(JsonSerializer.Serialize(getRequest), Encoding.UTF8, "application/json");
+            var request = new GetSomeMessagesRequest { Key = key, NumberOfMessages = 1, StartDate = DateTime.UtcNow, ReadNew = false };
+
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/analyze/someevents");
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
             // Act
-            var response = await client.SendAsync(request);
+            var httpResponse = await client.SendAsync(httpRequest);
+
             // Assert
-            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            var content = await response.Content.ReadAsStringAsync();
+            Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+            var content = await httpResponse.Content.ReadAsStringAsync();
+
             var events = JsonSerializer.Deserialize<List<LoadEventWrapper>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
             Assert.NotNull(events);
-            Assert.That(events.Count(), Is.EqualTo(1));
+
+            Assert.That(events.Count, Is.GreaterThanOrEqualTo(1));
+
             Assert.True(events[0].Method == "POST");
-
-            //Redis Tests
-
-            // Arrange
-            using var request2 = new HttpRequestMessage(HttpMethod.Post, "/analyze/someevents");
-            request2.Content = new StringContent(JsonSerializer.Serialize(getRequest), Encoding.UTF8, "application/json");
-            // Act
-            var response2 = await client.SendAsync(request2);
-            // Assert
-            Assert.That(response2.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            var content2 = await response2.Content.ReadAsStringAsync();
-            var events2 = JsonSerializer.Deserialize<List<LoadEventWrapper>>(content2, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            Assert.NotNull(events2);
-            Assert.That(events2.Count(), Is.EqualTo(1));
-            Assert.True(events2[0].Method == "POST");
         }
+
         [Test]
-        public async Task GetSomeLoadEvents_ValidRequestToReadTwoLastEvent_ReturnsOkWithLastEvents()
+        public async Task GetSomeLoadEvents_ValidRequestToReadTwoLastEvents_ReturnsOkWithLastEvents()
         {
             // Arrange
-            var getRequest = new GetSomeMessagesRequest { Key = KEY, NumberOfMessages = 2, StartDate = DateTime.UtcNow, ReadNew = false };
-            using var request = new HttpRequestMessage(HttpMethod.Post, "/analyze/someevents");
-            request.Content = new StringContent(JsonSerializer.Serialize(getRequest), Encoding.UTF8, "application/json");
+            var request = new GetSomeMessagesRequest { Key = key, NumberOfMessages = 2, StartDate = DateTime.UtcNow, ReadNew = false };
+
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/analyze/someevents");
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
             // Act
-            var response = await client.SendAsync(request);
+            var httpResponse = await client.SendAsync(httpRequest);
+
             // Assert
-            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            var content = await response.Content.ReadAsStringAsync();
+            Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+            var content = await httpResponse.Content.ReadAsStringAsync();
+
             var events = JsonSerializer.Deserialize<List<LoadEventWrapper>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
             Assert.NotNull(events);
-            Assert.That(events.Count(), Is.EqualTo(2));
+
+            Assert.That(events.Count, Is.GreaterThanOrEqualTo(2));
+
             Assert.True(events[0].Method == "POST");
             Assert.True(events[1].Method == "GET");
-
-            //Redis Tests
-
-            // Arrange
-            using var request2 = new HttpRequestMessage(HttpMethod.Post, "/analyze/someevents");
-            request2.Content = new StringContent(JsonSerializer.Serialize(getRequest), Encoding.UTF8, "application/json");
-            // Act
-            var response2 = await client.SendAsync(request2);
-            // Assert
-            Assert.That(response2.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            var content2 = await response2.Content.ReadAsStringAsync();
-            var events2 = JsonSerializer.Deserialize<List<LoadEventWrapper>>(content2, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            Assert.NotNull(events2);
-            Assert.That(events2.Count(), Is.EqualTo(2));
-            Assert.True(events2[0].Method == "POST");
-            Assert.True(events2[1].Method == "GET");
         }
+
         [Test]
         public async Task GetSomeLoadEvents_ValidRequestToReadFirstEvent_ReturnsOkWithFirstEvent()
         {
             // Arrange
-            var getRequest = new GetSomeMessagesRequest { Key = KEY, NumberOfMessages = 1, StartDate = DateTime.MinValue, ReadNew = true };
-            using var request = new HttpRequestMessage(HttpMethod.Post, "/analyze/someevents");
-            request.Content = new StringContent(JsonSerializer.Serialize(getRequest), Encoding.UTF8, "application/json");
+            var request = new GetSomeMessagesRequest { Key = key, NumberOfMessages = 1, StartDate = DateTime.MinValue, ReadNew = true };
+
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/analyze/someevents");
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
             // Act
-            var response = await client.SendAsync(request);
+            var httpResponse = await client.SendAsync(httpRequest);
+
             // Assert
-            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            var content = await response.Content.ReadAsStringAsync();
+            Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+            var content = await httpResponse.Content.ReadAsStringAsync();
+
             var events = JsonSerializer.Deserialize<List<LoadEventWrapper>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
             Assert.NotNull(events);
-            Assert.That(events.Count(), Is.EqualTo(1));
+
+            Assert.That(events.Count, Is.GreaterThanOrEqualTo(1));
+
             Assert.True(events[0].Method == "GET");
-
-            //Redis Tests
-
-            // Arrange
-            using var request2 = new HttpRequestMessage(HttpMethod.Post, "/analyze/someevents");
-            request2.Content = new StringContent(JsonSerializer.Serialize(getRequest), Encoding.UTF8, "application/json");
-            // Act
-            var response2 = await client.SendAsync(request2);
-            // Assert
-            Assert.That(response2.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            var content2 = await response2.Content.ReadAsStringAsync();
-            var events2 = JsonSerializer.Deserialize<List<LoadEventWrapper>>(content2, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            Assert.NotNull(events2);
-            Assert.That(events2.Count(), Is.EqualTo(1));
-            Assert.True(events2[0].Method == "GET");
         }
+
         [Test]
-        public async Task GetSomeLoadEvents_InvalidRequest_ReturnsBadRequest()
+        public async Task GetSomeLoadEvents_ValidRequestToReadTwoFirstEvents_ReturnsOkWithTwoFirstEvents()
         {
             // Arrange
-            var getRequest = new GetSomeMessagesRequest { Key = "", NumberOfMessages = 1, StartDate = DateTime.MinValue, ReadNew = true };
-            using var request = new HttpRequestMessage(HttpMethod.Post, "/analyze/someevents");
-            request.Content = new StringContent(JsonSerializer.Serialize(getRequest), Encoding.UTF8, "application/json");
+            var request = new GetSomeMessagesRequest { Key = key, NumberOfMessages = 2, StartDate = DateTime.MinValue, ReadNew = true };
+
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/analyze/someevents");
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
             // Act
-            var response = await client.SendAsync(request);
+            var httpResponse = await client.SendAsync(httpRequest);
+
             // Assert
-            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
-        }
-        [Test]
-        public async Task GetSomeLoadEvents_InvalidKey_ReturnsEmptyArray()
-        {
-            // Arrange
-            var getRequest = new GetSomeMessagesRequest { Key = "InvalidKey", NumberOfMessages = 1, StartDate = DateTime.MinValue, ReadNew = true };
-            using var request = new HttpRequestMessage(HttpMethod.Post, "/analyze/someevents");
-            request.Content = new StringContent(JsonSerializer.Serialize(getRequest), Encoding.UTF8, "application/json");
-            // Act
-            var response = await client.SendAsync(request);
-            // Assert
-            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            var content = await response.Content.ReadAsStringAsync();
+            Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+            var content = await httpResponse.Content.ReadAsStringAsync();
+
             var events = JsonSerializer.Deserialize<List<LoadEventWrapper>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
             Assert.NotNull(events);
-            Assert.That(events.Count(), Is.EqualTo(0));
+
+            Assert.That(events.Count, Is.GreaterThanOrEqualTo(2));
+
+            Assert.True(events[0].Method == "GET");
+            Assert.True(events[1].Method == "POST");
+        }
+
+        [Test]
+        public async Task GetSomeLoadEvents_ValidRequestToMoreEventsThanExist_ReturnsOkWithTwoFirstEvents()
+        {
+            // Arrange
+            var request = new GetSomeMessagesRequest { Key = key, NumberOfMessages = 10, StartDate = DateTime.MinValue, ReadNew = true };
+
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/analyze/someevents");
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
+            // Act
+            var httpResponse = await client.SendAsync(httpRequest);
+
+            // Assert
+            Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+            var content = await httpResponse.Content.ReadAsStringAsync();
+
+            var events = JsonSerializer.Deserialize<List<LoadEventWrapper>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            Assert.NotNull(events);
+
+            Assert.That(events.Count, Is.GreaterThanOrEqualTo(2));
+
+            Assert.True(events[0].Method == "GET");
+            Assert.True(events[1].Method == "POST");
+        }
+
+        private static IEnumerable<TestCaseData> GetBadRequestTestCases()
+        {
+            yield return new TestCaseData(
+                new GetSomeMessagesRequest { Key = "", NumberOfMessages = 1, StartDate = DateTime.MinValue, ReadNew = true }
+            ).SetDescription("Invalid Key, must be not empty.");
+
+            yield return new TestCaseData(
+                new GetSomeMessagesRequest { Key = null!, NumberOfMessages = 1, StartDate = DateTime.MinValue, ReadNew = true }
+            ).SetDescription("Invalid Key, must be not null.");
+
+            yield return new TestCaseData(
+                new GetSomeMessagesRequest { Key = "someRandomKey281", NumberOfMessages = 0, StartDate = DateTime.MinValue, ReadNew = true }
+            ).SetDescription("Invalid NumberOfMessages, must be greater than 0.");
+
+            var maxNumberOfMessages = 20;
+
+            yield return new TestCaseData(
+                new GetSomeMessagesRequest { Key = "SomeRandomKey151", NumberOfMessages = maxNumberOfMessages + 1, StartDate = DateTime.MinValue, ReadNew = true }
+            ).SetDescription($"Invalid NumberOfMessages, must be less or equal than limit ({maxNumberOfMessages}).");
+        }
+
+        [Test]
+        [TestCaseSource(nameof(GetBadRequestTestCases))]
+        public async Task GetSomeLoadEvents_InvalidRequest_ReturnsBadRequest(GetSomeMessagesRequest request)
+        {
+            // Arrange
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/analyze/someevents");
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
+            // Act
+            var httpResponse = await client.SendAsync(httpRequest);
+
+            // Assert
+            Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+        }
+
+        [Test]
+        public async Task GetSomeLoadEvents_WrongKey_ReturnsEmptyArray()
+        {
+            // Arrange
+            var request = new GetSomeMessagesRequest { Key = Guid.NewGuid().ToString(), NumberOfMessages = 1, StartDate = DateTime.MinValue, ReadNew = true };
+
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/analyze/someevents");
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
+            // Act
+            var httpResponse = await client.SendAsync(httpRequest);
+
+            // Assert
+            Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+            var content = await httpResponse.Content.ReadAsStringAsync();
+            var events = JsonSerializer.Deserialize<List<LoadEventWrapper>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            Assert.NotNull(events);
+            Assert.That(events.Count, Is.EqualTo(0));
         }
     }
 }

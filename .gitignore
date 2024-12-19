@@ -483,3 +483,4 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 
+/test/ServerPulse.IntegrationTests/AnalyzerApi.IntegrationTests/Hubs/ServerStatisticsHubTests.cs

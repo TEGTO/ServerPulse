@@ -4,22 +4,24 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>7d4c2d9c-1b47-410e-83c3-ae7a9608d971</UserSecretsId>
+	<WarningsAsErrors>CS8618;CS8601;CS8602;CS8603;CS8604</WarningsAsErrors>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
   </PropertyGroup>
 
   <ItemGroup>
+	  <PackageReference Include="MediatR" Version="12.4.1" />
 	  <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.20.1" />
 	  <PackageReference Include="StackExchange.Redis" Version="2.8.0" />
 	  <PackageReference Include="AutoMapper" Version="13.0.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ServerPulse.EventCommunication\ServerPulse.EventCommunication.csproj" />
-    <ProjectReference Include="..\CacheUtils\CacheUtils.csproj" />
-    <ProjectReference Include="..\ConsulUtils\ConsulUtils.csproj" />
+    <ProjectReference Include="..\..\ServerPulse.EventCommunication\EventCommunication.Validators\EventCommunication.Validators.csproj" />
+    <ProjectReference Include="..\..\ServerPulse.EventCommunication\EventCommunication\EventCommunication.csproj" />
+    <ProjectReference Include="..\Authentication\Authentication.csproj" />
     <ProjectReference Include="..\MessageBus\MessageBus.csproj" />
+    <ProjectReference Include="..\ServerSlotApi.Dtos\ServerSlotApi.Dtos.csproj" />
     <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 

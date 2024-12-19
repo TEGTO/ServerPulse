@@ -1,6 +1,6 @@
 ﻿using Confluent.Kafka;
 using MessageBus.Interfaces;
-using System.Collections.Concurrent;
+using MessageBus.Models;
 using System.Runtime.CompilerServices;
 
 namespace MessageBus.Kafka
@@ -20,57 +20,79 @@ namespace MessageBus.Kafka
 
         public async IAsyncEnumerable<ConsumeResponse> ConsumeAsync(string topic, int timeoutInMilliseconds, Offset consumeFrom, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
+            await WaitForTopicAsync(topic, timeoutInMilliseconds, cancellationToken).ConfigureAwait(false);
+
+            var topicPartitionOffsets = GetTopicPartitionMetadata(topic, timeoutInMilliseconds)
+                .Select(x => new TopicPartitionOffset(topic, x.PartitionId, consumeFrom));
+
             using var consumer = consumerFactory.CreateConsumer();
-            var partitions = GetTopicPartitionOffsets(topic, timeoutInMilliseconds, consumeFrom);
-            consumer.Assign(partitions);
+            consumer.Assign(topicPartitionOffsets);
 
             while (!cancellationToken.IsCancellationRequested)
             {
                 var consumeResult = consumer.Consume(TimeSpan.FromMilliseconds(timeoutInMilliseconds));
-                if (IsValidMessage(consumeResult))
+
+                if (!IsConsumeResultValid(consumeResult))
                 {
-                    yield return new ConsumeResponse(consumeResult.Message.Value, consumeResult.Message.Timestamp.UtcDateTime);
+                    await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                    continue;
                 }
-                await Task.Yield();
+
+                yield return new ConsumeResponse(consumeResult.Message.Value, consumeResult.Message.Timestamp.UtcDateTime);
             }
         }
-        public async Task<ConsumeResponse?> ReadLastTopicMessageAsync(string topicName, int timeoutInMilliseconds, CancellationToken cancellationToken)
+
+        public async Task<ConsumeResponse?> GetLastTopicMessageAsync(string topicName, int timeoutInMilliseconds, CancellationToken cancellationToken)
         {
-            var partitionMetadata = GetPartitionMetadata(topicName, timeoutInMilliseconds);
-            if (partitionMetadata == null)
+            var topicPartitions = GetTopicPartitionMetadata(topicName, timeoutInMilliseconds)
+                .Select(p => new TopicPartition(topicName, p.PartitionId));
+
+            if (!topicPartitions.Any())
             {
                 return null;
             }
 
-            var latestMessages = await Task.WhenAll(partitionMetadata.Select(partition =>
-                Task.Run(() => ReadPartitionLatestMessage(topicName, partition.PartitionId, timeoutInMilliseconds, cancellationToken))
-            ));
+            var latestMessages = await Task.WhenAll(topicPartitions.Select(partition =>
+                Task.Run(() => ReadPartitionLatestMessage(partition, timeoutInMilliseconds))
+            )).ConfigureAwait(false);
 
             var latestMessage = latestMessages
                 .Where(result => result != null)
                 .OrderByDescending(result => result?.Message.Timestamp.UtcDateTime)
                 .FirstOrDefault();
 
-            return latestMessage == null ? null : new ConsumeResponse(latestMessage.Message.Value, latestMessage.Message.Timestamp.UtcDateTime);
+            if (latestMessage == null)
+            {
+                return null;
+            }
+
+            return new ConsumeResponse(latestMessage.Message.Value, latestMessage.Message.Timestamp.UtcDateTime);
         }
-        private ConsumeResult<string, string>? ReadPartitionLatestMessage(string topicName, int partitionId, int timeoutInMilliseconds, CancellationToken cancellationToken)
+
+        private ConsumeResult<string, string>? ReadPartitionLatestMessage(TopicPartition partition, int timeoutInMilliseconds)
         {
             using var consumer = consumerFactory.CreateConsumer();
-            var partition = new TopicPartition(topicName, new Partition(partitionId));
-            var highOffset = consumer.QueryWatermarkOffsets(partition, TimeSpan.FromMilliseconds(timeoutInMilliseconds)).High;
+            var endOffset = consumer.QueryWatermarkOffsets(partition, TimeSpan.FromMilliseconds(timeoutInMilliseconds)).High;
 
-            if (highOffset.Value == 0)
+            if (endOffset.Value == 0)
             {
                 return null; // No messages in this partition
             }
 
-            var latestOffset = new TopicPartitionOffset(partition, highOffset - 1);
+            var latestOffset = new TopicPartitionOffset(partition, endOffset - 1);
             consumer.Assign(latestOffset);
 
             var consumeResult = consumer.Consume(TimeSpan.FromMilliseconds(timeoutInMilliseconds));
-            return consumeResult?.Message?.Value == null || string.IsNullOrEmpty(consumeResult.Message.Value) ? null : consumeResult;
+
+            if (consumeResult?.Message?.Value == null || string.IsNullOrWhiteSpace(consumeResult.Message.Value))
+            {
+                return null;
+            }
+
+            return consumeResult;
         }
-        public Task<List<ConsumeResponse>> ReadMessagesInDateRangeAsync(MessageInRangeQueryOptions options, CancellationToken cancellationToken)
+
+        public async Task<IEnumerable<ConsumeResponse>> GetMessagesInDateRangeAsync(GetMessageInDateRangeOptions options, CancellationToken cancellationToken)
         {
             var startDate = options.From.ToUniversalTime();
             var endDate = options.To.ToUniversalTime();
@@ -80,77 +102,91 @@ namespace MessageBus.Kafka
                 throw new ArgumentException("Invalid Start Date! Must be less or equal than now (UTC) and End Date!");
             }
 
-            var threadResults = new List<List<ConsumeResponse>>();
-
             List<TopicPartitionOffset> startOffsets;
             List<TopicPartitionOffset> endOffsets;
 
             using (var consumer = consumerFactory.CreateConsumer())
             {
-                var partitions = GetPartitionIdsForTopic(options.TopicName, options.TimeoutInMilliseconds);
+                var topicPartitionIds = GetTopicPartitionMetadata(options.TopicName, options.TimeoutInMilliseconds).Select(p => p.PartitionId);
 
-                startOffsets = consumer.OffsetsForTimes(partitions.Select(p =>
+                startOffsets = consumer.OffsetsForTimes(topicPartitionIds.Select(p =>
                     new TopicPartitionTimestamp(new TopicPartition(options.TopicName, p), new Timestamp(startDate))),
                     TimeSpan.FromMilliseconds(options.TimeoutInMilliseconds)).ToList();
 
-                endOffsets = consumer.OffsetsForTimes(partitions.Select(p =>
+                endOffsets = consumer.OffsetsForTimes(topicPartitionIds.Select(p =>
                     new TopicPartitionTimestamp(new TopicPartition(options.TopicName, p), new Timestamp(endDate))),
                     TimeSpan.FromMilliseconds(options.TimeoutInMilliseconds)).ToList();
             }
 
-            Parallel.ForEach(startOffsets, new ParallelOptions { CancellationToken = cancellationToken }, startOffset =>
+            var partitionTasks = startOffsets.Select(startOffset =>
             {
                 var endOffset = endOffsets.First(e => e.TopicPartition == startOffset.TopicPartition);
-                var partitionMessages = new List<ConsumeResponse>();
-                var currentTopicOffset = startOffset;
-                ConsumeResult<string, string>? consumeResult = null;
-
-                while (!cancellationToken.IsCancellationRequested)
-                {
-                    using (var consumer = consumerFactory.CreateConsumer())
-                    {
-                        consumer.Assign(currentTopicOffset);
-                        consumeResult = consumer.Consume(options.TimeoutInMilliseconds);
-                    }
-
-                    if (consumeResult?.Message?.Value == null)
-                        break;
-
-                    var messageTimestamp = consumeResult.Message.Timestamp.UtcDateTime;
-
-                    if (messageTimestamp > endDate)
-                        break;
-
-                    if (messageTimestamp >= startDate && messageTimestamp <= endDate)
-                    {
-                        partitionMessages.Add(new ConsumeResponse(consumeResult.Message.Value, messageTimestamp));
-                    }
-
-                    if (consumeResult.Offset >= endOffset.Offset && endOffset.Offset != Offset.End)
-                        break;
-
-                    currentTopicOffset = new TopicPartitionOffset(consumeResult.TopicPartition, consumeResult.Offset + 1);
-                }
-
-                lock (threadResults)
-                {
-                    threadResults.Add(partitionMessages);
-                }
+                return Task.Run(() => GetPartitionMessagesInDateRange(startOffset, endOffset, startDate, endDate, options.TimeoutInMilliseconds, cancellationToken));
             });
 
-            var result = threadResults.SelectMany(x => x)
-                                       .OrderByDescending(x => x.CreationTimeUTC)
-                                       .ToList();
+            var partitionMessages = await Task.WhenAll(partitionTasks).ConfigureAwait(false);
 
-            return Task.FromResult(result);
+            var result = partitionMessages.SelectMany(x => x).OrderByDescending(x => x.CreationTimeUTC);
+
+            return result;
         }
-        public Task<int> GetAmountTopicMessagesAsync(string topicName, int timeoutInMilliseconds, CancellationToken cancellationToken)
+
+        private IEnumerable<ConsumeResponse> GetPartitionMessagesInDateRange(
+            TopicPartitionOffset startOffset,
+            TopicPartitionOffset endOffset,
+            DateTime startDate,
+            DateTime endDate,
+            int timeoutInMilliseconds,
+            CancellationToken cancellationToken)
         {
-            var partitions = GetTopicPartitions(topicName, timeoutInMilliseconds);
+            var partitionMessages = new List<ConsumeResponse>();
+            var currentTopicOffset = startOffset;
+
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                ConsumeResult<string, string>? consumeResult;
+
+                using (var consumer = consumerFactory.CreateConsumer())
+                {
+                    consumer.Assign(currentTopicOffset);
+                    consumeResult = consumer.Consume(timeoutInMilliseconds);
+                }
+
+                if (consumeResult?.Message?.Value == null)
+                {
+                    break;
+                }
+
+                var messageTimestamp = consumeResult.Message.Timestamp.UtcDateTime;
+
+                if (messageTimestamp > endDate)
+                {
+                    break;
+                }
+
+                if (messageTimestamp >= startDate && messageTimestamp <= endDate)
+                {
+                    partitionMessages.Add(new ConsumeResponse(consumeResult.Message.Value, messageTimestamp));
+                }
+
+                if (consumeResult.Offset >= endOffset.Offset && endOffset.Offset != Offset.End)
+                {
+                    break;
+                }
+
+                currentTopicOffset = new TopicPartitionOffset(consumeResult.TopicPartition, consumeResult.Offset + 1);
+            }
+
+            return partitionMessages;
+        }
+
+        public Task<int> GetTopicMessageAmountAsync(string topicName, int timeoutInMilliseconds, CancellationToken cancellationToken)
+        {
+            var topicPartitions = GetTopicPartitionMetadata(topicName, timeoutInMilliseconds).Select(p => new TopicPartition(topicName, p.PartitionId));
             long totalMessages = 0;
 
             using var consumer = consumerFactory.CreateConsumer();
-            foreach (var partition in partitions)
+            foreach (var partition in topicPartitions)
             {
                 var watermarks = consumer.QueryWatermarkOffsets(partition, TimeSpan.FromMilliseconds(timeoutInMilliseconds));
                 totalMessages += watermarks.High - watermarks.Low;
@@ -158,244 +194,292 @@ namespace MessageBus.Kafka
 
             return Task.FromResult((int)totalMessages);
         }
-        public Task<Dictionary<DateTime, int>> GetMessageAmountPerTimespanAsync(MessageInRangeQueryOptions options, TimeSpan timeSpan, CancellationToken cancellationToken)
+
+        public async Task<Dictionary<DateTime, int>> GetTopicMessageAmountPerTimespanAsync(GetMessageInDateRangeOptions options, TimeSpan timeSpan, CancellationToken cancellationToken)
         {
             var fromDate = options.From.ToUniversalTime();
             var toDate = options.To.ToUniversalTime();
 
+            if (fromDate > DateTime.UtcNow || fromDate > toDate)
+            {
+                throw new ArgumentException("Invalid Start Date! Must be less or equal than now (UTC) and To Date!");
+            }
+
             using var consumer = consumerFactory.CreateConsumer();
 
-            var topicMetadata = adminClient.GetMetadata(options.TopicName, TimeSpan.FromMilliseconds(options.TimeoutInMilliseconds));
-            var partitions = topicMetadata.Topics
-                .First(x => x.Topic == options.TopicName)
-                .Partitions.Select(p => new TopicPartition(options.TopicName, p.PartitionId)).ToList();
+            var topicPartitions = GetTopicPartitionMetadata(options.TopicName, options.TimeoutInMilliseconds)
+                .Select(p => new TopicPartition(options.TopicName, p.PartitionId));
 
-            var threadResults = new List<Dictionary<DateTime, int>>();
+            var partitionTasks = topicPartitions.Select(partition =>
+                Task.Run(() => GetPartitionMessageAmountPerTimespan(partition, consumer, fromDate, toDate, timeSpan,
+                                                options.TimeoutInMilliseconds, cancellationToken), cancellationToken));
 
-            Parallel.ForEach(partitions, new ParallelOptions { CancellationToken = cancellationToken }, partition =>
+            var partitionMessagePerTimeSPanAmounts = await Task.WhenAll(partitionTasks).ConfigureAwait(false);
+
+            var result = new Dictionary<DateTime, int>();
+            foreach (var amountPerTimespan in partitionMessagePerTimeSPanAmounts)
             {
-                var messagesPerTimespan = new Dictionary<DateTime, int>();
-
-                var watermarks = consumer.QueryWatermarkOffsets(partition, TimeSpan.FromMilliseconds(options.TimeoutInMilliseconds));
-                var endOffset = watermarks.High;
-
-                var fromOffsets = consumer.OffsetsForTimes(new[]
+                foreach (var kvp in amountPerTimespan)
                 {
-                   new TopicPartitionTimestamp(partition, new Timestamp(fromDate)),
-                }, TimeSpan.FromMilliseconds(options.TimeoutInMilliseconds));
-
-                var toOffsets = consumer.OffsetsForTimes(new[]
-                {
-                   new TopicPartitionTimestamp(partition, new Timestamp(toDate)),
-                }, TimeSpan.FromMilliseconds(options.TimeoutInMilliseconds));
-
-                var fromOffset = fromOffsets.FirstOrDefault();
-                var toOffset = toOffsets.FirstOrDefault();
-
-                if (fromOffset != null && fromOffset.Offset != Offset.End)
-                {
-                    var currentOffset = fromOffset.Offset;
-                    var lastOffset = toOffset == null || toOffset.Offset == Offset.End ? endOffset : toOffset.Offset;
-                    var currentDate = fromDate;
-
-                    while (currentOffset < lastOffset && !cancellationToken.IsCancellationRequested)
+                    if (result.ContainsKey(kvp.Key))
                     {
-                        var nextDate = currentDate.Add(timeSpan);
-                        var nextOffsets = consumer.OffsetsForTimes(new[]
-                        {
-                            new TopicPartitionTimestamp(partition, new Timestamp(nextDate))
-                        }, TimeSpan.FromMilliseconds(options.TimeoutInMilliseconds));
-                        var nextOffset = nextOffsets.FirstOrDefault();
-                        if (nextOffset != null && nextOffset.Offset != Offset.End && nextOffset.Offset != Offset.Unset && nextOffset.Offset < lastOffset)
-                        {
-                            messagesPerTimespan[currentDate] = (int)(nextOffset.Offset - currentOffset);
-                            currentOffset = nextOffset.Offset;
-                            currentDate = nextDate;
-                        }
-                        else
-                        {
-                            messagesPerTimespan[currentDate] = (int)(lastOffset - currentOffset);
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    messagesPerTimespan[fromDate] = 0;
-                }
-
-                lock (threadResults)
-                {
-                    threadResults.Add(messagesPerTimespan);
-                }
-            });
-
-            var finalResult = new Dictionary<DateTime, int>();
-            foreach (var threadResult in threadResults)
-            {
-                foreach (var kvp in threadResult)
-                {
-                    if (finalResult.ContainsKey(kvp.Key))
-                    {
-                        finalResult[kvp.Key] += kvp.Value;
+                        result[kvp.Key] += kvp.Value;
                     }
                     else
                     {
-                        finalResult[kvp.Key] = kvp.Value;
+                        result[kvp.Key] = kvp.Value;
                     }
                 }
             }
 
-            return Task.FromResult(finalResult);
+            return result;
         }
-        public Task<List<ConsumeResponse>> ReadSomeMessagesAsync(ReadSomeMessagesOptions options, CancellationToken cancellationToken)
+
+        private static Dictionary<DateTime, int> GetPartitionMessageAmountPerTimespan(
+            TopicPartition partition,
+            IConsumer<string, string> consumer,
+            DateTime fromDate,
+            DateTime toDate,
+            TimeSpan timeSpan,
+            int timeoutInMilliseconds,
+            CancellationToken cancellationToken)
         {
-            var startDate = options.StartDate.ToUniversalTime();
-            var threadResults = new ConcurrentBag<List<ConsumeResponse>>();
-            List<TopicPartitionOffset> startOffsets;
+            var messageAmountPerTimespan = new Dictionary<DateTime, int>();
 
-            using (var consumer = consumerFactory.CreateConsumer())
+            var watermarks = consumer.QueryWatermarkOffsets(partition, TimeSpan.FromMilliseconds(timeoutInMilliseconds));
+
+            var endOffset = watermarks.High;
+
+            var fromPartitionOffsets = consumer.OffsetsForTimes(
+            [
+                new TopicPartitionTimestamp(partition, new Timestamp(fromDate)),
+            ], TimeSpan.FromMilliseconds(timeoutInMilliseconds));
+
+            var toPartitionOffsets = consumer.OffsetsForTimes(
+            [
+                new TopicPartitionTimestamp(partition, new Timestamp(toDate)),
+            ], TimeSpan.FromMilliseconds(timeoutInMilliseconds));
+
+            var fromPartitionOffset = fromPartitionOffsets.FirstOrDefault();
+            var toPartitionOffset = toPartitionOffsets.FirstOrDefault();
+
+            if (fromPartitionOffset != null && fromPartitionOffset.Offset != Offset.End)
             {
-                var partitions = GetPartitionIdsForTopic(options.TopicName, options.TimeoutInMilliseconds);
+                var currentOffset = fromPartitionOffset.Offset;
+                var lastOffset = toPartitionOffset == null || toPartitionOffset.Offset == Offset.End ? endOffset : toPartitionOffset.Offset;
+                var currentDate = fromDate;
 
-                startOffsets = consumer.OffsetsForTimes(
-                    partitions.Select(p => new TopicPartitionTimestamp(new TopicPartition(options.TopicName, p), new Timestamp(startDate))),
-                    TimeSpan.FromMilliseconds(options.TimeoutInMilliseconds)).ToList();
-            }
-
-            Parallel.ForEach(startOffsets, new ParallelOptions { CancellationToken = cancellationToken }, startOffset =>
-            {
-                var partitionMessages = new List<ConsumeResponse>();
-                int totalMessagesRead = 0;
-                Offset lowWatermark;
-                Offset highWatermark;
-
-                using (var consumer = consumerFactory.CreateConsumer())
+                while (currentOffset < lastOffset && !cancellationToken.IsCancellationRequested)
                 {
-                    var watermarks = consumer.QueryWatermarkOffsets(startOffset.TopicPartition, TimeSpan.FromMilliseconds(options.TimeoutInMilliseconds));
-                    lowWatermark = watermarks.Low;
-                    highWatermark = watermarks.High;
+                    var nextDate = currentDate.Add(timeSpan);
 
-                    if (startOffset.Offset == Offset.End || startOffset.Offset > highWatermark)
+                    var nextPartitionOffsets = consumer.OffsetsForTimes(
+                    [
+                        new TopicPartitionTimestamp(partition, new Timestamp(nextDate))
+                    ], TimeSpan.FromMilliseconds(timeoutInMilliseconds));
+
+                    var nextPartitionOffset = nextPartitionOffsets.FirstOrDefault();
+
+                    if (IsNextPartitionOffSetValid(nextPartitionOffset, lastOffset))
                     {
-                        startOffset = new TopicPartitionOffset(startOffset.TopicPartition, highWatermark - 1);
+                        messageAmountPerTimespan[currentDate] = (int)(nextPartitionOffset!.Offset - currentOffset);
+                        currentOffset = nextPartitionOffset.Offset;
+                        currentDate = nextDate;
                     }
-                    else if (startOffset.Offset < lowWatermark)
+                    else
                     {
-                        startOffset = new TopicPartitionOffset(startOffset.TopicPartition, lowWatermark);
+                        messageAmountPerTimespan[currentDate] = (int)(lastOffset - currentOffset);
+                        break;
                     }
                 }
-
-                var currentTopicOffset = startOffset;
-
-                while (!cancellationToken.IsCancellationRequested)
-                {
-                    if (totalMessagesRead >= options.NumberOfMessages)
-                        break;
-
-                    ConsumeResult<string, string>? consumeResult;
-                    using (var consumer = consumerFactory.CreateConsumer())
-                    {
-                        consumer.Assign(currentTopicOffset);
-                        consumeResult = consumer.Consume(options.TimeoutInMilliseconds);
-                    }
-
-                    if (consumeResult?.Message?.Value == null)
-                        break;
-
-                    var messageTimestamp = consumeResult.Message.Timestamp.UtcDateTime;
-
-                    if ((messageTimestamp >= startDate && options.ReadNew) ||
-                        (messageTimestamp <= startDate && !options.ReadNew))
-                    {
-                        if (totalMessagesRead++ < options.NumberOfMessages)
-                        {
-                            partitionMessages.Add(new ConsumeResponse(consumeResult.Message.Value, messageTimestamp));
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-
-                    currentTopicOffset = GetNextOffset(consumeResult, options, lowWatermark, highWatermark);
-                    if (currentTopicOffset == null)
-                        break;
-                }
-
-                threadResults.Add(partitionMessages);
-            });
-
-            var result = threadResults.SelectMany(x => x).ToList();
-
-            if (options.ReadNew)
-            {
-                result = result.OrderBy(x => x.CreationTimeUTC).ToList();
             }
             else
             {
-                result = result.OrderByDescending(x => x.CreationTimeUTC).ToList();
+                messageAmountPerTimespan[fromDate] = 0;
             }
 
-            result = result.Take(options.NumberOfMessages).ToList();
-            return Task.FromResult(result);
+            return messageAmountPerTimespan;
+        }
+
+        public async Task<IEnumerable<ConsumeResponse>> GetSomeMessagesStartFromDateAsync(GetSomeMessagesFromDateOptions options, CancellationToken cancellationToken)
+        {
+            var startDate = options.StartDate.ToUniversalTime();
+
+            if (startDate > DateTime.UtcNow && options.ReadNew)
+            {
+                throw new ArgumentException("Invalid Start Date! Must be less or equal than now!");
+            }
+
+            List<TopicPartitionOffset> startPartitionOffsets;
+
+            using (var consumer = consumerFactory.CreateConsumer())
+            {
+                var partitionIds = GetTopicPartitionMetadata(options.TopicName, options.TimeoutInMilliseconds).Select(p => p.PartitionId);
+
+                startPartitionOffsets = consumer.OffsetsForTimes(
+                    partitionIds.Select(p => new TopicPartitionTimestamp(new TopicPartition(options.TopicName, p), new Timestamp(startDate))),
+                    TimeSpan.FromMilliseconds(options.TimeoutInMilliseconds));
+            }
+
+            var partitionTasks = startPartitionOffsets.Select(offset =>
+                Task.Run(() => GetSomePartitionMessagesStartFromDateAsync(offset, options, cancellationToken), cancellationToken));
+
+            var partitionMessages = await Task.WhenAll(partitionTasks).ConfigureAwait(false);
+            var result = partitionMessages.SelectMany(x => x);
+
+            if (options.ReadNew)
+            {
+                result = result.OrderBy(x => x.CreationTimeUTC);
+            }
+            else
+            {
+                result = result.OrderByDescending(x => x.CreationTimeUTC);
+            }
+
+            return result.Take(options.NumberOfMessages);
+        }
+
+        private List<ConsumeResponse> GetSomePartitionMessagesStartFromDateAsync(
+            TopicPartitionOffset startPartitionOffset,
+            GetSomeMessagesFromDateOptions options,
+            CancellationToken cancellationToken)
+        {
+            var partitionMessages = new List<ConsumeResponse>();
+            int readMessageAmount = 0;
+
+            var (startOffset, endOffset, adjustedStartOffset) = AdjustStartOffset(startPartitionOffset, options);
+            var currentPartitionOffset = adjustedStartOffset;
+
+            while (!cancellationToken.IsCancellationRequested && readMessageAmount < options.NumberOfMessages)
+            {
+                var consumeResult = ConsumeMessage(currentPartitionOffset, options);
+                if (consumeResult?.Message?.Value == null)
+                {
+                    break;
+                }
+
+                if (IsMessageWithinDateRange(consumeResult.Message.Timestamp.UtcDateTime, options))
+                {
+                    partitionMessages.Add(new ConsumeResponse(consumeResult.Message.Value, consumeResult.Message.Timestamp.UtcDateTime));
+                    readMessageAmount++;
+                }
+
+                currentPartitionOffset = GetNextOffset(consumeResult, options.ReadNew, startOffset, endOffset);
+                if (currentPartitionOffset == null)
+                {
+                    break;
+                }
+            }
+
+            return partitionMessages;
+        }
+
+        private (Offset startOffset, Offset endOffset, TopicPartitionOffset adjustedStartOffset) AdjustStartOffset(
+            TopicPartitionOffset startPartitionOffset, GetSomeMessagesFromDateOptions options)
+        {
+            using var consumer = consumerFactory.CreateConsumer();
+            var watermarkOffsets = consumer.QueryWatermarkOffsets(
+                startPartitionOffset.TopicPartition, TimeSpan.FromMilliseconds(options.TimeoutInMilliseconds));
+
+            var startOffset = watermarkOffsets.Low;
+            var endOffset = watermarkOffsets.High;
+
+            TopicPartitionOffset adjustedStartOffset;
+
+            if (startPartitionOffset.Offset == Offset.End || startPartitionOffset.Offset > endOffset)
+            {
+                adjustedStartOffset = new TopicPartitionOffset(startPartitionOffset.TopicPartition, endOffset - 1);
+            }
+            else if (startPartitionOffset.Offset < startOffset)
+            {
+                adjustedStartOffset = new TopicPartitionOffset(startPartitionOffset.TopicPartition, startOffset);
+            }
+            else
+            {
+                adjustedStartOffset = startPartitionOffset;
+            }
+
+            return (startOffset, endOffset, adjustedStartOffset);
         }
 
         #endregion
 
         #region Private Helpers
 
-        private TopicPartitionOffset? GetNextOffset(ConsumeResult<string, string> consumeResult, ReadSomeMessagesOptions options, Offset lowWatermark, Offset highWatermark)
+        private async Task WaitForTopicAsync(string topicName, int timeoutInMilliseconds, CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var metadata = adminClient.GetMetadata(topicName, TimeSpan.FromMilliseconds(timeoutInMilliseconds));
+
+                if (metadata.Topics.Any(t => t.Error == ErrorCode.NoError || t.Error == null))
+                {
+                    return;
+                }
+
+                await Task.Delay(500, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        private ConsumeResult<string, string>? ConsumeMessage(TopicPartitionOffset partitionOffset, GetSomeMessagesFromDateOptions options)
+        {
+            using var consumer = consumerFactory.CreateConsumer();
+            consumer.Assign(partitionOffset);
+            return consumer.Consume(options.TimeoutInMilliseconds);
+        }
+
+        private static TopicPartitionOffset? GetNextOffset(ConsumeResult<string, string> consumeResult, bool readNew, Offset lowWatermark, Offset highWatermark)
         {
             var currentOffset = consumeResult.Offset;
-            if (!options.ReadNew)
-            {
-                var nextOffset = new Offset(currentOffset - 1);
-                if (nextOffset < lowWatermark)
-                    return null;
-
-                return new TopicPartitionOffset(consumeResult.TopicPartition, nextOffset);
-            }
-            else
+            if (readNew)
             {
                 if (currentOffset >= highWatermark)
+                {
                     return null;
+                }
 
                 return new TopicPartitionOffset(consumeResult.TopicPartition, currentOffset + 1);
             }
-        }
-        private List<TopicPartitionOffset> GetTopicPartitionOffsets(string topic, int timeoutInMilliseconds, Offset offset)
-        {
-            var metadata = adminClient.GetMetadata(topic, TimeSpan.FromSeconds(timeoutInMilliseconds));
-            var partitions = new List<TopicPartitionOffset>();
-            foreach (var partition in metadata.Topics[0].Partitions)
+            else
             {
-                partitions.Add(new TopicPartitionOffset(topic, partition.PartitionId, offset));
+                var nextOffset = new Offset(currentOffset - 1);
+                if (nextOffset < lowWatermark)
+                {
+                    return null;
+                }
+
+                return new TopicPartitionOffset(consumeResult.TopicPartition, nextOffset);
             }
-            return partitions;
         }
-        private List<int> GetPartitionIdsForTopic(string topicName, int timeoutInMilliseconds)
-        {
-            var topicMetadata = adminClient.GetMetadata(topicName, TimeSpan.FromMilliseconds(timeoutInMilliseconds));
-            return topicMetadata.Topics
-                                .First(x => x.Topic == topicName)
-                                .Partitions
-                                .Select(p => p.PartitionId)
-                                .ToList();
-        }
-        private IEnumerable<TopicPartition> GetTopicPartitions(string topicName, int timeoutInMilliseconds)
+
+        private List<PartitionMetadata> GetTopicPartitionMetadata(string topicName, int timeoutInMilliseconds)
         {
             var metadata = adminClient.GetMetadata(topicName, TimeSpan.FromMilliseconds(timeoutInMilliseconds));
-            return metadata.Topics.First(x => x.Topic == topicName).Partitions.Select(p => new TopicPartition(topicName, p.PartitionId));
+            return metadata.Topics.First(x => x.Topic == topicName).Partitions;
         }
-        private IEnumerable<PartitionMetadata?>? GetPartitionMetadata(string topicName, int timeoutInMilliseconds)
+
+        private static bool IsConsumeResultValid(ConsumeResult<string, string> consumeResult)
         {
-            return adminClient.GetMetadata(topicName, TimeSpan.FromMilliseconds(timeoutInMilliseconds))
-                .Topics.FirstOrDefault(x => x.Topic == topicName)?.Partitions;
+            return
+                consumeResult != null &&
+                consumeResult.Message != null &&
+                !consumeResult.IsPartitionEOF &&
+                !string.IsNullOrEmpty(consumeResult.Message.Value);
         }
-        private bool IsValidMessage(ConsumeResult<string, string> consumeResult)
+
+        private static bool IsNextPartitionOffSetValid(TopicPartitionOffset? nextPartitionOffset, Offset lastOffset)
         {
-            return consumeResult?.Message != null && !consumeResult.IsPartitionEOF && !string.IsNullOrEmpty(consumeResult.Message.Value);
+            return
+                nextPartitionOffset != null &&
+                nextPartitionOffset.Offset != Offset.End &&
+                nextPartitionOffset.Offset != Offset.Unset &&
+                nextPartitionOffset.Offset < lastOffset;
+        }
+
+        private static bool IsMessageWithinDateRange(DateTime messageTimestamp, GetSomeMessagesFromDateOptions options)
+        {
+            return (messageTimestamp >= options.StartDate && options.ReadNew) ||
+                   (messageTimestamp <= options.StartDate && !options.ReadNew);
         }
 
         #endregion

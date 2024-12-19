@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { Store } from '@ngrx/store';
 import { map, Observable } from 'rxjs';
 import { environment } from '../../../../../environment/environment';
-import { AuthenticationDialogManager, AuthenticationService } from '../../../authentication';
+import { getAuthData, selectAuthData, startLoginUser } from '../../../authentication';
 
 @Component({
   selector: 'app-main-view',
@@ -14,17 +15,17 @@ export class MainViewComponent implements OnInit {
   projectUrl = environment.projectUrl;
 
   constructor(
-    private readonly authService: AuthenticationService,
-    private readonly authDialogManager: AuthenticationDialogManager
+    private readonly store: Store,
   ) { }
 
-  openLoginMenu() {
-    this.authDialogManager.openLoginMenu();
-  }
-
   ngOnInit(): void {
-    this.isAuthenticated$ = this.authService.getAuthData().pipe(
+    this.store.dispatch(getAuthData());
+    this.isAuthenticated$ = this.store.select(selectAuthData).pipe(
       map(data => data.isAuthenticated)
     );
+  }
+
+  startLogin() {
+    this.store.dispatch(startLoginUser());
   }
 }

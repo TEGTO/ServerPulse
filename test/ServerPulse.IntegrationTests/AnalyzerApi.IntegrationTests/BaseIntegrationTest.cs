@@ -1,19 +1,19 @@
-﻿using MessageBus.Interfaces;
+﻿using EventCommunication;
+using MessageBus.Interfaces;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using ServerPulse.EventCommunication.Events;
 using Shared;
 using System.Text.Json;
 
 namespace AnalyzerApi.IntegrationTests
 {
-    [TestFixture]
-    public abstract class BaseIntegrationTest
+    internal abstract class BaseIntegrationTest
     {
         protected const string ALIVE_TOPIC = "AliveTopic_";
         protected const string CONFIGURATION_TOPIC = "ConfigurationTopic_";
         protected const string LOAD_TOPIC = "LoadTopic_";
+        protected const string LOAD_PROCESS_TOPIC = "LoadEventProcessTopic";
         protected const string CUSTOM_TOPIC = "CustomEventTopic_";
         protected const string LOAD_METHOD_STATISTICS_TOPIC = "LoadMethodStatisticsTopic_";
         private const int TIMEOUT_IN_MILLISECONDS = 5000;
@@ -33,6 +33,7 @@ namespace AnalyzerApi.IntegrationTests
             factory = await wrapper.GetFactoryAsync();
             InitializeServices();
         }
+
         [OneTimeTearDown]
         public async Task GlobalTearDown()
         {
@@ -43,14 +44,35 @@ namespace AnalyzerApi.IntegrationTests
 
         protected async Task<T?> ReceiveLastObjectFromTopicAsync<T>(string topic, string key) where T : class
         {
-            var response = await messageConsumer.ReadLastTopicMessageAsync(topic + key, TIMEOUT_IN_MILLISECONDS, CancellationToken.None);
-            if (response != null)
+            var response = await messageConsumer.GetLastTopicMessageAsync(topic + key, TIMEOUT_IN_MILLISECONDS, CancellationToken.None);
+            if (response != null && response.Message.TryToDeserialize(out T? ev))
             {
-                response.Message.TryToDeserialize(out T? ev);
                 return ev;
             }
+
             return null;
         }
+
+        public async Task<T?> WaitForStatisticsAsync<T>(string topic, string key, TimeSpan timeout, TimeSpan pollInterval) where T : class
+        {
+            var cancellationTokenSource = new CancellationTokenSource(timeout);
+
+            while (!cancellationTokenSource.IsCancellationRequested)
+            {
+                var result = await ReceiveLastObjectFromTopicAsync<T>(topic, key);
+                if (result != null)
+                {
+                    return result;
+                }
+
+                await Task.Delay(pollInterval);
+            }
+
+            cancellationTokenSource.Dispose();
+
+            return null;
+        }
+
         protected async Task SendCustomEventsAsync(string topic, string key, string[] serializedEvents)
         {
             foreach (var ev in serializedEvents)
@@ -58,6 +80,7 @@ namespace AnalyzerApi.IntegrationTests
                 await producer.ProduceAsync(topic + key, ev, CancellationToken.None);
             }
         }
+
         protected async Task SendEventsAsync<T>(string topic, string key, T[] events) where T : BaseEvent
         {
             await Parallel.ForEachAsync(events, async (ev, ct) =>
@@ -69,6 +92,7 @@ namespace AnalyzerApi.IntegrationTests
                 }
             });
         }
+
         private void InitializeServices()
         {
             scope = factory.Services.CreateScope();

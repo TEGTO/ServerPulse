@@ -10,11 +10,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { provideEffects } from '@ngrx/effects';
-import { provideState, provideStore } from '@ngrx/store';
+import { EffectsModule } from '@ngrx/effects';
+import { StoreModule } from '@ngrx/store';
 import { CustomEventDetailsComponent, RealTimeStatisticsCollector, ServerSlotAdditionalInfromationComponent, ServerSlotComponent, ServerSlotControllerService, ServerSlotDataCollector, ServerSlotDataCollectorService, ServerSlotDeleteConfirmComponent, ServerSlotDialogManager, ServerSlotDialogManagerService, ServerSlotEffects, ServerSlotInfoChartsComponent, ServerSlotInfoComponent, ServerSlotInfoStatsComponent, ServerSlotPreviewActivityChartComponent, serverSlotReducer, ServerSlotService, ServerSlotStatisticsEffects, ServerStatisticsControllerService, ServerStatisticsService, SlotBoardComponent, slotCustomStatisticsReducer, SlotInfoDownloadButtonComponent, slotLoadStatisticsReducer, slotStatisticsReducer, StatisticsCollector } from '.';
 import { AnalyticsModule } from '../analytics/analytics.module';
-import { AuthenticationModule } from '../authentication/authentication.module';
 import { LocalizedDatePipe } from '../shared';
 
 @NgModule({
@@ -35,7 +34,6 @@ import { LocalizedDatePipe } from '../shared';
     SlotInfoDownloadButtonComponent
   ],
   imports: [
-    AuthenticationModule,
     CommonModule,
     AnalyticsModule,
     MatButtonModule,
@@ -48,7 +46,12 @@ import { LocalizedDatePipe } from '../shared';
     ReactiveFormsModule,
     MatSelectModule,
     MatMenuModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    StoreModule.forFeature('serverslot', serverSlotReducer),
+    StoreModule.forFeature('slotstatistics', slotStatisticsReducer),
+    StoreModule.forFeature('slotloadstatistics', slotLoadStatisticsReducer),
+    StoreModule.forFeature('customstatistics', slotCustomStatisticsReducer),
+    EffectsModule.forFeature([ServerSlotEffects, ServerSlotStatisticsEffects]),
   ],
   providers: [
     { provide: ServerSlotDialogManager, useClass: ServerSlotDialogManagerService },
@@ -56,13 +59,6 @@ import { LocalizedDatePipe } from '../shared';
     { provide: RealTimeStatisticsCollector, useClass: StatisticsCollector },
     { provide: ServerStatisticsService, useClass: ServerStatisticsControllerService },
     { provide: ServerSlotDataCollector, useClass: ServerSlotDataCollectorService },
-    provideStore(),
-    provideState({ name: "serverslot", reducer: serverSlotReducer }),
-    provideState({ name: "slotstatistics", reducer: slotStatisticsReducer }),
-    provideState({ name: "slotloadstatistics", reducer: slotLoadStatisticsReducer }),
-    provideState({ name: "customstatistics", reducer: slotCustomStatisticsReducer }),
-    provideEffects(ServerSlotEffects),
-    provideEffects(ServerSlotStatisticsEffects),
   ],
 })
 export class ServerSlotsModule { }

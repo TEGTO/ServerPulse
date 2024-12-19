@@ -1,18 +1,19 @@
-import { Component } from '@angular/core';
-import { AuthenticationDialogManager } from '../..';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Store } from '@ngrx/store';
+import { startLoginUser } from '../..';
 
 @Component({
-  selector: 'auth-unauthenticated',
+  selector: 'app-unauthenticated',
   templateUrl: './unauthenticated.component.html',
-  styleUrl: './unauthenticated.component.scss'
+  styleUrl: './unauthenticated.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UnauthenticatedComponent {
-
   constructor(
-    private readonly authDialogManager: AuthenticationDialogManager
+    private readonly store: Store,
   ) { }
 
-  openLoginMenu() {
-    const dialogRef = this.authDialogManager.openLoginMenu();
+  startLogin() {
+    this.store.dispatch(startLoginUser());
   }
 }

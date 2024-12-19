@@ -1,11 +1,11 @@
-﻿using MessageBus.Interfaces;
+﻿using EventCommunication;
+using MessageBus.Interfaces;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Moq;
 using ServerMonitorApi.Services;
-using ServerPulse.EventCommunication.Events;
 using Shared;
 
 namespace ServerMonitorApi.IntegrationTests
@@ -16,13 +16,13 @@ namespace ServerMonitorApi.IntegrationTests
         protected const string ALIVE_TOPIC = "AliveTopic_";
         protected const string CONFIGURATION_TOPIC = "ConfigurationTopic_";
         protected const string LOAD_TOPIC = "LoadTopic_";
+        protected const string LOAD_PROCESS_TOPIC = "LoadEventProcessTopic";
         protected const string CUSTOM_TOPIC = "CustomEventTopic_";
         private const int TIMEOUT_IN_MILLISECONDS = 5000;
 
         protected HttpClient client;
         protected IMessageConsumer messageConsumer;
-        protected Mock<ISlotKeyChecker> mockSlotKeyChecker;
-        protected Mock<IEventProcessing> mockEventProcessing;
+        protected Mock<ISlotKeyChecker>? mockSlotKeyChecker;
         private WebAppFactoryWrapper wrapper;
         private WebApplicationFactory<Program> factory;
         private IServiceScope scope;
@@ -31,6 +31,7 @@ namespace ServerMonitorApi.IntegrationTests
         public async Task GlobalSetup()
         {
             wrapper = new WebAppFactoryWrapper();
+
             factory = (await wrapper.GetFactoryAsync()).WithWebHostBuilder(builder =>
             {
                 builder.ConfigureTestServices(services =>
@@ -39,19 +40,15 @@ namespace ServerMonitorApi.IntegrationTests
 
                     mockSlotKeyChecker = new Mock<ISlotKeyChecker>();
                     mockSlotKeyChecker.Setup(x => x.CheckSlotKeyAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
+                        .ReturnsAsync(true);
 
-                    services.AddSingleton<ISlotKeyChecker>(mockSlotKeyChecker.Object);
-
-                    services.RemoveAll(typeof(IEventProcessing));
-
-                    mockEventProcessing = new Mock<IEventProcessing>();
-
-                    services.AddSingleton<IEventProcessing>(mockEventProcessing.Object);
+                    services.AddSingleton(mockSlotKeyChecker.Object);
                 });
             });
+
             InitializeServices();
         }
+
         [OneTimeTearDown]
         public async Task GlobalTearDown()
         {
@@ -63,14 +60,17 @@ namespace ServerMonitorApi.IntegrationTests
 
         protected async Task<T?> ReceiveLastTopicEventAsync<T>(string topic, string key) where T : BaseEvent
         {
-            var response = await messageConsumer.ReadLastTopicMessageAsync(topic + key, TIMEOUT_IN_MILLISECONDS, CancellationToken.None);
+            var response = await messageConsumer.GetLastTopicMessageAsync(topic + key, TIMEOUT_IN_MILLISECONDS, CancellationToken.None);
+
             if (response != null)
             {
                 response.Message.TryToDeserialize(out T? ev);
                 return ev;
             }
+
             return null;
         }
+
         private void InitializeServices()
         {
             scope = factory.Services.CreateScope();

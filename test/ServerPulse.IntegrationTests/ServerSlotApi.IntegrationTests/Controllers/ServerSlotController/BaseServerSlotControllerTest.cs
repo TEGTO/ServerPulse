@@ -1,7 +1,6 @@
 ﻿using Authentication.Models;
-using Authentication.Services;
+using Authentication.Token;
 using Microsoft.AspNetCore.Identity;
-using ServerSlotApi.Domain.Dtos;
 using ServerSlotApi.Dtos;
 using System.Net.Http.Headers;
 using System.Text;
@@ -11,7 +10,7 @@ namespace ServerSlotApi.IntegrationTests.Controllers.ServerSlotController
 {
     internal class BaseServerSlotControllerTest : BaseIntegrationTest
     {
-        private string accessToken;
+        private string accessToken = string.Empty;
 
         protected string AccessToken
         {
@@ -19,23 +18,27 @@ namespace ServerSlotApi.IntegrationTests.Controllers.ServerSlotController
             {
                 if (string.IsNullOrEmpty(accessToken))
                 {
-                    accessToken = GetAccessTokenData().AccessToken;
+                    accessToken = GetAccessTokenData("testuser", "test@example.com").AccessToken;
                 }
                 return accessToken;
             }
         }
 
-        protected AccessTokenData GetAccessTokenData()
+        protected AccessTokenData GetAccessTokenData(string userName, string email)
         {
             var jwtHandler = new JwtHandler(settings);
+
             IdentityUser identity = new IdentityUser()
             {
-                UserName = "testuser",
-                Email = "test@example.com"
+                UserName = userName,
+                Email = email,
+                Id = userName + email
             };
+
             return jwtHandler.CreateToken(identity);
         }
-        protected async Task<List<ServerSlotResponse>> CreateSamplesAsync()
+
+        protected async Task<List<ServerSlotResponse>> CreateSamplesSlotsAsync(string accessToken)
         {
             var requests = new List<CreateServerSlotRequest>
             {
@@ -45,29 +48,38 @@ namespace ServerSlotApi.IntegrationTests.Controllers.ServerSlotController
 
             var responseSlots = new List<ServerSlotResponse>
             {
-                await CreateSampleSlot(requests[0]),
-                await CreateSampleSlot(requests[1])
+                await CreateSampleSlot(requests[0], accessToken),
+                await CreateSampleSlot(requests[1], accessToken)
             };
 
             return responseSlots;
         }
-        protected async Task<ServerSlotResponse?> CreateSampleSlot(CreateServerSlotRequest createRequest)
-        {
-            using var request = new HttpRequestMessage(HttpMethod.Post, "/serverslot");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
 
-            request.Content = new StringContent(
-                JsonSerializer.Serialize(createRequest),
+        protected async Task<ServerSlotResponse> CreateSampleSlot(CreateServerSlotRequest request, string accessToken)
+        {
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/serverslot");
+
+            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            httpRequest.Content = new StringContent(
+                JsonSerializer.Serialize(request),
                 Encoding.UTF8,
                 "application/json"
             );
-            var response = await client.SendAsync(request);
-            var content = await response.Content.ReadAsStringAsync();
 
-            return JsonSerializer.Deserialize<ServerSlotResponse>(content, new JsonSerializerOptions
+            var httpResponse = await client.SendAsync(httpRequest);
+
+            httpResponse.EnsureSuccessStatusCode();
+
+            var content = await httpResponse.Content.ReadAsStringAsync();
+
+            var response = JsonSerializer.Deserialize<ServerSlotResponse?>(content, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
+
+            ArgumentNullException.ThrowIfNull(response);
+
+            return response;
         }
     }
 }

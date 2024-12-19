@@ -17,8 +17,9 @@ export abstract class BaseApiService {
     private readonly _urlDefiner: URLDefiner
   ) { }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected handleError(error: any) {
-    let message = this.errorHandler.handleApiError(error);
+    const message = this.errorHandler.handleApiError(error);
     return throwError(() => new Error(message));
   }
 }

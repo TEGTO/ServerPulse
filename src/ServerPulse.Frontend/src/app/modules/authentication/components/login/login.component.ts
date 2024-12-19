@@ -1,66 +1,73 @@
-import { Component, OnDestroy } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { MatDialogRef } from '@angular/material/dialog';
-import { filter, Subject, switchMap, takeUntil, tap } from 'rxjs';
-import { SnackbarManager, UserAuthenticationRequest } from '../../../shared';
-import { AuthenticationDialogManager, AuthenticationService } from '../../index';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
+import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
+import { Store } from '@ngrx/store';
+import { Subject } from 'rxjs';
+import { loginUser, passwordValidator, startRegisterUser, UserAuthenticationRequest } from '../..';
+import { noSpaces, notEmptyString, ValidationMessage } from '../../../shared';
 
 @Component({
-  selector: 'auth-login',
+  selector: 'app-auth-login',
   templateUrl: './login.component.html',
-  styleUrl: './login.component.scss'
+  styleUrl: './login.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LoginComponent implements OnDestroy {
-  formGroup: FormGroup = new FormGroup(
-    {
-      login: new FormControl('', [Validators.required, Validators.maxLength(256)]),
-      password: new FormControl('', [Validators.required, Validators.minLength(8), Validators.maxLength(256)]),
-    });
-  hidePassword: boolean = true;
-  private destroy$ = new Subject<void>();
+export class LoginComponent implements OnInit, OnDestroy {
+  formGroup!: FormGroup;
+  hidePassword = true;
+  private readonly destroy$ = new Subject<void>();
 
-  get loginInput() { return this.formGroup.get('login')!; }
-  get passwordInput() { return this.formGroup.get('password')!; }
+  get loginInput() { return this.formGroup.get('login') as FormControl; }
+  get passwordInput() { return this.formGroup.get('password') as FormControl; }
 
   constructor(
-    private readonly authDialogManager: AuthenticationDialogManager,
-    private readonly authService: AuthenticationService,
-    private readonly dialogRef: MatDialogRef<LoginComponent>,
-    private readonly snackbarManager: SnackbarManager
+    private readonly store: Store,
+    private readonly validateInput: ValidationMessage
   ) { }
+
+  ngOnInit(): void {
+    this.formGroup = new FormGroup(
+      {
+        login: new FormControl('', [Validators.required, notEmptyString, noSpaces, Validators.email, Validators.maxLength(256)]),
+        password: new FormControl('', [Validators.required, notEmptyString, noSpaces, passwordValidator, Validators.maxLength(256)]),
+      });
+  }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  openRegisterMenu() {
-    const dialogRef = this.authDialogManager.openRegisterMenu();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  validateInputField(input: AbstractControl<any, any>) {
+    return this.validateInput.getValidationMessage(input);
   }
-  signInUser() {
-    if (this.formGroup.valid) {
-      const formValues = { ...this.formGroup.value };
-      const userData: UserAuthenticationRequest = {
-        login: formValues.login,
-        password: formValues.password,
-      };
-      this.authService.singInUser(userData);
-      this.authService.getAuthData().pipe(
-        takeUntil(this.destroy$),
-        tap(authData => {
-          if (authData.isAuthenticated) {
-            this.dialogRef.close();
-          }
-        }),
-        filter(authData => !authData.isAuthenticated),
-        switchMap(() => this.authService.getAuthErrors()),
-        takeUntil(this.destroy$),
-        tap(errors => {
-          if (errors) {
-            this.snackbarManager.openErrorSnackbar(errors.split("\n"));
-          }
-        })
-      ).subscribe();
+
+  hidePasswordOnKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.hidePassword = !this.hidePassword;
     }
+  }
+
+  openRegisterMenu() {
+    this.store.dispatch(startRegisterUser());
+  }
+
+  loginUser() {
+    if (this.formGroup.valid) {
+      const req: UserAuthenticationRequest =
+      {
+        login: this.loginInput.value,
+        password: this.passwordInput.value,
+      }
+      this.store.dispatch(loginUser({ req: req }));
+    }
+    else {
+      this.formGroup.markAllAsTouched();
+    }
+  }
+
+  oauthLogin() {
+    //TODO: add oauth
   }
 }

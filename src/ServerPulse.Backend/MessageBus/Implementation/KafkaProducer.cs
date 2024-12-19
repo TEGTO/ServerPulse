@@ -12,16 +12,16 @@ namespace MessageBus.Kafka
             this.producerFactory = producerFactory;
         }
 
-        public async Task ProduceAsync(string topic, string message, CancellationToken cancellationToken)
+        public async Task ProduceAsync(string topic, string value, CancellationToken cancellationToken)
         {
             using (var producer = producerFactory.CreateProducer())
             {
-                var kafkaMessage = new Message<string, string>
+                var message = new Message<string, string>
                 {
-                    Value = message
+                    Value = value
                 };
 
-                await producer.ProduceAsync(topic, kafkaMessage, cancellationToken);
+                await producer.ProduceAsync(topic, message, cancellationToken).ConfigureAwait(false);
             }
         }
     }

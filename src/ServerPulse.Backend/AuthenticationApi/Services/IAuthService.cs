@@ -1,17 +1,15 @@
 ﻿using Authentication.Models;
-using AuthenticationApi.Domain.Entities;
-using AuthenticationApi.Domain.Models;
+using AuthenticationApi.Infrastructure;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 namespace AuthenticationApi.Services
 {
     public interface IAuthService
     {
-        public Task<AccessTokenData> LoginUserAsync(string login, string password, double refreshTokenExpiryInDays);
-        public Task<User?> GetUserByLoginAsync(string login);
-        public Task<AccessTokenData> RefreshTokenAsync(AccessTokenData accessTokenData, double refreshTokenExpiryInDays);
-        public Task<IdentityResult> RegisterUserAsync(User user, string password);
-        public Task<List<IdentityError>> UpdateUserAsync(UserUpdateData updateData);
-        public Task<bool> CheckAuthDataAsync(string login, string password);
+        public Task<IdentityResult> RegisterUserAsync(RegisterUserModel model, CancellationToken cancellationToken);
+        public Task<AccessTokenData> LoginUserAsync(LoginUserModel model, CancellationToken cancellationToken);
+        public Task<AccessTokenData> RefreshTokenAsync(AccessTokenData accessData, CancellationToken cancellationToken);
+        public Task<IEnumerable<IdentityError>> UpdateUserAsync(ClaimsPrincipal principal, UserUpdateModel updateModel, bool resetPassword, CancellationToken cancellationToken);
     }
 }
