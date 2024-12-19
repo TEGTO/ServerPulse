@@ -6,7 +6,6 @@ import { jwtDecode, JwtPayload } from 'jwt-decode';
 import { BehaviorSubject, filter, Observable, Subscription, switchMap, take, throwError } from 'rxjs';
 import { AuthData, AuthToken, logOutUser, refreshAccessToken, selectAuthData, selectAuthErrors, selectIsRefreshSuccessful } from '..';
 import { ErrorHandler } from '../../shared';
-
 @Injectable({
   providedIn: 'root'
 })

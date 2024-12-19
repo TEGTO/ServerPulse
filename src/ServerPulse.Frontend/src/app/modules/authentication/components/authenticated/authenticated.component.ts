@@ -16,9 +16,9 @@ export class AuthenticatedComponent implements OnInit, OnDestroy {
   formGroup: FormGroup = null!;
   private readonly destroy$ = new Subject<void>();
 
-  get emailInput() { return this.formGroup.get('email')!; }
-  get oldPasswordInput() { return this.formGroup.get('oldPassword')!; }
-  get passwordInput() { return this.formGroup.get('password')!; }
+  get emailInput() { return this.formGroup.get('email') as FormControl; }
+  get oldPasswordInput() { return this.formGroup.get('oldPassword') as FormControl; }
+  get passwordInput() { return this.formGroup.get('password') as FormControl; }
 
   constructor(
     private readonly store: Store,
@@ -57,11 +57,10 @@ export class AuthenticatedComponent implements OnInit, OnDestroy {
 
   updateUser() {
     if (this.formGroup.valid) {
-      const formValues = { ...this.formGroup.value };
       const req: UserUpdateRequest = {
-        email: formValues.email,
-        oldPassword: formValues.oldPassword,
-        password: formValues.password,
+        email: this.emailInput.value,
+        oldPassword: this.oldPasswordInput.value,
+        password: this.passwordInput.value,
       };
       this.store.dispatch(updateUserData({ req: req }));
     }

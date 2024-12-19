@@ -6,7 +6,7 @@ using Testcontainers.Redis;
 
 namespace AnalyzerApi.IntegrationTests
 {
-    public sealed class WebAppFactoryWrapper : IAsyncDisposable
+    internal sealed class WebAppFactoryWrapper : IAsyncDisposable
     {
         private RedisContainer? RedisContainer { get; set; }
         private KafkaContainer? KafkaContainer { get; set; }
@@ -79,7 +79,7 @@ namespace AnalyzerApi.IntegrationTests
                 { "Kafka:BootstrapServers", KafkaContainer?.GetBootstrapAddress() },
                 { "Kafka:ClientId", "analyzer" },
                 { "Kafka:GroupId", "analyzer-group" },
-                { "Kafka:AnalyzerReceiveTimeout", "5000" },
+                { "Kafka:AnalyzerReceiveTimeout", "10000" },
                 { "Kafka:TopicDataSaveInDays", "365" },
                 { "Kafka:AliveTopic", "AliveTopic_" },
                 { "Kafka:ConfigurationTopic", "ConfigurationTopic_" },
@@ -88,13 +88,13 @@ namespace AnalyzerApi.IntegrationTests
                 { "Kafka:CustomTopic", "CustomEventTopic_" },
                 { "Kafka:LoadMethodStatisticsTopic", "LoadMethodStatisticsTopic_" },
                 { "PulseEventIntervalInMilliseconds", "20000" },
-                { "StatisticsCollectIntervalInMilliseconds", "1000" },
+                { "StatisticsCollectIntervalInMilliseconds", "500" },
                 { "ConnectionStrings:RedisServer",  RedisContainer?.GetConnectionString()},
                 { "Cache:Cache__ExpiryInMinutes", "5" },
                 { "MinimumStatisticsTimeSpanInSeconds", "0" },
                 { "MaxEventAmountToGetInSlotData", "25" },
                 { "MaxEventAmountToReadPerRequest", "20" },
-                { "LoadEventProcessing:BatchSize", "2" },
+                { "LoadEventProcessing:BatchSize", "20" },
                 { "LoadEventProcessing:BatchIntervalInMilliseconds", "1000" },
             });
 

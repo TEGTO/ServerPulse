@@ -1,37 +1,41 @@
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/compiler';
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
-import { RouterModule } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
-import { AuthenticationDialogManager, AuthenticationService } from '../../../authentication';
-import { AuthenticationModule } from '../../../authentication/authentication.module';
-import { AuthData } from '../../../shared';
-import { MainViewComponent } from './main-view.component';
+import { CUSTOM_ELEMENTS_SCHEMA } from "@angular/core";
+import { ComponentFixture, TestBed, fakeAsync, tick } from "@angular/core/testing";
+import { RouterModule } from "@angular/router";
+import { EffectsModule } from "@ngrx/effects";
+import { Store, StoreModule } from "@ngrx/store";
+import { BehaviorSubject } from "rxjs";
+import { MainViewComponent } from "../..";
+import { AuthData, getAuthData, getDefaultAuthToken, startLoginUser } from "../../../authentication";
+import { AuthenticationModule } from "../../../authentication/authentication.module";
 
 describe('MainViewComponent', () => {
-  const authData = {
+  const authData: AuthData = {
     isAuthenticated: true,
-    accessToken: "",
-    refreshToken: "",
-    refreshTokenExpiryDate: new Date(),
+    authToken: getDefaultAuthToken(),
+    email: "someemail@gmail.com"
   };
+
   let component: MainViewComponent;
   let fixture: ComponentFixture<MainViewComponent>;
-  let mockAuthService: jasmine.SpyObj<AuthenticationService>;
-  let mockAuthDialogManager: jasmine.SpyObj<AuthenticationDialogManager>;
+  let storeSpy: jasmine.SpyObj<Store>;
   let authDataBehabiourSubject = new BehaviorSubject<AuthData>(authData);
 
   beforeEach(async () => {
-    mockAuthService = jasmine.createSpyObj('AuthenticationService', ['getAuthData']);
-    mockAuthDialogManager = jasmine.createSpyObj('AuthenticationDialogManager', ['openLoginMenu']);
+    storeSpy = jasmine.createSpyObj<Store>(['dispatch', 'select']);
     authDataBehabiourSubject = new BehaviorSubject<AuthData>(authData);
-    mockAuthService.getAuthData.and.returnValue(authDataBehabiourSubject.asObservable());
+
+    storeSpy.select.and.returnValue(authDataBehabiourSubject.asObservable());
 
     await TestBed.configureTestingModule({
       declarations: [MainViewComponent],
-      imports: [RouterModule, AuthenticationModule],
+      imports: [
+        RouterModule.forRoot([]),
+        StoreModule.forRoot({}, { runtimeChecks: { strictStateImmutability: true, strictActionImmutability: true } }),
+        EffectsModule.forRoot([]),
+        AuthenticationModule
+      ],
       providers: [
-        { provide: AuthenticationService, useValue: mockAuthService },
-        { provide: AuthenticationDialogManager, useValue: mockAuthDialogManager }
+        { provide: Store, useValue: storeSpy },
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA]
     }).compileComponents();
@@ -55,14 +59,14 @@ describe('MainViewComponent', () => {
       expect(isAuthenticated).toBeTrue();
     });
 
-    expect(mockAuthService.getAuthData).toHaveBeenCalled();
+    expect(storeSpy.dispatch).toHaveBeenCalledWith(getAuthData());
   });
 
-  it('should call openLoginMenu when button is clicked', () => {
+  it('should call startLogin when button is clicked', () => {
     const button = fixture.debugElement.nativeElement.querySelector('button[mat-icon-button]');
     button.click();
 
-    expect(mockAuthDialogManager.openLoginMenu).toHaveBeenCalled();
+    expect(storeSpy.dispatch).toHaveBeenCalledWith(startLoginUser());
   });
 
   it('should display authenticated view when user is authenticated', () => {
@@ -76,16 +80,15 @@ describe('MainViewComponent', () => {
   it('should display unauthenticated view when user is not authenticated', fakeAsync(() => {
     authDataBehabiourSubject.next({
       isAuthenticated: false,
-      accessToken: "",
-      refreshToken: "",
-      refreshTokenExpiryDate: new Date(),
+      authToken: getDefaultAuthToken(),
+      email: ""
     });
 
     component.ngOnInit();
     tick();
     fixture.detectChanges();
 
-    const unauthenticatedView = fixture.debugElement.nativeElement.querySelector('auth-unauthenticated');
+    const unauthenticatedView = fixture.debugElement.nativeElement.querySelector('app-unauthenticated');
     expect(unauthenticatedView).toBeTruthy();
   }));
 });

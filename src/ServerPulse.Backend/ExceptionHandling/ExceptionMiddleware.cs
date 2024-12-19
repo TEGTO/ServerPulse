@@ -38,7 +38,7 @@ namespace ExceptionHandling
             }
             catch (InvalidOperationException ex)
             {
-                await SetError(httpContext, HttpStatusCode.Conflict, ex, new[] { ex.Message }).ConfigureAwait(false);
+                await SetError(httpContext, HttpStatusCode.Conflict, ex, [ex.Message]).ConfigureAwait(false);
             }
             catch (AuthorizationException ex)
             {
@@ -47,19 +47,19 @@ namespace ExceptionHandling
             }
             catch (UniqueConstraintException ex)
             {
-                await SetError(httpContext, HttpStatusCode.Conflict, ex, new[] { $"{ex.Message}: '{ex.Entries.FirstOrDefault()?.Entity.GetType().Name ?? ""}'" }).ConfigureAwait(false);
+                await SetError(httpContext, HttpStatusCode.Conflict, ex, [$"{ex.Message}: '{ex.Entries.FirstOrDefault()?.Entity.GetType().Name ?? ""}'"]).ConfigureAwait(false);
             }
             catch (UnauthorizedAccessException ex)
             {
-                await SetError(httpContext, HttpStatusCode.Unauthorized, ex, new[] { ex.Message }).ConfigureAwait(false);
+                await SetError(httpContext, HttpStatusCode.Unauthorized, ex, [ex.Message]).ConfigureAwait(false);
             }
             catch (SecurityTokenMalformedException ex)
             {
-                await SetError(httpContext, HttpStatusCode.Conflict, ex, new[] { "Access Token Exception" }).ConfigureAwait(false);
+                await SetError(httpContext, HttpStatusCode.Conflict, ex, ["Access Token Exception"]).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                await SetError(httpContext, HttpStatusCode.InternalServerError, ex, new[] { "Internal server error occurred." }).ConfigureAwait(false);
+                await SetError(httpContext, HttpStatusCode.InternalServerError, ex, ["Internal server error occurred."]).ConfigureAwait(false);
             }
         }
         private async Task SetError(HttpContext httpContext, HttpStatusCode httpStatusCode, Exception ex, string[] messages)

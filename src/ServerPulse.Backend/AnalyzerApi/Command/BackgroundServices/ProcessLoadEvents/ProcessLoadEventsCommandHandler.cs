@@ -68,6 +68,7 @@ namespace AnalyzerApi.Command.BackgroundServices.ProcessLoadEvents
             finally
             {
                 semaphore.Release();
+                keyLocks.TryRemove(key, out _);
             }
         }
 

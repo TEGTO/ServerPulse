@@ -7,21 +7,21 @@
     <form id="updateForm" [formGroup]="formGroup" class="content__form space-y-1">
         <mat-form-field>
             <mat-label>Email</mat-label>
-            <input type="email" autocomplete="email" matInput formControlName="email" placeholder="example@example.com"
-                maxlength="256">
+            <input type="email" autocomplete="email" matInput [formControl]="emailInput"
+                placeholder="example@example.com" maxlength="256">
             <mat-error
                 *ngIf="validateInputField(emailInput).hasError">{{validateInputField(emailInput).message}}</mat-error>
         </mat-form-field>
         <mat-form-field>
             <mat-label>Old Password</mat-label>
-            <input [type]="'password'" autocomplete="off" matInput formControlName="oldPassword" maxlength="256">
+            <input [type]="'password'" autocomplete="off" matInput [formControl]="oldPasswordInput" maxlength="256">
             <mat-error
                 *ngIf="validateInputField(oldPasswordInput).hasError">{{validateInputField(oldPasswordInput).message}}</mat-error>
         </mat-form-field>
         <mat-form-field>
             <mat-label>New Password</mat-label>
-            <input [type]="hideNewPassword ? 'password' : 'text'" autocomplete="off" matInput formControlName="password"
-                maxlength="256">
+            <input [type]="hideNewPassword ? 'password' : 'text'" autocomplete="off" matInput
+                [formControl]="passwordInput" maxlength="256">
             <button class="material-icons me-2" matSuffix tabindex="0" (click)="hideNewPassword = !hideNewPassword"
                 (keydown)="hidePasswordOnKeydown($event)">
                 {{ hideNewPassword ? 'visibility_off' : 'visibility' }}

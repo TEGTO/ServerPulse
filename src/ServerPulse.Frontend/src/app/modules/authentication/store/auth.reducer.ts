@@ -21,7 +21,7 @@ const initialAuthState: AuthState = {
 export const authReducer = createReducer(
     initialAuthState,
 
-    on(registerUser, () => ({
+    on(registerUser, (state) => ({
         ...initialAuthState,
     })),
     on(registerSuccess, (state, { authData }) => ({
@@ -30,7 +30,7 @@ export const authReducer = createReducer(
         isRegistrationSuccessful: true,
         error: null
     })),
-    on(registerFailure, ({ error }) => ({
+    on(registerFailure, (state, { error }) => ({
         ...initialAuthState,
         error: error
     })),
@@ -43,7 +43,7 @@ export const authReducer = createReducer(
         authData: authData,
         error: null
     })),
-    on(loginUserFailure, ({ error }) => ({
+    on(loginUserFailure, (state, { error }) => ({
         ...initialAuthState,
         error: error
     })),
@@ -53,11 +53,11 @@ export const authReducer = createReducer(
         authData: authData,
         error: null
     })),
-    on(getAuthDataFailure, () => ({
+    on(getAuthDataFailure, (state) => ({
         ...initialAuthState
     })),
 
-    on(logOutUserSuccess, () => ({
+    on(logOutUserSuccess, (state) => ({
         ...initialAuthState,
     })),
 

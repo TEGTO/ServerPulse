@@ -31,6 +31,7 @@ namespace MessageBus.Kafka
             while (!cancellationToken.IsCancellationRequested)
             {
                 var consumeResult = consumer.Consume(TimeSpan.FromMilliseconds(timeoutInMilliseconds));
+
                 if (!IsConsumeResultValid(consumeResult))
                 {
                     await Task.Delay(100, cancellationToken).ConfigureAwait(false);
@@ -46,7 +47,7 @@ namespace MessageBus.Kafka
             var topicPartitions = GetTopicPartitionMetadata(topicName, timeoutInMilliseconds)
                 .Select(p => new TopicPartition(topicName, p.PartitionId));
 
-            if (topicPartitions == null || !topicPartitions.Any())
+            if (!topicPartitions.Any())
             {
                 return null;
             }
@@ -345,61 +346,22 @@ namespace MessageBus.Kafka
         {
             var partitionMessages = new List<ConsumeResponse>();
             int readMessageAmount = 0;
-            Offset startOffset;
-            Offset endOffset;
 
-            using (var consumer = consumerFactory.CreateConsumer())
+            var (startOffset, endOffset, adjustedStartOffset) = AdjustStartOffset(startPartitionOffset, options);
+            var currentPartitionOffset = adjustedStartOffset;
+
+            while (!cancellationToken.IsCancellationRequested && readMessageAmount < options.NumberOfMessages)
             {
-                var watermarkOffsets = consumer.QueryWatermarkOffsets(
-                    startPartitionOffset.TopicPartition, TimeSpan.FromMilliseconds(options.TimeoutInMilliseconds));
-
-                startOffset = watermarkOffsets.Low;
-                endOffset = watermarkOffsets.High;
-
-                if (startPartitionOffset.Offset == Offset.End || startPartitionOffset.Offset > endOffset)
-                {
-                    startPartitionOffset = new TopicPartitionOffset(startPartitionOffset.TopicPartition, endOffset - 1);
-                }
-                else if (startPartitionOffset.Offset < startOffset)
-                {
-                    startPartitionOffset = new TopicPartitionOffset(startPartitionOffset.TopicPartition, startOffset);
-                }
-            }
-
-            var currentPartitionOffset = startPartitionOffset;
-
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                if (readMessageAmount >= options.NumberOfMessages)
-                {
-                    break;
-                }
-
-                ConsumeResult<string, string>? consumeResult;
-                using (var consumer = consumerFactory.CreateConsumer())
-                {
-                    consumer.Assign(currentPartitionOffset);
-                    consumeResult = consumer.Consume(options.TimeoutInMilliseconds);
-                }
-
+                var consumeResult = ConsumeMessage(currentPartitionOffset, options);
                 if (consumeResult?.Message?.Value == null)
                 {
                     break;
                 }
 
-                var messageTimestamp = consumeResult.Message.Timestamp.UtcDateTime;
-
-                if ((messageTimestamp >= options.StartDate && options.ReadNew) || (messageTimestamp <= options.StartDate && !options.ReadNew))
+                if (IsMessageWithinDateRange(consumeResult.Message.Timestamp.UtcDateTime, options))
                 {
-                    if (readMessageAmount < options.NumberOfMessages)
-                    {
-                        readMessageAmount++;
-                        partitionMessages.Add(new ConsumeResponse(consumeResult.Message.Value, messageTimestamp));
-                    }
-                    else
-                    {
-                        break;
-                    }
+                    partitionMessages.Add(new ConsumeResponse(consumeResult.Message.Value, consumeResult.Message.Timestamp.UtcDateTime));
+                    readMessageAmount++;
                 }
 
                 currentPartitionOffset = GetNextOffset(consumeResult, options.ReadNew, startOffset, endOffset);
@@ -410,6 +372,34 @@ namespace MessageBus.Kafka
             }
 
             return partitionMessages;
+        }
+
+        private (Offset startOffset, Offset endOffset, TopicPartitionOffset adjustedStartOffset) AdjustStartOffset(
+            TopicPartitionOffset startPartitionOffset, GetSomeMessagesFromDateOptions options)
+        {
+            using var consumer = consumerFactory.CreateConsumer();
+            var watermarkOffsets = consumer.QueryWatermarkOffsets(
+                startPartitionOffset.TopicPartition, TimeSpan.FromMilliseconds(options.TimeoutInMilliseconds));
+
+            var startOffset = watermarkOffsets.Low;
+            var endOffset = watermarkOffsets.High;
+
+            TopicPartitionOffset adjustedStartOffset;
+
+            if (startPartitionOffset.Offset == Offset.End || startPartitionOffset.Offset > endOffset)
+            {
+                adjustedStartOffset = new TopicPartitionOffset(startPartitionOffset.TopicPartition, endOffset - 1);
+            }
+            else if (startPartitionOffset.Offset < startOffset)
+            {
+                adjustedStartOffset = new TopicPartitionOffset(startPartitionOffset.TopicPartition, startOffset);
+            }
+            else
+            {
+                adjustedStartOffset = startPartitionOffset;
+            }
+
+            return (startOffset, endOffset, adjustedStartOffset);
         }
 
         #endregion
@@ -429,6 +419,13 @@ namespace MessageBus.Kafka
 
                 await Task.Delay(500, cancellationToken).ConfigureAwait(false);
             }
+        }
+
+        private ConsumeResult<string, string>? ConsumeMessage(TopicPartitionOffset partitionOffset, GetSomeMessagesFromDateOptions options)
+        {
+            using var consumer = consumerFactory.CreateConsumer();
+            consumer.Assign(partitionOffset);
+            return consumer.Consume(options.TimeoutInMilliseconds);
         }
 
         private static TopicPartitionOffset? GetNextOffset(ConsumeResult<string, string> consumeResult, bool readNew, Offset lowWatermark, Offset highWatermark)
@@ -477,6 +474,12 @@ namespace MessageBus.Kafka
                 nextPartitionOffset.Offset != Offset.End &&
                 nextPartitionOffset.Offset != Offset.Unset &&
                 nextPartitionOffset.Offset < lastOffset;
+        }
+
+        private static bool IsMessageWithinDateRange(DateTime messageTimestamp, GetSomeMessagesFromDateOptions options)
+        {
+            return (messageTimestamp >= options.StartDate && options.ReadNew) ||
+                   (messageTimestamp <= options.StartDate && !options.ReadNew);
         }
 
         #endregion

@@ -71,26 +71,7 @@ namespace AnalyzerApi.BackgroundServices
             {
                 try
                 {
-                    await foreach (var response in messageConsumer.ConsumeAsync(processTopic, timeoutInMilliseconds, Offset.Stored, stoppingToken))
-                    {
-                        if (stoppingToken.IsCancellationRequested)
-                            break;
-
-                        if (TryGetLoadEvent(response, out var ev))
-                        {
-                            logger.LogInformation("Added LoadEvent to queue: {Key}", ev!.Key);
-                            batchQueue.Enqueue(ev);
-
-                            if (batchQueue.Count >= batchSize)
-                            {
-                                await ProcessQueueAsync(stoppingToken);
-                            }
-                        }
-                        else
-                        {
-                            logger.LogWarning("Failed to deserialize message: {Message}", response.Message);
-                        }
-                    }
+                    await StartConsuming(stoppingToken);
                 }
                 catch (Exception ex)
                 {
@@ -113,6 +94,32 @@ namespace AnalyzerApi.BackgroundServices
             await processingTask;
 
             logger.LogInformation("LoadEventStatisticsProcessor stopped.");
+        }
+
+        private async Task StartConsuming(CancellationToken stoppingToken)
+        {
+            await foreach (var response in messageConsumer.ConsumeAsync(processTopic, timeoutInMilliseconds, Offset.Stored, stoppingToken))
+            {
+                if (stoppingToken.IsCancellationRequested)
+                {
+                    break;
+                }
+
+                if (TryGetLoadEvent(response, out var ev))
+                {
+                    logger.LogInformation("Added LoadEvent to queue: {Key}", ev!.Key);
+                    batchQueue.Enqueue(ev);
+
+                    if (batchQueue.Count >= batchSize)
+                    {
+                        await ProcessQueueAsync(stoppingToken);
+                    }
+                }
+                else
+                {
+                    logger.LogWarning("Failed to deserialize message: {Message}", response.Message);
+                }
+            }
         }
 
         private async Task ProcessQueueAsync(CancellationToken cancellationToken)

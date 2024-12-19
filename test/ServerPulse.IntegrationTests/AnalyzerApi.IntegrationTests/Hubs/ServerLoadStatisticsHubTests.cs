@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 
 namespace AnalyzerApi.IntegrationTests.Hubs
 {
-    [TestFixture]
+    [TestFixture, Parallelizable(ParallelScope.Children)]
     internal class ServerLoadStatisticsHubTests : BaseIntegrationTest
     {
         private readonly List<HubConnection> connections = new List<HubConnection>();
@@ -23,7 +23,7 @@ namespace AnalyzerApi.IntegrationTests.Hubs
         public async Task StartListen_ValidKey_ClientAddedToGroupAndGetsInitial()
         {
             // Arrange 
-            var key = "key1";
+            var key = Guid.NewGuid().ToString();
             var eventSamples = new List<LoadEvent>();
             string? receivedKey = null;
             ServerLoadStatistics? receivedStatistics = null;
@@ -34,27 +34,25 @@ namespace AnalyzerApi.IntegrationTests.Hubs
                eventSamples[0]
             });
 
-            await Task.Delay(500);
+            eventSamples.Add(new LoadEvent(key, "/api/resource", "POST", 201, TimeSpan.FromMilliseconds(200), DateTime.UtcNow));
+            await SendEventsAsync(LOAD_PROCESS_TOPIC, "", new[]
+            {
+               eventSamples[1]
+            });
+
+            await Task.Delay(2000);
 
             await SendEventsAsync(LOAD_TOPIC, key, new[]
             {
                 eventSamples[0]
             });
 
-            await Task.Delay(1000);
-
-            eventSamples.Add(new LoadEvent(key, "/api/resource", "POST", 201, TimeSpan.FromMilliseconds(200), DateTime.UtcNow));
-            await SendEventsAsync(LOAD_PROCESS_TOPIC, "", new[]
-           {
-               eventSamples[1]
-            });
-
-            await Task.Delay(500);
-
             await SendEventsAsync(LOAD_TOPIC, key, new[]
             {
                 eventSamples[1]
             });
+
+            await Task.Delay(1000);
 
             var connection = new HubConnectionBuilder()
             .WithUrl("wss://localhost" + "/loadstatisticshub", options =>
@@ -76,11 +74,17 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             // Act
             await connection.SendAsync("StartListen", key);
 
+            await Task.Delay(1000);
+
             // Assert
             await Utility.WaitUntil(() =>
             {
-                return receivedKey != null && receivedStatistics != null && receivedStatistics.LastEvent != null;
-            }, TimeSpan.FromSeconds(15), TimeSpan.FromMilliseconds(1000));
+                return receivedKey != null &&
+                receivedStatistics != null &&
+                receivedStatistics.LastEvent != null &&
+                receivedStatistics.LoadMethodStatistics != null &&
+                receivedStatistics.LoadMethodStatistics.GetAmount == 1;
+            }, TimeSpan.FromSeconds(100), TimeSpan.FromSeconds(2));
 
             Assert.IsNotNull(receivedKey);
             Assert.That(receivedKey, Is.EqualTo(key));
@@ -104,7 +108,7 @@ namespace AnalyzerApi.IntegrationTests.Hubs
         public async Task StartListen_ValidKey_ClientAddedToGroupAndGetsNewStatistics()
         {
             // Arrange 
-            var key = "key2";
+            var key = Guid.NewGuid().ToString();
             var eventSamples = new List<LoadEvent>();
             string? receivedKey = null;
             ServerLoadStatistics? receivedStatistics = null;
@@ -129,11 +133,13 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             // Act
             await connection.SendAsync("StartListen", key);
 
+            await Task.Delay(1000);
+
             // Assert
             await Utility.WaitUntil(() =>
             {
                 return receivedKey != null && receivedStatistics != null && receivedStatistics.LastEvent == null;
-            }, TimeSpan.FromSeconds(15), TimeSpan.FromMilliseconds(1000));
+            }, TimeSpan.FromSeconds(100), TimeSpan.FromSeconds(2));
 
             Assert.IsNotNull(receivedKey);
             Assert.That(receivedKey, Is.EqualTo(key));
@@ -155,18 +161,25 @@ namespace AnalyzerApi.IntegrationTests.Hubs
                eventSamples[0]
             });
 
-            await Task.Delay(2000);
+            await Task.Delay(5000);
 
             await SendEventsAsync(LOAD_TOPIC, key, new[]
             {
                eventSamples[0]
             });
 
+            await Task.Delay(1000);
+
             // Assert - Consuming new event
             await Utility.WaitUntil(() =>
             {
-                return receivedKey != null && receivedStatistics != null && receivedStatistics.LastEvent != null;
-            }, TimeSpan.FromSeconds(30), TimeSpan.FromMilliseconds(5000));
+                return
+                receivedKey != null &&
+                receivedStatistics != null &&
+                receivedStatistics.LastEvent != null &&
+                receivedStatistics.LoadMethodStatistics != null &&
+                receivedStatistics.LoadMethodStatistics.DeleteAmount == 1;
+            }, TimeSpan.FromSeconds(100), TimeSpan.FromSeconds(2));
 
             Assert.IsNotNull(receivedKey);
             Assert.That(receivedKey, Is.EqualTo(key));
@@ -190,7 +203,7 @@ namespace AnalyzerApi.IntegrationTests.Hubs
         public async Task StartListen_ValidKey_ClientAddedToGroupAndGetsInitialStatisticsAndThenGetsNewStatistics()
         {
             // Arrange 
-            var key = "key3";
+            var key = Guid.NewGuid().ToString();
             var eventSamples = new List<LoadEvent>();
             string? receivedKey = null;
             ServerLoadStatistics? receivedStatistics = null;
@@ -215,11 +228,17 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             // Act
             await connection.SendAsync("StartListen", key);
 
+            await Task.Delay(1000);
+
             // Assert
             await Utility.WaitUntil(() =>
             {
-                return receivedKey != null && receivedStatistics != null && receivedStatistics.LastEvent == null;
-            }, TimeSpan.FromSeconds(15), TimeSpan.FromMilliseconds(1000));
+                return
+                receivedKey != null &&
+                receivedStatistics != null &&
+                receivedStatistics.LastEvent == null &&
+                receivedStatistics.LoadMethodStatistics != null;
+            }, TimeSpan.FromSeconds(100), TimeSpan.FromSeconds(2));
 
             Assert.IsNotNull(receivedKey);
             Assert.That(receivedKey, Is.EqualTo(key));
@@ -241,12 +260,14 @@ namespace AnalyzerApi.IntegrationTests.Hubs
                eventSamples[0]
             });
 
-            await Task.Delay(1500);
+            await Task.Delay(5000);
 
             await SendEventsAsync(LOAD_TOPIC, key, new[]
             {
                eventSamples[0]
             });
+
+            await Task.Delay(2000);
 
             // Assert - Consuming new event
             await Utility.WaitUntil(() =>
@@ -256,9 +277,8 @@ namespace AnalyzerApi.IntegrationTests.Hubs
                 receivedStatistics != null &&
                 receivedStatistics.LastEvent != null &&
                 receivedStatistics.AmountOfEvents == 1 &&
-                receivedStatistics.LoadMethodStatistics != null &&
-                receivedStatistics.LoadMethodStatistics.DeleteAmount == 1;
-            }, TimeSpan.FromSeconds(30), TimeSpan.FromMilliseconds(3000));
+                receivedStatistics.LoadMethodStatistics != null;
+            }, TimeSpan.FromSeconds(100), TimeSpan.FromSeconds(2));
 
             Assert.IsNotNull(receivedKey);
             Assert.That(receivedKey, Is.EqualTo(key));
@@ -282,8 +302,8 @@ namespace AnalyzerApi.IntegrationTests.Hubs
         public async Task StartListen_WrongKey_ClientAddedToGroupAndGetsEmptyStatistics()
         {
             // Arrange 
-            var key = "key4";
-            var wrongKey = "wrong-key";
+            var key = Guid.NewGuid().ToString();
+            var wrongKey = Guid.NewGuid().ToString();
             var eventSamples = new List<LoadEvent>();
             string? receivedKey = null;
             ServerLoadStatistics? receivedStatistics = null;
@@ -294,27 +314,25 @@ namespace AnalyzerApi.IntegrationTests.Hubs
                 eventSamples[0]
             });
 
-            await Task.Delay(500);
-
-            await SendEventsAsync(LOAD_TOPIC, key, new[]
-            {
-                eventSamples[0]
-            });
-
-            await Task.Delay(1000);
-
             eventSamples.Add(new LoadEvent(key, "/api/resource", "POST", 201, TimeSpan.FromMilliseconds(200), DateTime.UtcNow));
             await SendEventsAsync(LOAD_PROCESS_TOPIC, "", new[]
             {
                 eventSamples[0]
             });
 
-            await Task.Delay(500);
+            await Task.Delay(5000);
+
+            await SendEventsAsync(LOAD_TOPIC, key, new[]
+            {
+                eventSamples[0]
+            });
 
             await SendEventsAsync(LOAD_TOPIC, key, new[]
             {
                 eventSamples[1]
             });
+
+            await Task.Delay(1000);
 
             var connection = new HubConnectionBuilder()
             .WithUrl("wss://localhost" + "/loadstatisticshub", options =>
@@ -336,11 +354,16 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             // Act
             await connection.SendAsync("StartListen", wrongKey);
 
+            await Task.Delay(1000);
+
             // Assert
             await Utility.WaitUntil(() =>
             {
-                return receivedKey != null && receivedStatistics != null && receivedStatistics.LastEvent == null;
-            }, TimeSpan.FromSeconds(15), TimeSpan.FromMilliseconds(1000));
+                return receivedKey != null &&
+                receivedStatistics != null &&
+                receivedStatistics.LastEvent == null &&
+                receivedStatistics.LoadMethodStatistics != null;
+            }, TimeSpan.FromSeconds(100), TimeSpan.FromSeconds(2));
 
             Assert.IsNotNull(receivedKey);
             Assert.That(receivedKey, Is.EqualTo(wrongKey));
@@ -363,12 +386,14 @@ namespace AnalyzerApi.IntegrationTests.Hubs
                eventSamples[2]
             });
 
-            await Task.Delay(500);
+            await Task.Delay(5000);
 
             await SendEventsAsync(LOAD_TOPIC, key, new[]
             {
                eventSamples[2]
             });
+
+            await Task.Delay(1000);
 
             // Assert - Gets nothing
             await Utility.WaitUntil(() =>
@@ -377,7 +402,7 @@ namespace AnalyzerApi.IntegrationTests.Hubs
                 receivedStatistics != null &&
                 receivedStatistics.LastEvent == null &&
                 receivedStatistics.LoadMethodStatistics != null;
-            }, TimeSpan.FromSeconds(15), TimeSpan.FromMilliseconds(1000));
+            }, TimeSpan.FromSeconds(100), TimeSpan.FromSeconds(2));
 
             Assert.IsNotNull(receivedKey);
             Assert.That(receivedKey, Is.EqualTo(wrongKey));

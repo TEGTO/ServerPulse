@@ -16,8 +16,8 @@ export class LoginComponent implements OnInit, OnDestroy {
   hidePassword = true;
   private readonly destroy$ = new Subject<void>();
 
-  get loginInput() { return this.formGroup.get('login')!; }
-  get passwordInput() { return this.formGroup.get('password')!; }
+  get loginInput() { return this.formGroup.get('login') as FormControl; }
+  get passwordInput() { return this.formGroup.get('password') as FormControl; }
 
   constructor(
     private readonly store: Store,
@@ -55,11 +55,10 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   loginUser() {
     if (this.formGroup.valid) {
-      const formValues = { ...this.formGroup.value };
       const req: UserAuthenticationRequest =
       {
-        login: formValues.login,
-        password: formValues.password,
+        login: this.loginInput.value,
+        password: this.passwordInput.value,
       }
       this.store.dispatch(loginUser({ req: req }));
     }

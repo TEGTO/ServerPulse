@@ -16,15 +16,15 @@ export class ServerStatisticsControllerService implements ServerStatisticsServic
   ) { }
 
   getLoadEventsInDateRange(key: string, from: Date, to: Date): Observable<LoadEventResponse[]> {
-    let request: MessagesInRangeRangeRequest = {
+    const request: MessagesInRangeRangeRequest = {
       key: key,
       from: from,
       to: to
     }
     return this.apiService.getLoadEventsInDataRange(request);
   }
-  getSomeLoadEventsFromDate(key: string, numberOfMessages: number, from: Date, readNew: boolean = false): Observable<LoadEventResponse[]> {
-    let request: GetSomeMessagesRequest = {
+  getSomeLoadEventsFromDate(key: string, numberOfMessages: number, from: Date, readNew = false): Observable<LoadEventResponse[]> {
+    const request: GetSomeMessagesRequest = {
       key: key,
       numberOfMessages: numberOfMessages,
       startDate: from,
@@ -32,8 +32,8 @@ export class ServerStatisticsControllerService implements ServerStatisticsServic
     }
     return this.apiService.getSomeLoadEvents(request);
   }
-  getSomeCustomEventsFromDate(key: string, numberOfMessages: number, from: Date, readNew: boolean = false): Observable<CustomEventResponse[]> {
-    let request: GetSomeMessagesRequest = {
+  getSomeCustomEventsFromDate(key: string, numberOfMessages: number, from: Date, readNew = false): Observable<CustomEventResponse[]> {
+    const request: GetSomeMessagesRequest = {
       key: key,
       numberOfMessages: numberOfMessages,
       startDate: from,
@@ -45,7 +45,7 @@ export class ServerStatisticsControllerService implements ServerStatisticsServic
     return this.apiService.getWholeLoadAmountStatisticsInDays(key);
   }
   getLoadAmountStatisticsInRange(key: string, from: Date, to: Date, timeSpan: TimeSpan): Observable<LoadAmountStatisticsResponse[]> {
-    let request: MessageAmountInRangeRequest =
+    const request: MessageAmountInRangeRequest =
     {
       key: key,
       from: from,

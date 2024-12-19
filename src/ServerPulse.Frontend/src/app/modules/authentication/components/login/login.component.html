@@ -5,7 +5,6 @@
 
 <mat-dialog-content>
     <div class="login">
-
         <div class="socials-login">
             <div class="flex gap-5 justify-center">
                 <button class="gsi-material-button" (click)="oauthLogin()">
@@ -46,7 +45,7 @@
             <form id="loginForm" class="email-login__form space-y-1" [formGroup]="formGroup" (ngSubmit)="loginUser()">
                 <mat-form-field>
                     <mat-label>Email</mat-label>
-                    <input matInput type="text" autocomplete="user-login" formControlName="login"
+                    <input matInput type="text" autocomplete="user-login" [formControl]="loginInput"
                         placeholder="example@gmail.com" maxlength="256">
                     <mat-error
                         *ngIf="validateInputField(loginInput).hasError">{{validateInputField(loginInput).message}}</mat-error>
@@ -54,7 +53,7 @@
                 <mat-form-field>
                     <mat-label>Password</mat-label>
                     <input matInput [type]="hidePassword ? 'password' : 'text'" autocomplete="user-password"
-                        formControlName="password" maxlength="256">
+                        [formControl]="passwordInput" maxlength="256">
                     <span class="material-icons me-2" matSuffix tabindex="0" role="button"
                         (click)="hidePassword = !hidePassword" (keydown)="hidePasswordOnKeydown($event)">
                         {{ hidePassword ? 'visibility_off' : 'visibility' }}

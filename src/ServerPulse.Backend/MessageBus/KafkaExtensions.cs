@@ -42,7 +42,7 @@ namespace MessageBus
 
             services.AddResiliencePipeline(MessageBusConfiguration.MESSAGE_BUS_RESILIENCE_PIPELINE, (builder, context) =>
             {
-                ResilienceHelpers.ConfigureResiliencePipeline(builder, context, pipelineConfiguration);
+                ResilienceHelpers.ConfigureResiliencePipeline(builder, context, pipelineConfiguration, false);
             });
 
             return services;

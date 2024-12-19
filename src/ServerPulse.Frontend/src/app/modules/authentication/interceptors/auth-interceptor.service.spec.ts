@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { HTTP_INTERCEPTORS, HttpClient } from '@angular/common/http';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { ErrorHandler } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { Store } from '@ngrx/store';
 import { BehaviorSubject, of } from 'rxjs';
-import { AuthenticationService, LOG_OUT_COMMAND_HANDLER, LogOutCommand } from '../..';
-import { AuthToken, CommandHandler, getDefaultUserAuth, UserAuth } from '../../../shared';
-import { AuthInterceptor } from './auth-interceptor.service';
+import { AuthInterceptor, AuthToken, logOutUser, refreshAccessToken, selectAuthData, selectAuthErrors, selectIsRefreshSuccessful } from '..';
 
 describe('AuthInterceptor', () => {
     const validAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjk5OTk5OTk5OTl9.fK3V4NMCKO2ozn8K18sRv9XUcDC2N2hvGTuXMuRcn5Y';
@@ -12,40 +13,57 @@ describe('AuthInterceptor', () => {
 
     let httpMock: HttpTestingController;
     let httpClient: HttpClient;
-    let authService: jasmine.SpyObj<AuthenticationService>;
-    let mockLogOutHandler: jasmine.SpyObj<CommandHandler<LogOutCommand>>;
+    let interceptor: AuthInterceptor;
+    let storeSpy: jasmine.SpyObj<Store>;
 
     const mockAuthToken: AuthToken = {
         accessToken: validAccessToken,
-        refreshToken: 'refresh-token',
-        refreshTokenExpiryDate: new Date(new Date().getTime() + 60000) // 1 minute in the future
+        refreshToken: 'valid-refresh-token',
+        refreshTokenExpiryDate: new Date()
     };
 
-    const mockUserAuth: UserAuth = {
-        ...getDefaultUserAuth(),
-        isAuthenticated: true,
-        authToken: mockAuthToken
+    const expiredAuthToken: AuthToken = {
+        accessToken: expiredAccessToken,
+        refreshToken: 'valid-refresh-token',
+        refreshTokenExpiryDate: new Date(0)
     };
-    let authDataSubject: BehaviorSubject<UserAuth>;
+
+    let authDataSubject: BehaviorSubject<any>;
+    let authErrorSubject: BehaviorSubject<any>;
 
     beforeEach(() => {
-        authDataSubject = new BehaviorSubject<UserAuth>(mockUserAuth);
-        authService = jasmine.createSpyObj('AuthenticationService', ['getUserAuth', 'getAuthErrors', 'refreshToken', 'logOutUser']);
-        authService.getUserAuth.and.returnValue(authDataSubject.asObservable());
-        authService.getAuthErrors.and.returnValue(of(null));
-        mockLogOutHandler = jasmine.createSpyObj<CommandHandler<LogOutCommand>>(['dispatch']);
+        authDataSubject = new BehaviorSubject({
+            authToken: mockAuthToken,
+            isAuthenticated: true,
+        });
+        authErrorSubject = new BehaviorSubject(null);
+
+        storeSpy = jasmine.createSpyObj<Store>(['dispatch', 'select']);
+
+        storeSpy.select.and.callFake((selector: any) => {
+            if (selector === selectAuthData) {
+                return authDataSubject.asObservable();
+            } else if (selector === selectAuthErrors) {
+                return authErrorSubject.asObservable();
+            } else if (selector === selectIsRefreshSuccessful) {
+                return of(true);
+            } else {
+                return of(null);
+            }
+        });
 
         TestBed.configureTestingModule({
             imports: [HttpClientTestingModule],
             providers: [
+                { provide: Store, useValue: storeSpy },
                 { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
-                { provide: AuthenticationService, useValue: authService },
-                { provide: LOG_OUT_COMMAND_HANDLER, useValue: mockLogOutHandler },
-            ]
+                { provide: ErrorHandler, useValue: jasmine.createSpyObj('ErrorHandler', ['handleError']) },
+            ],
         });
 
         httpMock = TestBed.inject(HttpTestingController);
         httpClient = TestBed.inject(HttpClient);
+        interceptor = TestBed.inject(AuthInterceptor);
     });
 
     afterEach(() => {
@@ -58,52 +76,58 @@ describe('AuthInterceptor', () => {
         });
 
         const httpRequest = httpMock.expectOne('/test');
-
         expect(httpRequest.request.headers.has('Authorization')).toBe(true);
         expect(httpRequest.request.headers.get('Authorization')).toBe(`Bearer ${mockAuthToken.accessToken}`);
 
         httpRequest.flush({});
     });
 
-    it('should skip interception for requests with /refresh in URL', (done) => {
+    it('should skip interception for requests to /refresh', () => {
         httpClient.get('/refresh').subscribe(response => {
             expect(response).toBeTruthy();
-            done();
         });
 
         const httpRequest = httpMock.expectOne('/refresh');
-
         expect(httpRequest.request.headers.has('Authorization')).toBe(false);
 
         httpRequest.flush({});
     });
 
-    it('should logout if auth error', (done) => {
+    it('should logout user on auth error during refresh', () => {
+        interceptor["isRefreshing"] = true;
 
-        authService.getAuthErrors.and.returnValue(of("Error"));
+        authErrorSubject.next('Invalid token error');
 
-        httpClient.get('/test').subscribe(response => {
-            expect(response).toBeTruthy();
-            done();
+        httpClient.get('/test').subscribe({
+            error: () => {
+                expect(storeSpy.dispatch).toHaveBeenCalledWith(logOutUser());
+            },
         });
-        expect(mockLogOutHandler.dispatch).toHaveBeenCalled();
+
         const httpRequest = httpMock.expectOne('/test');
+        httpRequest.flush({}, { status: 401, statusText: 'Unauthorized' });
+    });
+
+    it('should refresh token if access token is expired', () => {
+        authDataSubject.next({
+            authToken: expiredAuthToken,
+            isAuthenticated: true,
+        });
+
+        httpClient.get('/test').subscribe();
+
+        const httpRequest = httpMock.expectOne('/test');
+        expect(storeSpy.dispatch).toHaveBeenCalledWith(refreshAccessToken({ authToken: expiredAuthToken }));
+        expect(httpRequest.request.headers.has('Authorization')).toBe(true);
+
         httpRequest.flush({});
     });
 
-    it('should refresh token if access token is expired', (done) => {
-
-        authService.getUserAuth.and.returnValue(of({ ...mockUserAuth, authToken: { ...mockUserAuth.authToken, accessToken: expiredAccessToken } }));
-        authService.refreshToken.and.returnValue(of(true));
-
-        httpClient.get('/test').subscribe(response => {
-            expect(response).toBeTruthy();
-            done();
-        });
+    it('should wait for token refresh if already in progress', () => {
+        httpClient.get('/test').subscribe();
 
         const httpRequest = httpMock.expectOne('/test');
-
-        expect(authService.refreshToken).toHaveBeenCalled();
+        expect(httpRequest.request.headers.get('Authorization')).toBe(`Bearer ${mockAuthToken.accessToken}`);
 
         httpRequest.flush({});
     });

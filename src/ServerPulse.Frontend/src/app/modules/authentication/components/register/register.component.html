@@ -7,7 +7,7 @@
     <form id="registrationForm" class="content__form space-y-1" [formGroup]="formGroup" (ngSubmit)="registerUser()">
         <mat-form-field>
             <mat-label>Email</mat-label>
-            <input matInput type="text" autocomplete="email" formControlName="email" placeholder="example@gmail.com"
+            <input matInput type="text" autocomplete="email" [formControl]="emailInput" placeholder="example@gmail.com"
                 maxlength="256">
             <mat-error
                 *ngIf="validateInputField(emailInput).hasError">{{validateInputField(emailInput).message}}</mat-error>
@@ -15,7 +15,7 @@
         <mat-form-field>
             <mat-label>Password</mat-label>
             <input matInput [type]="hidePassword ? 'password' : 'text'" type="password" autocomplete="new-password"
-                formControlName="password" maxlength="256">
+                [formControl]="passwordInput" maxlength="256">
             <button class="material-icons me-2" matSuffix tabindex="0" (click)="hidePassword = !hidePassword"
                 (keydown)="hidePasswordOnKeydown($event)">
                 {{ hidePassword ? 'visibility_off' : 'visibility' }}
@@ -26,7 +26,7 @@
         <mat-form-field>
             <mat-label>Confirm Password</mat-label>
             <input matInput [type]="hidePassword ? 'password' : 'text'" type="password"
-                formControlName="passwordConfirm" maxlength="256">
+                [formControl]="passwordConfirmInput" maxlength="256">
             <mat-error
                 *ngIf="validateInputField(passwordConfirmInput).hasError">{{validateInputField(passwordConfirmInput).message}}</mat-error>
         </mat-form-field>

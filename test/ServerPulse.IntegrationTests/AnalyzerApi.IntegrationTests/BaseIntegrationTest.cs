@@ -8,8 +8,7 @@ using System.Text.Json;
 
 namespace AnalyzerApi.IntegrationTests
 {
-    [TestFixture]
-    public abstract class BaseIntegrationTest
+    internal abstract class BaseIntegrationTest
     {
         protected const string ALIVE_TOPIC = "AliveTopic_";
         protected const string CONFIGURATION_TOPIC = "ConfigurationTopic_";
@@ -50,6 +49,26 @@ namespace AnalyzerApi.IntegrationTests
             {
                 return ev;
             }
+
+            return null;
+        }
+
+        public async Task<T?> WaitForStatisticsAsync<T>(string topic, string key, TimeSpan timeout, TimeSpan pollInterval) where T : class
+        {
+            var cancellationTokenSource = new CancellationTokenSource(timeout);
+
+            while (!cancellationTokenSource.IsCancellationRequested)
+            {
+                var result = await ReceiveLastObjectFromTopicAsync<T>(topic, key);
+                if (result != null)
+                {
+                    return result;
+                }
+
+                await Task.Delay(pollInterval);
+            }
+
+            cancellationTokenSource.Dispose();
 
             return null;
         }

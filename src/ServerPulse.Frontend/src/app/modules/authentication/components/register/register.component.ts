@@ -14,9 +14,9 @@ export class RegisterComponent implements OnInit {
   formGroup!: FormGroup;
   hidePassword = true;
 
-  get emailInput() { return this.formGroup.get('email')!; }
-  get passwordInput() { return this.formGroup.get('password')!; }
-  get passwordConfirmInput() { return this.formGroup.get('passwordConfirm')!; }
+  get emailInput() { return this.formGroup.get('email') as FormControl; }
+  get passwordInput() { return this.formGroup.get('password') as FormControl; }
+  get passwordConfirmInput() { return this.formGroup.get('confirmPassword') as FormControl; }
 
   constructor(
     private readonly store: Store,
@@ -28,7 +28,7 @@ export class RegisterComponent implements OnInit {
       {
         email: new FormControl('', [Validators.required, notEmptyString, noSpaces, Validators.email, Validators.maxLength(256)]),
         password: new FormControl('', [Validators.required, notEmptyString, noSpaces, passwordValidator, Validators.maxLength(256)]),
-        passwordConfirm: new FormControl('', [Validators.required, notEmptyString, noSpaces, confirmPasswordValidator, Validators.maxLength(256)])
+        confirmPassword: new FormControl('', [Validators.required, notEmptyString, noSpaces, confirmPasswordValidator, Validators.maxLength(256)])
       });
   }
 
@@ -50,12 +50,11 @@ export class RegisterComponent implements OnInit {
 
   registerUser() {
     if (this.formGroup.valid) {
-      const formValues = { ...this.formGroup.value };
       const req: UserRegistrationRequest =
       {
-        email: formValues.email,
-        password: formValues.password,
-        confirmPassword: formValues.passwordConfirm,
+        email: this.emailInput.value,
+        password: this.passwordInput.value,
+        confirmPassword: this.passwordConfirmInput.value,
       }
       this.store.dispatch(registerUser({ req: req }));
     }
