@@ -2,12 +2,11 @@
 import { Injectable } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AuthenticatedComponent, LoginComponent, RegisterComponent } from '../..';
-import { AuthenticationDialogManager } from './authentication-dialog-manager';
 
 @Injectable({
   providedIn: 'root'
 })
-export class AuthenticationDialogManagerService implements AuthenticationDialogManager {
+export class AuthenticationDialogManagerService {
   constructor(
     private readonly dialog: MatDialog,
   ) {

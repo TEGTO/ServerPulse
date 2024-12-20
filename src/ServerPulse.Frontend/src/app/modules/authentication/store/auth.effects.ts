@@ -3,10 +3,12 @@ import { Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
 import { Store } from "@ngrx/store";
 import { catchError, map, mergeMap, of, switchMap, withLatestFrom } from "rxjs";
-import { AuthData, AuthenticationApiService, AuthenticationDialogManager, copyAuthTokenToAuthData, copyUserUpdateRequestToUserAuth, getAuthData, getAuthDataFailure, getAuthDataSuccess, loginUser, loginUserFailure, loginUserSuccess, logOutUser, logOutUserSuccess, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerFailure, registerSuccess, registerUser, selectAuthState, startLoginUser, startRegisterUser, updateUserData, updateUserDataFailure, updateUserDataSuccess } from "..";
+import { AuthData, AuthenticationApiService, AuthenticationDialogManagerService, copyAuthTokenToAuthData, copyUserUpdateRequestToUserAuth, getAuthData, getAuthDataFailure, getAuthDataSuccess, loginUser, loginUserFailure, loginUserSuccess, logOutUser, logOutUserSuccess, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerFailure, registerSuccess, registerUser, selectAuthState, startLoginUser, startRegisterUser, updateUserData, updateUserDataFailure, updateUserDataSuccess } from "..";
 import { LocalStorageService, RedirectorService, SnackbarManager } from "../../shared";
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class AuthEffects {
     readonly storageAuthDataKey: string = "authData";
 
@@ -17,7 +19,7 @@ export class AuthEffects {
         private readonly localStorage: LocalStorageService,
         private readonly redirector: RedirectorService,
         private readonly snackbarManager: SnackbarManager,
-        private readonly dialogManager: AuthenticationDialogManager
+        private readonly dialogManager: AuthenticationDialogManagerService
     ) { }
 
     startRegisterUser$ = createEffect(() =>
@@ -134,6 +136,16 @@ export class AuthEffects {
                 )
             )
         )
+    );
+    refreshAccessTokenFailure$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(refreshAccessTokenFailure),
+            switchMap((action) => {
+                this.snackbarManager.openErrorSnackbar(["Token refresh failed: " + action.error]);
+                return of();
+            })
+        ),
+        { dispatch: false }
     );
 
     updateUserData$ = createEffect(() =>

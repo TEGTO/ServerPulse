@@ -93,9 +93,7 @@ namespace ServerSlotApi.Controllers
         {
             var email = GetUserEmail();
 
-            string token = Request?.Headers.Authorization.ToString().Replace("Bearer ", string.Empty) ?? "";
-
-            await mediator.Send(new DeleteSlotCommand(email, id, token), cancellationToken);
+            await mediator.Send(new DeleteSlotCommand(email, id), cancellationToken);
 
             return Ok();
         }

@@ -1,4 +1,4 @@
-import { BaseEventResponse } from "../index";
+import { BaseEventResponse } from "../../analyzer";
 
 /**
 * Filters out duplicate items based on `creationDateUTC` and `id`.

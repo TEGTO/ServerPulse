@@ -8,7 +8,7 @@ export interface UserAuthenticationResponse {
 export function mapUserAuthenticationResponseToUserAuthentication(response: UserAuthenticationResponse): AuthData {
     return {
         isAuthenticated: true,
-        authToken: mapAuthTokenResponseToAuthToken(response.authToken),
-        email: response.email,
+        authToken: mapAuthTokenResponseToAuthToken(response?.authToken),
+        email: response?.email,
     }
 }

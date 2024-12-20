@@ -2,7 +2,6 @@ export const environment =
 {
   production: true,
   api: 'https://localhost:7129',
-  authApi: 'https://localhost:7129',
   maxAmountOfSlotsPerUser: 5,
   ecryptionSecretKey: "encryption-secret-key",
   projectUrl: "https://github.com/TEGTO/ServerPulse",

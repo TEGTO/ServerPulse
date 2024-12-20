@@ -1,9 +1,7 @@
-import { AuthData, AuthState, getDefaultAuthData, selectAuthData, selectAuthErrors, selectAuthState, selectIsRefreshSuccessful, selectIsRegistrationSuccessful, selectIsUpdateSuccessful } from "..";
+import { AuthData, AuthState, getDefaultAuthData, selectAuthData, selectAuthErrors, selectAuthState, selectIsRefreshSuccessful } from "..";
 
 describe('Authentication Selectors', () => {
     const initialState: AuthState = {
-        isRegistrationSuccessful: false,
-        isUpdateSuccessful: false,
         isRefreshSuccessful: false,
         authData: getDefaultAuthData(),
         error: null,
@@ -24,19 +22,9 @@ describe('Authentication Selectors', () => {
         expect(result).toEqual(initialState.authData);
     });
 
-    it('should select isRegistrationSuccessful', () => {
-        const result = selectIsRegistrationSuccessful.projector(initialState);
-        expect(result).toEqual(initialState.isRegistrationSuccessful);
-    });
-
     it('should select isRefreshSuccessful', () => {
         const result = selectIsRefreshSuccessful.projector(initialState);
         expect(result).toEqual(initialState.isRefreshSuccessful);
-    });
-
-    it('should select isUpdateSuccessful', () => {
-        const result = selectIsUpdateSuccessful.projector(initialState);
-        expect(result).toEqual(initialState.isUpdateSuccessful);
     });
 
     it('should select auth errors', () => {

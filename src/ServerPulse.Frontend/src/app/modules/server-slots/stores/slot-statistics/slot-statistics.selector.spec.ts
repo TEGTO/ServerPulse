@@ -1,4 +1,3 @@
-import { CustomEventResponse, CustomEventStatisticsResponse, ServerLoadStatisticsResponse, ServerStatisticsResponse, TimeSpan } from "../../../shared";
 import { SlotCustomStatisticsState, SlotLoadStatisticsState, SlotStatisticsState } from "../../index";
 import { selectCurrentDate, selectLastCustomStatistics, selectLastLoadStatistics, selectLastStatistics, selectSlotCustomStatisticsState, selectSlotLoadStatisticsState, selectSlotStatisticsState } from "./slot-statistics.selector";
 

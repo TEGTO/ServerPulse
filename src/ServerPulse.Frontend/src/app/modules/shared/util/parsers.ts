@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { TimeSpan } from "../index";
 
 export function parseDate(dateString: any): Date | null {

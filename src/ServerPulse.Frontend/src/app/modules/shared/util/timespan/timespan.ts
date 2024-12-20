@@ -1,7 +1,7 @@
 export class TimeSpan {
-    private totalMilliseconds: number;
+    private readonly totalMilliseconds: number;
 
-    constructor(hours: number = 0, minutes: number = 0, seconds: number = 0, milliseconds: number = 0) {
+    constructor(hours = 0, minutes = 0, seconds = 0, milliseconds = 0) {
         this.totalMilliseconds = ((hours * 60 * 60) + (minutes * 60) + seconds) * 1000 + milliseconds;
     }
 

@@ -10,19 +10,13 @@ import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { EffectsModule } from '@ngrx/effects';
-import { StoreModule } from '@ngrx/store';
-import { CustomEventDetailsComponent, RealTimeStatisticsCollector, ServerSlotAdditionalInfromationComponent, ServerSlotComponent, ServerSlotControllerService, ServerSlotDataCollector, ServerSlotDataCollectorService, ServerSlotDeleteConfirmComponent, ServerSlotDialogManager, ServerSlotDialogManagerService, ServerSlotEffects, ServerSlotInfoChartsComponent, ServerSlotInfoComponent, ServerSlotInfoStatsComponent, ServerSlotPreviewActivityChartComponent, serverSlotReducer, ServerSlotService, ServerSlotStatisticsEffects, ServerStatisticsControllerService, ServerStatisticsService, SlotBoardComponent, slotCustomStatisticsReducer, SlotInfoDownloadButtonComponent, slotLoadStatisticsReducer, slotStatisticsReducer, StatisticsCollector } from '.';
-import { AnalyticsModule } from '../analytics/analytics.module';
+import { CustomEventDetailsComponent, RealTimeStatisticsCollector, ServerSlotAdditionalInfromationComponent, ServerSlotDataCollector, ServerSlotDataCollectorService, ServerSlotDeleteConfirmComponent, ServerSlotInfoChartsComponent, ServerSlotInfoComponent, ServerSlotInfoStatsComponent, ServerSlotPreviewActivityChartComponent, ServerStatisticsControllerService, ServerStatisticsService, SlotInfoDownloadButtonComponent, StatisticsCollector } from '.';
 import { LocalizedDatePipe } from '../shared';
 
 @NgModule({
   exports: [
-    SlotBoardComponent
   ],
   declarations: [
-    SlotBoardComponent,
-    ServerSlotComponent,
     ServerSlotInfoComponent,
     ServerSlotDeleteConfirmComponent,
     ServerSlotPreviewActivityChartComponent,
@@ -35,7 +29,6 @@ import { LocalizedDatePipe } from '../shared';
   ],
   imports: [
     CommonModule,
-    AnalyticsModule,
     MatButtonModule,
     MatDialogModule,
     CdkTableModule,
@@ -47,15 +40,13 @@ import { LocalizedDatePipe } from '../shared';
     MatSelectModule,
     MatMenuModule,
     MatProgressSpinnerModule,
-    StoreModule.forFeature('serverslot', serverSlotReducer),
-    StoreModule.forFeature('slotstatistics', slotStatisticsReducer),
-    StoreModule.forFeature('slotloadstatistics', slotLoadStatisticsReducer),
-    StoreModule.forFeature('customstatistics', slotCustomStatisticsReducer),
-    EffectsModule.forFeature([ServerSlotEffects, ServerSlotStatisticsEffects]),
+    // StoreModule.forFeature('serverslot', serverSlotReducer),
+    // StoreModule.forFeature('slotstatistics', slotStatisticsReducer),
+    // StoreModule.forFeature('slotloadstatistics', slotLoadStatisticsReducer),
+    // StoreModule.forFeature('customstatistics', slotCustomStatisticsReducer),
+    // EffectsModule.forFeature([ServerSlotEffects, ServerSlotStatisticsEffects]),
   ],
   providers: [
-    { provide: ServerSlotDialogManager, useClass: ServerSlotDialogManagerService },
-    { provide: ServerSlotService, useClass: ServerSlotControllerService },
     { provide: RealTimeStatisticsCollector, useClass: StatisticsCollector },
     { provide: ServerStatisticsService, useClass: ServerStatisticsControllerService },
     { provide: ServerSlotDataCollector, useClass: ServerSlotDataCollectorService },

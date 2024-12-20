@@ -219,6 +219,35 @@
       "AddHeadersToRequest": {
         "Authorization": "Bearer {token}"
       }
+    },
+    {
+      "Key": "Analyzer_GetSlotStatistics",
+      "UpstreamPathTemplate": "/slotstatistics/{key}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "DownstreamPathTemplate": "/slotstatistics/{key}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "analyzerapi",
+          "Port": 8080
+        }
+      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToRequest": {
+        "Authorization": "Bearer {token}"
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 5
+      }
     }
   ]
 }

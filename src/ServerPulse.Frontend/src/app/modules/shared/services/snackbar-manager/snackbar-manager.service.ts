@@ -20,6 +20,7 @@ export class SnackbarManager {
       }
     });
   }
+
   openErrorSnackbar(errors: string[]): void {
     this.snackBar.openFromComponent(ErrorAnnotatedComponent, {
       duration: this.errorDurationInSeconds * 1000,

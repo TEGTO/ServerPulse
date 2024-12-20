@@ -1,0 +1,8 @@
+@use 'utils' as utils;
+
+.pie-chart__wrapper {
+    max-width: utils.pxToRem(380);
+    margin: utils.pxToRem(35) auto;
+    padding: 0;
+    height: 100%;
+}
