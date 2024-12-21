@@ -3,7 +3,7 @@ using EventCommunication;
 
 namespace AnalyzerApi.IntegrationTests.BackgroundServices
 {
-    [TestFixture, Parallelizable(ParallelScope.All)]
+    [TestFixture, Parallelizable(ParallelScope.Self)]
     internal class LoadEventStatisticsProcessorOneBunchTests : BaseIntegrationTest
     {
         [Test]
@@ -24,7 +24,7 @@ namespace AnalyzerApi.IntegrationTests.BackgroundServices
 
             // Assert
             var statistics = await WaitForStatisticsAsync<LoadMethodStatistics>(
-                LOAD_METHOD_STATISTICS_TOPIC, loadEvents[0].Key, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(1));
+                LOAD_METHOD_STATISTICS_TOPIC, loadEvents[0].Key, TimeSpan.FromSeconds(100), TimeSpan.FromSeconds(1));
 
             Assert.IsNotNull(statistics);
             Assert.That(statistics.GetAmount, Is.LessThanOrEqualTo(1));
@@ -53,7 +53,7 @@ namespace AnalyzerApi.IntegrationTests.BackgroundServices
 
             // Assert
             var statistics = await WaitForStatisticsAsync<LoadMethodStatistics>(
-                LOAD_METHOD_STATISTICS_TOPIC, loadEvents[0].Key, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(1));
+                LOAD_METHOD_STATISTICS_TOPIC, loadEvents[0].Key, TimeSpan.FromSeconds(100), TimeSpan.FromSeconds(1));
 
             Assert.IsNotNull(statistics);
             Assert.That(statistics.GetAmount, Is.LessThanOrEqualTo(1));

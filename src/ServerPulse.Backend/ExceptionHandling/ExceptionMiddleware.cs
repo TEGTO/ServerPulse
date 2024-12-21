@@ -32,7 +32,15 @@ namespace ExceptionHandling
                  .ToArray();
                 await SetError(httpContext, HttpStatusCode.BadRequest, ex, errors).ConfigureAwait(false);
             }
+            catch (SecurityTokenMalformedException ex)
+            {
+                await SetError(httpContext, HttpStatusCode.Conflict, ex, ["Access Token Exception"]).ConfigureAwait(false);
+            }
             catch (InvalidDataException ex)
+            {
+                await SetError(httpContext, HttpStatusCode.BadRequest, ex, new[] { ex.Message }).ConfigureAwait(false);
+            }
+            catch (ArgumentException ex)
             {
                 await SetError(httpContext, HttpStatusCode.BadRequest, ex, new[] { ex.Message }).ConfigureAwait(false);
             }
@@ -52,10 +60,6 @@ namespace ExceptionHandling
             catch (UnauthorizedAccessException ex)
             {
                 await SetError(httpContext, HttpStatusCode.Unauthorized, ex, [ex.Message]).ConfigureAwait(false);
-            }
-            catch (SecurityTokenMalformedException ex)
-            {
-                await SetError(httpContext, HttpStatusCode.Conflict, ex, ["Access Token Exception"]).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

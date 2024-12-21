@@ -43,7 +43,7 @@ export class ServerSlotEffects {
     getUserServerSlots$ = createEffect(() =>
         this.actions$.pipe(
             ofType(getUserServerSlots),
-            mergeMap((action) =>
+            switchMap((action) =>
                 this.apiService.getUserServerSlots(action.str).pipe(
                     map((response) => {
                         return getUserServerSlotsSuccess({ serverSlots: response });

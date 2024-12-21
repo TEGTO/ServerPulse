@@ -2,7 +2,7 @@
 import { Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
 import { Store } from "@ngrx/store";
-import { catchError, map, mergeMap, of, switchMap, withLatestFrom } from "rxjs";
+import { catchError, map, of, switchMap, withLatestFrom } from "rxjs";
 import { AuthData, AuthenticationApiService, AuthenticationDialogManagerService, copyAuthTokenToAuthData, copyUserUpdateRequestToUserAuth, getAuthData, getAuthDataFailure, getAuthDataSuccess, loginUser, loginUserFailure, loginUserSuccess, logOutUser, logOutUserSuccess, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerFailure, registerSuccess, registerUser, selectAuthState, startLoginUser, startRegisterUser, updateUserData, updateUserDataFailure, updateUserDataSuccess } from "..";
 import { LocalStorageService, RedirectorService, SnackbarManager } from "../../shared";
 
@@ -36,7 +36,7 @@ export class AuthEffects {
     registerUser$ = createEffect(() =>
         this.actions$.pipe(
             ofType(registerUser),
-            mergeMap((action) =>
+            switchMap((action) =>
                 this.authApiService.registerUser(action.req).pipe(
                     map((response) => {
                         this.localStorage.setItem(this.storageAuthDataKey, JSON.stringify(response));
@@ -73,7 +73,7 @@ export class AuthEffects {
     loginUser$ = createEffect(() =>
         this.actions$.pipe(
             ofType(loginUser),
-            mergeMap((action) =>
+            switchMap((action) =>
                 this.authApiService.loginUser(action.req).pipe(
                     map((response) => {
                         this.localStorage.setItem(this.storageAuthDataKey, JSON.stringify(response));
@@ -92,7 +92,7 @@ export class AuthEffects {
     getAuthData$ = createEffect(() =>
         this.actions$.pipe(
             ofType(getAuthData),
-            mergeMap(() => {
+            switchMap(() => {
                 const json = this.localStorage.getItem(this.storageAuthDataKey);
                 if (json !== null) {
                     const authData: AuthData = JSON.parse(json);
@@ -109,7 +109,7 @@ export class AuthEffects {
     logOutUser$ = createEffect(() =>
         this.actions$.pipe(
             ofType(logOutUser),
-            mergeMap(() => {
+            switchMap(() => {
                 this.localStorage.removeItem(this.storageAuthDataKey);
                 this.redirector.redirectToHome();
                 return of(logOutUserSuccess());
@@ -120,7 +120,7 @@ export class AuthEffects {
     refreshToken$ = createEffect(() =>
         this.actions$.pipe(
             ofType(refreshAccessToken),
-            mergeMap((action) =>
+            switchMap((action) =>
                 this.authApiService.refreshToken(action.authToken).pipe(
                     map((response) => {
                         const json = this.localStorage.getItem(this.storageAuthDataKey);
@@ -151,7 +151,7 @@ export class AuthEffects {
     updateUserData$ = createEffect(() =>
         this.actions$.pipe(
             ofType(updateUserData),
-            mergeMap((action) =>
+            switchMap((action) =>
                 this.authApiService.updateUser(action.req).pipe(
                     map(() => {
                         const json = this.localStorage.getItem(this.storageAuthDataKey);

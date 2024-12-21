@@ -23,12 +23,12 @@ export class AnalyzerApiService extends BaseApiService {
   }
 
   getLoadAmountStatisticsInRange(request: MessageAmountInRangeRequest): Observable<LoadAmountStatistics[]> {
-    return this.httpClient.post<LoadAmountStatisticsResponse[]>(this.combinePathWithAnalyzerApiUrl(`/amountrange`), request).pipe(
-      map((response) => response.map(mapLoadAmountStatisticsResponseToLoadAmountStatistics)),
-      catchError((resp) => this.handleError(resp))
-    );
+    return this.httpClient
+      .post<LoadAmountStatisticsResponse[]>(this.combinePathWithAnalyzerApiUrl(`/amountrange`), request).pipe(
+        map((response) => response.map(mapLoadAmountStatisticsResponseToLoadAmountStatistics)),
+        catchError((resp) => this.handleError(resp))
+      );
   }
-
   getSomeLoadEvents(request: GetSomeMessagesRequest): Observable<LoadEvent[]> {
     return this.httpClient.post<LoadEventResponse[]>(this.combinePathWithAnalyzerApiUrl(`/someevents`), request).pipe(
       map((response) => response.map(mapLoadEventResponseToLoadEvent)),

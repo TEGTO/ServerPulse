@@ -29,7 +29,8 @@ var producerConfig = new ProducerConfig
 };
 var adminConfig = new AdminClientConfig
 {
-    BootstrapServers = builder.Configuration[Configuration.KAFKA_BOOTSTRAP_SERVERS]
+    BootstrapServers = builder.Configuration[Configuration.KAFKA_BOOTSTRAP_SERVERS],
+    AllowAutoCreateTopics = true
 };
 builder.Services.AddKafkaProducer(producerConfig, adminConfig);
 

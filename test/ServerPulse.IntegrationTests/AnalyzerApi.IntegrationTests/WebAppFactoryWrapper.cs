@@ -87,7 +87,6 @@ namespace AnalyzerApi.IntegrationTests
                 { "Kafka:ProcessLoadEventTopic", "LoadEventProcessTopic" },
                 { "Kafka:CustomTopic", "CustomEventTopic_" },
                 { "Kafka:LoadMethodStatisticsTopic", "LoadMethodStatisticsTopic_" },
-                { "PulseEventIntervalInMilliseconds", "20000" },
                 { "StatisticsCollectIntervalInMilliseconds", "500" },
                 { "ConnectionStrings:RedisServer",  RedisContainer?.GetConnectionString()},
                 { "Cache:Cache__ExpiryInMinutes", "5" },

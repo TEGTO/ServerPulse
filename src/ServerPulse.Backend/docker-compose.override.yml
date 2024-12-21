@@ -67,6 +67,7 @@ services:
       - Kafka__AliveTopic=${Kafka__AliveTopic}
       - Kafka__ConfigurationTopic=${Kafka__ConfigurationTopic}
       - Kafka__LoadTopic=${Kafka__LoadTopic}
+      - Kafka__LoadMethodStatisticsTopic=${Kafka__LoadMethodStatisticsTopic}
       - Kafka__ProcessLoadEventTopic=${Kafka__ProcessLoadEventTopic}
       - Kafka__ServerStatisticsTopic=${Kafka__ServerStatisticsTopic}
       - Kafka__TopicDataSaveInDays=${Kafka__TopicDataSaveInDays}
