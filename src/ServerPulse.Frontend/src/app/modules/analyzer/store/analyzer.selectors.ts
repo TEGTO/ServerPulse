@@ -7,7 +7,7 @@ export const selectServerLifecycleStatisticsState = createFeatureSelector<Server
 
 export const selectLifecycleStatisticsByKey = (key: string) => createSelector(
     selectServerLifecycleStatisticsState,
-    (state: ServerLifecycleStatisticsState) => state.statistics.get(key) ?? []
+    (state: ServerLifecycleStatisticsState) => state.statisticsMap.get(key) ?? []
 );
 
 //#endregion
@@ -18,14 +18,19 @@ export const selectServerLoadStatisticsState = createFeatureSelector<ServerLoadS
 
 export const selectLoadStatisticsByKey = (key: string) => createSelector(
     selectServerLoadStatisticsState,
-    (state: ServerLoadStatisticsState) => state.statistics.get(key) ?? []
+    (state: ServerLoadStatisticsState) => state.statisticsMap.get(key) ?? []
 );
 
 export const selectLastLoadEventByKey = (key: string) => createSelector(
     selectServerLoadStatisticsState,
-    (state: ServerLoadStatisticsState) => state.statistics.get(key)?.pop()?.lastEvent ?? null
+    (state: ServerLoadStatisticsState) => {
+        const statistics = state.statisticsMap.get(key);
+        if (statistics && statistics.length > 0) {
+            return statistics[statistics.length - 1]?.lastEvent ?? null;
+        }
+        return null;
+    }
 );
-
 //#endregion
 
 //#region Custom
@@ -34,7 +39,7 @@ export const selectServerCustomStatisticsState = createFeatureSelector<ServerCus
 
 export const selectCustomStatisticsByKey = (key: string) => createSelector(
     selectServerCustomStatisticsState,
-    (state: ServerCustomStatisticsState) => state.statistics.get(key) ?? []
+    (state: ServerCustomStatisticsState) => state.statisticsMap.get(key) ?? []
 );
 
 //#endregion
@@ -45,7 +50,7 @@ export const selectLoadAmountStatisticsState = createFeatureSelector<LoadAmountS
 
 export const selectLoadAmountStatisticsByKey = (key: string) => createSelector(
     selectLoadAmountStatisticsState,
-    (state: LoadAmountStatisticsState) => state.statistics.get(key) ?? []
+    (state: LoadAmountStatisticsState) => state.statisticsMap.get(key) ?? []
 );
 
 //#endregion

@@ -57,7 +57,7 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             await connection.StartAsync();
 
             // Act
-            await connection.SendAsync("StartListen", key);
+            await connection.SendAsync("StartListen", key, true);
 
             await Task.Delay(1000);
 
@@ -105,7 +105,7 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             await connection.StartAsync();
 
             // Act
-            await connection.SendAsync("StartListen", key);
+            await connection.SendAsync("StartListen", key, false);
 
             await Task.Delay(1000);
 
@@ -195,7 +195,7 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             await connection.StartAsync();
 
             // Act
-            await connection.SendAsync("StartListen", key);
+            await connection.SendAsync("StartListen", key, true);
 
             await Task.Delay(1000);
 
@@ -286,7 +286,7 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             await connection.StartAsync();
 
             // Act
-            await connection.SendAsync("StartListen", wrongKey);
+            await connection.SendAsync("StartListen", wrongKey, true);
 
             await Task.Delay(1000);
 

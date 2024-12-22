@@ -7,7 +7,7 @@ import { TimeSpan } from "../../shared";
 
 export const startLifecycleStatisticsReceiving = createAction(
     '[Statistics] Start Lifecycle Statistics Receiving ',
-    props<{ key: string }>()
+    props<{ key: string, getInitial?: boolean }>()
 );
 export const stopLifecycleStatisticsReceiving = createAction(
     '[Statistics] Stop Lifecycle Statistics Receiving',
@@ -29,10 +29,10 @@ export const receiveLifecycleStatisticsFailure = createAction(
 
 export const startLoadStatisticsReceiving = createAction(
     '[Statistics] Start Load Statistics Receiving ',
-    props<{ key: string }>()
+    props<{ key: string, getInitial?: boolean }>()
 );
-export const stopLoadStatisticsReceiving = createAction(
-    '[Statistics] Stop Load Statistics Receiving',
+export const stopLoadKeyListening = createAction(
+    '[Statistics] Stop Load Key Listening',
     props<{ key: string }>()
 );
 
@@ -51,7 +51,7 @@ export const receiveLoadStatisticsFailure = createAction(
 
 export const startCustomStatisticsReceiving = createAction(
     '[Statistics] Start Custom Statistics Receiving ',
-    props<{ key: string }>()
+    props<{ key: string, getInitial?: boolean }>()
 );
 export const stopCustomStatisticsReceiving = createAction(
     '[Statistics] Stop Custom Statistics Receiving',

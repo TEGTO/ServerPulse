@@ -76,6 +76,42 @@ namespace AnalyzerApi.Hubs.Tests
         }
 
         [Test]
+        public async Task StartListen_GetInitialIsFalse_AddsClientToGroupButDoesNotGiveInitialStatistics()
+        {
+            // Arrange
+            var key = "testKey";
+            var connectionId = "testConnectionId";
+
+            mockContext.SetupGet(c => c.ConnectionId).Returns(connectionId);
+
+            // Act
+            await statisticsHub.StartListen(key, false);
+
+            // Assert
+            var connectedClients = statisticsHub.GetFieldValue<ConcurrentDictionary<string, List<string>>>("connectedClients");
+            Assert.IsNotNull(connectedClients);
+            connectedClients.TryGetValue(connectionId, out var idKeys);
+            Assert.IsNotNull(idKeys);
+            Assert.IsTrue(idKeys.Contains(key));
+
+            var listenerAmount = statisticsHub.GetFieldValue<ConcurrentDictionary<string, int>>("listenerAmount");
+            Assert.IsNotNull(listenerAmount);
+            listenerAmount.TryGetValue(key, out var amount);
+            Assert.That(amount, Is.EqualTo(1));
+
+            mockGroups.Verify(g => g.AddToGroupAsync(connectionId, key, default), Times.Once);
+            mockStatisticsDispatcher.Verify(s => s.StartStatisticsDispatchingAsync(key), Times.Once);
+            mockStatisticsDispatcher.Verify(s => s.DispatchInitialStatisticsAsync(key, It.IsAny<CancellationToken>()), Times.Never);
+            mockLogger.Verify(l => l.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains($"Start listening to key '{key}'")),
+                null,
+                It.IsAny<Func<It.IsAnyType, Exception, string>>()!),
+                Times.Once);
+        }
+
+        [Test]
         public async Task StartListen_AddsClientToGroupAndStartListeningAmountIsZero()
         {
             // Arrange
@@ -281,7 +317,7 @@ namespace AnalyzerApi.Hubs.Tests
             {
                 foreach (var key in keys)
                 {
-                    var task = (Task)startIdListeningKeyMethod.Invoke(statisticsHub, [key, connectionId])!;
+                    var task = (Task)startIdListeningKeyMethod.Invoke(statisticsHub, [key, connectionId, true])!;
                     await task!;
                 }
             }));
@@ -330,7 +366,7 @@ namespace AnalyzerApi.Hubs.Tests
             {
                 foreach (var key in keys)
                 {
-                    var task = (Task)startIdListeningKeyMethod.Invoke(statisticsHub, [key, connectionId])!;
+                    var task = (Task)startIdListeningKeyMethod.Invoke(statisticsHub, [key, connectionId, true])!;
                     await task!;
                 }
             }));

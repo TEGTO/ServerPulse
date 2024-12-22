@@ -5,19 +5,29 @@ import { TimeSpan } from "../../shared";
 //#region Lifecycle Statistics
 
 export interface ServerLifecycleStatisticsState {
-    statistics: Map<string, ServerLifecycleStatistics[]>
+    statisticsMap: Map<string, ServerLifecycleStatistics[]>
 }
 const initialServerLifecycleStatisticsState: ServerLifecycleStatisticsState = {
-    statistics: new Map<string, ServerLifecycleStatistics[]>()
+    statisticsMap: new Map<string, ServerLifecycleStatistics[]>()
 };
 
 export const serverLifecycleStatisticsReducer = createReducer(
     initialServerLifecycleStatisticsState,
 
     on(receiveLifecycleStatisticsSuccess, (state, { key, statistics }) => {
+        let updatedStatisticsMap = state.statisticsMap;
+
+        const currentStatistics = updatedStatisticsMap.get(key) ?? [];
+
+        const isDuplicate = currentStatistics.some(x => x.id === statistics.id);
+
+        if (!isDuplicate) {
+            updatedStatisticsMap = updatedStatisticsMap.set(key, [...currentStatistics, statistics]);
+        }
+
         return {
             ...state,
-            statistics: state.statistics.set(key, [...state.statistics.get(key) ?? [], statistics])
+            statisticsMap: updatedStatisticsMap.set(key, [...updatedStatisticsMap.get(key) ?? [], statistics])
         };
     }),
 );
@@ -27,19 +37,29 @@ export const serverLifecycleStatisticsReducer = createReducer(
 //#region Load Statistics
 
 export interface ServerLoadStatisticsState {
-    statistics: Map<string, ServerLoadStatistics[]>
+    statisticsMap: Map<string, ServerLoadStatistics[]>
 }
 const initialServerLoadStatisticsState: ServerLoadStatisticsState = {
-    statistics: new Map<string, ServerLoadStatistics[]>()
+    statisticsMap: new Map<string, ServerLoadStatistics[]>()
 };
 
 export const serverLoadStatisticsReducer = createReducer(
     initialServerLoadStatisticsState,
 
     on(receiveLoadStatisticsSuccess, (state, { key, statistics }) => {
+        let updatedStatisticsMap = state.statisticsMap;
+
+        const currentStatistics = updatedStatisticsMap.get(key) ?? [];
+
+        const isDuplicate = currentStatistics.some(x => x.id === statistics.id);
+
+        if (!isDuplicate) {
+            updatedStatisticsMap = updatedStatisticsMap.set(key, [...currentStatistics, statistics]);
+        }
+
         return {
             ...state,
-            statistics: state.statistics.set(key, [...state.statistics.get(key) ?? [], statistics])
+            statisticsMap: updatedStatisticsMap
         };
     }),
 );
@@ -49,19 +69,29 @@ export const serverLoadStatisticsReducer = createReducer(
 //#region Custom Statistics
 
 export interface ServerCustomStatisticsState {
-    statistics: Map<string, ServerCustomStatistics[]>
+    statisticsMap: Map<string, ServerCustomStatistics[]>
 }
 const initialServerCustomStatisticsState: ServerCustomStatisticsState = {
-    statistics: new Map<string, ServerCustomStatistics[]>()
+    statisticsMap: new Map<string, ServerCustomStatistics[]>()
 };
 
 export const serverCustomStatisticsReducer = createReducer(
     initialServerCustomStatisticsState,
 
     on(receiveCustomStatisticsSuccess, (state, { key, statistics }) => {
+        let updatedStatisticsMap = state.statisticsMap;
+
+        const currentStatistics = updatedStatisticsMap.get(key) ?? [];
+
+        const isDuplicate = currentStatistics.some(x => x.id === statistics.id);
+
+        if (!isDuplicate) {
+            updatedStatisticsMap = updatedStatisticsMap.set(key, [...currentStatistics, statistics]);
+        }
+
         return {
             ...state,
-            statistics: state.statistics.set(key, [...state.statistics.get(key) ?? [], statistics])
+            statisticsMap: updatedStatisticsMap.set(key, [...updatedStatisticsMap.get(key) ?? [], statistics])
         };
     }),
 );
@@ -71,57 +101,69 @@ export const serverCustomStatisticsReducer = createReducer(
 //#region Load Amount Statistics
 
 export interface LoadAmountStatisticsState {
-    statistics: Map<string, LoadAmountStatistics[]>,
-    timespans: Map<string, TimeSpan>
+    statisticsMap: Map<string, LoadAmountStatistics[]>,
+    timespanMap: Map<string, TimeSpan>,
+    addedEvents: Map<string, string>,
 }
 const initialLoadAmountStatisticsState: LoadAmountStatisticsState = {
-    statistics: new Map<string, LoadAmountStatistics[]>(),
-    timespans: new Map<string, TimeSpan>(),
+    statisticsMap: new Map<string, LoadAmountStatistics[]>(),
+    timespanMap: new Map<string, TimeSpan>(),
+    addedEvents: new Map<string, string>(),
 };
 
 export const serverLoadAmountStatisticsReducer = createReducer(
     initialLoadAmountStatisticsState,
 
     on(getLoadAmountStatisticsInRangeSuccess, (state, { key, statistics, timespan }) => {
+        const updatedStatisticsMap = state.statisticsMap
+        const updatedTimespanMap = state.timespanMap
         return {
             ...state,
-            statistics: state.statistics.set(key, statistics),
-            timespans: state.timespans.set(key, timespan)
+            statisticsMap: updatedStatisticsMap.set(key, statistics),
+            timespanMap: updatedTimespanMap.set(key, timespan)
         };
     }),
 
     on(addLoadEventToLoadAmountStatistics, (state, { key, event }) => {
+        const updatedStatisticsMap = state.statisticsMap
+        const updatedTimespanMap = state.timespanMap
+        const updatedAddedEvents = state.addedEvents
 
         let isPlaceFound = false;
+        let statistics = updatedStatisticsMap.get(key) ?? [];
 
-        let statistics = state.statistics.get(key) ?? [];
-
-        statistics = statistics.map(statistic => {
-            if (statistic.dateFrom <= event.creationDateUTC && statistic.dateTo >= event.creationDateUTC) {
-                isPlaceFound = true;
-                return {
-                    ...statistic,
-                    amountOfEvents: statistic.amountOfEvents + 1
-                };
-            }
-            return statistic;
-        });
-
-        if (!isPlaceFound && state.timespans.has(key)) {
-            const timespanMilliseconds = state.timespans.get(key)!.milliseconds;
-            const dateTo = new Date(event.creationDateUTC.getTime() + timespanMilliseconds);
-
-            statistics.push({
-                collectedDateUTC: new Date(),
-                amountOfEvents: 1,
-                dateFrom: event.creationDateUTC,
-                dateTo: dateTo,
+        if (!updatedAddedEvents.has(key) || updatedAddedEvents.get(key) !== event.id) {
+            statistics = statistics.map(s => {
+                if (s.dateFrom <= event.creationDateUTC && s.dateTo >= event.creationDateUTC) {
+                    isPlaceFound = true;
+                    return {
+                        ...s,
+                        amountOfEvents: s.amountOfEvents + 1
+                    };
+                }
+                return s;
             });
+
+            if (!isPlaceFound && updatedTimespanMap.has(key)) {
+                const timespanMilliseconds = updatedTimespanMap.get(key)!.toMilliseconds;
+                const dateTo = new Date(event.creationDateUTC.getTime() + timespanMilliseconds);
+
+                statistics.push({
+                    id: `${key}_${event.creationDateUTC.getTime()}`,
+                    collectedDateUTC: new Date(),
+                    amountOfEvents: 1,
+                    dateFrom: event.creationDateUTC,
+                    dateTo: dateTo,
+                });
+            }
+
+            updatedAddedEvents.set(key, event.id);
         }
 
         return {
             ...state,
-            statistics: state.statistics.set(key, statistics),
+            statisticsMap: updatedStatisticsMap.set(key, statistics),
+            addedEvents: updatedAddedEvents
         };
     }),
 );

@@ -28,9 +28,9 @@ namespace AnalyzerApi.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
-        public async Task StartListen(string key)
+        public async Task StartListen(string key, bool getInitial = true)
         {
-            await StartIdListeningKey(key, Context.ConnectionId);
+            await StartIdListeningKey(key, Context.ConnectionId, getInitial);
         }
 
         public async Task StopListen(string key)
@@ -38,11 +38,14 @@ namespace AnalyzerApi.Hubs
             await StopIdListeningKey(key, Context.ConnectionId);
         }
 
-        private async Task StartIdListeningKey(string key, string connectionId)
+        private async Task StartIdListeningKey(string key, string connectionId, bool getInitial)
         {
             await Groups.AddToGroupAsync(connectionId, key);
 
-            await statisticsDispatcher.DispatchInitialStatisticsAsync(key);
+            if (getInitial)
+            {
+                await statisticsDispatcher.DispatchInitialStatisticsAsync(key);
+            }
 
             connectedClients.AddOrUpdate(
                 connectionId,

@@ -22,20 +22,24 @@ export class TimeSpan {
         }
     }
 
-    get hours(): number {
+    private get hours(): number {
         return Math.floor(this.totalMilliseconds / (60 * 60 * 1000));
     }
 
-    get minutes(): number {
+    private get minutes(): number {
         return Math.floor((this.totalMilliseconds % (60 * 60 * 1000)) / (60 * 1000));
     }
 
-    get seconds(): number {
+    private get seconds(): number {
         return Math.floor((this.totalMilliseconds % (60 * 1000)) / 1000);
     }
 
-    get milliseconds(): number {
+    private get milliseconds(): number {
         return this.totalMilliseconds % 1000;
+    }
+
+    get toMilliseconds(): number {
+        return this.totalMilliseconds;
     }
 
     toString(): string {

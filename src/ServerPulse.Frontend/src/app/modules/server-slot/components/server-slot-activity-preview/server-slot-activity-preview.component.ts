@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { BehaviorSubject, combineLatest, interval, map, Observable, of, Subject, takeUntil } from 'rxjs';
-import { addLoadEventToLoadAmountStatistics, getLoadAmountStatisticsInRange, LoadAmountStatisticsResponse, MessageAmountInRangeRequest, selectLastLoadEventByKey, selectLoadAmountStatisticsByKey, startLoadStatisticsReceiving, stopLoadStatisticsReceiving } from '../../../analyzer';
+import { BehaviorSubject, interval, map, Observable, of, Subject, takeUntil } from 'rxjs';
+import { addLoadEventToLoadAmountStatistics, getLoadAmountStatisticsInRange, LoadAmountStatisticsResponse, MessageAmountInRangeRequest, selectLastLoadEventByKey, selectLoadAmountStatisticsByKey, startLoadStatisticsReceiving, stopLoadKeyListening } from '../../../analyzer';
 import { ActivityChartType } from '../../../chart';
 import { ServerSlot } from '../../../server-slot-shared';
 import { TimeSpan } from '../../../shared';
@@ -46,11 +46,11 @@ export class ServerSlotActivityPreviewComponent implements OnInit, OnDestroy {
     }
 
     this.store.dispatch(getLoadAmountStatisticsInRange({ req: req }));
-    this.store.dispatch(startLoadStatisticsReceiving({ key: this.serverSlot.slotKey }));
+    this.store.dispatch(startLoadStatisticsReceiving({ key: this.serverSlot.slotKey, getInitial: false }));
   }
 
   ngOnDestroy(): void {
-    this.store.dispatch(stopLoadStatisticsReceiving({ key: this.serverSlot.slotKey }));
+    this.store.dispatch(stopLoadKeyListening({ key: this.serverSlot.slotKey }));
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -66,16 +66,9 @@ export class ServerSlotActivityPreviewComponent implements OnInit, OnDestroy {
   }
 
   private setChartDataObservable() {
-    this.chartData$ = combineLatest([
-      this.store.select(selectLoadAmountStatisticsByKey(this.serverSlot.slotKey)),
-      this.store.select(selectLastLoadEventByKey(this.serverSlot.slotKey)),
-    ]).pipe(
-      map(([statistics, lastLoadEvent]) => {
-        if (lastLoadEvent) {
-          this.store.dispatch(
-            addLoadEventToLoadAmountStatistics({ key: this.serverSlot.slotKey, event: lastLoadEvent })
-          );
-        }
+    this.chartData$ = this.store.select(selectLoadAmountStatisticsByKey(this.serverSlot.slotKey)).pipe(
+      map((statistics) => {
+        this.updateTime();
 
         const set = this.getStatisticsSet(statistics);
         const series = this.generate5MinutesTimeSeries(
@@ -84,10 +77,21 @@ export class ServerSlotActivityPreviewComponent implements OnInit, OnDestroy {
           set
         );
 
-        this.updateTime();
         return series;
       })
     );
+
+    this.store.select(selectLastLoadEventByKey(this.serverSlot.slotKey))
+      .pipe(
+        takeUntil(this.destroy$)
+      )
+      .subscribe(event => {
+        if (event) {
+          this.store.dispatch(
+            addLoadEventToLoadAmountStatistics({ key: this.serverSlot.slotKey, event })
+          );
+        }
+      });
   }
 
   formatter(val: number) {
@@ -116,7 +120,7 @@ export class ServerSlotActivityPreviewComponent implements OnInit, OnDestroy {
     const set: Map<number, number> = new Map<number, number>();
 
     statistics.forEach(stat => {
-      const timestamp = stat.dateFrom.getTime();
+      const timestamp = stat.dateTo.getTime();
       if (!set.has(timestamp)) {
         set.set(timestamp, stat.amountOfEvents);
       }
@@ -136,7 +140,7 @@ export class ServerSlotActivityPreviewComponent implements OnInit, OnDestroy {
       let count = 0;
 
       for (const [timestamp, amount] of statisticsSet) {
-        if (timestamp >= localFrom && timestamp < localTo) {
+        if (timestamp >= localFrom && timestamp <= localTo) {
           count += amount;
         }
       }

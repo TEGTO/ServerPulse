@@ -711,7 +711,7 @@ namespace MessageBusTests.Implementation
                 await consumer.GetTopicMessageAmountPerTimespanAsync(options, TimeSpan.FromHours(1), cancellationToken);
             });
 
-            Assert.That(ex.Message, Does.Contain("Invalid Start Date"));
+            Assert.That(ex.Message, Does.Contain("Invalid From Date"));
         }
 
         [Test]

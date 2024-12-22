@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable, OnDestroy } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { BaseStatisticsResponse } from '../..';
 import { ErrorHandler } from '../../../shared';
 
@@ -10,18 +10,23 @@ import { ErrorHandler } from '../../../shared';
 })
 export class SignalStatisticsService implements OnDestroy {
   private readonly hubConnections = new Map<string, signalR.HubConnection>();
-  private readonly receiveStatisticsHubObservables = new Map<string, Observable<any>>();
+  private readonly receiveStatisticsHubObservables = new Map<string, Subject<any>>();
 
   constructor(private readonly errorHandler: ErrorHandler) {
   }
 
   ngOnDestroy(): void {
+    this.receiveStatisticsHubObservables.forEach((observable) => {
+      observable.complete();
+    });
+
+    this.receiveStatisticsHubObservables.clear();
+
     this.hubConnections.forEach((connection) => {
       connection.stop();
     });
 
     this.hubConnections.clear();
-    this.receiveStatisticsHubObservables.clear();
   }
 
   startConnection(hubUrl: string, accessToken: string): Observable<void> {
@@ -71,52 +76,54 @@ export class SignalStatisticsService implements OnDestroy {
   }
 
   stopConnection(hubUrl: string): void {
-    const connection = this.hubConnections.get(hubUrl);
-
-    if (connection) {
-      connection.stop();
-      this.hubConnections.delete(hubUrl);
+    if (this.receiveStatisticsHubObservables.has(hubUrl)) {
+      this.receiveStatisticsHubObservables.get(hubUrl)!.complete();
       this.receiveStatisticsHubObservables.delete(hubUrl);
     }
+
+    if (this.hubConnections.has(hubUrl)) {
+      this.hubConnections.get(hubUrl)!.stop();
+      this.hubConnections.delete(hubUrl);
+    }
   }
 
-  receiveStatistics<T extends BaseStatisticsResponse>(hubUrl: string): Observable<{ key: string, response: T }> {
+  receiveStatistics<T extends BaseStatisticsResponse>(hubUrl: string): Subject<{ key: string, response: T }> {
     if (this.receiveStatisticsHubObservables.has(hubUrl)) {
-      return this.receiveStatisticsHubObservables.get(hubUrl) as Observable<{ key: string, response: T }>;
+      return this.receiveStatisticsHubObservables.get(hubUrl) as Subject<{ key: string, response: T }>;
     }
 
-    const observable = new Observable<{ key: string, response: T }>((observer) => {
-      const connection = this.hubConnections.get(hubUrl);
+    const connection = this.hubConnections.get(hubUrl);
+    if (!connection) {
+      throw new Error(`Hub connection for ${hubUrl} is not initialized.`);
+    }
 
-      if (!connection) {
-        throw new Error(`Hub connection for ${hubUrl} is not initialized.`);
-      }
+    const subject = new Subject<{ key: string, response: T }>();
 
-      const handler = (key: string, response: T) => {
-        console.log(`Received statistics for key: ${key}`, response);
-        observer.next({ key, response });
-      };
+    const handler = (key: string, response: T) => {
+      subject.next({ key, response });
+    };
 
-      connection.on('ReceiveStatistics', handler);
+    connection.on('ReceiveStatistics', handler);
 
-      return () => {
+    subject.subscribe({
+      complete: () => {
         connection.off('ReceiveStatistics', handler);
-      };
+      },
     });
 
-    this.receiveStatisticsHubObservables.set(hubUrl, observable);
+    this.receiveStatisticsHubObservables.set(hubUrl, subject);
 
-    return observable;
+    return subject;
   }
 
-  startListen(hubUrl: string, key: string): void {
+  startListen(hubUrl: string, key: string, getInitial = true): void {
     const connection = this.hubConnections.get(hubUrl);
 
     if (!connection) {
       throw new Error(`Hub connection for ${hubUrl} is not initialized.`);
     }
 
-    connection.invoke('StartListen', key).catch((err) => {
+    connection.invoke('StartListen', key, getInitial).catch((err) => {
       this.errorHandler.handleHubError(err);
     });
   }

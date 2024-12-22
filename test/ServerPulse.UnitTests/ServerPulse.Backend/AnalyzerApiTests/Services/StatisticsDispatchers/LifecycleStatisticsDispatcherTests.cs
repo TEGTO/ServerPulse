@@ -71,7 +71,7 @@ namespace AnalyzerApi.Services.StatisticsDispatchers.Tests
         {
             // Arrange
             var key = "testKey";
-            var mockStatistics = new ServerLifecycleStatistics { IsAlive = true };
+            var mockStatistics = new ServerLifecycleStatistics { IsAlive = true, DataExists = true };
             var mockConfigurationEvent = new ConfigurationEventWrapper
             {
                 Id = "someId",
@@ -107,7 +107,7 @@ namespace AnalyzerApi.Services.StatisticsDispatchers.Tests
         {
             // Arrange
             var key = "testKey";
-            var mockStatistics = new ServerLifecycleStatistics { IsAlive = false };
+            var mockStatistics = new ServerLifecycleStatistics { IsAlive = false, DataExists = false, };
 
             mockMediator.Setup(m => m.Send(It.IsAny<BuildStatisticsCommand<ServerLifecycleStatistics>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(mockStatistics);
@@ -128,7 +128,7 @@ namespace AnalyzerApi.Services.StatisticsDispatchers.Tests
         {
             // Arrange
             var key = "testKey";
-            var mockStatistics = new ServerLifecycleStatistics { IsAlive = false, };
+            var mockStatistics = new ServerLifecycleStatistics { IsAlive = false, DataExists = false, };
             var pulseEvents = GeneratePulseEvents([true, true, true], 200, key);
             var mockConfigurationEvent = new ConfigurationEventWrapper
             {
@@ -160,7 +160,7 @@ namespace AnalyzerApi.Services.StatisticsDispatchers.Tests
         {
             // Arrange
             var key = "testKey";
-            var mockStatistics = new ServerLifecycleStatistics { IsAlive = false };
+            var mockStatistics = new ServerLifecycleStatistics { IsAlive = false, DataExists = false, };
             var pulseEvents = GeneratePulseEvents([true, true, true], 200, key);
 
             mockMediator.Setup(m => m.Send(It.IsAny<BuildStatisticsCommand<ServerLifecycleStatistics>>(), It.IsAny<CancellationToken>()))
@@ -189,7 +189,7 @@ namespace AnalyzerApi.Services.StatisticsDispatchers.Tests
             var key = "testKey";
             var initialInterval = 500;
             var updatedInterval = 1000;
-            var mockStatistics = new ServerLifecycleStatistics { IsAlive = true };
+            var mockStatistics = new ServerLifecycleStatistics { IsAlive = true, DataExists = true, };
             var initialConfig = new ConfigurationEventWrapper
             {
                 Id = "someId",
@@ -229,7 +229,7 @@ namespace AnalyzerApi.Services.StatisticsDispatchers.Tests
         {
             // Arrange
             var key = "testKey";
-            var mockStatistics = new ServerLifecycleStatistics { IsAlive = true };
+            var mockStatistics = new ServerLifecycleStatistics { IsAlive = true, DataExists = true, };
             var initialConfig = new ConfigurationEventWrapper
             {
                 Id = "someId",

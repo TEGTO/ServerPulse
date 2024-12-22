@@ -1,8 +1,8 @@
 import { Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
 import { Store } from "@ngrx/store";
-import { catchError, filter, map, mergeMap, of, switchMap, tap, withLatestFrom } from "rxjs";
-import { AnalyzerApiService, getLoadAmountStatisticsInRange, getLoadAmountStatisticsInRangeFailure, getLoadAmountStatisticsInRangeSuccess, mapServerCustomStatisticsResponseToServerCustomStatistics, mapServerLifecycleStatisticsResponseToServerLifecycleStatistics, mapServerLoadStatisticsResponseToServerLoadStatistics, receiveCustomStatisticsFailure, receiveCustomStatisticsSuccess, receiveLifecycleStatisticsFailure, receiveLifecycleStatisticsSuccess, receiveLoadStatisticsFailure, receiveLoadStatisticsSuccess, ServerCustomStatisticsResponse, ServerLifecycleStatisticsResponse, ServerLoadStatisticsResponse, SignalStatisticsService, startCustomStatisticsReceiving, startLifecycleStatisticsReceiving, startLoadStatisticsReceiving, stopCustomStatisticsReceiving, stopLifecycleStatisticsReceiving, stopLoadStatisticsReceiving } from "..";
+import { catchError, filter, map, mergeMap, of, switchMap, withLatestFrom } from "rxjs";
+import { AnalyzerApiService, getLoadAmountStatisticsInRange, getLoadAmountStatisticsInRangeFailure, getLoadAmountStatisticsInRangeSuccess, mapServerCustomStatisticsResponseToServerCustomStatistics, mapServerLifecycleStatisticsResponseToServerLifecycleStatistics, mapServerLoadStatisticsResponseToServerLoadStatistics, receiveCustomStatisticsFailure, receiveCustomStatisticsSuccess, receiveLifecycleStatisticsFailure, receiveLifecycleStatisticsSuccess, receiveLoadStatisticsFailure, receiveLoadStatisticsSuccess, ServerCustomStatisticsResponse, ServerLifecycleStatisticsResponse, ServerLoadStatisticsResponse, SignalStatisticsService, startCustomStatisticsReceiving, startLifecycleStatisticsReceiving, startLoadStatisticsReceiving, stopCustomStatisticsReceiving, stopLifecycleStatisticsReceiving, stopLoadKeyListening } from "..";
 import { environment } from "../../../../environment/environment";
 import { selectAuthData } from "../../authentication";
 import { SnackbarManager, TimeSpan } from "../../shared";
@@ -14,6 +14,10 @@ export class AnalyzerEffects {
     private readonly activeLifecycleStatisticsListeners = new Set<string>();
     private readonly activeLoadStatisticsListeners = new Set<string>();
     private readonly activeCustomStatisticsListeners = new Set<string>();
+
+    get maxAmountOfSimultaneousConnections(): number {
+        return environment.maxAmountOfSlotsPerUser;
+    }
 
     constructor(
         private readonly actions$: Actions,
@@ -36,12 +40,13 @@ export class AnalyzerEffects {
                 }
                 return true;
             }),
-            switchMap(([action, authData]) => {
+            mergeMap(([action, authData]) => {
                 const hubUrl = environment.lifecycleStatisticsHub;
 
                 return this.signalStatistics.startConnection(hubUrl, authData.authToken.accessToken ?? "").pipe(
-                    switchMap(() => {
-                        this.signalStatistics.startListen(hubUrl, action.key);
+                    mergeMap(() => {
+                        this.signalStatistics.startListen(hubUrl, action.key, action.getInitial ?? true);
+                        this.activeLifecycleStatisticsListeners.add(action.key);
 
                         const receiveResponse = this.signalStatistics
                             .receiveStatistics<ServerLifecycleStatisticsResponse>(hubUrl)
@@ -65,7 +70,7 @@ export class AnalyzerEffects {
                         return of(receiveLifecycleStatisticsFailure({ error: error.message }));
                     })
                 );
-            })
+            }, this.maxAmountOfSimultaneousConnections)
         )
     );
     receiveLifecycleStatisticsFailure$ = createEffect(() =>
@@ -111,12 +116,11 @@ export class AnalyzerEffects {
                 const hubUrl = environment.loadStatisticsHub;
 
                 return this.signalStatistics.startConnection(hubUrl, authData.authToken.accessToken ?? "").pipe(
-                    tap(() => {
-                        this.signalStatistics.startListen(hubUrl, action.key);
+                    mergeMap(() => {
+                        this.signalStatistics.startListen(hubUrl, action.key, action.getInitial ?? true);
                         this.activeLoadStatisticsListeners.add(action.key);
-                    }),
-                    mergeMap(() =>
-                        this.signalStatistics.receiveStatistics<ServerLoadStatisticsResponse>(hubUrl).pipe(
+
+                        return this.signalStatistics.receiveStatistics<ServerLoadStatisticsResponse>(hubUrl).pipe(
                             map((message) => {
                                 const statistics = mapServerLoadStatisticsResponseToServerLoadStatistics(message.response);
                                 return receiveLoadStatisticsSuccess({ key: message.key, statistics });
@@ -125,13 +129,14 @@ export class AnalyzerEffects {
                                 of(receiveLoadStatisticsFailure({ error: error.message }))
                             )
                         )
+                    }
+
                     ),
                     catchError((error) => of(receiveLoadStatisticsFailure({ error: error.message })))
                 );
-            }, 3)
+            }, this.maxAmountOfSimultaneousConnections)
         )
     );
-
     receiveLoadStatisticsFailure$ = createEffect(() =>
         this.actions$.pipe(
             ofType(receiveLoadStatisticsFailure),
@@ -143,9 +148,9 @@ export class AnalyzerEffects {
         { dispatch: false }
     );
 
-    stopLoadStatisticsReceiving$ = createEffect(() =>
+    stopLoadKeyListening$ = createEffect(() =>
         this.actions$.pipe(
-            ofType(stopLoadStatisticsReceiving),
+            ofType(stopLoadKeyListening),
             switchMap((action) => {
                 this.signalStatistics.stopListen(environment.loadStatisticsHub, action.key);
                 this.activeLoadStatisticsListeners.delete(action.key);
@@ -172,16 +177,16 @@ export class AnalyzerEffects {
 
                 return true;
             }),
-            switchMap(([action, authData]) => {
+            mergeMap(([action, authData]) => {
                 const hubUrl = environment.customStatisticsHub;
 
                 return this.signalStatistics.startConnection(hubUrl, authData.authToken.accessToken ?? "").pipe(
-                    switchMap(() => {
-                        this.signalStatistics.startListen(hubUrl, action.key);
+                    mergeMap(() => {
+                        this.signalStatistics.startListen(hubUrl, action.key, action.getInitial ?? true);
+                        this.activeCustomStatisticsListeners.add(action.key);
 
-                        const receiveResponse = this.signalStatistics
-                            .receiveStatistics<ServerCustomStatisticsResponse>(hubUrl)
-                            .pipe(
+                        return this.signalStatistics
+                            .receiveStatistics<ServerCustomStatisticsResponse>(hubUrl).pipe(
                                 map((message) => {
                                     const statistics = mapServerCustomStatisticsResponseToServerCustomStatistics(
                                         message.response
@@ -192,16 +197,12 @@ export class AnalyzerEffects {
                                     of(receiveCustomStatisticsFailure({ error: error.message }))
                                 )
                             );
-
-                        this.activeCustomStatisticsListeners.add(action.key);
-
-                        return receiveResponse;
                     }),
                     catchError((error) => {
                         return of(receiveCustomStatisticsFailure({ error: error.message }));
                     })
                 );
-            })
+            }, this.maxAmountOfSimultaneousConnections)
         )
     );
     receiveCustomStatisticsFailure$ = createEffect(() =>
