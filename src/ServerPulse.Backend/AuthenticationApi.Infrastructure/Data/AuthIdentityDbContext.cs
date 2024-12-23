@@ -38,6 +38,7 @@ namespace AuthenticationApi.Infrastructure.Data
                     entry.Entity.UpdatedAtUtc = DateTime.UtcNow;
                 }
             }
+
             return base.SaveChangesAsync(cancellationToken);
         }
     }

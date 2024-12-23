@@ -69,7 +69,7 @@ export const receiveCustomStatisticsFailure = createAction(
 
 //#endregion
 
-//#region Loaf Amount Statistics
+//#region Load Amount Statistics
 
 export const getLoadAmountStatisticsInRange = createAction(
     '[Statistics] Get Load Amount Statistics In Range',

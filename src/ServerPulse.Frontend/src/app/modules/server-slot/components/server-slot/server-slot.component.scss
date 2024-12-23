@@ -71,31 +71,6 @@
                 overflow: hidden;
                 text-overflow: ellipsis;
                 text-wrap: nowrap;
-
-                .name__input {
-                    min-width: utils.pxToRem(130);
-                    font-size: inherit;
-                    font-weight: inherit;
-                    overflow: inherit;
-                    text-overflow: inherit;
-                    text-wrap: inherit;
-                    border: none;
-                    outline: none;
-                }
-
-                .name__input.editable {
-                    border: 2px solid colors.$primary;
-                    cursor: text;
-                }
-
-                .name__input-sizer {
-                    position: absolute;
-                    visibility: hidden;
-                    height: 0;
-                    white-space: nowrap;
-                    font-size: inherit;
-                    font-weight: inherit;
-                }
             }
         }
     }

@@ -40,12 +40,8 @@
             </div>
 
             <div class="center-group__name">
-                <input #slotInput [ngStyle]="{'width': (inputWidth$ | async) + 'px'}" [formControl]="inputControl"
-                    (blur)="onBlur()" class="name__input"
-                    [ngClass]="{'editable': (inputIsEditable$ | async), 'non-editable': (inputIsEditable$ | async) === false}"
-                    [readonly]="(inputIsEditable$ | async) === false" (dblclick)="makeInputEditable()"
-                    placeholder="Enter slot name" />
-                <span #textSizer class="name__input-sizer">{{ inputControl.value }}</span>
+                <app-server-slot-name-changer [serverSlot]="serverSlot"
+                    [inputIsEditable$]="inputIsEditable$"></app-server-slot-name-changer>
             </div>
         </div>
 

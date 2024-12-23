@@ -10,6 +10,17 @@ export const selectLifecycleStatisticsByKey = (key: string) => createSelector(
     (state: ServerLifecycleStatisticsState) => state.statisticsMap.get(key) ?? []
 );
 
+export const selectLastLifecycleStatisticsByKey = (key: string) => createSelector(
+    selectServerLifecycleStatisticsState,
+    (state: ServerLifecycleStatisticsState) => {
+        const statistics = state.statisticsMap.get(key);
+        if (statistics && statistics.length > 0) {
+            return statistics[statistics.length - 1] ?? null;
+        }
+        return null;
+    }
+);
+
 //#endregion
 
 //#region Load Statistics

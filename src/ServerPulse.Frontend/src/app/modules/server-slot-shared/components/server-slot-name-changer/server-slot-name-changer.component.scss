@@ -1,0 +1,27 @@
+@use 'colors' as colors;
+@use 'utils' as utils;
+
+.name-input {
+    min-width: utils.pxToRem(130);
+    font-size: inherit;
+    font-weight: inherit;
+    overflow: inherit;
+    text-overflow: inherit;
+    text-wrap: inherit;
+    border: none;
+    outline: none;
+}
+
+.name-input.editable {
+    border: 2px solid colors.$primary;
+    cursor: text;
+}
+
+.name-input-sizer {
+    position: absolute;
+    visibility: hidden;
+    height: 0;
+    white-space: nowrap;
+    font-size: inherit;
+    font-weight: inherit;
+}

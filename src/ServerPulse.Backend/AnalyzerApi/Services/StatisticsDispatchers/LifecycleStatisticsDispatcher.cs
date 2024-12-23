@@ -6,33 +6,38 @@ using AnalyzerApi.Infrastructure.Models.Wrappers;
 using AnalyzerApi.Services.Receivers.Event;
 using MediatR;
 using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("AnalyzerApiTests")]
 namespace AnalyzerApi.Services.StatisticsDispatchers
 {
     public sealed class LifecycleStatisticsDispatcher : StatisticsDispatcher<ServerLifecycleStatistics, PulseEventWrapper>
     {
-        private readonly IEventReceiver<ConfigurationEventWrapper> confReceiver;
-        private readonly ConcurrentDictionary<string, (PeriodicTimer Timer, int ServerUpdateInterval, bool IsAlive)> listenerState = new();
-        private readonly int sendPeriodInMilliseconds;
+        internal sealed record ListenerState(PeriodicTimer Timer, bool IsAlive);
+
+        private readonly IEventReceiver<ConfigurationEventWrapper> cnfReceiver;
+        private readonly ConcurrentDictionary<string, ListenerState> listenerState = new();
+        private readonly int minimalSendPeriodInMilliseconds;
 
         public LifecycleStatisticsDispatcher(
             IEventReceiver<PulseEventWrapper> receiver,
-            IEventReceiver<ConfigurationEventWrapper> confReceiver,
+            IEventReceiver<ConfigurationEventWrapper> cnfReceiver,
             IMediator mediator,
             IConfiguration configuration,
             ILogger<LifecycleStatisticsDispatcher> logger)
             : base(receiver, mediator, logger)
         {
-            this.confReceiver = confReceiver;
-            sendPeriodInMilliseconds = int.Parse(configuration[Configuration.STATISTICS_COLLECT_INTERVAL_IN_MILLISECONDS]!);
+            this.cnfReceiver = cnfReceiver;
+            minimalSendPeriodInMilliseconds = int.Parse(configuration[Configuration.STATISTICS_COLLECT_INTERVAL_IN_MILLISECONDS]!);
         }
 
         protected override Task[] DispatchingTasks(string key, CancellationToken cancellationToken)
         {
             return
             [
-                MonitorPulseEventsAsync(key, cancellationToken),
-                SendStatisticsAsync(key, cancellationToken)
+                SendStatisticsPeriodicallyAsync(key, cancellationToken),
+                MonitorPulseEventAsync(key, cancellationToken),
+                MonitorConfigurationEventAsync(key, cancellationToken)
             ];
         }
 
@@ -46,39 +51,63 @@ namespace AnalyzerApi.Services.StatisticsDispatchers
 
         #region Private Helpers
 
-        private async Task SendStatisticsAsync(string key, CancellationToken cancellationToken)
+        private async Task SendStatisticsPeriodicallyAsync(string key, CancellationToken cancellationToken)
         {
-            listenerState[key] = (new PeriodicTimer(TimeSpan.FromMilliseconds(sendPeriodInMilliseconds)), 1000, true);
+            await ConfigureListenerStateAsync(key, cancellationToken);
 
             while (await listenerState[key].Timer.WaitForNextTickAsync(cancellationToken))
             {
-                var (timer, updateInterval, isAlive) = listenerState[key];
-
-                if (isAlive)
-                {
-                    var statistics = await mediator.Send(new BuildStatisticsCommand<ServerLifecycleStatistics>(key), cancellationToken);
-                    listenerState[key] = (timer, updateInterval, statistics.IsAlive);
-                    await mediator.Send(new SendStatisticsCommand<ServerLifecycleStatistics>(key, statistics), cancellationToken);
-                }
-
-                var cnf = await confReceiver.GetLastEventByKeyAsync(key, cancellationToken);
-                if (cnf != null)
-                {
-                    listenerState[key] = (timer, (int)cnf.ServerKeepAliveInterval.TotalMilliseconds, isAlive);
-                }
-
-                await Task.Delay(listenerState[key].ServerUpdateInterval / 2, cancellationToken);
+                await SendStatisticsAsync(key, cancellationToken);
             }
         }
 
-        private async Task MonitorPulseEventsAsync(string key, CancellationToken cancellationToken)
+        private async Task ConfigureListenerStateAsync(string key, CancellationToken cancellationToken)
+        {
+            listenerState[key] = new ListenerState(new PeriodicTimer(TimeSpan.FromMilliseconds(minimalSendPeriodInMilliseconds)), true);
+
+            var configuration = await cnfReceiver.GetLastEventByKeyAsync(key, cancellationToken);
+            HandleConfigurationEvent(key, configuration);
+        }
+
+        private async Task MonitorPulseEventAsync(string key, CancellationToken cancellationToken)
         {
             await foreach (var pulse in receiver.GetEventStreamAsync(key, cancellationToken))
             {
-                if (listenerState.TryGetValue(key, out var state))
-                {
-                    listenerState[key] = (state.Timer, state.ServerUpdateInterval, pulse.IsAlive);
-                }
+                await HandlePulseEventAsync(key, pulse, cancellationToken);
+            }
+        }
+
+        private async Task MonitorConfigurationEventAsync(string key, CancellationToken cancellationToken)
+        {
+            await foreach (var configuration in cnfReceiver.GetEventStreamAsync(key, cancellationToken))
+            {
+                HandleConfigurationEvent(key, configuration);
+            }
+        }
+
+        private async Task SendStatisticsAsync(string key, CancellationToken cancellationToken)
+        {
+            if (!listenerState.TryGetValue(key, out var state)) return;
+
+            var statistics = await mediator.Send(new BuildStatisticsCommand<ServerLifecycleStatistics>(key), cancellationToken);
+            listenerState[key] = state with { IsAlive = statistics.IsAlive };
+
+            await mediator.Send(new SendStatisticsCommand<ServerLifecycleStatistics>(key, statistics), cancellationToken);
+        }
+
+        private void HandleConfigurationEvent(string key, ConfigurationEventWrapper? configuration)
+        {
+            if (configuration == null || !listenerState.TryGetValue(key, out var state)) return;
+
+            var newPeriod = Math.Max(minimalSendPeriodInMilliseconds, (int)configuration.ServerKeepAliveInterval.TotalMilliseconds / 2);
+            state.Timer.Period = TimeSpan.FromMilliseconds(newPeriod);
+        }
+
+        private async Task HandlePulseEventAsync(string key, PulseEventWrapper? pulse, CancellationToken cancellationToken)
+        {
+            if (listenerState.TryGetValue(key, out var state) && pulse != null && state.IsAlive != pulse.IsAlive)
+            {
+                await SendStatisticsAsync(key, cancellationToken);
             }
         }
 

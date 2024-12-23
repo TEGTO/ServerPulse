@@ -74,7 +74,7 @@ namespace AnalyzerApi.Controllers.Tests
                 .ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await controller.GetDailyLoadStatistics(key, CancellationToken.None);
+            var result = await controller.GetDailyLoadAmountStatistics(key, CancellationToken.None);
 
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(result.Result);

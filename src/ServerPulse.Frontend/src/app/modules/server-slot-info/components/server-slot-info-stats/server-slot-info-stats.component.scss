@@ -1,0 +1,102 @@
+ @use 'colors' as colors;
+ @use 'utils' as utils;
+
+ @keyframes glow {
+     0% {
+         box-shadow: 0 0 2px var(--color), 0 0 4px var(--color), 0 0 6px var(--color), 0 0 8px var(--color);
+     }
+
+     100% {
+         box-shadow: 0 0 4px var(--color), 0 0 8px var(--color), 0 0 12px var(--color), 0 0 16px var(--color);
+     }
+ }
+
+ @mixin indicator-color($color) {
+     background-color: $color;
+     box-shadow: 0 0 2px $color, 0 0 4px $color, 0 0 6px $color, 0 0 8px $color;
+ }
+
+ @mixin background-shadow-box() {
+     padding: 2rem;
+     box-shadow: 2px 2px 7px 1px rgba(0, 0, 0, 0.1);
+ }
+
+ .statistics__content {
+     width: 100%;
+     display: flex;
+     flex-direction: row;
+     align-items: flex-start;
+     gap: utils.pxToRem(32);
+
+     .content__left {
+         min-width: utils.pxToRem(400);
+         @include background-shadow-box();
+         display: flex;
+         flex-direction: column;
+         font-size: utils.pxToRem(20);
+         gap: utils.pxToRem(16);
+
+         &>* {
+             padding-bottom: utils.pxToRem(10);
+         }
+
+         .left__status {
+             display: flex;
+             flex-direction: row;
+             align-items: center;
+             gap: utils.pxToRem(10);
+
+             .status__illumination {
+                 .illumination__indicator {
+                     display: inline-block;
+                     width: utils.pxToRem(10);
+                     height: utils.pxToRem(10);
+                     border-radius: 50%;
+                     margin-bottom: utils.pxToRem(2);
+                     vertical-align: middle;
+                 }
+
+                 .illumination__indicator.green {
+                     --color: green;
+                     @include indicator-color(green);
+                     animation: glow 1.5s infinite alternate;
+                 }
+
+                 .illumination__indicator.red {
+                     --color: red;
+                     @include indicator-color(red);
+                     animation: glow 1.5s infinite alternate;
+                 }
+
+                 .illumination__indicator.grey {
+                     --color: grey;
+                     @include indicator-color(grey);
+                 }
+
+             }
+         }
+     }
+
+     .content__right {
+         @include background-shadow-box();
+         padding: utils.pxToRem(0);
+         width: 100%;
+         max-height: utils.pxToRem(353);
+         height: utils.pxToRem(353);
+         overflow-y: auto;
+         overflow-x: auto;
+     }
+ }
+
+ th,
+ td {
+     max-width: utils.pxToRem(300);
+     overflow: hidden;
+     text-overflow: ellipsis;
+     white-space: wrap;
+ }
+
+ ::-webkit-scrollbar {
+     width: utils.pxToRem(10) !important;
+     height: utils.pxToRem(10) !important;
+ }
