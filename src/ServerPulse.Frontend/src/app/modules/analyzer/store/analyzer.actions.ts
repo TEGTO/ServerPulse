@@ -90,3 +90,17 @@ export const addLoadEventToLoadAmountStatistics = createAction(
 );
 
 //#endregion
+
+//#region Slot Statistics
+
+export const downloadSlotStatistics = createAction(
+    '[Statistics] Download Slot Statistics',
+    props<{ key: string }>()
+);
+export const downLoadSlotStatisticsFailure = createAction(
+    '[Statistics] Download Slot Statistics Failure',
+    props<{ error: any }>()
+);
+
+
+//#endregion

@@ -1,6 +1,8 @@
+@use 'utils' as utils;
+
 .close-button {
     position: absolute;
-    right: 10px;
+    right: utils.pxToRem(10);
     z-index: 1;
 }
 
@@ -24,6 +26,6 @@
 }
 
 ::-webkit-scrollbar {
-    width: 10px !important;
-    height: 10px !important;
+    width: utils.pxToRem(10) !important;
+    height: utils.pxToRem(10) !important;
 }

@@ -63,7 +63,7 @@ builder.Services.AddOutputCache((options) =>
 
     var expiryTime = int.TryParse(
         builder.Configuration[Configuration.CACHE_EXPIRY_IN_MINUTES],
-        out var getByEmailExpiry) ? getByEmailExpiry : 1;
+        out var time) ? time : 1;
 
     options.SetOutputCachePolicy("GetLoadEventsInDataRangePolicy", duration: TimeSpan.FromMinutes(expiryTime), types: typeof(MessagesInRangeRequest));
     options.SetOutputCachePolicy("GetDailyLoadAmountStatisticsPolicy", duration: TimeSpan.FromMinutes(expiryTime));

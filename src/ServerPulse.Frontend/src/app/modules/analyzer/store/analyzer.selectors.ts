@@ -32,6 +32,17 @@ export const selectLoadStatisticsByKey = (key: string) => createSelector(
     (state: ServerLoadStatisticsState) => state.statisticsMap.get(key) ?? []
 );
 
+export const selectLastLoadStatisticsByKey = (key: string) => createSelector(
+    selectServerLoadStatisticsState,
+    (state: ServerLoadStatisticsState) => {
+        const statistics = state.statisticsMap.get(key);
+        if (statistics && statistics.length > 0) {
+            return statistics[statistics.length - 1] ?? null;
+        }
+        return null;
+    }
+);
+
 export const selectLastLoadEventByKey = (key: string) => createSelector(
     selectServerLoadStatisticsState,
     (state: ServerLoadStatisticsState) => {
@@ -42,6 +53,7 @@ export const selectLastLoadEventByKey = (key: string) => createSelector(
         return null;
     }
 );
+
 //#endregion
 
 //#region Custom
@@ -51,6 +63,17 @@ export const selectServerCustomStatisticsState = createFeatureSelector<ServerCus
 export const selectCustomStatisticsByKey = (key: string) => createSelector(
     selectServerCustomStatisticsState,
     (state: ServerCustomStatisticsState) => state.statisticsMap.get(key) ?? []
+);
+
+export const selectLastCustomEventByKey = (key: string) => createSelector(
+    selectServerCustomStatisticsState,
+    (state: ServerCustomStatisticsState) => {
+        const statistics = state.statisticsMap.get(key);
+        if (statistics && statistics.length > 0) {
+            return statistics[statistics.length - 1]?.lastEvent ?? null;
+        }
+        return null;
+    }
 );
 
 //#endregion

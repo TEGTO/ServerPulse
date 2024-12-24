@@ -8,6 +8,11 @@ export const selectLoadEvents = createSelector(
     (state: SlotInfoState) => state.loadEvents
 );
 
+export const selectCustomEvents = createSelector(
+    selectSlotInfoState,
+    (state: SlotInfoState) => state.customEvents
+);
+
 export const selectSelectedDate = createSelector(
     selectSlotInfoState,
     (state: SlotInfoState) => state.selectedDate
@@ -16,6 +21,18 @@ export const selectSelectedDate = createSelector(
 export const selectReadFromDate = createSelector(
     selectSlotInfoState,
     (state: SlotInfoState) => state.readFromDate
+);
+
+export const checkIfLoadEventAlreadyExistsById = (id: string) => createSelector(
+    selectSlotInfoState,
+    (state: SlotInfoState) => {
+        return state.loadEvents.filter(x => x.id === id).length > 0
+    }
+);
+
+export const selectCustomReadFromDate = createSelector(
+    selectSlotInfoState,
+    (state: SlotInfoState) => state.customReadFromDate
 );
 
 export const selectLoadAmountStatistics = createSelector(

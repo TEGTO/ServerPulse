@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { BehaviorSubject, interval, Subject, takeUntil, tap } from 'rxjs';
-import { getDailyLoadAmountStatistics, getLoadAmountStatisticsInRange, isSelectedDateToday, selectLoadAmountStatistics, selectSecondaryLoadAmountStatistics, selectSelectedDate, setReadFromDate, setSelectedDate } from '../..';
+import { BehaviorSubject, filter, interval, Subject, takeUntil, tap } from 'rxjs';
+import { checkIfLoadEventAlreadyExistsById, getDailyLoadAmountStatistics, getLoadAmountStatisticsInRange, isSelectedDateToday, selectLoadAmountStatistics, selectSecondaryLoadAmountStatistics, selectSelectedDate, setSelectedDate } from '../..';
 import { LoadAmountStatistics, MessageAmountInRangeRequest, selectLastLoadEventByKey } from '../../../analyzer';
 import { ActivityChartType } from '../../../chart';
 import { TimeSpan } from '../../../shared';
@@ -126,6 +126,9 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
     this.store.select(selectLastLoadEventByKey(this.slotKey))
       .pipe(
         takeUntil(this.destroy$),
+        filter(event => {
+          return event !== null && !checkIfLoadEventAlreadyExistsById(event?.id)
+        }),
         tap(event => {
           if (event) {
             this.updateControlTime();
@@ -155,19 +158,21 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
   }
 
   private generateTimeSeries(fromDate: Date, toDate: Date, intervalTime: number, statistics: Map<number, number>): [number, number][] {
-    const series: [number, number][] = [];
     const periods = Math.ceil((toDate.getTime() - fromDate.getTime()) / intervalTime);
 
-    for (let i = 0; i <= periods; i++) {
+    // Generate the series atomically
+    const series = Array.from({ length: periods + 1 }, (_, i) => {
       const localFrom = fromDate.getTime() + i * intervalTime;
       let count = 0;
+
       for (const [timestamp, amount] of statistics) {
         if (timestamp >= localFrom && timestamp < localFrom + intervalTime) {
           count += amount;
         }
       }
-      series.push([localFrom, count]);
-    }
+
+      return [localFrom, count] as [number, number];
+    });
 
     return series;
   }
@@ -193,11 +198,15 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
 
     const selectedDate = new Date(chartData[dataPointIndex][0]);
 
-    const readFromDate = new Date(selectedDate);
-    readFromDate.setHours(23, 59, 59, 999);
+    let readFromDate = new Date(selectedDate);
+    if (isSelectedDateToday(selectedDate)) {
+      readFromDate = new Date();
+    }
+    else {
+      readFromDate.setHours(23, 59, 59, 999);
+    }
 
-    this.store.dispatch(setReadFromDate({ date: readFromDate }));
-    this.store.dispatch(setSelectedDate({ date: selectedDate }));
+    this.store.dispatch(setSelectedDate({ date: selectedDate, readFromDate: readFromDate }));
   }
 
   private addEventToChartData(loadTime: number, chartData: [number, number][], intervalTime: number): [number, number][] {

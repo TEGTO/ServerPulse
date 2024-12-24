@@ -1,11 +1,11 @@
 import { Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
 import { Store } from "@ngrx/store";
-import { catchError, filter, map, mergeMap, of, switchMap, withLatestFrom } from "rxjs";
-import { AnalyzerApiService, getLoadAmountStatisticsInRange, getLoadAmountStatisticsInRangeFailure, getLoadAmountStatisticsInRangeSuccess, mapServerCustomStatisticsResponseToServerCustomStatistics, mapServerLifecycleStatisticsResponseToServerLifecycleStatistics, mapServerLoadStatisticsResponseToServerLoadStatistics, receiveCustomStatisticsFailure, receiveCustomStatisticsSuccess, receiveLifecycleStatisticsFailure, receiveLifecycleStatisticsSuccess, receiveLoadStatisticsFailure, receiveLoadStatisticsSuccess, ServerCustomStatisticsResponse, ServerLifecycleStatisticsResponse, ServerLoadStatisticsResponse, SignalStatisticsService, startCustomStatisticsReceiving, startLifecycleStatisticsReceiving, startLoadStatisticsReceiving, stopCustomStatisticsReceiving, stopLifecycleStatisticsReceiving, stopLoadKeyListening } from "..";
+import { catchError, concatMap, filter, map, mergeMap, of, switchMap, withLatestFrom } from "rxjs";
+import { AnalyzerApiService, downloadSlotStatistics, downLoadSlotStatisticsFailure, getLoadAmountStatisticsInRange, getLoadAmountStatisticsInRangeFailure, getLoadAmountStatisticsInRangeSuccess, mapServerCustomStatisticsResponseToServerCustomStatistics, mapServerLifecycleStatisticsResponseToServerLifecycleStatistics, mapServerLoadStatisticsResponseToServerLoadStatistics, receiveCustomStatisticsFailure, receiveCustomStatisticsSuccess, receiveLifecycleStatisticsFailure, receiveLifecycleStatisticsSuccess, receiveLoadStatisticsFailure, receiveLoadStatisticsSuccess, ServerCustomStatisticsResponse, ServerLifecycleStatisticsResponse, ServerLoadStatisticsResponse, SignalStatisticsService, startCustomStatisticsReceiving, startLifecycleStatisticsReceiving, startLoadStatisticsReceiving, stopCustomStatisticsReceiving, stopLifecycleStatisticsReceiving, stopLoadKeyListening } from "..";
 import { environment } from "../../../../environment/environment";
 import { selectAuthData } from "../../authentication";
-import { SnackbarManager, TimeSpan } from "../../shared";
+import { JsonDownloader, SnackbarManager, TimeSpan } from "../../shared";
 
 @Injectable({
     providedIn: 'root'
@@ -25,6 +25,7 @@ export class AnalyzerEffects {
         private readonly store: Store,
         private readonly snackbarManager: SnackbarManager,
         private readonly signalStatistics: SignalStatisticsService,
+        private readonly jsonDownloader: JsonDownloader
     ) { }
 
     //#region Lifecycle Statistics
@@ -257,6 +258,39 @@ export class AnalyzerEffects {
             ofType(getLoadAmountStatisticsInRangeFailure),
             switchMap((action) => {
                 this.snackbarManager.openErrorSnackbar(["Failed to receive load amount statistics in range: " + action.error]);
+                return of();
+            })
+        ),
+        { dispatch: false }
+    );
+
+    //#endregion
+
+    //#region Slot Statistics
+
+    downloadSlotStatistics$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(downloadSlotStatistics),
+            concatMap((action) =>
+                this.apiService.getSlotStatistics(action.key).pipe(
+                    map((response) => {
+                        this.jsonDownloader.downloadInJson(response, `slot-data-${action.key}`);
+                        return of()
+                    }
+                    ),
+                    catchError((error) =>
+                        of(getLoadAmountStatisticsInRangeFailure({ error: error.message }))
+                    )
+                )
+            )
+        ),
+        { dispatch: false }
+    );
+    downLoadSlotStatisticsFailure$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(downLoadSlotStatisticsFailure),
+            switchMap((action) => {
+                this.snackbarManager.openErrorSnackbar(["Failed to download slot statistics : " + action.error]);
                 return of();
             })
         ),

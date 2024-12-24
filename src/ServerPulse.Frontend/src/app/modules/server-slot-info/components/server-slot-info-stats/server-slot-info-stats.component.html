@@ -36,7 +36,9 @@
             </div>
         </ng-container>
         <ng-template #loading>
-            <mat-progress-spinner [mode]="'indeterminate'" diameter="25"></mat-progress-spinner>
+            <div class="flex justify-center py-3 m-auto h-full items-center">
+                <mat-progress-spinner [mode]="'indeterminate'" diameter="50"></mat-progress-spinner>
+            </div>
         </ng-template>
     </section>
 
@@ -80,7 +82,7 @@
             </table>
         </ng-container>
         <ng-template #eventLoading>
-            <div class="flex justify-center py-3 m-auto h-80 items-center">
+            <div class="flex justify-center py-3 m-auto h-full items-center">
                 <mat-progress-spinner [mode]="'indeterminate'" diameter="100"></mat-progress-spinner>
             </div>
         </ng-template>

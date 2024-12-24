@@ -18,7 +18,7 @@ export class JsonDownloaderService implements JsonDownloader {
   }
 
   private convertToJsonFile(objectToDownload: any) {
-    const jsonString = JSON.stringify(objectToDownload);
+    const jsonString = JSON.stringify(objectToDownload, null, 2);
     const blob = new Blob([jsonString], { type: 'application/json' });
     return blob;
   }

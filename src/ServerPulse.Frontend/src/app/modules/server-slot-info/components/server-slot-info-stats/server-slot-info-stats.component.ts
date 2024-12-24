@@ -22,8 +22,7 @@ export class ServerSlotInfoStatsComponent implements OnInit, AfterViewInit, OnDe
   private readonly destroy$ = new Subject<void>();
 
   serverStatus: ServerStatus = ServerStatus.NoData;
-  previousDate: Date = new Date();
-
+  private previousDate: Date = new Date();
   readonly tableItemHeight = 65;
   private readonly tablePageAmount = 12;
 

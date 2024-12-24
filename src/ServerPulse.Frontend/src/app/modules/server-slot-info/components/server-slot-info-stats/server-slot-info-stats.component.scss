@@ -35,6 +35,8 @@
          flex-direction: column;
          font-size: utils.pxToRem(20);
          gap: utils.pxToRem(16);
+         max-height: utils.pxToRem(360);
+         height: utils.pxToRem(360);
 
          &>* {
              padding-bottom: utils.pxToRem(10);
@@ -81,8 +83,8 @@
          @include background-shadow-box();
          padding: utils.pxToRem(0);
          width: 100%;
-         max-height: utils.pxToRem(353);
-         height: utils.pxToRem(353);
+         max-height: utils.pxToRem(360);
+         height: utils.pxToRem(360);
          overflow-y: auto;
          overflow-x: auto;
      }

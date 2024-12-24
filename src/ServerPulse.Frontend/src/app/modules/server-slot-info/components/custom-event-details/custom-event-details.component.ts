@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
@@ -10,7 +11,7 @@ export class CustomEventDetailsComponent implements OnInit {
   public jsonData: { key: string, value: any }[] = [];
 
   constructor(
-    @Inject(MAT_DIALOG_DATA) private serializedEvent: string
+    @Inject(MAT_DIALOG_DATA) private readonly serializedEvent: string
   ) { }
 
   ngOnInit(): void {

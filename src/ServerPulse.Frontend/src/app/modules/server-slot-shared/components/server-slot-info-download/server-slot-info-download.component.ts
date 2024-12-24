@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { Store } from '@ngrx/store';
+import { downloadSlotStatistics } from '../../../analyzer';
 
 @Component({
   selector: 'app-server-slot-info-download',
@@ -13,6 +14,6 @@ export class ServerSlotInfoDownloadComponent {
   constructor(private readonly store: Store) { }
 
   downloadData() {
-
+    this.store.dispatch(downloadSlotStatistics({ key: this.slotKey }));
   }
 }
