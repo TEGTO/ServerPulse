@@ -21,3 +21,16 @@ export function mapServerLifecycleStatisticsResponseToServerLifecycleStatistics(
         lastPulseDateTimeUTC: response.lastPulseDateTimeUTC === null ? null : new Date(response.lastPulseDateTimeUTC),
     };
 }
+
+export function getDefaultServerLifecycleStatisticsResponse(): ServerLifecycleStatisticsResponse {
+    return {
+        id: "",
+        collectedDateUTC: new Date(),
+        isAlive: false,
+        dataExists: false,
+        serverLastStartDateTimeUTC: null,
+        serverUptime: null,
+        lastServerUptime: null,
+        lastPulseDateTimeUTC: null,
+    };
+}

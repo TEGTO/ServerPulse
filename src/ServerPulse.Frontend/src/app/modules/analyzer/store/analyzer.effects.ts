@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
 import { Store } from "@ngrx/store";
 import { catchError, concatMap, filter, map, mergeMap, of, switchMap, withLatestFrom } from "rxjs";
-import { AnalyzerApiService, downloadSlotStatistics, downLoadSlotStatisticsFailure, getLoadAmountStatisticsInRange, getLoadAmountStatisticsInRangeFailure, getLoadAmountStatisticsInRangeSuccess, mapServerCustomStatisticsResponseToServerCustomStatistics, mapServerLifecycleStatisticsResponseToServerLifecycleStatistics, mapServerLoadStatisticsResponseToServerLoadStatistics, receiveCustomStatisticsFailure, receiveCustomStatisticsSuccess, receiveLifecycleStatisticsFailure, receiveLifecycleStatisticsSuccess, receiveLoadStatisticsFailure, receiveLoadStatisticsSuccess, ServerCustomStatisticsResponse, ServerLifecycleStatisticsResponse, ServerLoadStatisticsResponse, SignalStatisticsService, startCustomStatisticsReceiving, startLifecycleStatisticsReceiving, startLoadStatisticsReceiving, stopCustomStatisticsReceiving, stopLifecycleStatisticsReceiving, stopLoadKeyListening } from "..";
+import { AnalyzerApiService, BaseStatisticsResponse, downloadSlotStatistics, downLoadSlotStatisticsFailure, getLoadAmountStatisticsInRange, getLoadAmountStatisticsInRangeFailure, getLoadAmountStatisticsInRangeSuccess, mapServerCustomStatisticsResponseToServerCustomStatistics, mapServerLifecycleStatisticsResponseToServerLifecycleStatistics, mapServerLoadStatisticsResponseToServerLoadStatistics, receiveCustomStatisticsFailure, receiveCustomStatisticsSuccess, receiveLifecycleStatisticsFailure, receiveLifecycleStatisticsSuccess, receiveLoadStatisticsFailure, receiveLoadStatisticsSuccess, ServerCustomStatisticsResponse, ServerLifecycleStatisticsResponse, ServerLoadStatisticsResponse, SignalStatisticsService, startCustomStatisticsReceiving, startLifecycleStatisticsReceiving, startLoadStatisticsReceiving, stopCustomStatisticsReceiving, stopLifecycleStatisticsReceiving, stopLoadKeyListening } from "..";
 import { environment } from "../../../../environment/environment";
 import { selectAuthData } from "../../authentication";
 import { JsonDownloader, SnackbarManager, TimeSpan } from "../../shared";
@@ -11,9 +12,11 @@ import { JsonDownloader, SnackbarManager, TimeSpan } from "../../shared";
     providedIn: 'root'
 })
 export class AnalyzerEffects {
-    private readonly activeLifecycleStatisticsListeners = new Set<string>();
-    private readonly activeLoadStatisticsListeners = new Set<string>();
-    private readonly activeCustomStatisticsListeners = new Set<string>();
+    private readonly activeListeners = {
+        lifecycle: new Set<string>(),
+        load: new Set<string>(),
+        custom: new Set<string>(),
+    };
 
     get maxAmountOfSimultaneousConnections(): number {
         return environment.maxAmountOfSlotsPerUser;
@@ -28,73 +31,101 @@ export class AnalyzerEffects {
         private readonly jsonDownloader: JsonDownloader
     ) { }
 
-    //#region Lifecycle Statistics
 
-    startLifecycleStatisticsReceiving$ = createEffect(() =>
-        this.actions$.pipe(
-            ofType(startLifecycleStatisticsReceiving),
+    //#region Generic Helpers
+
+    private handleStatisticsReceiving<T extends BaseStatisticsResponse>(
+        hubUrl: string,
+        actionType: any,
+        successAction: any,
+        failureAction: any,
+        activeListeners: Set<string>,
+        statisticsMapper: (response: T) => any
+    ) {
+        return this.actions$.pipe(
+            ofType(actionType),
             withLatestFrom(this.store.select(selectAuthData)),
             filter(([action]) => {
-                if (this.activeLifecycleStatisticsListeners.has(action.key)) {
-                    console.warn(`Listener for the key in lifecycle statistics hub already exists. Skipping duplicate.`);
+                if (activeListeners.has(action.key)) {
+                    console.warn(`Listener for the key in hub already exists. Skipping duplicate.`);
                     return false;
                 }
                 return true;
             }),
-            mergeMap(([action, authData]) => {
-                const hubUrl = environment.lifecycleStatisticsHub;
-
-                return this.signalStatistics.startConnection(hubUrl, authData.authToken.accessToken ?? "").pipe(
+            mergeMap(([action, authData]) =>
+                this.signalStatistics.startConnection(hubUrl, authData.authToken.accessToken ?? "").pipe(
                     mergeMap(() => {
                         this.signalStatistics.startListen(hubUrl, action.key, action.getInitial ?? true);
-                        this.activeLifecycleStatisticsListeners.add(action.key);
+                        activeListeners.add(action.key);
 
-                        const receiveResponse = this.signalStatistics
-                            .receiveStatistics<ServerLifecycleStatisticsResponse>(hubUrl)
-                            .pipe(
-                                map((message) => {
-                                    const statistics = mapServerLifecycleStatisticsResponseToServerLifecycleStatistics(
-                                        message.response
-                                    );
-                                    return receiveLifecycleStatisticsSuccess({ key: message.key, statistics });
-                                }),
-                                catchError((error) =>
-                                    of(receiveLifecycleStatisticsFailure({ error: error.message }))
-                                )
-                            );
-
-                        this.activeLifecycleStatisticsListeners.add(action.key);
-
-                        return receiveResponse;
+                        return this.signalStatistics.receiveStatistics<T>(hubUrl).pipe(
+                            map((message) =>
+                                successAction({
+                                    key: message.key,
+                                    statistics: statisticsMapper(message.response),
+                                })
+                            ),
+                            catchError((error) =>
+                                of(failureAction({ error: error.message }))
+                            )
+                        );
                     }),
-                    catchError((error) => {
-                        return of(receiveLifecycleStatisticsFailure({ error: error.message }));
-                    })
-                );
-            }, this.maxAmountOfSimultaneousConnections)
-        )
-    );
-    receiveLifecycleStatisticsFailure$ = createEffect(() =>
-        this.actions$.pipe(
-            ofType(receiveLifecycleStatisticsFailure),
-            switchMap((action) => {
-                this.snackbarManager.openErrorSnackbar(["Failed to receive statistics in lifecycle statistics hub: " + action.error]);
+                    catchError((error) =>
+                        of(failureAction({ error: error.message }))
+                    )
+                )
+            )
+        );
+    }
+
+    private handleFailure(failureAction: any, errorMessage: string) {
+        return this.actions$.pipe(
+            ofType(failureAction),
+            switchMap((action: any) => {
+                this.snackbarManager.openErrorSnackbar([`${errorMessage}: ${action.error}`]);
                 return of();
             })
-        ),
+        );
+    }
+
+    private handleStopListening(hubUrl: string, actionType: any, activeListeners: Set<string>) {
+        return this.actions$.pipe(
+            ofType(actionType),
+            switchMap((action: any) => {
+                this.signalStatistics.stopListen(hubUrl, action.key);
+                activeListeners.delete(action.key);
+                return of();
+            })
+        );
+    }
+
+    //#endregion
+
+    //#region Lifecycle Statistics
+
+    startLifecycleStatisticsReceiving$ = createEffect(() =>
+        this.handleStatisticsReceiving<ServerLifecycleStatisticsResponse>(
+            environment.lifecycleStatisticsHub,
+            startLifecycleStatisticsReceiving,
+            receiveLifecycleStatisticsSuccess,
+            receiveLifecycleStatisticsFailure,
+            this.activeListeners.lifecycle,
+            mapServerLifecycleStatisticsResponseToServerLifecycleStatistics
+        )
+    );
+
+    receiveLifecycleStatisticsFailure$ = createEffect(() => this.handleFailure(
+        receiveLifecycleStatisticsFailure,
+        "Failed to receive statistics in lifecycle statistics hub"
+    ),
         { dispatch: false }
     );
 
-    stopLifecycleStatisticsReceiving$ = createEffect(() =>
-        this.actions$.pipe(
-            ofType(stopLifecycleStatisticsReceiving),
-            switchMap((action) => {
-                this.signalStatistics.stopListen(environment.lifecycleStatisticsHub, action.key);
-                this.activeLifecycleStatisticsListeners.delete(action.key);
-
-                return of();
-            })
-        ),
+    stopLifecycleStatisticsReceiving$ = createEffect(() => this.handleStopListening(
+        environment.lifecycleStatisticsHub,
+        stopLifecycleStatisticsReceiving,
+        this.activeListeners.lifecycle
+    ),
         { dispatch: false }
     );
 
@@ -103,63 +134,25 @@ export class AnalyzerEffects {
     //#region Load Statistics
 
     startLoadStatisticsReceiving$ = createEffect(() =>
-        this.actions$.pipe(
-            ofType(startLoadStatisticsReceiving),
-            withLatestFrom(this.store.select(selectAuthData)),
-            filter(([action]) => {
-                if (this.activeLoadStatisticsListeners.has(action.key)) {
-                    console.warn(`Listener for the key in load statistics hub already exists. Skipping duplicate.`);
-                    return false;
-                }
-                return true;
-            }),
-            mergeMap(([action, authData]) => {
-                const hubUrl = environment.loadStatisticsHub;
-
-                return this.signalStatistics.startConnection(hubUrl, authData.authToken.accessToken ?? "").pipe(
-                    mergeMap(() => {
-                        this.signalStatistics.startListen(hubUrl, action.key, action.getInitial ?? true);
-                        this.activeLoadStatisticsListeners.add(action.key);
-
-                        return this.signalStatistics.receiveStatistics<ServerLoadStatisticsResponse>(hubUrl).pipe(
-                            map((message) => {
-                                const statistics = mapServerLoadStatisticsResponseToServerLoadStatistics(message.response);
-                                return receiveLoadStatisticsSuccess({ key: message.key, statistics });
-                            }),
-                            catchError((error) =>
-                                of(receiveLoadStatisticsFailure({ error: error.message }))
-                            )
-                        )
-                    }
-
-                    ),
-                    catchError((error) => of(receiveLoadStatisticsFailure({ error: error.message })))
-                );
-            }, this.maxAmountOfSimultaneousConnections)
+        this.handleStatisticsReceiving<ServerLoadStatisticsResponse>(
+            environment.loadStatisticsHub,
+            startLoadStatisticsReceiving,
+            receiveLoadStatisticsSuccess,
+            receiveLoadStatisticsFailure,
+            this.activeListeners.load,
+            mapServerLoadStatisticsResponseToServerLoadStatistics
         )
     );
-    receiveLoadStatisticsFailure$ = createEffect(() =>
-        this.actions$.pipe(
-            ofType(receiveLoadStatisticsFailure),
-            switchMap((action) => {
-                this.snackbarManager.openErrorSnackbar(["Failed to receive statistics in load statistics hub: " + action.error]);
-                return of();
-            })
-        ),
-        { dispatch: false }
+
+    receiveLoadStatisticsFailure$ = this.handleFailure(
+        receiveLoadStatisticsFailure,
+        "Failed to receive statistics in load statistics hub"
     );
 
-    stopLoadKeyListening$ = createEffect(() =>
-        this.actions$.pipe(
-            ofType(stopLoadKeyListening),
-            switchMap((action) => {
-                this.signalStatistics.stopListen(environment.loadStatisticsHub, action.key);
-                this.activeLoadStatisticsListeners.delete(action.key);
-
-                return of();
-            })
-        ),
-        { dispatch: false }
+    stopLoadKeyListening$ = this.handleStopListening(
+        environment.loadStatisticsHub,
+        stopLoadKeyListening,
+        this.activeListeners.load
     );
 
     //#endregion
@@ -167,72 +160,30 @@ export class AnalyzerEffects {
     //#region Custom Statistics
 
     startCustomStatisticsReceiving$ = createEffect(() =>
-        this.actions$.pipe(
-            ofType(startCustomStatisticsReceiving),
-            withLatestFrom(this.store.select(selectAuthData)),
-            filter(([action]) => {
-                if (this.activeCustomStatisticsListeners.has(action.key)) {
-                    console.warn(`Listener for the key in custom statistics hub already exists. Skipping duplicate.`);
-                    return false;
-                }
-
-                return true;
-            }),
-            mergeMap(([action, authData]) => {
-                const hubUrl = environment.customStatisticsHub;
-
-                return this.signalStatistics.startConnection(hubUrl, authData.authToken.accessToken ?? "").pipe(
-                    mergeMap(() => {
-                        this.signalStatistics.startListen(hubUrl, action.key, action.getInitial ?? true);
-                        this.activeCustomStatisticsListeners.add(action.key);
-
-                        return this.signalStatistics
-                            .receiveStatistics<ServerCustomStatisticsResponse>(hubUrl).pipe(
-                                map((message) => {
-                                    const statistics = mapServerCustomStatisticsResponseToServerCustomStatistics(
-                                        message.response
-                                    );
-                                    return receiveCustomStatisticsSuccess({ key: message.key, statistics });
-                                }),
-                                catchError((error) =>
-                                    of(receiveCustomStatisticsFailure({ error: error.message }))
-                                )
-                            );
-                    }),
-                    catchError((error) => {
-                        return of(receiveCustomStatisticsFailure({ error: error.message }));
-                    })
-                );
-            }, this.maxAmountOfSimultaneousConnections)
+        this.handleStatisticsReceiving<ServerCustomStatisticsResponse>(
+            environment.customStatisticsHub,
+            startCustomStatisticsReceiving,
+            receiveCustomStatisticsSuccess,
+            receiveCustomStatisticsFailure,
+            this.activeListeners.custom,
+            mapServerCustomStatisticsResponseToServerCustomStatistics
         )
     );
-    receiveCustomStatisticsFailure$ = createEffect(() =>
-        this.actions$.pipe(
-            ofType(receiveCustomStatisticsFailure),
-            switchMap((action) => {
-                this.snackbarManager.openErrorSnackbar(["Failed to receive statistics in custom statistics hub: " + action.error]);
-                return of();
-            })
-        ),
-        { dispatch: false }
+
+    receiveCustomStatisticsFailure$ = this.handleFailure(
+        receiveCustomStatisticsFailure,
+        "Failed to receive statistics in custom statistics hub"
     );
 
-    stopCustomStatisticsReceiving$ = createEffect(() =>
-        this.actions$.pipe(
-            ofType(stopCustomStatisticsReceiving),
-            switchMap((action) => {
-                this.signalStatistics.stopListen(environment.customStatisticsHub, action.key);
-                this.activeCustomStatisticsListeners.delete(action.key);
-
-                return of();
-            })
-        ),
-        { dispatch: false }
+    stopCustomStatisticsReceiving$ = this.handleStopListening(
+        environment.customStatisticsHub,
+        stopCustomStatisticsReceiving,
+        this.activeListeners.custom
     );
 
     //#endregion
 
-    //#region Loaf Amount Statistics
+    //#region Load Amount Statistics
 
     getLoadAmountStatisticsInRange$ = createEffect(() =>
         this.actions$.pipe(

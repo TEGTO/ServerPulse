@@ -89,7 +89,7 @@ namespace ServerMonitorApi.IntegrationTests
                 { "Kafka:LoadTopic", "LoadTopic_" },
                 { "Kafka:ProcessLoadEventTopic", "LoadEventProcessTopic" },
                 { "Kafka:CustomTopic", "CustomEventTopic_" },
-                { "ApiGateway", "http://apigateway:8080" },
+                { "ServerSlotApi:Url", "http://apigateway:8080" },
                 { "ServerSlotApi:Check", "/serverslot/check" },
             });
 

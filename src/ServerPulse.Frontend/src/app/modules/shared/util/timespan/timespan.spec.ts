@@ -29,10 +29,10 @@ describe('TimeSpan', () => {
 
     it('should return the correct hours, minutes, seconds, and milliseconds', () => {
         const timeSpan = new TimeSpan(1, 2, 3, 456);
-        expect(timeSpan.hours).toBe(1);
-        expect(timeSpan.minutes).toBe(2);
-        expect(timeSpan.seconds).toBe(3);
-        expect(timeSpan.milliseconds).toBe(456);
+        expect(timeSpan.toTotalHours.toFixed(4)).toBe("1.0343");
+        expect(timeSpan.toTotalMinutes.toFixed(4)).toBe("62.0576");
+        expect(timeSpan.toTotalSeconds.toFixed(4)).toBe("3723.4560");
+        expect(timeSpan.toTotalMilliseconds.toFixed(4)).toBe("3723456.0000");
     });
 
     it('should return a string in "hh:mm:ss" format', () => {

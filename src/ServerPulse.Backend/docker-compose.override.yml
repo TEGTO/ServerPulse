@@ -26,8 +26,6 @@ services:
       - EFCreateDatabase=${EFCreateDatabase}
       - ConnectionStrings__ServerSlotDb=${ConnectionStrings__ServerSlotDb}
       - SlotsPerUser=${SlotsPerUser}
-      - ServerMonitorApi__DeleteStatistics=${ServerMonitorApi__DeleteStatistics}
-      - ApiGateway=${ApiGateway}
       - AuthSettings__PublicKey=${AuthSettings__PublicKey}
       - AuthSettings__Audience=${AuthSettings__Audience}
       - AuthSettings__Issuer=${AuthSettings__Issuer}
@@ -42,7 +40,6 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
-      - ApiGateway=${ApiGateway}
       - Kafka__ClientId=${Kafka__ClientId__MonitorApi}
       - Kafka__BootstrapServers=${Kafka__BootstrapServers}
       - Kafka__AliveTopic=${Kafka__AliveTopic}
@@ -50,6 +47,7 @@ services:
       - Kafka__LoadTopic=${Kafka__LoadTopic}
       - Kafka__ProcessLoadEventTopic=${Kafka__ProcessLoadEventTopic}
       - Kafka__CustomTopic=${Kafka__CustomTopic}
+      - ServerSlotApi__Url=${ApiGateway}
       - ServerSlotApi__Check=${ServerSlotApi__Check}
       - ConnectionStrings__RedisServer=${ConnectionStrings__RedisServer}
     volumes:

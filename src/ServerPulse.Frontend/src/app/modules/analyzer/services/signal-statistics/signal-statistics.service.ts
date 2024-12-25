@@ -109,6 +109,7 @@ export class SignalStatisticsService implements OnDestroy {
       complete: () => {
         connection.off('ReceiveStatistics', handler);
       },
+      error: (error) => this.errorHandler.handleHubError(error)
     });
 
     this.receiveStatisticsHubObservables.set(hubUrl, subject);

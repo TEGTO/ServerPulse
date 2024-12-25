@@ -34,11 +34,19 @@ export class TimeSpan {
         return Math.floor((this.totalMilliseconds % (60 * 1000)) / 1000);
     }
 
-    private get milliseconds(): number {
-        return this.totalMilliseconds % 1000;
+    get toTotalHours(): number {
+        return this.totalMilliseconds / 1000 / 60 / 60;
     }
 
-    get toMilliseconds(): number {
+    get toTotalMinutes(): number {
+        return this.totalMilliseconds / 1000 / 60;
+    }
+
+    get toTotalSeconds(): number {
+        return this.totalMilliseconds / 1000;
+    }
+
+    get toTotalMilliseconds(): number {
         return this.totalMilliseconds;
     }
 

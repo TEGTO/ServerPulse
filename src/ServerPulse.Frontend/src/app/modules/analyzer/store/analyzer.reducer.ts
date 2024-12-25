@@ -145,7 +145,7 @@ export const serverLoadAmountStatisticsReducer = createReducer(
             });
 
             if (!isPlaceFound && updatedTimespanMap.has(key)) {
-                const timespanMilliseconds = updatedTimespanMap.get(key)!.toMilliseconds;
+                const timespanMilliseconds = updatedTimespanMap.get(key)!.toTotalMilliseconds;
                 const dateTo = new Date(event.creationDateUTC.getTime() + timespanMilliseconds);
 
                 statistics.push({
