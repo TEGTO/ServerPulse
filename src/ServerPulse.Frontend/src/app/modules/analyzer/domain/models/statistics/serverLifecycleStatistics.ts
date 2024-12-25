@@ -9,3 +9,16 @@ export interface ServerLifecycleStatistics extends BaseStatistics {
     lastServerUptime: TimeSpan | null;
     lastPulseDateTimeUTC: Date | null;
 }
+
+export function getDefaultServerLifecycleStatistics(): ServerLifecycleStatistics {
+    return {
+        id: "",
+        collectedDateUTC: new Date(),
+        isAlive: false,
+        dataExists: false,
+        serverLastStartDateTimeUTC: null,
+        serverUptime: null,
+        lastServerUptime: null,
+        lastPulseDateTimeUTC: null
+    }
+}

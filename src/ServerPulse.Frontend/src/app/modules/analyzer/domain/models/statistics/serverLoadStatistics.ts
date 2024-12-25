@@ -5,3 +5,13 @@ export interface ServerLoadStatistics extends BaseStatistics {
     lastEvent: LoadEvent | null;
     loadMethodStatistics: LoadMethodStatistics | null;
 }
+
+export function getDefaultServerLoadStatistics(): ServerLoadStatistics {
+    return {
+        id: "",
+        collectedDateUTC: new Date(),
+        amountOfEvents: 0,
+        lastEvent: null,
+        loadMethodStatistics: null,
+    }
+}

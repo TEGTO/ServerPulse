@@ -10,3 +10,11 @@ export function mapServerCustomStatisticsResponseToServerCustomStatistics(respon
         lastEvent: response.lastEvent === null ? null : mapCustomEventResponseToCustomEvent(response.lastEvent)
     };
 }
+
+export function getDefaultCustomStatisticsResponse(): ServerCustomStatisticsResponse {
+    return {
+        id: "",
+        collectedDateUTC: new Date(),
+        lastEvent: null,
+    };
+}

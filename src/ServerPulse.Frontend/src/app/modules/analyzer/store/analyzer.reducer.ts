@@ -27,7 +27,7 @@ export const serverLifecycleStatisticsReducer = createReducer(
 
         return {
             ...state,
-            statisticsMap: updatedStatisticsMap.set(key, [...updatedStatisticsMap.get(key) ?? [], statistics])
+            statisticsMap: updatedStatisticsMap
         };
     }),
 );
@@ -91,7 +91,7 @@ export const serverCustomStatisticsReducer = createReducer(
 
         return {
             ...state,
-            statisticsMap: updatedStatisticsMap.set(key, [...updatedStatisticsMap.get(key) ?? [], statistics])
+            statisticsMap: updatedStatisticsMap
         };
     }),
 );

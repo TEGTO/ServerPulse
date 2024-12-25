@@ -149,7 +149,7 @@ export class AnalyzerEffects {
         "Failed to receive statistics in load statistics hub"
     );
 
-    stopLoadKeyListening$ = this.handleStopListening(
+    stopLoadStatisticsReceiving$ = this.handleStopListening(
         environment.loadStatisticsHub,
         stopLoadKeyListening,
         this.activeListeners.load

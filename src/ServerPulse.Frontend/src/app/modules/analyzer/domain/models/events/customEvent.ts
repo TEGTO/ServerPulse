@@ -5,3 +5,14 @@ export interface CustomEvent extends BaseEvent {
     description: string;
     serializedMessage: string;
 }
+
+export function getDefaultCustomEvent(): CustomEvent {
+    return {
+        id: "",
+        key: "",
+        creationDateUTC: new Date(),
+        name: "",
+        description: "",
+        serializedMessage: ""
+    }
+}

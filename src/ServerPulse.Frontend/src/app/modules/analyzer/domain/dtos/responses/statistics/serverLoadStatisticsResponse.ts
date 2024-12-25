@@ -14,3 +14,13 @@ export function mapServerLoadStatisticsResponseToServerLoadStatistics(response: 
         loadMethodStatistics: response.loadMethodStatistics === null ? null : mapLoadMethodStatisticsResponseToLoadMethodStatistics(response.loadMethodStatistics)
     };
 }
+
+export function getDefaultLoadStatisticsResponse(): ServerLoadStatisticsResponse {
+    return {
+        id: "",
+        collectedDateUTC: new Date(),
+        amountOfEvents: 0,
+        lastEvent: null,
+        loadMethodStatistics: null
+    };
+}

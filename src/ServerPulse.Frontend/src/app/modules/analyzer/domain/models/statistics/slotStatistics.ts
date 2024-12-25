@@ -8,3 +8,14 @@ export interface SlotStatistics {
     lastLoadEvents: LoadEvent[],
     lastCustomEvents: CustomEvent[],
 }
+
+export function getDefaultSlotStatistics(): SlotStatistics {
+    return {
+        collectedDateUTC: new Date(),
+        generalStatistics: null,
+        loadStatistics: null,
+        customEventStatistics: null,
+        lastLoadEvents: [],
+        lastCustomEvents: [],
+    }
+}
