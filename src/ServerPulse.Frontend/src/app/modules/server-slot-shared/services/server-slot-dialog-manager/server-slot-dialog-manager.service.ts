@@ -19,14 +19,4 @@ export class ServerSlotDialogManagerService {
     });
     return dialogRef;
   }
-
-  // openCustomEventDetails(serializedEvent: string): MatDialogRef<any> {
-  //     let dialogRef: MatDialogRef<any, any>;
-  //     dialogRef = this.dialog.open(CustomEventDetailsComponent, {
-  //       height: '500px',
-  //       width: '550px',
-  //       data: serializedEvent
-  //     });
-  //     return dialogRef;
-  //   }
 }

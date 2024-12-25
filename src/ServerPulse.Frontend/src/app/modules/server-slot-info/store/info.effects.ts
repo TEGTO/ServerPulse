@@ -5,7 +5,6 @@ import { getDailyLoadAmountStatistics, getDailyLoadAmountStatisticsFailure, getD
 import { AnalyzerApiService, CustomEvent, LoadEvent } from "../../analyzer";
 import { SnackbarManager } from "../../shared";
 
-
 @Injectable({
     providedIn: 'root'
 })

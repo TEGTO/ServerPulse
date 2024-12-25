@@ -13,7 +13,7 @@ export class UnauthenticatedComponent {
     private readonly store: Store,
   ) { }
 
-  startLogin() {
+  startLogin(): void {
     this.store.dispatch(startLoginUser());
   }
 }

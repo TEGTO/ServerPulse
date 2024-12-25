@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { throwError } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { ErrorHandler, URLDefiner } from '../..';
 
 @Injectable({
@@ -18,7 +18,7 @@ export abstract class BaseApiService {
   ) { }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  protected handleError(error: any) {
+  protected handleError(error: any): Observable<never> {
     const message = this.errorHandler.handleApiError(error);
     return throwError(() => new Error(message));
   }

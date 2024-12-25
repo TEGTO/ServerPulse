@@ -27,6 +27,26 @@ describe('TimeSpan', () => {
         expect(() => TimeSpan.fromString('invalid')).toThrowError('Invalid TimeSpan format');
     });
 
+    it('should return the correct total hours', () => {
+        const timeSpan = new TimeSpan(1, 30, 0);
+        expect(timeSpan.toTotalHours).toBe(1.5);
+    });
+
+    it('should return the correct total minutes', () => {
+        const timeSpan = new TimeSpan(1, 30, 0);
+        expect(timeSpan.toTotalMinutes).toBe(90);
+    });
+
+    it('should return the correct total seconds', () => {
+        const timeSpan = new TimeSpan(0, 1, 30);
+        expect(timeSpan.toTotalSeconds).toBe(90);
+    });
+
+    it('should return the correct total milliseconds', () => {
+        const timeSpan = new TimeSpan(0, 1, 30, 500);
+        expect(timeSpan.toTotalMilliseconds).toBe(90500);
+    });
+
     it('should return the correct hours, minutes, seconds, and milliseconds', () => {
         const timeSpan = new TimeSpan(1, 2, 3, 456);
         expect(timeSpan.toTotalHours.toFixed(4)).toBe("1.0343");
@@ -45,4 +65,9 @@ describe('TimeSpan', () => {
         expect(timeSpan.toString()).toBe('00:00:05');
     });
 
+    it('should handle a zero TimeSpan correctly', () => {
+        const timeSpan = new TimeSpan();
+        expect(timeSpan.toString()).toBe('00:00:00');
+        expect(timeSpan.toTotalMilliseconds).toBe(0);
+    });
 });

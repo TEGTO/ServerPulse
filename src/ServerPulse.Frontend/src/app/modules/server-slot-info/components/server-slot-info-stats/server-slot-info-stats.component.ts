@@ -94,7 +94,7 @@ export class ServerSlotInfoStatsComponent implements OnInit, AfterViewInit, OnDe
     return item.id;
   }
 
-  private setServerStatus(statistics: ServerLifecycleStatistics) {
+  private setServerStatus(statistics: ServerLifecycleStatistics): void {
     if (statistics.dataExists) {
       this.serverStatus = statistics.isAlive ? ServerStatus.Online : ServerStatus.Offline;
     } else {

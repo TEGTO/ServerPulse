@@ -139,7 +139,7 @@ export class ActivityChartControlComponent implements OnInit, AfterViewInit, OnD
     };
   }
 
-  private updateChartData(chartOptions: Partial<ChartOptions>, data: any) {
+  private updateChartData(chartOptions: Partial<ChartOptions>, data: any): void {
     if (chartOptions?.series != null) {
       chartOptions.series =
         [
@@ -152,7 +152,7 @@ export class ActivityChartControlComponent implements OnInit, AfterViewInit, OnD
     }
   }
 
-  private updateChartRange() {
+  private updateChartRange(): void {
     if (this.chart && this.chartOptions.xaxis) {
       this.updateControlOptions(this.activeOptionButton);
       this.cdr.detectChanges();

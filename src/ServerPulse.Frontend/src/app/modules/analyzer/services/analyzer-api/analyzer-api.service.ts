@@ -50,7 +50,7 @@ export class AnalyzerApiService extends BaseApiService {
     );
   }
 
-  private combinePathWithAnalyzerApiUrl(subpath: string) {
+  private combinePathWithAnalyzerApiUrl(subpath: string): string {
     return this.urlDefiner.combinePathWithAnalyzerApiUrl("/analyze" + subpath);
   }
 }

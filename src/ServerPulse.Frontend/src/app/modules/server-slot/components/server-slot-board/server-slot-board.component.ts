@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
-import { BehaviorSubject, debounceTime, map, Observable, of, startWith, switchMap } from 'rxjs';
+import { BehaviorSubject, debounceTime, Observable, of, startWith, switchMap, tap } from 'rxjs';
 import { environment } from '../../../../../environment/environment';
 import { createServerSlot, CreateServerSlotRequest, getUserServerSlots, selectServerSlots, ServerSlot } from '../../../server-slot-shared';
 
@@ -34,10 +34,9 @@ export class ServerSlotBoardComponent implements OnInit {
         this.store.dispatch(getUserServerSlots({ str: searchString }));
         return this.store.select(selectServerSlots);
       }),
-      map(slots => {
-        this.slotAmountSubject$.next(slots.length);
-        return slots;
-      }),
+      tap(slots => {
+        this.slotAmountSubject$.next(slots.length)
+      })
     );
   }
 

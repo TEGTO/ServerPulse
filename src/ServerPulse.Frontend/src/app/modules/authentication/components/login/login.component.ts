@@ -49,11 +49,11 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
   }
 
-  openRegisterMenu() {
+  openRegisterMenu(): void {
     this.store.dispatch(startRegisterUser());
   }
 
-  loginUser() {
+  loginUser(): void {
     if (this.formGroup.valid) {
       const req: UserAuthenticationRequest =
       {
@@ -67,7 +67,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
   }
 
-  oauthLogin() {
+  oauthLogin(): void {
     //TODO: add oauth
   }
 }

@@ -59,7 +59,7 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private setUpdateTimeIntervals() {
+  private setUpdateTimeIntervals(): void {
     interval(this.controlIntervalTime).pipe(takeUntil(this.destroy$)).subscribe(() => this.updateControlTime());
     interval(this.secondaryIntervalTime).pipe(takeUntil(this.destroy$)).subscribe(() => this.updateSecondaryTime());
   }
@@ -177,7 +177,7 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
     return series;
   }
 
-  controlFormatter(val: number) {
+  controlFormatter(val: number): string {
     const date = new Date(val);
     return date.toLocaleDateString(undefined, {
       day: '2-digit',
@@ -186,7 +186,7 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  secondaryFormatter(val: number) {
+  secondaryFormatter(val: number): string {
     const date = new Date(val);
     const localHour = date.getHours();
     return `${localHour}:00 - ${localHour + 1}:00`;

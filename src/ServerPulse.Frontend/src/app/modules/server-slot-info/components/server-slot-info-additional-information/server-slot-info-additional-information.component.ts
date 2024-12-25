@@ -86,7 +86,7 @@ export class ServerSlotInfoAdditionalInformationComponent implements OnInit, Aft
       });
   }
 
-  openDetailMenu(event: CustomEvent) {
+  openDetailMenu(event: CustomEvent): void {
     this.store.dispatch(showCustomDetailsEvent({ event }))
   }
 

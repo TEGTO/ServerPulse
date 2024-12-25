@@ -17,7 +17,7 @@ export class JsonDownloaderService implements JsonDownloader {
     window.URL.revokeObjectURL(url);
   }
 
-  private convertToJsonFile(objectToDownload: any) {
+  private convertToJsonFile(objectToDownload: any): Blob {
     const jsonString = JSON.stringify(objectToDownload, null, 2);
     const blob = new Blob([jsonString], { type: 'application/json' });
     return blob;

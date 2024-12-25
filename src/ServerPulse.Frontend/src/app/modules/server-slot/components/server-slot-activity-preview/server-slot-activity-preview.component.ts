@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { BehaviorSubject, interval, map, Observable, of, Subject, takeUntil } from 'rxjs';
-import { addLoadEventToLoadAmountStatistics, getLoadAmountStatisticsInRange, LoadAmountStatisticsResponse, MessageAmountInRangeRequest, selectLastLoadEventByKey, selectLoadAmountStatisticsByKey, startLoadStatisticsReceiving, stopLoadKeyListening } from '../../../analyzer';
+import { addLoadEventToLoadAmountStatistics, getLoadAmountStatisticsInRange, LoadAmountStatistics, MessageAmountInRangeRequest, selectLastLoadEventByKey, selectLoadAmountStatisticsByKey, startLoadStatisticsReceiving, stopLoadKeyListening } from '../../../analyzer';
 import { ActivityChartType } from '../../../chart';
 import { ServerSlot } from '../../../server-slot-shared';
 import { TimeSpan } from '../../../shared';
@@ -65,7 +65,7 @@ export class ServerSlotActivityPreviewComponent implements OnInit, OnDestroy {
       );
   }
 
-  private setChartDataObservable() {
+  private setChartDataObservable(): void {
     this.chartData$ = this.store.select(selectLoadAmountStatisticsByKey(this.serverSlot.slotKey)).pipe(
       map((statistics) => {
         this.updateTime();
@@ -94,7 +94,7 @@ export class ServerSlotActivityPreviewComponent implements OnInit, OnDestroy {
       });
   }
 
-  formatter(val: number) {
+  formatter(val: number): string {
     const date = new Date(val);
     const hours = date.getHours().toString().padStart(2, '0');
     const minutes = date.getMinutes().toString().padStart(2, '0');
@@ -116,7 +116,7 @@ export class ServerSlotActivityPreviewComponent implements OnInit, OnDestroy {
     return new Date(Date.now() - this.hour);
   }
 
-  private getStatisticsSet(statistics: LoadAmountStatisticsResponse[]) {
+  private getStatisticsSet(statistics: LoadAmountStatistics[]): Map<number, number> {
     const set: Map<number, number> = new Map<number, number>();
 
     statistics.forEach(stat => {
@@ -140,7 +140,7 @@ export class ServerSlotActivityPreviewComponent implements OnInit, OnDestroy {
       let count = 0;
 
       for (const [timestamp, amount] of statisticsSet) {
-        if (timestamp >= localFrom && timestamp <= localTo) {
+        if (timestamp >= localFrom && timestamp < localTo) {
           count += amount;
         }
       }

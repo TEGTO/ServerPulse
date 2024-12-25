@@ -12,7 +12,6 @@ import { deleteServerSlot, getServerSlotById, selectServerSlotById, ServerSlot, 
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ServerSlotInfoComponent implements OnInit, OnDestroy {
-
   inputIsEditable$ = new BehaviorSubject<boolean>(false);
   slotId$ = new BehaviorSubject<string | null>(null);
   serverSlot$!: Observable<ServerSlot>;
@@ -50,7 +49,7 @@ export class ServerSlotInfoComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  showKey(serverSlot: ServerSlot) {
+  showKey(serverSlot: ServerSlot): void {
     this.store.dispatch(showSlotKey({ slot: serverSlot }));
   }
 
@@ -58,7 +57,7 @@ export class ServerSlotInfoComponent implements OnInit, OnDestroy {
     this.inputIsEditable$.next(true);
   }
 
-  openConfirmDeletion(serverSlot: ServerSlot) {
+  openConfirmDeletion(serverSlot: ServerSlot): void {
     this.store.dispatch(deleteServerSlot({ id: serverSlot.id }));
   }
 }

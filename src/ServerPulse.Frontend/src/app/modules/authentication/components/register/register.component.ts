@@ -44,11 +44,11 @@ export class RegisterComponent implements OnInit {
     }
   }
 
-  openLoginMenu() {
+  openLoginMenu(): void {
     this.store.dispatch(startLoginUser());
   }
 
-  registerUser() {
+  registerUser(): void {
     if (this.formGroup.valid) {
       const req: UserRegistrationRequest =
       {

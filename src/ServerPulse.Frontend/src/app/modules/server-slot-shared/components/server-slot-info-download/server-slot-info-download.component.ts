@@ -10,10 +10,9 @@ import { downloadSlotStatistics } from '../../../analyzer';
 export class ServerSlotInfoDownloadComponent {
   @Input({ required: true }) slotKey!: string;
 
-
   constructor(private readonly store: Store) { }
 
-  downloadData() {
+  downloadData(): void {
     this.store.dispatch(downloadSlotStatistics({ key: this.slotKey }));
   }
 }

@@ -10,6 +10,6 @@ export * from "./services/server-slot-api/server-slot-api.service";
 export * from "./services/server-slot-dialog-manager/server-slot-dialog-manager.service";
 export * from "./store/server-slot.actions";
 export * from "./store/server-slot.effects";
+export * from "./store/server-slot.reducer";
 export * from "./store/server-slot.selectors";
-export * from "./store/server.-slot.reducer";
 

@@ -52,7 +52,7 @@ export class ActivityChartComponent implements OnInit, AfterViewInit, OnDestroy 
       .subscribe((data) => this.updateChartData(data));
   }
 
-  private initChartOptions() {
+  private initChartOptions(): void {
     this.chartOptions = {
       ...this.getChartTypeOptions(),
       series: [
@@ -98,7 +98,7 @@ export class ActivityChartComponent implements OnInit, AfterViewInit, OnDestroy 
     };
   }
 
-  private updateChartData(data: any[]) {
+  private updateChartData(data: any[]): void {
     if (this.chartOptions?.series != null) {
       this.chartOptions.series =
         [
@@ -111,7 +111,7 @@ export class ActivityChartComponent implements OnInit, AfterViewInit, OnDestroy 
     }
   }
 
-  private updateChartRange(dateFrom: Date, dateTo: Date) {
+  private updateChartRange(dateFrom: Date, dateTo: Date): void {
     if (this.chart && this.chartOptions.xaxis) {
       this.chartOptions.xaxis =
       {

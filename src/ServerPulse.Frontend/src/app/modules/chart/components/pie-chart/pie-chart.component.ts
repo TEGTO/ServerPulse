@@ -32,7 +32,7 @@ export class PieChartComponent implements OnInit, AfterViewInit, OnDestroy {
       .subscribe((data) => this.updateChartData(data));
   }
 
-  private initChartOptions() {
+  private initChartOptions(): void {
     this.chartOptions = {
       series: [44, 55, 13, 43, 22],
       chart: {
@@ -52,7 +52,7 @@ export class PieChartComponent implements OnInit, AfterViewInit, OnDestroy {
     };
   }
 
-  private updateChartData(data: Map<string, number>) {
+  private updateChartData(data: Map<string, number>): void {
     if (this.chartOptions?.series != null) {
       const labels: string[] = [];
       const series: number[] = [];

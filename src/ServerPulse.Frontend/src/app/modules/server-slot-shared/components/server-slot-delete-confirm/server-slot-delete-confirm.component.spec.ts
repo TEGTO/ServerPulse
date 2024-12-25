@@ -37,7 +37,7 @@ describe('ServerSlotDeleteConfirmComponent', () => {
     const title = compiled.querySelector('h2');
     const content = compiled.querySelector('mat-dialog-content');
     expect(title?.textContent).toContain('Delete slot');
-    expect(content?.textContent).toContain('All collected data will also be deleted. Do you want to delete a slot?');
+    expect(content?.textContent).toContain('Are you sure you want to delete this server slot? This action cannot be undone.');
   });
 
   it('should close the dialog when the close button is clicked', () => {

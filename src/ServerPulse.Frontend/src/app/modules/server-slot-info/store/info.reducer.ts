@@ -41,22 +41,22 @@ export const slotInfoStateReducer = createReducer(
     })),
 
     on(getSomeLoadEventsSuccess, (state, { events }) => {
-        const uniqueKeys = new Set(state.loadEvents.map(event => event.id));
-        const filteredNewEvents = events.filter(event => !uniqueKeys.has(event.id));
+        const allEvents = [...state.loadEvents, ...events];
+        const uniqueEventsMap = new Map(allEvents.map(event => [event.id, event]));
 
         return {
             ...state,
-            loadEvents: [...state.loadEvents, ...filteredNewEvents]
-        }
+            loadEvents: Array.from(uniqueEventsMap.values()),
+        };
     }),
 
     on(getSomeCustomEventsSuccess, (state, { events }) => {
-        const uniqueKeys = new Set(state.customEvents.map(event => event.id));
-        const filteredNewEvents = events.filter(event => !uniqueKeys.has(event.id));
+        const allEvents = [...state.customEvents, ...events];
+        const uniqueEventsMap = new Map(allEvents.map(event => [event.id, event]));
 
         return {
             ...state,
-            customEvents: [...state.customEvents, ...filteredNewEvents]
+            customEvents: Array.from(uniqueEventsMap.values()),
         }
     }),
 

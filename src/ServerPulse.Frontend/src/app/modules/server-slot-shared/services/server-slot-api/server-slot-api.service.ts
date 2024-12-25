@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-wrapper-object-types */
 import { HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, map, Observable } from 'rxjs';
@@ -31,19 +32,19 @@ export class ServerSlotApiService extends BaseApiService {
     );
   }
 
-  updateServerSlot(request: UpdateServerSlotRequest) {
+  updateServerSlot(request: UpdateServerSlotRequest): Observable<Object> {
     return this.httpClient.put(this.combinePathWithServerSlotApiUrl(``), request).pipe(
       catchError((resp) => this.handleError(resp))
     );
   }
 
-  deleteServerSlot(id: string) {
+  deleteServerSlot(id: string): Observable<Object> {
     return this.httpClient.delete(this.combinePathWithServerSlotApiUrl(`/${id}`)).pipe(
       catchError((resp) => this.handleError(resp))
     );
   }
 
-  private combinePathWithServerSlotApiUrl(subpath: string) {
+  private combinePathWithServerSlotApiUrl(subpath: string): string {
     return this.urlDefiner.combineWithServerSlotApiUrl("/serverslot" + subpath);
   }
 }
