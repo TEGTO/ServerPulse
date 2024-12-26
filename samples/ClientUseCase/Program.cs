@@ -8,8 +8,8 @@ builder.Services.AddControllers();
 
 var configuration = new SendingSettings
 {
-    EventServer = builder.Configuration["ServerPulse:EventController"],
-    Key = builder.Configuration["ServerPulse:Key"],
+    EventServer = builder.Configuration["ServerPulse:EventController"]!,
+    Key = builder.Configuration["ServerPulse:Key"]!,
 };
 builder.Services.AddServerPulseClient(configuration);
 
@@ -24,4 +24,4 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();

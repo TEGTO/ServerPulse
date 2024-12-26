@@ -1,0 +1,5 @@
+<app-activity-chart-control #charts [uniqueId]="slotKey!" (controlSelect)="controlOnSelect($event)"
+    [dateFrom$]="controlDateFrom$" [dateTo$]="controlDateTo$" [data$]="controlChartData$"
+    [formatter]="controlFormatter"></app-activity-chart-control>
+<app-activity-chart [uniqueId]="slotKey!" [dateFrom$]="secondaryDateFrom$" [dateTo$]="secondaryDateTo$"
+    [data$]="secondaryChartData$" [formatter]="secondaryFormatter" [chartType]="chartType"></app-activity-chart>

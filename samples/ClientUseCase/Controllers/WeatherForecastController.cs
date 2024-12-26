@@ -1,9 +1,8 @@
 using ClientUseCase.CustomEvents;
+using EventCommunication;
 using Microsoft.AspNetCore.Mvc;
 using ServerPulse.Client;
 using ServerPulse.Client.Services.Interfaces;
-using ServerPulse.EventCommunication;
-using ServerPulse.EventCommunication.Events;
 using System.Text.Json;
 
 namespace ClientUseCase.Controllers
@@ -18,22 +17,21 @@ namespace ClientUseCase.Controllers
         };
 
         private readonly IQueueMessageSender<LoadEvent> loadSender;
-        private readonly IQueueMessageSender<CustomEventWrapper> customSender;
+        private readonly IQueueMessageSender<CustomEventContainer> customSender;
         private readonly SendingSettings configuration;
-        private readonly ILogger<WeatherForecastController> logger;
 
-        public WeatherForecastController(IQueueMessageSender<LoadEvent> loadSender, IQueueMessageSender<CustomEventWrapper> customSender, SendingSettings configuration, ILogger<WeatherForecastController> logger)
+        public WeatherForecastController(IQueueMessageSender<LoadEvent> loadSender, IQueueMessageSender<CustomEventContainer> customSender, SendingSettings configuration)
         {
             this.loadSender = loadSender;
             this.customSender = customSender;
             this.configuration = configuration;
-            this.logger = logger;
         }
 
         [HttpGet]
         public IEnumerable<WeatherForecast> Get()
         {
-            var forecasts = Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            var forecasts = Enumerable.Range(1, 5)
+            .Select(index => new WeatherForecast
             {
                 Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
                 TemperatureC = Random.Shared.Next(-20, 55),
@@ -49,7 +47,7 @@ namespace ClientUseCase.Controllers
                 RequestDate: DateTime.UtcNow,
                 SerializedRequest: JsonSerializer.Serialize(forecasts)
             );
-            customSender.SendMessage(new CustomEventWrapper(weatherForecastControllerGetEvent, JsonSerializer.Serialize(weatherForecastControllerGetEvent)));
+            customSender.SendMessage(new CustomEventContainer(weatherForecastControllerGetEvent, JsonSerializer.Serialize(weatherForecastControllerGetEvent)));
 
             return forecasts;
         }
@@ -59,7 +57,8 @@ namespace ClientUseCase.Controllers
         {
             var startTime = DateTime.UtcNow;
 
-            var forecast = Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            var forecast = Enumerable.Range(1, 5)
+            .Select(index => new WeatherForecast
             {
                 Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
                 TemperatureC = Random.Shared.Next(-20, 55),

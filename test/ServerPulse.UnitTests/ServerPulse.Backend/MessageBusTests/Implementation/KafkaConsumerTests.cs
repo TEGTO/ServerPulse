@@ -3,6 +3,7 @@ using MessageBus.Interfaces;
 using MessageBus.Kafka;
 using MessageBus.Models;
 using Moq;
+using System.Collections.Concurrent;
 
 namespace MessageBusTests.Implementation
 {
@@ -73,10 +74,13 @@ namespace MessageBusTests.Implementation
 
         private void SetupConsumerMessages(List<ConsumeResult<string, string>> messages)
         {
-            var messageQueue = new Queue<ConsumeResult<string, string>>(messages);
+            var messageQueue = new ConcurrentQueue<ConsumeResult<string, string>>(messages);
 
             mockConsumer.Setup(x => x.Consume(It.IsAny<int>()))
-                .Returns(() => messageQueue.Any() ? messageQueue.Dequeue() : null!);
+                .Returns(() =>
+                {
+                    return messageQueue.TryDequeue(out var message) ? message : null!;
+                });
         }
 
         private static IEnumerable<TestCaseData> ConsumeAsyncTestCases()
@@ -707,7 +711,7 @@ namespace MessageBusTests.Implementation
                 await consumer.GetTopicMessageAmountPerTimespanAsync(options, TimeSpan.FromHours(1), cancellationToken);
             });
 
-            Assert.That(ex.Message, Does.Contain("Invalid Start Date"));
+            Assert.That(ex.Message, Does.Contain("Invalid From Date"));
         }
 
         [Test]

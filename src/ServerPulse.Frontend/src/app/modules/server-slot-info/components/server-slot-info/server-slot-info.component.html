@@ -1,0 +1,57 @@
+<ng-container *ngIf="serverSlot$ | async as serverSlot; else loading">
+
+    <nav class="slot-info-wrapper bg-white dark:bg-gray-900">
+        <div
+            class="slot-info-wrapper__content max-w-screen-xl gap-3 mx-auto p-4 border border-gray-200 rounded-lg shadow md:flex-row dark:border-gray-700">
+            <section class="content__statistics">
+                <div class="statistics__header border-b border-gray-200 dark:border-gray-600 pb-1.5">
+                    <button id="menu-button" mat-icon-button [matMenuTriggerFor]="serverSlotMoreOptions">
+                        <span class="material-icons">more_vert</span>
+                    </button>
+                    <mat-menu #serverSlotMoreOptions="matMenu" id="serverSlotMoreOptions">
+                        <button id="key-button" mat-menu-item (click)="showKey(serverSlot)">
+                            <div class="flex gap-2 items-center justify-between">
+                                <span class="text-base">Key</span>
+                                <span class="material-icons">key</span>
+                            </div>
+                        </button>
+                        <button id="rename-button" mat-menu-item (click)="makeInputEditable()">
+                            <div class="flex gap-2 items-center justify-between">
+                                <span class="text-base">Rename</span>
+                                <span class="material-icons">edit</span>
+                            </div>
+                        </button>
+                        <button id="delete-button" mat-menu-item (click)="openConfirmDeletion(serverSlot)">
+                            <div class="flex gap-2 items-center justify-between">
+                                <span class="text-base text-red-600">Delete</span>
+                                <span class="material-icons text-red-600">delete</span>
+                            </div>
+                        </button>
+                    </mat-menu>
+                    <div class="header__center-group">
+                        <div class="center-group__name">
+                            <app-server-slot-name-changer [serverSlot]="serverSlot"
+                                [inputIsEditable$]="inputIsEditable$"></app-server-slot-name-changer>
+                        </div>
+                    </div>
+                    <app-server-slot-info-download [slotKey]="serverSlot.slotKey"></app-server-slot-info-download>
+                </div>
+                <app-server-slot-info-stats [slotKey]="serverSlot.slotKey"></app-server-slot-info-stats>
+            </section>
+            <section class="content__additional-info">
+                <app-server-slot-info-additional-information
+                    [slotKey]="serverSlot.slotKey"></app-server-slot-info-additional-information>
+            </section>
+            <section class="content__charts">
+                <app-server-slot-info-charts [slotKey]="serverSlot.slotKey"></app-server-slot-info-charts>
+            </section>
+        </div>
+    </nav>
+
+</ng-container>
+
+<ng-template #loading>
+    <div class="flex items-center justify-center h-screen">
+        <mat-progress-spinner [mode]="'indeterminate'" diameter="50"></mat-progress-spinner>
+    </div>
+</ng-template>

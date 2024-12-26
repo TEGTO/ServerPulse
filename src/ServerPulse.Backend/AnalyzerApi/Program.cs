@@ -36,12 +36,14 @@ var consumerConfig = new ConsumerConfig
     ClientId = builder.Configuration[Configuration.KAFKA_CLIENT_ID],
     GroupId = builder.Configuration[Configuration.KAFKA_GROUP_ID],
     EnablePartitionEof = true,
-    AutoOffsetReset = AutoOffsetReset.Earliest
+    AutoOffsetReset = AutoOffsetReset.Earliest,
 };
+
 var adminConfig = new AdminClientConfig
 {
     BootstrapServers = builder.Configuration[Configuration.KAFKA_BOOTSTRAP_SERVERS],
 };
+
 var producerConfig = new ProducerConfig
 {
     BootstrapServers = builder.Configuration[Configuration.KAFKA_BOOTSTRAP_SERVERS],
@@ -61,10 +63,10 @@ builder.Services.AddOutputCache((options) =>
 
     var expiryTime = int.TryParse(
         builder.Configuration[Configuration.CACHE_EXPIRY_IN_MINUTES],
-        out var getByEmailExpiry) ? getByEmailExpiry : 1;
+        out var time) ? time : 1;
 
     options.SetOutputCachePolicy("GetLoadEventsInDataRangePolicy", duration: TimeSpan.FromMinutes(expiryTime), types: typeof(MessagesInRangeRequest));
-    options.SetOutputCachePolicy("GetDailyLoadStatisticsPolicy", duration: TimeSpan.FromMinutes(expiryTime));
+    options.SetOutputCachePolicy("GetDailyLoadAmountStatisticsPolicy", duration: TimeSpan.FromMinutes(expiryTime));
     options.SetOutputCachePolicy("GetLoadAmountStatisticsInRangePolicy", duration: TimeSpan.FromMinutes(expiryTime), types: typeof(MessageAmountInRangeRequest));
     options.SetOutputCachePolicy("GetSlotStatisticsPolicy", duration: TimeSpan.FromMinutes(expiryTime));
 });
@@ -195,7 +197,7 @@ app.UseOutputCache(); //Order after Identity
 
 #region Hubs
 
-app.MapHub<StatisticsHub<ServerLifecycleStatistics>>("/statisticshub");
+app.MapHub<StatisticsHub<ServerLifecycleStatistics>>("/lifecyclestatisticshub");
 app.MapHub<StatisticsHub<ServerLoadStatistics>>("/loadstatisticshub");
 app.MapHub<StatisticsHub<ServerCustomStatistics>>("/customstatisticshub");
 

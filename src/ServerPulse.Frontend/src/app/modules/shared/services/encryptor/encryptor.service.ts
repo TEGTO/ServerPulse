@@ -12,6 +12,7 @@ export class Encryptor {
         const encrypted = CryptoJS.AES.encrypt(str, this.secretKey).toString();
         return encrypted;
     }
+
     decryptString(str: string): string {
         const bytes = CryptoJS.AES.decrypt(str, this.secretKey);
         const decryptedString = bytes.toString(CryptoJS.enc.Utf8);

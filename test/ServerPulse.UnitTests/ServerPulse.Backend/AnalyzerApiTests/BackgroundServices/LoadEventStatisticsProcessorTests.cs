@@ -21,7 +21,6 @@ namespace AnalyzerApi.BackgroundServices.Tests
     {
         private Mock<IMessageConsumer> mockMessageConsumer;
         private Mock<IMediator> mockMediator;
-        private Mock<ITopicManager> mockTopicManager;
         private Mock<IConfiguration> mockConfiguration;
         private Mock<ResiliencePipelineProvider<string>> mockPipelineProvider;
         private Mock<ILogger<LoadEventStatisticsProcessor>> mockLogger;
@@ -45,7 +44,6 @@ namespace AnalyzerApi.BackgroundServices.Tests
 
             mockMessageConsumer = new Mock<IMessageConsumer>();
             mockMediator = new Mock<IMediator>();
-            mockTopicManager = new Mock<ITopicManager>();
             mockConfiguration = new Mock<IConfiguration>();
             mockLogger = new Mock<ILogger<LoadEventStatisticsProcessor>>();
             mockPipelineProvider = new Mock<ResiliencePipelineProvider<string>>();
@@ -60,7 +58,6 @@ namespace AnalyzerApi.BackgroundServices.Tests
             processor = new LoadEventStatisticsProcessor(
                 mockMessageConsumer.Object,
                 mockMediator.Object,
-                mockTopicManager.Object,
                 mockConfiguration.Object,
                 mockPipelineProvider.Object,
                 mockLogger.Object);
@@ -70,47 +67,6 @@ namespace AnalyzerApi.BackgroundServices.Tests
         public void TearDown()
         {
             processor.Dispose();
-        }
-
-        [Test]
-        public async Task ExecuteAsync_CreatesTopicOnStart()
-        {
-            // Act
-            await processor.StartAsync(CancellationToken.None);
-
-            // Assert
-            mockTopicManager.Verify(t => t.CreateTopicsAsync(
-                It.Is<IEnumerable<string>>(topics => topics.Contains(KafkaTopic)),
-                It.IsAny<int>(),
-                It.IsAny<short>(),
-                TimeoutInMilliseconds), Times.Once);
-        }
-
-        [Test]
-        public async Task ExecuteAsync_ThrowsErrorTryingToCreateTopicOnStart_ResilienceRetries()
-        {
-            // Arrange
-            mockTopicManager.Setup(x => x.CreateTopicsAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<int>(), It.IsAny<short>(), It.IsAny<int>()))
-               .ThrowsAsync(new Exception("Some exception."));
-
-            // Act
-            await processor.StartAsync(CancellationToken.None);
-            await Task.Delay(1100);
-
-            // Assert
-            mockTopicManager.Verify(t => t.CreateTopicsAsync(
-                It.Is<IEnumerable<string>>(topics => topics.Contains(KafkaTopic)),
-                It.IsAny<int>(),
-                It.IsAny<short>(),
-                TimeoutInMilliseconds), Times.AtLeast(2));
-
-            mockLogger.Verify(x => x.Log(
-                LogLevel.Critical,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.AtLeast(1));
         }
 
         [Test]

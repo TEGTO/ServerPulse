@@ -13,6 +13,7 @@ export class RedirectorService {
   redirectToHome(): void {
     this.router.navigate(['']);
   }
+
   redirectTo(path: string): void {
     this.router.navigate([path]);
   }

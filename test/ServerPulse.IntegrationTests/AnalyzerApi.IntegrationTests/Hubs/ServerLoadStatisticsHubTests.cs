@@ -72,7 +72,7 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             await connection.StartAsync();
 
             // Act
-            await connection.SendAsync("StartListen", key);
+            await connection.SendAsync("StartListen", key, true);
 
             await Task.Delay(1000);
 
@@ -131,30 +131,10 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             await connection.StartAsync();
 
             // Act
-            await connection.SendAsync("StartListen", key);
+            await connection.SendAsync("StartListen", key, false);
 
             await Task.Delay(1000);
 
-            // Assert
-            await Utility.WaitUntil(() =>
-            {
-                return receivedKey != null && receivedStatistics != null && receivedStatistics.LastEvent == null;
-            }, TimeSpan.FromSeconds(100), TimeSpan.FromSeconds(2));
-
-            Assert.IsNotNull(receivedKey);
-            Assert.That(receivedKey, Is.EqualTo(key));
-            Assert.IsNotNull(receivedStatistics);
-
-            Assert.IsNull(receivedStatistics.LastEvent);
-
-            Assert.IsNotNull(receivedStatistics.LoadMethodStatistics);
-            Assert.That(receivedStatistics.LoadMethodStatistics.GetAmount, Is.EqualTo(0));
-            Assert.That(receivedStatistics.LoadMethodStatistics.PostAmount, Is.EqualTo(0));
-            Assert.That(receivedStatistics.LoadMethodStatistics.PutAmount, Is.EqualTo(0));
-            Assert.That(receivedStatistics.LoadMethodStatistics.PatchAmount, Is.EqualTo(0));
-            Assert.That(receivedStatistics.LoadMethodStatistics.DeleteAmount, Is.EqualTo(0));
-
-            // Act - Adding new statistics
             eventSamples.Add(new LoadEvent(key, "/api/resource", "DELETE", 200, TimeSpan.FromMilliseconds(200), DateTime.UtcNow));
             await SendEventsAsync(LOAD_PROCESS_TOPIC, "", new[]
             {
@@ -226,7 +206,7 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             await connection.StartAsync();
 
             // Act
-            await connection.SendAsync("StartListen", key);
+            await connection.SendAsync("StartListen", key, true);
 
             await Task.Delay(1000);
 
@@ -352,7 +332,7 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             await connection.StartAsync();
 
             // Act
-            await connection.SendAsync("StartListen", wrongKey);
+            await connection.SendAsync("StartListen", wrongKey, true);
 
             await Task.Delay(1000);
 

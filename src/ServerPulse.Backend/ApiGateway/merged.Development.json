@@ -41,7 +41,7 @@
         "EnableRateLimiting": true,
         "Period": "1s",
         "PeriodTimespan": 1,
-        "Limit": 5
+        "Limit": 15
       }
     },
     {
@@ -72,7 +72,7 @@
         "EnableRateLimiting": true,
         "Period": "1s",
         "PeriodTimespan": 1,
-        "Limit": 3
+        "Limit": 15
       }
     },
     {
@@ -103,7 +103,7 @@
         "EnableRateLimiting": true,
         "Period": "1s",
         "PeriodTimespan": 1,
-        "Limit": 5
+        "Limit": 15
       }
     },
     {
@@ -134,7 +134,7 @@
         "EnableRateLimiting": true,
         "Period": "1s",
         "PeriodTimespan": 1,
-        "Limit": 5
+        "Limit": 15
       }
     },
     {
@@ -165,13 +165,44 @@
         "EnableRateLimiting": true,
         "Period": "1s",
         "PeriodTimespan": 1,
-        "Limit": 5
+        "Limit": 15
       }
     },
     {
-      "Key": "Analyzer_GetStatistics",
-      "UpstreamPathTemplate": "/statisticshub/{path}",
-      "DownstreamPathTemplate": "/statisticshub/{path}",
+      "Key": "Analyzer_GetSlotStatistics",
+      "UpstreamPathTemplate": "/analyze/slotstatistics/{key}",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DownstreamPathTemplate": "/analyze/slotstatistics/{key}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "analyzerapi",
+          "Port": 8080
+        }
+      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToRequest": {
+        "Authorization": "Bearer {token}"
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 15
+      }
+    },
+    {
+      "Key": "Analyzer_GetLifeCycleStatistics",
+      "UpstreamPathTemplate": "/lifecyclestatisticshub/{path}",
+      "DownstreamPathTemplate": "/lifecyclestatisticshub/{path}",
       "DownstreamScheme": "ws",
       "DownstreamHostAndPorts": [
         {
@@ -518,37 +549,6 @@
         "Period": "3s",
         "PeriodTimespan": 3,
         "Limit": 1
-      }
-    },
-    {
-      "Key": "Analyzer_GetSlotData",
-      "UpstreamPathTemplate": "/slotdata/{key}",
-      "UpstreamHttpMethod": [
-        "GET"
-      ],
-      "DownstreamPathTemplate": "/slotdata/{key}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "analyzerapi",
-          "Port": 8080
-        }
-      ],
-      "LoadBalancerOptions": {
-        "Type": "LeastConnection"
-      },
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer"
-      },
-      "AddHeadersToRequest": {
-        "Authorization": "Bearer {token}"
-      },
-      "RateLimitOptions": {
-        "ClientWhitelist": [],
-        "EnableRateLimiting": true,
-        "Period": "1s",
-        "PeriodTimespan": 1,
-        "Limit": 5
       }
     },
     {

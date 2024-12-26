@@ -8,7 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
-import { AuthEffects, AuthenticatedComponent, AuthenticationDialogManager, AuthenticationDialogManagerService, AuthInterceptor, authReducer, LoginComponent, RegisterComponent, UnauthenticatedComponent } from '.';
+import { AuthEffects, AuthenticatedComponent, AuthInterceptor, authReducer, LoginComponent, RegisterComponent, UnauthenticatedComponent } from '.';
 
 @NgModule({
   declarations: [
@@ -33,7 +33,6 @@ import { AuthEffects, AuthenticatedComponent, AuthenticationDialogManager, Authe
       withInterceptorsFromDi(),
     ),
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
-    { provide: AuthenticationDialogManager, useClass: AuthenticationDialogManagerService },
   ],
   exports: [UnauthenticatedComponent]
 })

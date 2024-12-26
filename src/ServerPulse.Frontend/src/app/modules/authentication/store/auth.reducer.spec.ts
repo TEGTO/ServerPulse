@@ -3,8 +3,6 @@ import { authReducer, AuthState, copyUserUpdateRequestToUserAuth, getAuthData, g
 
 describe('Auth Reducer', () => {
     const initialState: AuthState = {
-        isRegistrationSuccessful: false,
-        isUpdateSuccessful: false,
         isRefreshSuccessful: false,
         authData: getDefaultAuthData(),
         error: null,
@@ -29,7 +27,6 @@ describe('Auth Reducer', () => {
             const action = registerUser({ req: { email: 'test@example.com', password: 'password', confirmPassword: 'password' } });
             const state = authReducer(initialState, action);
 
-            expect(state.isRegistrationSuccessful).toEqual(false);
             expect(state.authData.email).toEqual("");
         });
 
@@ -38,7 +35,6 @@ describe('Auth Reducer', () => {
             const action = registerSuccess({ authData });
             const state = authReducer(initialState, action);
 
-            expect(state.isRegistrationSuccessful).toBe(true);
             expect(state.authData).toEqual(authData);
             expect(state.error).toBeNull();
         });
@@ -64,7 +60,6 @@ describe('Auth Reducer', () => {
             const action = loginUser({ req: { login: 'user', password: 'password' } });
             const state = authReducer(initialState, action);
 
-            expect(state.isRegistrationSuccessful).toEqual(false);
             expect(state.authData.email).toEqual("");
         });
 
@@ -107,7 +102,6 @@ describe('Auth Reducer', () => {
             const action = getAuthDataFailure();
             const state = authReducer(initialState, action);
 
-            expect(state.isRegistrationSuccessful).toEqual(false);
             expect(state.authData.email).toEqual("");
         });
     });
@@ -117,7 +111,6 @@ describe('Auth Reducer', () => {
             const action = logOutUserSuccess();
             const state = authReducer(initialState, action);
 
-            expect(state.isRegistrationSuccessful).toEqual(false);
             expect(state.authData.email).toEqual("");
         });
     });
@@ -156,7 +149,6 @@ describe('Auth Reducer', () => {
             const action = updateUserData({ req: { email: 'test@example.com', oldPassword: 'oldPass', password: 'newPass' } });
             const state = authReducer(initialState, action);
 
-            expect(state.isUpdateSuccessful).toBe(false);
             expect(state.error).toBeNull();
         });
 
@@ -167,7 +159,6 @@ describe('Auth Reducer', () => {
 
             const updatedAuthData = copyUserUpdateRequestToUserAuth(initialState.authData, updateRequest);
 
-            expect(state.isUpdateSuccessful).toBe(true);
             expect(state.authData).toEqual(updatedAuthData);
         });
 

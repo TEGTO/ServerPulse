@@ -61,7 +61,7 @@ export class AuthInterceptor implements HttpInterceptor, OnDestroy {
     return next.handle(authReq);
   }
 
-  private refreshToken(request: HttpRequest<any>, next: HttpHandler) {
+  private refreshToken(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     if (!this.isRefreshing) {
       this.isRefreshing = true;
 
@@ -88,7 +88,7 @@ export class AuthInterceptor implements HttpInterceptor, OnDestroy {
     );
   }
 
-  private addTokenHeader(req: HttpRequest<any>, token: string) {
+  private addTokenHeader(req: HttpRequest<any>, token: string): HttpRequest<any> {
     const clonedRequest = req.clone({
       headers: req.headers.set('Authorization', `Bearer ${token}`)
     });

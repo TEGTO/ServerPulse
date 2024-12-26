@@ -1,0 +1,90 @@
+<div class="statistics__content">
+    <section class="content__left child:border-b border-gray-200 dark:border-gray-600">
+        <ng-container *ngIf="lifecycleStatistics$ | async as lifecycleStatistics; else loading">
+            <div class="left__status">
+                Status:
+                {{ serverStatus }}
+                <div class="status__illumination">
+                    <span [ngClass]="{
+                        'green': serverStatus === 'Online',
+                        'red': serverStatus === 'Offline',
+                        'grey': serverStatus === 'No Data'
+                      }" class="illumination__indicator"></span>
+                </div>
+            </div>
+            <div class="left__uptime">
+                Last start:
+                {{ (lifecycleStatistics.serverLastStartDateTimeUTC ) ? (lifecycleStatistics.serverLastStartDateTimeUTC |
+                localizedDate ) : '—' }}
+            </div>
+            <div class="left__uptime">
+                Uptime:
+                {{ lifecycleStatistics.serverUptime ?? "—" }}
+            </div>
+            <div class="left__last-uptime">
+                Last uptime:
+                {{ lifecycleStatistics.lastServerUptime ?? "—" }}
+            </div>
+            <div class="left__last-uptime">
+                Last pulse:
+                {{ (lifecycleStatistics.lastPulseDateTimeUTC) ? (lifecycleStatistics.lastPulseDateTimeUTC |
+                localizedDate ) : '—' }}
+            </div>
+            <div class="left__last-load-amount">
+                Load amount:
+                {{ (loadStatistics$ | async)?.amountOfEvents ?? "—" }}
+            </div>
+        </ng-container>
+        <ng-template #loading>
+            <div class="flex justify-center py-3 m-auto h-full items-center">
+                <mat-progress-spinner [mode]="'indeterminate'" diameter="50"></mat-progress-spinner>
+            </div>
+        </ng-template>
+    </section>
+
+    <cdk-virtual-scroll-viewport #scroller class="content__right" [itemSize]="tableItemHeight">
+        <ng-container *ngIf="loadEvents$ | async as loadEvents; else eventLoading">
+            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                        <th scope="col" class="px-4 py-4">Endpoint</th>
+                        <th scope="col" class="px-4 py-4">Method</th>
+                        <th scope="col" class="px-5 py-4">Status code</th>
+                        <th scope="col" class="px-4 py-4">Duration</th>
+                        <th scope="col" class="px-4 py-4">Timestamp</th>
+                        <th scope="col" class="px-4 py-4">Creation Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *cdkVirtualFor="let event of loadEvents; trackBy:trackById"
+                        class="border-b dark:bg-gray-800 dark:border-gray-700 px-4 py-4">
+                        <th scope="row" class="px-4 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                            {{event.endpoint}}
+                        </th>
+                        <td class="px-4 py-3">
+                            {{event.method}}
+                        </td>
+                        <td class="px-4 py-3">
+                            {{event.statusCode}}
+                        </td>
+                        <td class="px-4 py-3">
+                            {{event.duration}}
+                        </td>
+                        <td class="px-4 py-3">
+                            {{event.timestampUTC | localizedDate}}
+                        </td>
+                        <td class="px-4 py-3">
+                            {{event.creationDateUTC | localizedDate}}
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </ng-container>
+        <ng-template #eventLoading>
+            <div class="flex justify-center py-3 m-auto h-full items-center">
+                <mat-progress-spinner [mode]="'indeterminate'" diameter="100"></mat-progress-spinner>
+            </div>
+        </ng-template>
+    </cdk-virtual-scroll-viewport>
+</div>

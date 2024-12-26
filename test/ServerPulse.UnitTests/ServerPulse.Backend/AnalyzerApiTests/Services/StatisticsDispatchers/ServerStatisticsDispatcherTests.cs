@@ -96,7 +96,7 @@ namespace AnalyzerApi.Services.StatisticsDispatchers.Tests
             Assert.IsTrue(listeners.ContainsKey(key));
             Assert.IsTrue(listeners.Any());
 
-            await Task.Delay(eventCount * eventDelay + 2000);
+            await Task.Delay(eventCount * eventDelay * 2);
             await dispatcher.StopStatisticsDispatchingAsync(key);
 
             // Assert

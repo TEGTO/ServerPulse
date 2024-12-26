@@ -1,0 +1,64 @@
+<div
+    class="server-slot w-full bg-white border border-gray-200 rounded-lg shadow md:flex-row dark:border-gray-700 dark:bg-gray-800">
+    <header
+        class="server-slot__header bg-white dark:bg-gray-900 w-full border-b border-gray-200 dark:border-gray-600 pb-1.5">
+
+        <button mat-icon-button [matMenuTriggerFor]="serverSlotMoreOptions">
+            <span class="material-icons">more_vert</span>
+        </button>
+
+        <mat-menu #serverSlotMoreOptions="matMenu" id="serverSlotMoreOptions">
+            <button mat-menu-item (click)="showSlotInfo()">
+                <div class="flex gap-2 items-center justify-between">
+                    <span class="text-base">Info</span>
+                    <span class="material-icons">info</span>
+                </div>
+            </button>
+
+            <button mat-menu-item (click)="makeInputEditable()">
+                <div class="flex gap-2 items-center justify-between">
+                    <span class="text-base">Rename</span>
+                    <span class="material-icons">edit</span>
+                </div>
+            </button>
+
+            <button mat-menu-item (click)="deleteSlot()">
+                <div class="flex gap-2 items-center justify-between">
+                    <span class="text-base text-red-600">Delete</span>
+                    <span class="material-icons text-red-600">delete</span>
+                </div>
+            </button>
+        </mat-menu>
+
+        <div class="header__center-group">
+            <div class="center-group__server-status">
+                <span [ngClass]="{
+                        'green': (serverStatus$ | async) === 'Online',
+                        'red': (serverStatus$ | async) === 'Offline',
+                        'grey': (serverStatus$ | async) === 'No Data'
+                    }" class="server-status__indicator"></span>
+            </div>
+
+            <div class="center-group__name">
+                <app-server-slot-name-changer [serverSlot]="serverSlot"
+                    [inputIsEditable$]="inputIsEditable$"></app-server-slot-name-changer>
+            </div>
+        </div>
+
+        <button id="show-slot-info-button" mat-button color="primary" (click)="showSlotInfo()">
+            <span class="material-icons">bar_chart</span>
+        </button>
+    </header>
+
+    <div class="server-slot__body bg-white dark:bg-gray-900">
+        <div class="body__activity-chart w-full h-5/6">
+            <app-server-slot-activity-preview [serverSlot]="serverSlot"></app-server-slot-activity-preview>
+        </div>
+        <div class="body__bottom w-full flex justify-between items-end">
+            <button mat-raised-button (click)="showKey()">
+                <span class="material-icons">key</span>
+            </button>
+            <app-server-slot-info-download [slotKey]="serverSlot.slotKey"></app-server-slot-info-download>
+        </div>
+    </div>
+</div>

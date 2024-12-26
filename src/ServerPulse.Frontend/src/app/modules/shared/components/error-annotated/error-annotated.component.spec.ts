@@ -1,6 +1,5 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { CommonModule } from '@angular/common';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_SNACK_BAR_DATA, MatSnackBarModule, MatSnackBarRef } from '@angular/material/snack-bar';
 import { By } from '@angular/platform-browser';
@@ -8,7 +7,6 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ErrorAnnotatedComponent } from './error-annotated.component';
 
 describe('ErrorAnnotatedComponent', () => {
-  let component: ErrorAnnotatedComponent;
   let fixture: ComponentFixture<ErrorAnnotatedComponent>;
   let mockSnackBarRef: MatSnackBarRef<ErrorAnnotatedComponent>;
 
@@ -30,7 +28,6 @@ describe('ErrorAnnotatedComponent', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(ErrorAnnotatedComponent);
-    component = fixture.componentInstance;
     fixture.detectChanges();
   });
 

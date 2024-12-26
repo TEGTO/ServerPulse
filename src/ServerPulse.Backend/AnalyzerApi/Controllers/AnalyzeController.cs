@@ -1,6 +1,7 @@
 ﻿using AnalyzerApi.Command.Controllers.GetDailyLoadStatistics;
 using AnalyzerApi.Command.Controllers.GetLoadAmountStatisticsInRange;
 using AnalyzerApi.Command.Controllers.GetLoadEventsInDataRange;
+using AnalyzerApi.Command.Controllers.GetSlotStatistics;
 using AnalyzerApi.Command.Controllers.GetSomeCustomEvents;
 using AnalyzerApi.Command.Controllers.GetSomeLoadEvents;
 using AnalyzerApi.Infrastructure.Dtos.Responses.Events;
@@ -32,10 +33,10 @@ namespace AnalyzerApi.Controllers
             return Ok(response);
         }
 
-        [OutputCache(PolicyName = "GetDailyLoadStatisticsPolicy")]
+        [OutputCache(PolicyName = "GetDailyLoadAmountStatisticsPolicy")]
         [Route("perday/{key}")]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<LoadAmountStatisticsResponse>>> GetDailyLoadStatistics(string key, CancellationToken cancellationToken)
+        public async Task<ActionResult<IEnumerable<LoadAmountStatisticsResponse>>> GetDailyLoadAmountStatistics(string key, CancellationToken cancellationToken)
         {
             var response = await mediator.Send(new GetDailyLoadStatisticsQuery(key), cancellationToken);
             return Ok(response);
@@ -63,6 +64,15 @@ namespace AnalyzerApi.Controllers
         public async Task<ActionResult<IEnumerable<CustomEventResponse>>> GetSomeCustomEvents(GetSomeMessagesRequest request, CancellationToken cancellationToken)
         {
             var response = await mediator.Send(new GetSomeCustomEventsQuery(request), cancellationToken);
+            return Ok(response);
+        }
+
+        [OutputCache(PolicyName = "GetSlotStatisticsPolicy")]
+        [Route("slotstatistics/{key}")]
+        [HttpGet]
+        public async Task<ActionResult<SlotStatisticsResponse>> GetSlotStatistics(string key, CancellationToken cancellationToken)
+        {
+            var response = await mediator.Send(new GetSlotStatisticsQuery(key), cancellationToken);
             return Ok(response);
         }
     }

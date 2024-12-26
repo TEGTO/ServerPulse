@@ -14,15 +14,20 @@ describe('LocalStorageService', () => {
     });
 
     it('should encrypt string', () => {
-        let str = "some string";
-        let ecryptedString = service.encryptString(str);
+        const str = "some string";
+
+        const ecryptedString = service.encryptString(str);
+
         expect(ecryptedString).not.toBe(str);
     });
 
     it('should deencrypt string', () => {
-        let str = "some string";
-        let ecryptedString = service.encryptString(str);
-        let decryptedString = service.decryptString(ecryptedString);
+        const str = "some string";
+
+        const ecryptedString = service.encryptString(str);
+
+        const decryptedString = service.decryptString(ecryptedString);
+
         expect(decryptedString).toBe(str);
     });
 

@@ -18,7 +18,6 @@ namespace AnalyzerApi.BackgroundServices
     {
         private readonly IMessageConsumer messageConsumer;
         private readonly IMediator mediator;
-        private readonly ITopicManager topicManager;
         private readonly ILogger<LoadEventStatisticsProcessor> logger;
 
         private readonly ResiliencePipeline resiliencePipeline;
@@ -32,14 +31,12 @@ namespace AnalyzerApi.BackgroundServices
         public LoadEventStatisticsProcessor(
             IMessageConsumer messageConsumer,
             IMediator mediator,
-            ITopicManager topicManager,
             IConfiguration configuration,
             ResiliencePipelineProvider<string> resiliencePipelineProvider,
             ILogger<LoadEventStatisticsProcessor> logger)
         {
             this.messageConsumer = messageConsumer;
             this.mediator = mediator;
-            this.topicManager = topicManager;
             this.logger = logger;
 
             processTopic = configuration[Configuration.KAFKA_LOAD_TOPIC_PROCESS]!;
@@ -62,8 +59,6 @@ namespace AnalyzerApi.BackgroundServices
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             logger.LogInformation("LoadEventStatisticsProcessor started.");
-
-            await EnsureTopicCreatedAsync(stoppingToken);
 
             using var batchTimer = new PeriodicTimer(batchInterval);
 
@@ -140,26 +135,6 @@ namespace AnalyzerApi.BackgroundServices
             {
                 logger.LogInformation("Processing batch of size {BatchCount}.", batchSnapshot.Count);
                 await ProcessBatchAsync(batchSnapshot, cancellationToken);
-            }
-        }
-
-        private async Task EnsureTopicCreatedAsync(CancellationToken stoppingToken)
-        {
-            try
-            {
-                await resiliencePipeline.ExecuteAsync(async token =>
-                {
-                    await topicManager.CreateTopicsAsync([processTopic], timeoutInMilliseconds: timeoutInMilliseconds);
-
-                    var message = $"Topic '{processTopic}' ensured to exist.";
-                    logger.LogInformation(message);
-
-                }, stoppingToken);
-            }
-            catch (Exception ex)
-            {
-                var message = $"Failed to create Kafka topic '{processTopic}'. The service will still attempt to process messages.";
-                logger.LogCritical(ex, message);
             }
         }
 

@@ -30,12 +30,15 @@ describe('RedirectorContollerService', () => {
 
   it('should navigate to home', () => {
     service.redirectToHome();
+
     expect(mockRouter.navigate).toHaveBeenCalledWith(['']);
   });
 
   it('should navigate to some path', () => {
-    let somePath = "some path";
+    const somePath = "some path";
+
     service.redirectTo(somePath);
+
     expect(mockRouter.navigate).toHaveBeenCalledWith([somePath]);
   });
 });

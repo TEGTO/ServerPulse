@@ -1,0 +1,93 @@
+@use 'colors' as colors;
+@use 'utils' as utils;
+
+@keyframes glow {
+    0% {
+        box-shadow: 0 0 2px var(--color), 0 0 4px var(--color), 0 0 6px var(--color), 0 0 8px var(--color);
+    }
+
+    100% {
+        box-shadow: 0 0 4px var(--color), 0 0 8px var(--color), 0 0 12px var(--color), 0 0 16px var(--color);
+    }
+}
+
+@mixin indicator-color($color) {
+    background-color: $color;
+    box-shadow: 0 0 2px $color, 0 0 4px $color, 0 0 6px $color, 0 0 8px $color;
+}
+
+.server-slot {
+    padding: utils.pxToRem(32);
+    box-shadow: 2px 2px 7px 1px colors.$task-box-shadow;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+
+    .server-slot__header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+
+        .header__center-group {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+
+            .center-group__server-status {
+
+                .server-status__indicator {
+                    display: inline-block;
+                    width: 10px;
+                    height: 10px;
+                    border-radius: 50%;
+                    margin-right: utils.pxToRem(10);
+                    vertical-align: middle;
+                }
+
+                .server-status__indicator.green {
+                    --color: green;
+                    @include indicator-color(green);
+                    animation: glow 1.5s infinite alternate;
+                }
+
+                .server-status__indicator.red {
+                    --color: red;
+                    @include indicator-color(red);
+                    animation: glow 1.5s infinite alternate;
+                }
+
+                .server-status__indicator.grey {
+                    --color: grey;
+                    @include indicator-color(grey);
+                }
+            }
+
+            .center-group__name {
+                font-size: utils.pxToRem(30);
+                font-weight: 900;
+                max-width: utils.pxToRem(400);
+                overflow: hidden;
+                text-overflow: ellipsis;
+                text-wrap: nowrap;
+            }
+        }
+    }
+
+    .server-slot__body {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+        gap: utils.pxToRem(20);
+        padding: utils.pxToRem(10);
+        width: 100%;
+        height: utils.pxToRem(315);
+    }
+}
+
+#serverSlotMoreOptions {
+    * {
+        color: wheat;
+    }
+}

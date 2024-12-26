@@ -21,13 +21,13 @@ namespace ServerSlotApi.Command.DeleteSlot.Tests
             );
         }
 
-        [TestCase(null, "slot123", "validToken", ExpectedResult = typeof(ArgumentNullException))]
-        [TestCase("", "slot123", "validToken", ExpectedResult = typeof(ArgumentException))]
-        [TestCase("user@example.com", "slot123", "validToken", ExpectedResult = null)]
-        public async Task<Type?> Handle_EmailValidation_ThrowsException(string? email, string slotId, string token)
+        [TestCase(null, "slot123", ExpectedResult = typeof(ArgumentNullException))]
+        [TestCase("", "slot123", ExpectedResult = typeof(ArgumentException))]
+        [TestCase("user@example.com", "slot123", ExpectedResult = null)]
+        public async Task<Type?> Handle_EmailValidation_ThrowsException(string? email, string slotId)
         {
             // Arrange
-            var command = new DeleteSlotCommand(email, slotId, token);
+            var command = new DeleteSlotCommand(email, slotId);
 
             if (email == null)
             {
@@ -55,10 +55,9 @@ namespace ServerSlotApi.Command.DeleteSlot.Tests
             // Arrange
             var email = "user@example.com";
             var slotId = "slot123";
-            var token = "validToken";
             var slot = new ServerSlot { UserEmail = email };
 
-            var command = new DeleteSlotCommand(email, slotId, token);
+            var command = new DeleteSlotCommand(email, slotId);
 
             repositoryMock
                 .Setup(r => r.GetSlotAsync(It.Is<SlotModel>(m => m.SlotId == slotId && m.UserEmail == email), It.IsAny<CancellationToken>()))
@@ -81,9 +80,8 @@ namespace ServerSlotApi.Command.DeleteSlot.Tests
             // Arrange
             var email = "user@example.com";
             var slotId = "slot123";
-            var token = "validToken";
 
-            var command = new DeleteSlotCommand(email, slotId, token);
+            var command = new DeleteSlotCommand(email, slotId);
 
             repositoryMock
                 .Setup(r => r.GetSlotAsync(It.Is<SlotModel>(m => m.SlotId == slotId && m.UserEmail == email), It.IsAny<CancellationToken>()))
