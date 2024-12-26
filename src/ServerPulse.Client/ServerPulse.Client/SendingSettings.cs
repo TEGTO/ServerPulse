@@ -3,15 +3,15 @@
     public class SendingSettings
     {
         /// <summary>
-        /// Key of the server slot to connect.
+        /// The server slot key.
         /// </summary>
         public required string Key { get; set; }
         /// <summary>
-        /// Event server url.
+        /// Event monitoring server uri. 
         /// </summary>
         public required string EventServer { get; set; } = default!;
         /// <summary>
-        /// How often a message with alive event data will be sent in seconds.
+        /// The frequency, in seconds, at which a message containing pulse event data will be sent.
         /// </summary>
         public double ServerKeepAliveInterval { get; set; } = 10d;
         /// <summary>
@@ -23,6 +23,7 @@
         /// </summary>
         public double SendingInterval { get; set; } = 15d;
     }
+
     public class SendingSettings<T> where T : class
     {
         public required string Key { get; set; }

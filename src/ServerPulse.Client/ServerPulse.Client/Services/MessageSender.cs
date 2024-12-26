@@ -14,6 +14,7 @@ namespace ServerPulse.Client.Services
         public async Task SendJsonAsync(string json, string url, CancellationToken cancellationToken)
         {
             var httpClient = httpClientFactory.CreateClient();
+
             var jsonContent = new StringContent
             (
                 json,

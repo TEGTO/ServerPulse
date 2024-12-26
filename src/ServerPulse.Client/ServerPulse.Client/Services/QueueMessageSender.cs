@@ -20,10 +20,11 @@ namespace ServerPulse.Client.Services
             this.settings = settings;
         }
 
-        public virtual void SendMessage(T m)
+        public virtual void SendMessage(T message)
         {
-            eventQueue.Enqueue(m);
+            eventQueue.Enqueue(message);
         }
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             using PeriodicTimer timer = new(TimeSpan.FromSeconds(settings.SendingInterval));
@@ -39,10 +40,12 @@ namespace ServerPulse.Client.Services
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, $"An error occurred while sending {typeof(T).Name} events.");
+                    var str = $"An error occurred while sending {typeof(T).Name} events.";
+                    logger.LogError(ex, str);
                 }
             }
         }
+
         protected virtual string GetEventsJson()
         {
             var events = new List<T>();
@@ -50,6 +53,7 @@ namespace ServerPulse.Client.Services
             {
                 events.Add(ev);
             }
+
             return JsonSerializer.Serialize(events);
         }
     }

@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using EventCommunication;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using ServerPulse.Client.Services.Interfaces;
-using ServerPulse.EventCommunication.Events;
 
 namespace ServerPulse.Client.Middlewares
 {
@@ -39,6 +39,7 @@ namespace ServerPulse.Client.Middlewares
             serverLoadSender.SendMessage(loadEvent);
         }
     }
+
     public static class LoadMonitorMiddlewareExtensions
     {
         public static IApplicationBuilder UseLoadMonitor(this IApplicationBuilder builder)

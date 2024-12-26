@@ -1,6 +1,6 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using EventCommunication;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using ServerPulse.EventCommunication.Events;
 
 namespace ServerPulse.Client.Services
 {
@@ -25,17 +25,27 @@ namespace ServerPulse.Client.Services
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            await SendConfigurationEventAsync(stoppingToken);
+            await StartPulseSendingAsync(stoppingToken);
+        }
+
+        private async Task SendConfigurationEventAsync(CancellationToken stoppingToken)
+        {
             try
             {
-                var confEvent = new ConfigurationEvent(configurationSettings.Key, TimeSpan.FromSeconds(configurationSettings.SendingInterval));
-                await messageSender.SendJsonAsync(confEvent.ToString(), configurationSettings.SendingEndpoint, stoppingToken);
+                var cnfEvent = new ConfigurationEvent(configurationSettings.Key, TimeSpan.FromSeconds(configurationSettings.SendingInterval));
+                await messageSender.SendJsonAsync(cnfEvent.ToString(), configurationSettings.SendingEndpoint, stoppingToken);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "An error occurred while sending load events.");
+                logger.LogError(ex, "An error occurred while sending configuration event.");
             }
+        }
 
+        private async Task StartPulseSendingAsync(CancellationToken stoppingToken)
+        {
             using PeriodicTimer timer = new(TimeSpan.FromSeconds(pulseSettings.SendingInterval));
+
             while (!stoppingToken.IsCancellationRequested && await timer.WaitForNextTickAsync(stoppingToken))
             {
                 try
@@ -45,7 +55,7 @@ namespace ServerPulse.Client.Services
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "An error occurred while sending load events.");
+                    logger.LogError(ex, "An error occurred while sending pulse event.");
                 }
             }
         }

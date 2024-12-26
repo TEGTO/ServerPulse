@@ -1,0 +1,97 @@
+name: Continuous Integration Client
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - develop-release
+    paths:
+      - "src/ServerPulse.Client/**"
+      - "test/**"
+  pull_request:
+    branches:
+      - main
+      - develop-release
+    paths:
+      - "src/ServerPulse.Client/**"
+      - "test/**"
+
+permissions: write-all
+
+env:
+  DOTNET_VERSION: "8.0.x"
+
+jobs:
+  run-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache .NET packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
+        run: |
+          dotnet restore src/ServerPulse.Client/ServerPulse.Client.sln
+
+      - name: Install coverage tools
+        run: |
+          dotnet tool install --global dotnet-coverage
+          dotnet tool install --global dotnet-reportgenerator-globaltool
+
+      - name: Build projects
+        run: |
+          dotnet build src/ServerPulse.Client/ServerPulse.Client.sln
+
+      - name: Run tests with coverage
+        run: |
+          dotnet-coverage collect dotnet test src/ServerPulse.Client/ServerPulse.Client.sln --configuration Release --logger "trx;LogFileName=test-results.trx" --results-directory ./TestResults -f xml -o coverage.xml --settings coverage.runsettings
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: ./TestResults
+
+      - name: Upload code coverage results
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-coverage
+          path: coverage.xml
+
+      - name: Install ReportGenerator
+        run: |
+          dotnet tool install -g dotnet-reportgenerator-globaltool
+
+      - name: Generate HTML report from coverage
+        run: |
+          reportgenerator -reports:coverage.xml -targetdir:./coverage-report -reporttypes:Html
+
+      - name: Upload coverage report artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: ./coverage-report
+
+      - name: Publish Individual Projects
+        run: |
+          dotnet publish src/ServerPulse.Client/ServerPulse.Client/ServerPulse.Client.csproj --configuration Release --output ./output/client-library
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifact
+          path: ./output

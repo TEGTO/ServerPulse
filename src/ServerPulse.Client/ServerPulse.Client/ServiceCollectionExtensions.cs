@@ -1,8 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using EventCommunication;
+using Microsoft.Extensions.DependencyInjection;
 using ServerPulse.Client.Services;
 using ServerPulse.Client.Services.Interfaces;
-using ServerPulse.EventCommunication;
-using ServerPulse.EventCommunication.Events;
 
 namespace ServerPulse.Client
 {
@@ -17,15 +16,15 @@ namespace ServerPulse.Client
             services.AddSingleton(SendingSettings<PulseEvent>.CreateCustomSettings(settings, "/serverinteraction/pulse", settings.ServerKeepAliveInterval));
             services.AddSingleton(SendingSettings<ConfigurationEvent>.CreateCustomSettings(settings, "/serverinteraction/configuration", settings.ServerKeepAliveInterval));
             services.AddSingleton(SendingSettings<LoadEvent>.CreateCustomSettings(settings, "/serverinteraction/load", settings.SendingInterval));
-            services.AddSingleton(SendingSettings<CustomEventWrapper>.CreateCustomSettings(settings, "/serverinteraction/custom", settings.SendingInterval));
+            services.AddSingleton(SendingSettings<CustomEventContainer>.CreateCustomSettings(settings, "/serverinteraction/custom", settings.SendingInterval));
 
             services.AddSingleton<QueueMessageSender<LoadEvent>>();
             services.AddSingleton<IQueueMessageSender<LoadEvent>>(sp => sp.GetRequiredService<QueueMessageSender<LoadEvent>>());
             services.AddHostedService(sp => sp.GetRequiredService<QueueMessageSender<LoadEvent>>());
 
-            services.AddSingleton<QueueMessageSender<CustomEventWrapper>>();
-            services.AddSingleton<IQueueMessageSender<CustomEventWrapper>>(sp => sp.GetRequiredService<QueueMessageSender<CustomEventWrapper>>());
-            services.AddHostedService(sp => sp.GetRequiredService<QueueMessageSender<CustomEventWrapper>>());
+            services.AddSingleton<QueueMessageSender<CustomEventContainer>>();
+            services.AddSingleton<IQueueMessageSender<CustomEventContainer>>(sp => sp.GetRequiredService<QueueMessageSender<CustomEventContainer>>());
+            services.AddHostedService(sp => sp.GetRequiredService<QueueMessageSender<CustomEventContainer>>());
 
             services.AddHostedService<ServerStatusSender>();
 
