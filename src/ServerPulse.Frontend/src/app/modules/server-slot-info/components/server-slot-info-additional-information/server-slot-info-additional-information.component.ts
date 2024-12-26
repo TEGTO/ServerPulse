@@ -1,5 +1,5 @@
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
-import { AfterViewInit, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { filter, map, Observable, of, pairwise, Subject, switchMap, takeUntil, tap, throttleTime, withLatestFrom } from 'rxjs';
 import { addNewCustomEvent, getSomeCustomEvents, selectCustomEvents, selectCustomReadFromDate, selectSelectedDate, setCustomReadFromDate, showCustomDetailsEvent } from '../..';
@@ -9,7 +9,8 @@ import { isSelectedDateToday } from '../../utils';
 @Component({
   selector: 'app-server-slot-info-additional-information',
   templateUrl: './server-slot-info-additional-information.component.html',
-  styleUrl: './server-slot-info-additional-information.component.scss'
+  styleUrl: './server-slot-info-additional-information.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ServerSlotInfoAdditionalInformationComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('scroller') scroller!: CdkVirtualScrollViewport;

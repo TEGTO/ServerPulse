@@ -17,22 +17,24 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *cdkVirtualFor="let event of customEvents; trackBy:trackById"
-                        class="border-b dark:bg-gray-800 dark:border-gray-700 px-4 py-4">
-                        <th scope="row" class="px-4 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                            {{event.name}}
-                        </th>
-                        <td class="px-4 py-3">
-                            {{event.creationDateUTC | date:'dd.MM.yyyy HH:mm'}}
-                        </td>
-                        <td class="px-4 py-3">
-                            {{event.description}}
-                        </td>
-                        <td class="px-6 py-4 text-right">
-                            <button class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                                (click)="openDetailMenu(event)">Show</button>
-                        </td>
-                    </tr>
+                    <ng-container *cdkVirtualFor="let event of customEvents; trackBy:trackById">
+                        <tr class="border-b dark:bg-gray-800 dark:border-gray-700 px-4 py-4">
+                            <th scope="row"
+                                class="px-4 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                {{event.name}}
+                            </th>
+                            <td class="px-4 py-3">
+                                {{event.creationDateUTC | date:'dd.MM.yyyy HH:mm'}}
+                            </td>
+                            <td class="px-4 py-3">
+                                {{event.description}}
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <button class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                                    (click)="openDetailMenu(event)">Show</button>
+                            </td>
+                        </tr>
+                    </ng-container>
                 </tbody>
             </table>
         </ng-container>

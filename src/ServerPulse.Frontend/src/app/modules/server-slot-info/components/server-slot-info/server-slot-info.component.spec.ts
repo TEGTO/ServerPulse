@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { ChangeDetectorRef, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
@@ -10,7 +10,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
 import { startCustomStatisticsReceiving, startLifecycleStatisticsReceiving, startLoadStatisticsReceiving } from '../../../analyzer';
-import { getServerSlotById } from '../../../server-slot-shared';
+import { getServerSlotById, ServerSlot } from '../../../server-slot-shared';
 import { ServerSlotInfoComponent } from './server-slot-info.component';
 
 describe('ServerSlotInfoComponent', () => {
@@ -137,6 +137,15 @@ describe('ServerSlotInfoComponent', () => {
       const infoDownload = fixture.debugElement.query(By.css('app-server-slot-info-download'));
       expect(infoDownload).toBeTruthy();
       expect(infoDownload.properties['slotKey']).toBe(mockServerSlot.slotKey);
+    });
+
+    it('should show progress spinner when server slot is loading', () => {
+      component.serverSlot$ = of(null as unknown as ServerSlot);
+      const cdr = fixture.debugElement.injector.get<ChangeDetectorRef>(ChangeDetectorRef);
+      cdr.detectChanges();
+
+      const spinner = fixture.debugElement.query(By.css('mat-progress-spinner'));
+      expect(spinner).toBeTruthy();
     });
   });
 });

@@ -17,7 +17,7 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
   @Input({ required: true }) slotKey!: string;
 
   chartType = ActivityChartType.Line;
-  currentSelectedDate!: Date;
+  currentSelectedDate: Date = new Date();
 
   private readonly controlChartDataSubject$ = new BehaviorSubject<[number, number][]>([]);
   private readonly secondaryChartDataSubject$ = new BehaviorSubject<[number, number][]>([]);
@@ -87,7 +87,7 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
       .pipe(
         takeUntil(this.destroy$),
         tap(date => {
-          if (!this.currentSelectedDate || this.currentSelectedDate.getTime() !== date.getTime()) {
+          if (this.currentSelectedDate.getTime() !== date?.getTime()) {
             this.currentSelectedDate = date;
 
             this.updateSecondaryTime();
