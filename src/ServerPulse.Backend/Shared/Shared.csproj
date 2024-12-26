@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ExceptionHandling\ExceptionHandling.csproj" />
+    <ProjectReference Include="..\Helper\Helper.csproj" />
     <ProjectReference Include="..\Logging\Logging.csproj" />
     <ProjectReference Include="..\Resilience\Resilience.csproj" />
   </ItemGroup>

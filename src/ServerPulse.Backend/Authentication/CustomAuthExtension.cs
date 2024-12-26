@@ -1,4 +1,6 @@
-﻿using Authentication.Token;
+﻿using Authentication.OAuth;
+using Authentication.OAuth.Google;
+using Authentication.Token;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -10,6 +12,23 @@ namespace Authentication
 {
     public static class CustomAuthExtension
     {
+        public static IServiceCollection AddOAuthServices(this IServiceCollection services, IConfiguration configuration)
+        {
+            var googleOAuthSettings = new GoogleOAuthSettings()
+            {
+                ClientId = configuration[OAuthConfiguration.GOOGLE_OAUTH_CLIENT_ID]!,
+                ClientSecret = configuration[OAuthConfiguration.GOOGLE_OAUTH_CLIENT_SECRET]!,
+                Scope = configuration[OAuthConfiguration.GOOGLE_OAUTH_SCOPE]!,
+            };
+
+            services.AddSingleton(googleOAuthSettings);
+
+            services.AddScoped<IGoogleTokenValidator, GoogleTokenValidator>();
+            services.AddScoped<IGoogleOAuthHttpClient, GoogleOAuthHttpClient>();
+
+            return services;
+        }
+
         public static IServiceCollection ConfigureIdentityServices(this IServiceCollection services, IConfiguration configuration)
         {
             var jwtSettings = new JwtSettings()

@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
-using Shared.Configurations;
 using System.Net.Http.Headers;
 using System.Text;
 
-namespace Shared.Helpers
+namespace Helper.Services
 {
     public class HttpHelper : IHttpHelper
     {
@@ -67,7 +66,7 @@ namespace Shared.Helpers
                 request.Content = httpContent;
             }
 
-            using var httpClient = httpClientFactory.CreateClient(SharedConfiguration.HTTP_CLIENT_RESILIENCE_PIPELINE);
+            using var httpClient = httpClientFactory.CreateClient(HelperConfiguration.HTTP_CLIENT_HELPER);
             using var response = await httpClient.SendAsync(request, cancellationToken);
 
             var resultJson = await response.Content.ReadAsStringAsync(cancellationToken);

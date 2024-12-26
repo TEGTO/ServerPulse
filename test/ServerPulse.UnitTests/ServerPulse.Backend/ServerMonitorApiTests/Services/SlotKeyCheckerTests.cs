@@ -1,7 +1,7 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Helper.Services;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using ServerSlotApi.Dtos;
-using Shared.Helpers;
 using System.Text.Json;
 
 namespace ServerMonitorApi.Services.Tests

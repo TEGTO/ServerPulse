@@ -1,5 +1,5 @@
 ﻿using Authentication.Models;
-using AuthenticationApi.Infrastructure;
+using AuthenticationApi.Infrastructure.Models;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 

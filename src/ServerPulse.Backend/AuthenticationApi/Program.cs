@@ -35,6 +35,7 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 .AddDefaultTokenProviders();
 
 builder.Services.ConfigureIdentityServices(builder.Configuration);
+builder.Services.AddOAuthServices(builder.Configuration);
 builder.Services.AddScoped<ITokenHandler, JwtHandler>();
 
 #endregion

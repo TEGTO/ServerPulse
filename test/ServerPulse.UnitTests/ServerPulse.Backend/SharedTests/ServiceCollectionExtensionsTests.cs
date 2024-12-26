@@ -1,11 +1,12 @@
 ﻿using FluentValidation;
+using Helper;
+using Helper.Services;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Shared.Configurations;
-using Shared.Helpers;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace Shared.Tests
@@ -34,6 +35,25 @@ namespace Shared.Tests
             var validator = serviceProvider.GetService<IValidator<MockEntity>>();
 
             Assert.NotNull(validator);
+        }
+
+        [Test]
+        public void AddCustomHttpClientServiceWithResilience_RegistersHttpClientAndDependencies()
+        {
+            // Act
+            services.AddHelperHttpClientServiceWithResilience(configurationMock.Object);
+
+            var serviceProvider = services.BuildServiceProvider();
+
+            // Assert
+            Assert.That(services.Any(s => s.ServiceType == typeof(IHttpHelper)));
+            Assert.IsNotNull(serviceProvider.GetRequiredService<IHttpHelper>());
+
+            var factory = serviceProvider.GetRequiredService<IHttpClientFactory>();
+            Assert.IsNotNull(factory);
+
+            var client = factory.CreateClient(HelperConfiguration.HTTP_CLIENT_HELPER);
+            Assert.IsNotNull(client);
         }
 
         [TestCase("http://example.com,http://test.com", true, 2)]
@@ -82,25 +102,6 @@ namespace Shared.Tests
             // Assert
             Assert.IsNotNull(policy);
             Assert.IsTrue(policy.IsOriginAllowed("http://localhost"));
-        }
-
-        [Test]
-        public void AddCustomHttpClientServiceWithResilience_RegistersHttpClientAndDependencies()
-        {
-            // Act
-            services.AddCustomHttpClientServiceWithResilience(configurationMock.Object);
-
-            var serviceProvider = services.BuildServiceProvider();
-
-            // Assert
-            Assert.That(services.Any(s => s.ServiceType == typeof(IHttpHelper)));
-            Assert.IsNotNull(serviceProvider.GetRequiredService<IHttpHelper>());
-
-            var factory = serviceProvider.GetRequiredService<IHttpClientFactory>();
-            Assert.IsNotNull(factory);
-
-            var client = factory.CreateClient(SharedConfiguration.HTTP_CLIENT_RESILIENCE_PIPELINE);
-            Assert.IsNotNull(client);
         }
 
         [Test]

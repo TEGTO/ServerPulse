@@ -1,8 +1,9 @@
-﻿using Moq;
+﻿using Helper.Services;
+using Moq;
 using RichardSzalay.MockHttp;
 using System.Net;
 
-namespace Shared.Helpers.Tests
+namespace HelperTests.Services.Tests
 {
     [TestFixture]
     internal class HttpHelperTests

@@ -17,7 +17,7 @@ builder.Services.Configure<KestrelServerOptions>(options =>
     options.Limits.MaxRequestBodySize = 1 * 1024 * 1024; //1 MB
 });
 
-builder.Services.AddCustomHttpClientServiceWithResilience(builder.Configuration);
+builder.Services.AddHelperHttpClientServiceWithResilience(builder.Configuration);
 
 #region Kafka
 

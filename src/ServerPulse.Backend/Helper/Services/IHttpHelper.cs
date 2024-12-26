@@ -1,4 +1,4 @@
-﻿namespace Shared.Helpers
+﻿namespace Helper.Services
 {
     public interface IHttpHelper
     {

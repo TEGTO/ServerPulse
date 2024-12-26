@@ -1,4 +1,4 @@
-﻿namespace Shared.Helpers.Tests
+﻿namespace Helper.Services.Tests
 {
     [TestFixture]
     internal class HashHelperTests

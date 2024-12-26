@@ -1,10 +1,11 @@
 ﻿using FluentValidation;
 using FluentValidation.AspNetCore;
+using Helper;
+using Helper.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Shared.Configurations;
-using Shared.Helpers;
 
 namespace Shared
 {
@@ -23,6 +24,13 @@ namespace Shared
 
             ValidatorOptions.Global.LanguageManager.Enabled = false;
 
+            return services;
+        }
+
+        public static IServiceCollection AddHelperHttpClientServiceWithResilience(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddHttpClient(HelperConfiguration.HTTP_CLIENT_HELPER).AddStandardResilienceHandler();
+            services.AddSingleton<IHttpHelper, HttpHelper>();
             return services;
         }
 
@@ -45,13 +53,6 @@ namespace Shared
                     }
                 });
             });
-            return services;
-        }
-
-        public static IServiceCollection AddCustomHttpClientServiceWithResilience(this IServiceCollection services, IConfiguration configuration)
-        {
-            services.AddHttpClient(SharedConfiguration.HTTP_CLIENT_RESILIENCE_PIPELINE).AddStandardResilienceHandler();
-            services.AddSingleton<IHttpHelper, HttpHelper>();
             return services;
         }
 

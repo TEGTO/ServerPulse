@@ -1,5 +1,5 @@
-﻿using ServerSlotApi.Dtos;
-using Shared.Helpers;
+﻿using Helper.Services;
+using ServerSlotApi.Dtos;
 using System.Text.Json;
 
 namespace ServerMonitorApi.Services
