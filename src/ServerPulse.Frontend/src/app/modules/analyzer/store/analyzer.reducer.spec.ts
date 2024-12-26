@@ -155,7 +155,7 @@ describe('ServerLoadAmountStatisticsReducer', () => {
     });
 
     it('should add events to statistics on addLoadEventToLoadAmountStatistics', () => {
-        const key = 'test-key';
+        const key = 'test-key-1';
         const event = getDefaultLoadEvent();
         const action = addLoadEventToLoadAmountStatistics({ key, event });
 
@@ -172,7 +172,7 @@ describe('ServerLoadAmountStatisticsReducer', () => {
     });
 
     it('should add more events to statistics on addLoadEventToLoadAmountStatistics', () => {
-        const key = 'test-key';
+        const key = 'test-key-2';
         const event = getDefaultLoadEvent();
         const event2 = { ...getDefaultLoadEvent(), id: "newId" };
         const action = addLoadEventToLoadAmountStatistics({ key, event });
@@ -192,7 +192,7 @@ describe('ServerLoadAmountStatisticsReducer', () => {
     });
 
     it('should not add events to statistics on addLoadEventToLoadAmountStatistics, because there are no timespans', () => {
-        const key = 'test-key';
+        const key = 'test-key-3';
         const event = getDefaultLoadEvent();
         const action = addLoadEventToLoadAmountStatistics({ key, event });
 

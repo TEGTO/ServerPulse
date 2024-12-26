@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CdkVirtualScrollViewport, ScrollingModule } from '@angular/cdk/scrolling';
 import { ChangeDetectorRef, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MemoizedSelector, Store } from '@ngrx/store';
 import { BehaviorSubject, of, Subject } from 'rxjs';
 import { addNewLoadEvent, getSomeLoadEvents, selectSelectedDate, setReadFromDate, SlotInfoState } from '../..';
-import { getDefaultServerLifecycleStatistics, LoadEvent } from '../../../analyzer';
+import { getDefaultLoadEvent, getDefaultServerLifecycleStatistics, getDefaultServerLoadStatistics, LoadEvent } from '../../../analyzer';
 import { LocalizedDatePipe, TimeSpan } from '../../../shared';
 import { ServerSlotInfoStatsComponent } from './server-slot-info-stats.component';
 
-fdescribe('ServerSlotInfoStatsComponent', () => {
+describe('ServerSlotInfoStatsComponent', () => {
   let component: ServerSlotInfoStatsComponent;
   let fixture: ComponentFixture<ServerSlotInfoStatsComponent>;
   let mockStore: jasmine.SpyObj<Store>;
@@ -110,35 +110,36 @@ fdescribe('ServerSlotInfoStatsComponent', () => {
     expect(mockStore.dispatch).toHaveBeenCalledWith(addNewLoadEvent({ event: mockEvent }));
   });
 
-  it('should monitor scroll for fetching data', fakeAsync(() => {
-    const scrollOffset$ = new BehaviorSubject<number>(10);
+  it('should monitor scrolling for fetching data', () => {
+    const mockScrollOffsets = [10, 5];
+
+    const scrollerSubject = new Subject<number>();
+    const offsetQueue = [...mockScrollOffsets];
+
+    const measureScrollOffsetSpy = jasmine.createSpy('measureScrollOffset').and.callFake(() => {
+      return offsetQueue.length ? offsetQueue.shift() : 0;
+    });
+
     component.scroller = {
-      elementScrolled: () => scrollOffset$.asObservable(),
-      measureScrollOffset: () => 10,
+      elementScrolled: () => scrollerSubject.asObservable(),
+      measureScrollOffset: measureScrollOffsetSpy,
     } as unknown as CdkVirtualScrollViewport;
 
-    component.loadEvents$ = of([
-      {
-        id: '1',
-        key: 'test-slot-key',
-        creationDateUTC: new Date(),
-      } as LoadEvent,
-    ]);
-
+    storeSelectSubject$.next([{ ...getDefaultLoadEvent(), id: '1' }]);
     spyOn<any>(component, 'monitorScrollForFetching').and.callThrough();
 
     component.ngAfterViewInit();
-    scrollOffset$.next(5);
 
-    tick();
+    scrollerSubject.next(mockScrollOffsets[0]);
+    scrollerSubject.next(mockScrollOffsets[1]);
 
     expect(component['monitorScrollForFetching']).toHaveBeenCalled();
     expect(mockStore.dispatch).toHaveBeenCalledWith(jasmine.objectContaining({
       type: setReadFromDate.type
     }));
-  }));
+  });
 
-  fit('should render lifecycle statistics', () => {
+  it('should render lifecycle statistics', () => {
     storeSelectSubject$.next({ ...getDefaultServerLifecycleStatistics(), dataExists: true, isAlive: true });
 
     const cdr = fixture.debugElement.injector.get<ChangeDetectorRef>(ChangeDetectorRef);
@@ -147,8 +148,10 @@ fdescribe('ServerSlotInfoStatsComponent', () => {
     const statusElement = fixture.debugElement.query(By.css('.left__status'));
     expect(statusElement.nativeElement.textContent).toContain('Online');
 
+    storeSelectSubject$.next({ ...getDefaultServerLoadStatistics(), amountOfEvents: 20 });
+    cdr.detectChanges();
+
     const loadAmountElement = fixture.debugElement.query(By.css('.left__last-load-amount'));
     expect(loadAmountElement.nativeElement.textContent).toContain('20');
   });
-
 });
