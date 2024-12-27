@@ -1,6 +1,7 @@
 ﻿using Authentication.OAuth.Google;
 using AuthenticationApi.Dtos.OAuth;
 using AuthenticationApi.Infrastructure.Models;
+using Microsoft.Extensions.Options;
 using static Google.Apis.Auth.GoogleJsonWebSignature;
 
 namespace AuthenticationApi.Services
@@ -14,11 +15,11 @@ namespace AuthenticationApi.Services
         public GoogleOAuthService(
             IGoogleOAuthHttpClient httpClient,
             IGoogleTokenValidator googleTokenValidator,
-            GoogleOAuthSettings oAuthSettings)
+            IOptions<GoogleOAuthSettings> options)
         {
             this.httpClient = httpClient;
             this.googleTokenValidator = googleTokenValidator;
-            this.oAuthSettings = oAuthSettings;
+            this.oAuthSettings = options.Value;
         }
 
         public async Task<ProviderLoginModel> GetProviderModelOnCodeAsync(OAuthAccessCodeParams requestParams, CancellationToken cancellationToken)

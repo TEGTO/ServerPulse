@@ -1,10 +1,11 @@
 ﻿using AnalyzerApi.Command.BackgroundServices.ProcessLoadEvents;
-using AnalyzerApi.Infrastructure;
+using AnalyzerApi.Infrastructure.Configuration;
 using Confluent.Kafka;
 using EventCommunication;
 using MediatR;
 using MessageBus.Interfaces;
 using MessageBus.Models;
+using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Registry;
 using Shared;
@@ -31,7 +32,8 @@ namespace AnalyzerApi.BackgroundServices
         public LoadEventStatisticsProcessor(
             IMessageConsumer messageConsumer,
             IMediator mediator,
-            IConfiguration configuration,
+            IOptions<MessageBusSettings> messageBusOptions,
+            IOptions<LoadProcessingSettings> processOptions,
             ResiliencePipelineProvider<string> resiliencePipelineProvider,
             ILogger<LoadEventStatisticsProcessor> logger)
         {
@@ -39,11 +41,11 @@ namespace AnalyzerApi.BackgroundServices
             this.mediator = mediator;
             this.logger = logger;
 
-            processTopic = configuration[Configuration.KAFKA_LOAD_TOPIC_PROCESS]!;
-            timeoutInMilliseconds = int.Parse(configuration[Configuration.KAFKA_TIMEOUT_IN_MILLISECONDS]!);
+            processTopic = messageBusOptions.Value.LoadTopicProcess;
+            timeoutInMilliseconds = messageBusOptions.Value.ReceiveTimeoutInMilliseconds;
 
-            batchSize = int.Parse(configuration[Configuration.LOAD_EVENT_PROCESSING_BATCH_SIZE]!);
-            batchInterval = TimeSpan.FromMilliseconds(int.Parse(configuration[Configuration.LOAD_EVENT_PROCESSING_BATCH_INTERVAL_IN_MILLISECONDS]!));
+            batchSize = processOptions.Value.BatchSize;
+            batchInterval = TimeSpan.FromMilliseconds(processOptions.Value.BatchIntervalInMilliseconds);
 
             options = new JsonSerializerOptions
             {
@@ -53,7 +55,7 @@ namespace AnalyzerApi.BackgroundServices
                 ReadCommentHandling = JsonCommentHandling.Disallow,
             };
 
-            resiliencePipeline = resiliencePipelineProvider.GetPipeline(Configuration.LOAD_EVENT_PROCESSING_RESILLIENCE);
+            resiliencePipeline = resiliencePipelineProvider.GetPipeline(processOptions.Value.Resilience);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)

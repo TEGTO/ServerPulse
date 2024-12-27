@@ -1,7 +1,8 @@
 ﻿using MediatR;
 using MessageBus.Interfaces;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Moq;
+using ServerMonitorApi.Options;
 
 namespace ServerMonitorApi.Command.DeleteStatisticsByKey.Tests
 {
@@ -9,7 +10,7 @@ namespace ServerMonitorApi.Command.DeleteStatisticsByKey.Tests
     internal class DeleteStatisticsByKeyCommandHandlerTests
     {
         private Mock<ITopicManager> topicManagerMock;
-        private Mock<IConfiguration> configurationMock;
+        private Mock<IOptions<MessageBusSettings>> optionsMock;
         private DeleteStatisticsByKeyCommandHandler handler;
         private CancellationToken cancellationToken;
 
@@ -17,9 +18,9 @@ namespace ServerMonitorApi.Command.DeleteStatisticsByKey.Tests
         public void SetUp()
         {
             topicManagerMock = new Mock<ITopicManager>();
-            configurationMock = new Mock<IConfiguration>();
+            optionsMock = new Mock<IOptions<MessageBusSettings>>();
 
-            handler = new DeleteStatisticsByKeyCommandHandler(topicManagerMock.Object, configurationMock.Object);
+            handler = new DeleteStatisticsByKeyCommandHandler(topicManagerMock.Object, optionsMock.Object);
             cancellationToken = CancellationToken.None;
         }
 
@@ -55,10 +56,16 @@ namespace ServerMonitorApi.Command.DeleteStatisticsByKey.Tests
         public async Task Handle_ValidKey_DeletesCorrectTopics(string key, List<string> expectedTopics)
         {
             // Arrange
-            configurationMock.Setup(c => c[Configuration.KAFKA_CONFIGURATION_TOPIC]).Returns("KafkaConfigurationTopic-");
-            configurationMock.Setup(c => c[Configuration.KAFKA_ALIVE_TOPIC]).Returns("KafkaAliveTopic-");
-            configurationMock.Setup(c => c[Configuration.KAFKA_LOAD_TOPIC]).Returns("KafkaLoadTopic-");
-            configurationMock.Setup(c => c[Configuration.KAFKA_CUSTOM_TOPIC]).Returns("KafkaCustomTopic-");
+
+            var settings = new MessageBusSettings
+            {
+                ConfigurationTopic = "KafkaConfigurationTopic-",
+                AliveTopic = "KafkaAliveTopic-",
+                LoadTopic = "KafkaLoadTopic-",
+                CustomTopic = "KafkaCustomTopic-",
+            };
+
+            optionsMock.Setup(x => x.Value).Returns(settings);
 
             var command = new DeleteStatisticsByKeyCommand(key);
 

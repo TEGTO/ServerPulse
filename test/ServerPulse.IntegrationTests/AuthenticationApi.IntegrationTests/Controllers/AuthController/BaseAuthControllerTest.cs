@@ -2,6 +2,7 @@
 using Authentication.Token;
 using AuthenticationApi.Dtos;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using System.Text;
 using System.Text.Json;
 
@@ -25,7 +26,10 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
 
         protected AccessTokenData GetAccessTokenData()
         {
-            var jwtHandler = new JwtHandler(settings);
+            var options = Options.Create(settings);
+
+            var jwtHandler = new JwtHandler(options);
+
             IdentityUser identity = new IdentityUser()
             {
                 UserName = "testuser",

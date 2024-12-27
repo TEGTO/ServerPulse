@@ -20,8 +20,8 @@ namespace ServerMonitorApi.Services.Tests
             httpHelperMock = new Mock<IHttpHelper>();
             configurationMock = new Mock<IConfiguration>();
 
-            configurationMock.Setup(c => c[Configuration.SERVER_SLOT_URL]).Returns("http://api.gateway/");
-            configurationMock.Setup(c => c[Configuration.SERVER_SLOT_ALIVE_CHECKER]).Returns("server/slot/check");
+            configurationMock.Setup(c => c[ConfigurationKeys.SERVER_SLOT_URL]).Returns("http://api.gateway/");
+            configurationMock.Setup(c => c[ConfigurationKeys.SERVER_SLOT_ALIVE_CHECKER]).Returns("server/slot/check");
 
             slotKeyChecker = new SlotKeyChecker(httpHelperMock.Object, configurationMock.Object);
             cancellationToken = CancellationToken.None;

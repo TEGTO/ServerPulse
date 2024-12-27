@@ -1,5 +1,5 @@
 ﻿using AnalyzerApi.Command.Builders;
-using AnalyzerApi.Infrastructure;
+using AnalyzerApi.Infrastructure.Configuration;
 using AnalyzerApi.Infrastructure.Dtos.Responses.Events;
 using AnalyzerApi.Infrastructure.Dtos.Responses.Statistics;
 using AnalyzerApi.Infrastructure.Models;
@@ -32,7 +32,7 @@ namespace AnalyzerApi.Command.Controllers.GetSlotStatistics.Tests
             mockMapper = new Mock<IMapper>();
             mockConfiguration = new Mock<IConfiguration>();
 
-            mockConfiguration.Setup(c => c[Configuration.MAX_EVENT_AMOUNT_TO_GET_IN_SLOT_DATA])
+            mockConfiguration.Setup(c => c[ConfigurationKeys.MAX_EVENT_AMOUNT_TO_GET_IN_SLOT_DATA])
                 .Returns("10");
 
             handler = new GetSlotStatisticsQueryHandler(

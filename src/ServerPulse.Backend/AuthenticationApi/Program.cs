@@ -18,7 +18,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.AddLogging();
 builder.Services.AddDbContextFactory<AuthIdentityDbContext>(
-    builder.Configuration.GetConnectionString(Configuration.AUTH_DATABASE_CONNECTION_STRING)!,
+    builder.Configuration.GetConnectionString(ConfigurationKeys.AUTH_DATABASE_CONNECTION_STRING)!,
     "AuthenticationApi"
 );
 
@@ -79,7 +79,7 @@ if (builder.Environment.IsDevelopment())
 
 var app = builder.Build();
 
-if (app.Configuration[Configuration.EF_CREATE_DATABASE] == "true")
+if (app.Configuration[ConfigurationKeys.EF_CREATE_DATABASE] == "true")
 {
     await app.ConfigureDatabaseAsync<AuthIdentityDbContext>(CancellationToken.None);
 }

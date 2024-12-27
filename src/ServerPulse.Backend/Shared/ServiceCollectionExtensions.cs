@@ -5,7 +5,6 @@ using Helper.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
-using Shared.Configurations;
 
 namespace Shared
 {
@@ -29,14 +28,14 @@ namespace Shared
 
         public static IServiceCollection AddHttpClientHelperServiceWithResilience(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddHttpClient(HelperConfiguration.HTTP_CLIENT_HELPER).AddStandardResilienceHandler();
+            services.AddHttpClient(HelperConfigurationKeys.HTTP_CLIENT_HELPER).AddStandardResilienceHandler();
             services.AddSingleton<IHttpHelper, HttpHelper>();
             return services;
         }
 
         public static IServiceCollection AddApplicationCors(this IServiceCollection services, IConfiguration configuration, string allowSpecificOrigins, bool isDevelopment)
         {
-            var allowedOriginsString = configuration[SharedConfiguration.ALLOWED_CORS_ORIGINS] ?? string.Empty;
+            var allowedOriginsString = configuration[SharedConfigurationKeys.ALLOWED_CORS_ORIGINS] ?? string.Empty;
             var allowedOrigins = allowedOriginsString.Split(",", StringSplitOptions.RemoveEmptyEntries);
 
             services.AddCors(options =>

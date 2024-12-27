@@ -1,5 +1,5 @@
 ﻿using AnalyzerApi.Command.Builders;
-using AnalyzerApi.Infrastructure;
+using AnalyzerApi.Infrastructure.Configuration;
 using AnalyzerApi.Infrastructure.Dtos.Responses.Events;
 using AnalyzerApi.Infrastructure.Dtos.Responses.Statistics;
 using AnalyzerApi.Infrastructure.Models;
@@ -30,7 +30,7 @@ namespace AnalyzerApi.Command.Controllers.GetSlotStatistics
             this.loadEventReceiver = loadEventReceiver;
             this.customEventReceiver = customEventReceiver;
             this.mapper = mapper;
-            maxLastEventAmount = int.Parse(configuration[Configuration.MAX_EVENT_AMOUNT_TO_GET_IN_SLOT_DATA]!);
+            maxLastEventAmount = int.Parse(configuration[ConfigurationKeys.MAX_EVENT_AMOUNT_TO_GET_IN_SLOT_DATA]!);
         }
 
         public async Task<SlotStatisticsResponse> Handle(GetSlotStatisticsQuery command, CancellationToken cancellationToken)

@@ -1,6 +1,6 @@
 ﻿namespace ApiGateway
 {
-    public static class Configuration
+    public static class ConfigurationKeys
     {
         public static string USE_CORS { get; } = "UseCORS";
     }

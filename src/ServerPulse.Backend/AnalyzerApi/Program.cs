@@ -1,10 +1,10 @@
 using AnalyzerApi.BackgroundServices;
 using AnalyzerApi.Hubs;
-using AnalyzerApi.Infrastructure;
-using AnalyzerApi.Infrastructure.Configurations;
+using AnalyzerApi.Infrastructure.Configuration;
 using AnalyzerApi.Infrastructure.Models.Statistics;
 using AnalyzerApi.Infrastructure.Models.Wrappers;
 using AnalyzerApi.Infrastructure.Requests;
+using AnalyzerApi.Infrastructure.TopicMapping;
 using AnalyzerApi.Infrastructure.Validators;
 using AnalyzerApi.Services.Receivers.Event;
 using AnalyzerApi.Services.Receivers.Statistics;
@@ -28,26 +28,48 @@ builder.Host.AddLogging();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
+#region Options
+
+var messageBusSettings = builder.Configuration.GetSection(MessageBusSettings.SETTINGS_SECTION).Get<MessageBusSettings>();
+
+ArgumentNullException.ThrowIfNull(messageBusSettings);
+
+builder.Services.Configure<MessageBusSettings>(builder.Configuration.GetSection(MessageBusSettings.SETTINGS_SECTION));
+
+var processSettings = builder.Configuration.GetSection(LoadProcessingSettings.SETTINGS_SECTION).Get<LoadProcessingSettings>();
+
+ArgumentNullException.ThrowIfNull(processSettings);
+
+builder.Services.Configure<LoadProcessingSettings>(builder.Configuration.GetSection(LoadProcessingSettings.SETTINGS_SECTION));
+
+var cacheSettings = builder.Configuration.GetSection(CacheSettings.SETTINGS_SECTION).Get<CacheSettings>();
+
+ArgumentNullException.ThrowIfNull(cacheSettings);
+
+builder.Services.Configure<CacheSettings>(builder.Configuration.GetSection(CacheSettings.SETTINGS_SECTION));
+
+#endregion
+
 #region Kafka
 
 var consumerConfig = new ConsumerConfig
 {
-    BootstrapServers = builder.Configuration[Configuration.KAFKA_BOOTSTRAP_SERVERS],
-    ClientId = builder.Configuration[Configuration.KAFKA_CLIENT_ID],
-    GroupId = builder.Configuration[Configuration.KAFKA_GROUP_ID],
+    BootstrapServers = messageBusSettings.BootstrapServers,
+    ClientId = messageBusSettings.ClientId,
+    GroupId = messageBusSettings.GroupId,
     EnablePartitionEof = true,
     AutoOffsetReset = AutoOffsetReset.Earliest,
 };
 
 var adminConfig = new AdminClientConfig
 {
-    BootstrapServers = builder.Configuration[Configuration.KAFKA_BOOTSTRAP_SERVERS],
+    BootstrapServers = messageBusSettings.BootstrapServers,
 };
 
 var producerConfig = new ProducerConfig
 {
-    BootstrapServers = builder.Configuration[Configuration.KAFKA_BOOTSTRAP_SERVERS],
-    ClientId = builder.Configuration[Configuration.KAFKA_CLIENT_ID],
+    BootstrapServers = messageBusSettings.BootstrapServers,
+    ClientId = messageBusSettings.ClientId,
     EnableIdempotence = true,
 };
 builder.Services.AddKafkaProducer(producerConfig, adminConfig);
@@ -59,16 +81,14 @@ builder.Services.AddKafkaConsumer(consumerConfig, adminConfig);
 
 builder.Services.AddStackExchangeRedisOutputCache(options =>
 {
-    options.Configuration = builder.Configuration.GetConnectionString(Configuration.REDIS_SERVER_CONNECTION_STRING);
+    options.Configuration = builder.Configuration.GetConnectionString(CacheSettings.REDIS_SERVER_CONNECTION_STRING);
 });
 
 builder.Services.AddOutputCache((options) =>
 {
     options.AddPolicy("BasePolicy", new OutputCachePolicy());
 
-    var expiryTime = int.TryParse(
-        builder.Configuration[Configuration.CACHE_EXPIRY_IN_MINUTES],
-        out var time) ? time : 1;
+    var expiryTime = cacheSettings.ExpiryInMinutes;
 
     options.SetOutputCachePolicy("GetLoadEventsInDataRangePolicy", duration: TimeSpan.FromMinutes(expiryTime), types: typeof(MessagesInRangeRequest));
     options.SetOutputCachePolicy("GetDailyLoadAmountStatisticsPolicy", duration: TimeSpan.FromMinutes(expiryTime));
@@ -80,7 +100,7 @@ builder.Services.AddOutputCache((options) =>
 
 #region Resilience
 
-builder.Services.AddResiliencePipeline(Configuration.LOAD_EVENT_PROCESSING_RESILLIENCE, (builder, context) =>
+builder.Services.AddResiliencePipeline(processSettings.Resilience, (builder, context) =>
 {
     builder.AddRetry(new RetryStrategyOptions
     {
@@ -121,10 +141,10 @@ builder.Services.AddResiliencePipeline(Configuration.LOAD_EVENT_PROCESSING_RESIL
 
 #region Event Receiver
 
-builder.Services.AddSingleton(new EventReceiverTopicConfiguration<ConfigurationEventWrapper>(builder.Configuration[Configuration.KAFKA_CONFIGURATION_TOPIC]!));
-builder.Services.AddSingleton(new EventReceiverTopicConfiguration<CustomEventWrapper>(builder.Configuration[Configuration.KAFKA_CUSTOM_TOPIC]!));
-builder.Services.AddSingleton(new EventReceiverTopicConfiguration<LoadEventWrapper>(builder.Configuration[Configuration.KAFKA_LOAD_TOPIC]!));
-builder.Services.AddSingleton(new EventReceiverTopicConfiguration<PulseEventWrapper>(builder.Configuration[Configuration.KAFKA_ALIVE_TOPIC]!));
+builder.Services.AddSingleton(new EventTopicMapping<ConfigurationEventWrapper>(messageBusSettings.ConfigurationTopic));
+builder.Services.AddSingleton(new EventTopicMapping<CustomEventWrapper>(messageBusSettings.CustomTopic));
+builder.Services.AddSingleton(new EventTopicMapping<LoadEventWrapper>(messageBusSettings.LoadTopic));
+builder.Services.AddSingleton(new EventTopicMapping<PulseEventWrapper>(messageBusSettings.AliveTopic));
 
 builder.Services.AddSingleton<IEventSerializeStrategy<ConfigurationEventWrapper>, ConfigurationEventSerializeStrategy>();
 builder.Services.AddSingleton<IEventSerializeStrategy<CustomEventWrapper>, CustomEventSerializeStrategy>();
@@ -140,11 +160,11 @@ builder.Services.AddSingleton<IEventReceiver<PulseEventWrapper>, EventReceiver<P
 
 #region Statistics Receiver
 
-builder.Services.AddSingleton(new StatisticsReceiverTopicConfiguration<ServerCustomStatistics>(builder.Configuration[Configuration.KAFKA_CUSTOM_TOPIC]!));
-builder.Services.AddSingleton(new StatisticsReceiverTopicConfiguration<LoadAmountStatistics>(builder.Configuration[Configuration.KAFKA_LOAD_TOPIC]!));
-builder.Services.AddSingleton(new StatisticsReceiverTopicConfiguration<LoadMethodStatistics>(builder.Configuration[Configuration.KAFKA_LOAD_METHOD_STATISTICS_TOPIC]!));
-builder.Services.AddSingleton(new StatisticsReceiverTopicConfiguration<ServerLoadStatistics>(builder.Configuration[Configuration.KAFKA_LOAD_TOPIC]!));
-builder.Services.AddSingleton(new StatisticsReceiverTopicConfiguration<ServerLifecycleStatistics>(builder.Configuration[Configuration.KAFKA_SERVER_STATISTICS_TOPIC]!));
+builder.Services.AddSingleton(new StatisticsTopicMapping<ServerCustomStatistics>(messageBusSettings.CustomTopic));
+builder.Services.AddSingleton(new StatisticsTopicMapping<LoadAmountStatistics>(messageBusSettings.LoadTopic));
+builder.Services.AddSingleton(new StatisticsTopicMapping<LoadMethodStatistics>(messageBusSettings.LoadMethodStatisticsTopic));
+builder.Services.AddSingleton(new StatisticsTopicMapping<ServerLoadStatistics>(messageBusSettings.LoadTopic));
+builder.Services.AddSingleton(new StatisticsTopicMapping<ServerLifecycleStatistics>(messageBusSettings.ServerStatisticsTopic));
 
 builder.Services.AddSingleton<IStatisticsReceiver<ServerCustomStatistics>, StatisticsReceiver<ServerCustomStatistics>>();
 builder.Services.AddSingleton<IStatisticsReceiver<LoadMethodStatistics>, StatisticsReceiver<LoadMethodStatistics>>();

@@ -1,7 +1,8 @@
 ﻿using EventCommunication;
 using MessageBus.Interfaces;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Moq;
+using ServerMonitorApi.Options;
 using ServerMonitorApi.Services;
 
 namespace ServerMonitorApi.Command.SendLoadEvents.Tests
@@ -13,7 +14,6 @@ namespace ServerMonitorApi.Command.SendLoadEvents.Tests
 
         private Mock<ISlotKeyChecker> slotKeyCheckerMock;
         private Mock<IMessageProducer> messageProducerMock;
-        private Mock<IConfiguration> configurationMock;
         private SendLoadEventsCommandHandler handler;
         private CancellationToken cancellationToken;
 
@@ -22,15 +22,20 @@ namespace ServerMonitorApi.Command.SendLoadEvents.Tests
         {
             slotKeyCheckerMock = new Mock<ISlotKeyChecker>();
             messageProducerMock = new Mock<IMessageProducer>();
-            configurationMock = new Mock<IConfiguration>();
 
-            configurationMock.Setup(c => c[Configuration.KAFKA_LOAD_TOPIC]).Returns("KafkaLoadTopic-");
-            configurationMock.Setup(c => c[Configuration.KAFKA_LOAD_TOPIC_PROCESS]).Returns(KAFKA_LOAD_TOPIC_PROCESS);
+            var settings = new MessageBusSettings
+            {
+                LoadTopic = "KafkaLoadTopic-",
+                LoadTopicProcess = KAFKA_LOAD_TOPIC_PROCESS,
+            };
+
+            var optionsMock = new Mock<IOptions<MessageBusSettings>>();
+            optionsMock.Setup(x => x.Value).Returns(settings);
 
             handler = new SendLoadEventsCommandHandler(
                 slotKeyCheckerMock.Object,
                 messageProducerMock.Object,
-                configurationMock.Object
+                optionsMock.Object
             );
 
             cancellationToken = CancellationToken.None;

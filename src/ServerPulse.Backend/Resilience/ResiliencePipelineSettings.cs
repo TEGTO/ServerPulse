@@ -1,6 +1,6 @@
 ﻿namespace Resilience
 {
-    public class ResiliencePipelineConfiguration
+    public class ResiliencePipelineSettings
     {
         public int MaxRetryCount { get; set; } = 2;
         public int RetryWaitInSeconds { get; set; } = 2;

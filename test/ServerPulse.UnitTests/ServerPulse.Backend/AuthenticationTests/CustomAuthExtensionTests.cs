@@ -1,5 +1,4 @@
-﻿using Authentication.OAuth;
-using Authentication.OAuth.Google;
+﻿using Authentication.OAuth.Google;
 using Authentication.Token;
 using AuthenticationTests;
 using Helper.Services;
@@ -47,21 +46,21 @@ namespace Authentication.Tests
 
             var inMemorySettings = new Dictionary<string, string>
             {
-                { JwtConfiguration.JWT_SETTINGS_PRIVATE_KEY, expectedJwtSettings.PrivateKey },
-                { JwtConfiguration.JWT_SETTINGS_PUBLIC_KEY, expectedJwtSettings.PublicKey },
-                { JwtConfiguration.JWT_SETTINGS_AUDIENCE, expectedJwtSettings.Audience },
-                { JwtConfiguration.JWT_SETTINGS_ISSUER, expectedJwtSettings.Issuer },
-                { JwtConfiguration.JWT_SETTINGS_EXPIRY_IN_MINUTES, expectedJwtSettings.ExpiryInMinutes.ToString() },
+                { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.PrivateKey)}", expectedJwtSettings.PrivateKey },
+                { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.PublicKey)}", expectedJwtSettings.PublicKey },
+                { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.Audience)}", expectedJwtSettings.Audience },
+                { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.Issuer)}", expectedJwtSettings.Issuer },
+                { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.ExpiryInMinutes)}", expectedJwtSettings.ExpiryInMinutes.ToString() },
 
-                { OAuthConfiguration.GOOGLE_OAUTH_CLIENT_ID, expectedGoogleOAuthSettings.ClientId },
-                { OAuthConfiguration.GOOGLE_OAUTH_CLIENT_SECRET, expectedGoogleOAuthSettings.ClientSecret },
-                { OAuthConfiguration.GOOGLE_OAUTH_SCOPE, expectedGoogleOAuthSettings.Scope },
+                { $"{GoogleOAuthSettings.SETTINGS_SECTION}:{nameof(GoogleOAuthSettings.ClientId)}", expectedGoogleOAuthSettings.ClientId },
+                { $"{GoogleOAuthSettings.SETTINGS_SECTION}:{nameof(GoogleOAuthSettings.ClientSecret)}", expectedGoogleOAuthSettings.ClientSecret },
+                { $"{GoogleOAuthSettings.SETTINGS_SECTION}:{nameof(GoogleOAuthSettings.Scope)}", expectedGoogleOAuthSettings.Scope },
             };
 
             configuration = new ConfigurationBuilder().AddInMemoryCollection(inMemorySettings!).Build();
 
             services.AddSingleton(configuration);
-            services.AddSingleton<IHttpHelper>(mockHttpHelper.Object);
+            services.AddSingleton(mockHttpHelper.Object);
             services.AddAuthentication();
             services.AddAuthorization();
         }
@@ -74,7 +73,7 @@ namespace Authentication.Tests
 
             //Act
             var serviceProvider = services.BuildServiceProvider();
-            var googleOAuthSettings = serviceProvider.GetRequiredService<GoogleOAuthSettings>();
+            var googleOAuthSettings = serviceProvider.GetRequiredService<IOptions<GoogleOAuthSettings>>().Value;
             var googleOAuthHttpClient = serviceProvider.GetRequiredService<IGoogleOAuthHttpClient>();
             var googleTokenValidator = serviceProvider.GetRequiredService<IGoogleTokenValidator>();
 
@@ -96,7 +95,7 @@ namespace Authentication.Tests
 
             //Act
             var serviceProvider = services.BuildServiceProvider();
-            var jwtSettings = serviceProvider.GetRequiredService<JwtSettings>();
+            var jwtSettings = serviceProvider.GetRequiredService<IOptions<JwtSettings>>().Value;
 
             // Assert
             Assert.That(jwtSettings.PrivateKey, Is.EqualTo(expectedJwtSettings.PrivateKey));

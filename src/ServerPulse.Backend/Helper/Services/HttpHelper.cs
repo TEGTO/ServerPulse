@@ -66,7 +66,7 @@ namespace Helper.Services
                 request.Content = httpContent;
             }
 
-            using var httpClient = httpClientFactory.CreateClient(HelperConfiguration.HTTP_CLIENT_HELPER);
+            using var httpClient = httpClientFactory.CreateClient(HelperConfigurationKeys.HTTP_CLIENT_HELPER);
             using var response = await httpClient.SendAsync(request, cancellationToken);
 
             var resultJson = await response.Content.ReadAsStringAsync(cancellationToken);

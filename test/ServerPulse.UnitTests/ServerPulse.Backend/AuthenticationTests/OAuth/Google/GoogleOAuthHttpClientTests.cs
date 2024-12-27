@@ -1,4 +1,5 @@
 ﻿using Helper.Services;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace Authentication.OAuth.Google.Tests
@@ -13,7 +14,6 @@ namespace Authentication.OAuth.Google.Tests
         [SetUp]
         public void SetUp()
         {
-            mockHttpHelper = new Mock<IHttpHelper>();
             mockOAuthSettings = new GoogleOAuthSettings
             {
                 ClientId = "test-client-id",
@@ -21,7 +21,12 @@ namespace Authentication.OAuth.Google.Tests
                 Scope = ""
             };
 
-            googleOAuthHttpClient = new GoogleOAuthHttpClient(mockOAuthSettings, mockHttpHelper.Object);
+            mockHttpHelper = new Mock<IHttpHelper>();
+
+            var mockOptions = new Mock<IOptions<GoogleOAuthSettings>>();
+            mockOptions.Setup(x => x.Value).Returns(mockOAuthSettings);
+
+            googleOAuthHttpClient = new GoogleOAuthHttpClient(mockOptions.Object, mockHttpHelper.Object);
         }
 
         [Test]

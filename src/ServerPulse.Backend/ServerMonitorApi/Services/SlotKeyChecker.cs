@@ -12,7 +12,7 @@ namespace ServerMonitorApi.Services
         public SlotKeyChecker(IHttpHelper httpHelper, IConfiguration configuration)
         {
             this.httpHelper = httpHelper;
-            slotCheckerUrl = $"{configuration[Configuration.SERVER_SLOT_URL]}{configuration[Configuration.SERVER_SLOT_ALIVE_CHECKER]}";
+            slotCheckerUrl = $"{configuration[ConfigurationKeys.SERVER_SLOT_URL]}{configuration[ConfigurationKeys.SERVER_SLOT_ALIVE_CHECKER]}";
         }
 
         public async Task<bool> CheckSlotKeyAsync(string key, CancellationToken cancellationToken)

@@ -76,14 +76,14 @@ namespace AuthenticationApi.IntegrationTests
 
             configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                { $"ConnectionStrings:{Configuration.AUTH_DATABASE_CONNECTION_STRING}", DbContainer?.GetConnectionString() },
-                { JwtConfiguration.JWT_SETTINGS_PUBLIC_KEY, TestRsaKeys.PUBLIC_KEY },
-                { JwtConfiguration.JWT_SETTINGS_PRIVATE_KEY, TestRsaKeys.PRIVATE_KEY },
-                { JwtConfiguration.JWT_SETTINGS_ISSUER, "https://token.issuer.example.com" },
-                { JwtConfiguration.JWT_SETTINGS_AUDIENCE, "https://api.example.com" },
-                { JwtConfiguration.JWT_SETTINGS_EXPIRY_IN_MINUTES, "30" },
-                { Configuration.AUTH_REFRESH_TOKEN_EXPIRY_IN_DAYS, "7" },
-                { Configuration.EF_CREATE_DATABASE, "true" },
+                { $"ConnectionStrings:{ConfigurationKeys.AUTH_DATABASE_CONNECTION_STRING}", DbContainer?.GetConnectionString() },
+                { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.PrivateKey)}", TestRsaKeys.PRIVATE_KEY },
+                { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.PublicKey)}", TestRsaKeys.PUBLIC_KEY },
+                { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.Audience)}", "https://api.example.com" },
+                { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.Issuer)}", "https://token.issuer.example.com" },
+                { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.ExpiryInMinutes)}", "30" },
+                { ConfigurationKeys.AUTH_REFRESH_TOKEN_EXPIRY_IN_DAYS, "7" },
+                { ConfigurationKeys.EF_CREATE_DATABASE, "true" },
             });
 
             return configurationBuilder.Build();

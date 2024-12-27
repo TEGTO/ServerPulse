@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using ServerSlotApi.Infrastructure;
+using ServerSlotApi.Infrastructure.Configuration;
 using ServerSlotApi.Infrastructure.Data;
 using Testcontainers.PostgreSql;
 using Testcontainers.Redis;
@@ -90,17 +90,17 @@ namespace ServerSlotApi.IntegrationTests
 
             configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                { $"ConnectionStrings:{Configuration.REDIS_SERVER_CONNECTION_STRING}",  RedisContainer?.GetConnectionString()},
-                { $"ConnectionStrings:{Configuration.SERVER_SLOT_DATABASE_CONNECTION_STRING}", DbContainer?.GetConnectionString() },
-                { JwtConfiguration.JWT_SETTINGS_PUBLIC_KEY, TestRsaKeys.PUBLIC_KEY },
-                { JwtConfiguration.JWT_SETTINGS_PRIVATE_KEY, TestRsaKeys.PRIVATE_KEY },
-                { JwtConfiguration.JWT_SETTINGS_ISSUER, "https://token.issuer.example.com" },
-                { JwtConfiguration.JWT_SETTINGS_AUDIENCE, "https://api.example.com" },
-                { JwtConfiguration.JWT_SETTINGS_EXPIRY_IN_MINUTES, "30" },
-                { Configuration.CACHE_GET_BY_EMAIL_SERVER_SLOT_EXPIRY_IN_SECONDS, "2" },
-                { Configuration.CACHE_CHECK_SERVER_SLOT_EXPIRY_IN_SECONDS, "2" },
-                { Configuration.EF_CREATE_DATABASE, "true" },
-                { Configuration.SERVER_SLOTS_PER_USER, "5" },
+                { $"ConnectionStrings:{CacheSettings.REDIS_SERVER_CONNECTION_STRING}",  RedisContainer?.GetConnectionString()},
+                { $"ConnectionStrings:{ConfigurationKeys.SERVER_SLOT_DATABASE_CONNECTION_STRING}", DbContainer?.GetConnectionString() },
+                { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.PublicKey)}", TestRsaKeys.PUBLIC_KEY },
+                { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.PrivateKey)}", TestRsaKeys.PRIVATE_KEY },
+                { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.Audience)}", "https://api.example.com" },
+                { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.Issuer)}", "https://token.issuer.example.com" },
+                { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.ExpiryInMinutes)}", "30" },
+                { $"{CacheSettings.SETTINGS_SECTION}:{nameof(CacheSettings.GetServerSlotByEmailExpiryInSeconds)}", "2" },
+                { $"{CacheSettings.SETTINGS_SECTION}:{nameof(CacheSettings.ServerSlotCheckExpiryInSeconds)}", "2" },
+                { ConfigurationKeys.EF_CREATE_DATABASE, "true" },
+                { ConfigurationKeys.SERVER_SLOTS_PER_USER, "5" },
             });
 
             return configurationBuilder.Build();

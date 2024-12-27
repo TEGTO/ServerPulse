@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using MockQueryable.Moq;
 using Moq;
+using ServerSlotApi.Infrastructure.Configuration;
 using ServerSlotApi.Infrastructure.Data;
 using ServerSlotApi.Infrastructure.Entities;
 using ServerSlotApi.Infrastructure.Models;
@@ -23,7 +24,7 @@ namespace ServerSlotApi.Infrastructure.Repositories.Tests
             repositoryMock = new Mock<IDatabaseRepository<ServerSlotDbContext>>();
             configurationMock = new Mock<IConfiguration>();
 
-            configurationMock.Setup(x => x[Configuration.SERVER_SLOTS_PER_USER]).Returns("5");
+            configurationMock.Setup(x => x[ConfigurationKeys.SERVER_SLOTS_PER_USER]).Returns("5");
 
             slotRepository = new ServerSlotRepository(repositoryMock.Object, configurationMock.Object);
             cancellationToken = new CancellationToken();

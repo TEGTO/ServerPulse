@@ -26,7 +26,7 @@ namespace MessageBusTests.Implementation
 
             mockResiliencePipelineProvider = new Mock<ResiliencePipelineProvider<string>>();
             mockResiliencePipelineProvider
-                .Setup(rp => rp.GetPipeline(MessageBusConfiguration.MESSAGE_BUS_RESILIENCE_PIPELINE))
+                .Setup(rp => rp.GetPipeline(MessageBusConfigurationKeys.MESSAGE_BUS_RESILIENCE_PIPELINE))
                 .Returns(ResiliencePipeline.Empty);
 
             factory = new KafkaConsumerFactory(config, mockResiliencePipelineProvider.Object);
@@ -42,7 +42,7 @@ namespace MessageBusTests.Implementation
             Assert.IsNotNull(consumer);
             Assert.IsInstanceOf<ResilienceConsumer>(consumer);
 
-            mockResiliencePipelineProvider.Verify(rp => rp.GetPipeline(MessageBusConfiguration.MESSAGE_BUS_RESILIENCE_PIPELINE), Times.Once);
+            mockResiliencePipelineProvider.Verify(rp => rp.GetPipeline(MessageBusConfigurationKeys.MESSAGE_BUS_RESILIENCE_PIPELINE), Times.Once);
         }
 
         [Test]

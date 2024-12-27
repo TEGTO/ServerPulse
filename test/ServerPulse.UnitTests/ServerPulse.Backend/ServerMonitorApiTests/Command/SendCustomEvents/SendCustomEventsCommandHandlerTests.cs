@@ -1,7 +1,8 @@
 ﻿using EventCommunication;
 using MessageBus.Interfaces;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Moq;
+using ServerMonitorApi.Options;
 using ServerMonitorApi.Services;
 
 namespace ServerMonitorApi.Command.SendCustomEvents.Tests
@@ -11,7 +12,6 @@ namespace ServerMonitorApi.Command.SendCustomEvents.Tests
     {
         private Mock<ISlotKeyChecker> slotKeyCheckerMock;
         private Mock<IMessageProducer> messageProducerMock;
-        private Mock<IConfiguration> configurationMock;
         private SendCustomEventsCommandHandler handler;
         private CancellationToken cancellationToken;
 
@@ -20,10 +20,16 @@ namespace ServerMonitorApi.Command.SendCustomEvents.Tests
         {
             slotKeyCheckerMock = new Mock<ISlotKeyChecker>();
             messageProducerMock = new Mock<IMessageProducer>();
-            configurationMock = new Mock<IConfiguration>();
-            configurationMock.Setup(c => c[Configuration.KAFKA_CUSTOM_TOPIC]).Returns("KafkaCustomTopic-");
 
-            handler = new SendCustomEventsCommandHandler(slotKeyCheckerMock.Object, messageProducerMock.Object, configurationMock.Object);
+            var settings = new MessageBusSettings
+            {
+                CustomTopic = "KafkaCustomTopic-",
+            };
+
+            var optionsMock = new Mock<IOptions<MessageBusSettings>>();
+            optionsMock.Setup(x => x.Value).Returns(settings);
+
+            handler = new SendCustomEventsCommandHandler(slotKeyCheckerMock.Object, messageProducerMock.Object, optionsMock.Object);
             cancellationToken = CancellationToken.None;
         }
 

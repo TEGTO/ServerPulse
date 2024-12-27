@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using Shared.Configurations;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace Shared.Tests
@@ -52,7 +51,7 @@ namespace Shared.Tests
             var factory = serviceProvider.GetRequiredService<IHttpClientFactory>();
             Assert.IsNotNull(factory);
 
-            var client = factory.CreateClient(HelperConfiguration.HTTP_CLIENT_HELPER);
+            var client = factory.CreateClient(HelperConfigurationKeys.HTTP_CLIENT_HELPER);
             Assert.IsNotNull(client);
         }
 
@@ -62,7 +61,7 @@ namespace Shared.Tests
         public void AddApplicationCors_RegistersCorsWithCorrectOrigins(string allowedOrigins, bool isDevelopment, int expectedCount)
         {
             // Arrange
-            configurationMock.Setup(c => c[SharedConfiguration.ALLOWED_CORS_ORIGINS]).Returns(allowedOrigins);
+            configurationMock.Setup(c => c[SharedConfigurationKeys.ALLOWED_CORS_ORIGINS]).Returns(allowedOrigins);
 
             services.AddLogging();
             services.AddRouting();
@@ -87,7 +86,7 @@ namespace Shared.Tests
         public void AddApplicationCors_DevelopmentMode_AllowsLocalhost()
         {
             // Arrange
-            configurationMock.Setup(c => c[SharedConfiguration.ALLOWED_CORS_ORIGINS]).Returns("http://example.com");
+            configurationMock.Setup(c => c[SharedConfigurationKeys.ALLOWED_CORS_ORIGINS]).Returns("http://example.com");
 
             services.AddLogging();
             services.AddRouting();

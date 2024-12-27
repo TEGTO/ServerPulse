@@ -1,5 +1,6 @@
 ﻿using Helper.Services;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Options;
 
 namespace Authentication.OAuth.Google
 {
@@ -10,9 +11,9 @@ namespace Authentication.OAuth.Google
         private readonly IHttpHelper httpHelperService;
         private readonly GoogleOAuthSettings oAuthSettings;
 
-        public GoogleOAuthHttpClient(GoogleOAuthSettings oAuthSettings, IHttpHelper httpHelperService)
+        public GoogleOAuthHttpClient(IOptions<GoogleOAuthSettings> options, IHttpHelper httpHelperService)
         {
-            this.oAuthSettings = oAuthSettings;
+            this.oAuthSettings = options.Value;
             this.httpHelperService = httpHelperService;
         }
 

@@ -14,7 +14,7 @@ builder.Host.AddLogging();
 
 #region Cors
 
-bool.TryParse(builder.Configuration[Configuration.USE_CORS], out bool useCors);
+bool.TryParse(builder.Configuration[ConfigurationKeys.USE_CORS], out bool useCors);
 var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 if (useCors)

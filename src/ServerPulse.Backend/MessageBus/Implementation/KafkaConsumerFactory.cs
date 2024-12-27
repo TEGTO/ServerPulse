@@ -14,7 +14,7 @@ namespace MessageBus.Kafka
         public KafkaConsumerFactory(ConsumerConfig config, ResiliencePipelineProvider<string> resiliencePipelineProvider)
         {
             consumerBuilder = new ConsumerBuilder<string, string>(config);
-            resiliencePipeline = resiliencePipelineProvider.GetPipeline(MessageBusConfiguration.MESSAGE_BUS_RESILIENCE_PIPELINE);
+            resiliencePipeline = resiliencePipelineProvider.GetPipeline(MessageBusConfigurationKeys.MESSAGE_BUS_RESILIENCE_PIPELINE);
         }
 
         public IConsumer<string, string> CreateConsumer()

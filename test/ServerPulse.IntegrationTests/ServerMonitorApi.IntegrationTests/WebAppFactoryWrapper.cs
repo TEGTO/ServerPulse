@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
+using ServerMonitorApi.Options;
 using Testcontainers.Kafka;
 
 namespace ServerMonitorApi.IntegrationTests
@@ -81,15 +82,15 @@ namespace ServerMonitorApi.IntegrationTests
 
             configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                 { Configuration.KAFKA_CLIENT_ID, "server-interaction" },
-                 { Configuration.KAFKA_BOOTSTRAP_SERVERS, KafkaContainer?.GetBootstrapAddress() },
-                 { Configuration.KAFKA_ALIVE_TOPIC, "AliveTopic_" },
-                 { Configuration.KAFKA_CONFIGURATION_TOPIC, "ConfigurationTopic_" },
-                 { Configuration.KAFKA_LOAD_TOPIC, "LoadTopic_" },
-                 { Configuration.KAFKA_LOAD_TOPIC_PROCESS, "LoadEventProcessTopic" },
-                 { Configuration.KAFKA_CUSTOM_TOPIC, "CustomEventTopic_" },
-                 { Configuration.SERVER_SLOT_URL, "http://apigateway:8080" },
-                 { Configuration.SERVER_SLOT_ALIVE_CHECKER, "/serverslot/check"  },
+                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.BootstrapServers)}", KafkaContainer?.GetBootstrapAddress() },
+                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.ClientId)}", "server-interaction" },
+                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.AliveTopic)}", "AliveTopic_" },
+                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.ConfigurationTopic)}", "ConfigurationTopic_" },
+                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.LoadTopic)}", "LoadTopic_" },
+                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.LoadTopicProcess)}", "LoadEventProcessTopic" },
+                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.CustomTopic)}", "CustomEventTopic_" },
+                 { ConfigurationKeys.SERVER_SLOT_URL, "http://apigateway:8080" },
+                 { ConfigurationKeys.SERVER_SLOT_ALIVE_CHECKER, "/serverslot/check"  },
             });
 
             return configurationBuilder.Build();

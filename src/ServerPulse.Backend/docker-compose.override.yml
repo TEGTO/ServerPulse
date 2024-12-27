@@ -49,7 +49,7 @@ services:
       - Kafka__AliveTopic=${Kafka__AliveTopic}
       - Kafka__ConfigurationTopic=${Kafka__ConfigurationTopic}
       - Kafka__LoadTopic=${Kafka__LoadTopic}
-      - Kafka__ProcessLoadEventTopic=${Kafka__ProcessLoadEventTopic}
+      - Kafka__LoadTopicProcess=${Kafka__LoadTopicProcess}
       - Kafka__CustomTopic=${Kafka__CustomTopic}
       - ServerSlotApi__Url=${ApiGateway}
       - ServerSlotApi__Check=${ServerSlotApi__Check}
@@ -64,13 +64,13 @@ services:
       - Kafka__BootstrapServers=${Kafka__BootstrapServers}
       - Kafka__ClientId=${Kafka__ClientId__Analyzer}
       - Kafka__GroupId=${Kafka__GroupId}
-      - Kafka__AnalyzerReceiveTimeout=${Kafka__AnalyzerReceiveTimeout}
+      - Kafka__ReceiveTimeoutInMilliseconds=${Kafka__ReceiveTimeoutInMilliseconds}
       - Kafka__AliveTopic=${Kafka__AliveTopic}
       - Kafka__ConfigurationTopic=${Kafka__ConfigurationTopic}
       - Kafka__LoadTopic=${Kafka__LoadTopic}
       - Kafka__CustomTopic=${Kafka__CustomTopic}
       - Kafka__LoadMethodStatisticsTopic=${Kafka__LoadMethodStatisticsTopic}
-      - Kafka__ProcessLoadEventTopic=${Kafka__ProcessLoadEventTopic}
+      - Kafka__LoadTopicProcess=${Kafka__LoadTopicProcess}
       - Kafka__ServerStatisticsTopic=${Kafka__ServerStatisticsTopic}
       - Kafka__TopicDataSaveInDays=${Kafka__TopicDataSaveInDays}
       - PulseEventIntervalInMilliseconds=${PulseEventIntervalInMilliseconds}

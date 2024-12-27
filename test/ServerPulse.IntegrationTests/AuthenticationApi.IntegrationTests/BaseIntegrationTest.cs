@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using Moq;
 using static Google.Apis.Auth.GoogleJsonWebSignature;
 
@@ -88,7 +89,7 @@ namespace AuthenticationApi.IntegrationTests
         {
             scope = factory.Services.CreateScope();
             client = factory.CreateClient();
-            settings = factory.Services.GetRequiredService<JwtSettings>();
+            settings = factory.Services.GetRequiredService<IOptions<JwtSettings>>().Value;
         }
     }
 }

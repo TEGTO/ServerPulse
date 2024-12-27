@@ -1,7 +1,8 @@
 ﻿using EventCommunication;
 using MessageBus.Interfaces;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Moq;
+using ServerMonitorApi.Options;
 using ServerMonitorApi.Services;
 
 namespace ServerMonitorApi.Command.SendPulse.Tests
@@ -11,7 +12,6 @@ namespace ServerMonitorApi.Command.SendPulse.Tests
     {
         private Mock<ISlotKeyChecker> slotKeyCheckerMock;
         private Mock<IMessageProducer> messageProducerMock;
-        private Mock<IConfiguration> configurationMock;
         private SendPulseCommandHandler handler;
         private CancellationToken cancellationToken;
 
@@ -20,11 +20,16 @@ namespace ServerMonitorApi.Command.SendPulse.Tests
         {
             slotKeyCheckerMock = new Mock<ISlotKeyChecker>();
             messageProducerMock = new Mock<IMessageProducer>();
-            configurationMock = new Mock<IConfiguration>();
 
-            configurationMock.Setup(c => c[Configuration.KAFKA_ALIVE_TOPIC]).Returns("KafkaAliveTopic-");
+            var settings = new MessageBusSettings
+            {
+                AliveTopic = "KafkaAliveTopic-",
+            };
 
-            handler = new SendPulseCommandHandler(slotKeyCheckerMock.Object, messageProducerMock.Object, configurationMock.Object);
+            var optionsMock = new Mock<IOptions<MessageBusSettings>>();
+            optionsMock.Setup(x => x.Value).Returns(settings);
+
+            handler = new SendPulseCommandHandler(slotKeyCheckerMock.Object, messageProducerMock.Object, optionsMock.Object);
             cancellationToken = CancellationToken.None;
         }
 

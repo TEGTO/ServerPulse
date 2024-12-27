@@ -5,7 +5,7 @@ using ExceptionHandling;
 using Logging;
 using Microsoft.EntityFrameworkCore;
 using ServerSlotApi.Dtos;
-using ServerSlotApi.Infrastructure;
+using ServerSlotApi.Infrastructure.Configuration;
 using ServerSlotApi.Infrastructure.Data;
 using ServerSlotApi.Infrastructure.Repositories;
 using ServerSlotApi.Infrastructure.Validators;
@@ -16,11 +16,21 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.AddLogging();
 
 builder.Services.AddDbContextFactory<ServerSlotDbContext>(
-    builder.Configuration.GetConnectionString(Configuration.SERVER_SLOT_DATABASE_CONNECTION_STRING)!,
+    builder.Configuration.GetConnectionString(ConfigurationKeys.SERVER_SLOT_DATABASE_CONNECTION_STRING)!,
     "ServerSlotApi"
 );
 
 builder.Services.AddHttpClientHelperServiceWithResilience(builder.Configuration);
+
+#region Options
+
+var cacheSettings = builder.Configuration.GetSection(CacheSettings.SETTINGS_SECTION).Get<CacheSettings>();
+
+ArgumentNullException.ThrowIfNull(cacheSettings);
+
+builder.Services.Configure<CacheSettings>(builder.Configuration.GetSection(CacheSettings.SETTINGS_SECTION));
+
+#endregion
 
 #region Project Services
 
@@ -32,22 +42,18 @@ builder.Services.AddSingleton<IServerSlotRepository, ServerSlotRepository>();
 
 builder.Services.AddStackExchangeRedisOutputCache(options =>
 {
-    options.Configuration = builder.Configuration.GetConnectionString(Configuration.REDIS_SERVER_CONNECTION_STRING);
+    options.Configuration = builder.Configuration.GetConnectionString(CacheSettings.REDIS_SERVER_CONNECTION_STRING);
 });
 
 builder.Services.AddOutputCache((options) =>
 {
     options.AddPolicy("BasePolicy", new OutputCachePolicy());
 
-    var expiryTime = int.TryParse(
-        builder.Configuration[Configuration.CACHE_GET_BY_EMAIL_SERVER_SLOT_EXPIRY_IN_SECONDS],
-        out var getByEmailExpiry) ? getByEmailExpiry : 1;
+    var expiryTime = cacheSettings.GetServerSlotByEmailExpiryInSeconds;
 
     options.SetOutputCachePolicy("GetSlotsByEmailPolicy", duration: TimeSpan.FromSeconds(expiryTime), useAuthId: true);
 
-    expiryTime = int.TryParse(
-        builder.Configuration[Configuration.CACHE_CHECK_SERVER_SLOT_EXPIRY_IN_SECONDS],
-        out var checkSlotExpiry) ? checkSlotExpiry : 1;
+    expiryTime = cacheSettings.ServerSlotCheckExpiryInSeconds;
 
     options.SetOutputCachePolicy("CheckSlotKeyPolicy", duration: TimeSpan.FromSeconds(expiryTime), types: typeof(CheckSlotKeyRequest));
 });
@@ -77,7 +83,7 @@ if (builder.Environment.IsDevelopment())
 
 var app = builder.Build();
 
-if (app.Configuration[Configuration.EF_CREATE_DATABASE] == "true")
+if (app.Configuration[ConfigurationKeys.EF_CREATE_DATABASE] == "true")
 {
     await app.ConfigureDatabaseAsync<ServerSlotDbContext>(CancellationToken.None);
 }

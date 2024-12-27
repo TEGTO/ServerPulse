@@ -41,7 +41,7 @@ namespace MessageBusTests.Implementation
             Assert.IsNotNull(producer);
             Assert.IsInstanceOf<ResilienceProducer>(producer);
 
-            mockResiliencePipelineProvider.Verify(rp => rp.GetPipeline(MessageBusConfiguration.MESSAGE_BUS_RESILIENCE_PIPELINE), Times.Once);
+            mockResiliencePipelineProvider.Verify(rp => rp.GetPipeline(MessageBusConfigurationKeys.MESSAGE_BUS_RESILIENCE_PIPELINE), Times.Once);
         }
 
         [Test]

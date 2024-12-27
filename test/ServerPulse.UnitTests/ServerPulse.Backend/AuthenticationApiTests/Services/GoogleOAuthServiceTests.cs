@@ -1,5 +1,6 @@
 ﻿using Authentication.OAuth.Google;
 using AuthenticationApi.Dtos.OAuth;
+using Microsoft.Extensions.Options;
 using Moq;
 using System.ComponentModel.DataAnnotations;
 using static Google.Apis.Auth.GoogleJsonWebSignature;
@@ -17,8 +18,6 @@ namespace AuthenticationApi.Services.Tests
         [SetUp]
         public void SetUp()
         {
-            httpClientMock = new Mock<IGoogleOAuthHttpClient>();
-            googleTokenValidatorMock = new Mock<IGoogleTokenValidator>();
             googleOAuthSettings = new GoogleOAuthSettings
             {
                 ClientId = "test-client-id",
@@ -26,7 +25,12 @@ namespace AuthenticationApi.Services.Tests
                 Scope = "test-scope"
             };
 
-            googleOAuthService = new GoogleOAuthService(httpClientMock.Object, googleTokenValidatorMock.Object, googleOAuthSettings);
+            httpClientMock = new Mock<IGoogleOAuthHttpClient>();
+            googleTokenValidatorMock = new Mock<IGoogleTokenValidator>();
+            var optionsMock = new Mock<IOptions<GoogleOAuthSettings>>();
+            optionsMock.Setup(x => x.Value).Returns(googleOAuthSettings);
+
+            googleOAuthService = new GoogleOAuthService(httpClientMock.Object, googleTokenValidatorMock.Object, optionsMock.Object);
         }
 
         [Test]

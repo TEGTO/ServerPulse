@@ -1,9 +1,9 @@
-﻿using AnalyzerApi.Infrastructure;
-using AnalyzerApi.Infrastructure.Configurations;
+﻿using AnalyzerApi.Infrastructure.Configuration;
 using AnalyzerApi.Infrastructure.Models.Statistics;
+using AnalyzerApi.Infrastructure.TopicMapping;
 using MessageBus.Interfaces;
 using MessageBus.Models;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Moq;
 using Shared;
 using System.Text.Json;
@@ -14,24 +14,29 @@ namespace AnalyzerApi.Services.Receivers.Statistics.Tests
     internal class StatisticsReceiverTests
     {
         private const string TopicOriginName = "statistics-topic";
-        private const string KAFKA_TIMEOUT = "5";
+        private const int TimeoutInMilliseconds = 5;
 
         private Mock<IMessageConsumer> mockMessageConsumer;
-        private Mock<IConfiguration> mockConfiguration;
-        private StatisticsReceiverTopicConfiguration<TestStatistics> topicData;
+        private StatisticsTopicMapping<TestStatistics> topicData;
         private StatisticsReceiver<TestStatistics> statisticsReceiver;
 
         [SetUp]
         public void Setup()
         {
             mockMessageConsumer = new Mock<IMessageConsumer>();
-            mockConfiguration = new Mock<IConfiguration>();
-            topicData = new StatisticsReceiverTopicConfiguration<TestStatistics>(TopicOriginName);
-            mockConfiguration.Setup(x => x[Configuration.KAFKA_TIMEOUT_IN_MILLISECONDS]).Returns(KAFKA_TIMEOUT);
+            topicData = new StatisticsTopicMapping<TestStatistics>(TopicOriginName);
+
+            var messageBusSettings = new MessageBusSettings
+            {
+                ReceiveTimeoutInMilliseconds = TimeoutInMilliseconds,
+            };
+
+            var mockOptions = new Mock<IOptions<MessageBusSettings>>();
+            mockOptions.Setup(x => x.Value).Returns(messageBusSettings);
 
             statisticsReceiver = new StatisticsReceiver<TestStatistics>(
                 mockMessageConsumer.Object,
-                mockConfiguration.Object,
+                mockOptions.Object,
                 topicData
             );
         }

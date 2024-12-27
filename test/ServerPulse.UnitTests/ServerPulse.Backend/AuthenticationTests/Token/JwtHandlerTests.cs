@@ -1,6 +1,8 @@
 ﻿using Authentication.Token;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Moq;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace AuthenticationTests.Token
@@ -22,7 +24,10 @@ namespace AuthenticationTests.Token
                 ExpiryInMinutes = 30
             };
 
-            jwtHandler = new JwtHandler(jwtSettings);
+            var optionsMock = new Mock<IOptions<JwtSettings>>();
+            optionsMock.Setup(x => x.Value).Returns(jwtSettings);
+
+            jwtHandler = new JwtHandler(optionsMock.Object);
         }
 
         [Test]
