@@ -30,6 +30,11 @@ builder.Services.AddSingleton<IServerSlotRepository, ServerSlotRepository>();
 
 #region Caching
 
+builder.Services.AddStackExchangeRedisOutputCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString(Configuration.REDIS_SERVER_CONNECTION_STRING);
+});
+
 builder.Services.AddOutputCache((options) =>
 {
     options.AddPolicy("BasePolicy", new OutputCachePolicy());

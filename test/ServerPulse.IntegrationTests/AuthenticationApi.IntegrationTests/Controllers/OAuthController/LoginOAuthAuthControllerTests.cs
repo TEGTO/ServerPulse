@@ -33,7 +33,7 @@ namespace AuthenticationApi.IntegrationTests.Controllers.OAuthController
             var content = await httpResponse.Content.ReadAsStringAsync();
             var response = JsonSerializer.Deserialize<UserAuthenticationResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            Assert.NotNull(response);
+            Assert.That(response, Is.Not.Null);
             Assert.That(response.Email, Is.EqualTo("someemail@gmail.com"));
         }
 

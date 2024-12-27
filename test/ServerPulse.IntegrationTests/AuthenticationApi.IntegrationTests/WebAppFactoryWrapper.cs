@@ -44,7 +44,7 @@ namespace AuthenticationApi.IntegrationTests
         private async Task InitializeContainersAsync()
         {
             DbContainer = new PostgreSqlBuilder()
-                .WithImage("postgres:latest")
+                .WithImage("postgres:17")
                 .WithDatabase("elibrary-db")
                 .WithUsername("postgres")
                 .WithPassword("postgres")

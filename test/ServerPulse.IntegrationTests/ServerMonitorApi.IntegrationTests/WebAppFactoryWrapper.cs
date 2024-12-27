@@ -40,7 +40,6 @@ namespace ServerMonitorApi.IntegrationTests
 
         private async Task InitializeContainersAsync()
         {
-
             KafkaContainer = new KafkaBuilder()
                 .WithImage("confluentinc/cp-kafka:7.5.0")
                 .WithEnvironment("KAFKA_NUM_PARTITIONS", "3")

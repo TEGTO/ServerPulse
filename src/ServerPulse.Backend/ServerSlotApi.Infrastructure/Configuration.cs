@@ -7,6 +7,6 @@
         public static string SERVER_SLOTS_PER_USER { get; } = "SlotsPerUser";
         public static string CACHE_GET_BY_EMAIL_SERVER_SLOT_EXPIRY_IN_SECONDS { get; } = "Cache:GetServerSlotByEmailExpiryInSeconds";
         public static string CACHE_CHECK_SERVER_SLOT_EXPIRY_IN_SECONDS { get; } = "Cache:ServerSlotCheckExpiryInSeconds";
-
+        public static string REDIS_SERVER_CONNECTION_STRING { get; } = "RedisServer";
     }
 }

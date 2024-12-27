@@ -57,6 +57,11 @@ builder.Services.AddKafkaConsumer(consumerConfig, adminConfig);
 
 #region Caching
 
+builder.Services.AddStackExchangeRedisOutputCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString(Configuration.REDIS_SERVER_CONNECTION_STRING);
+});
+
 builder.Services.AddOutputCache((options) =>
 {
     options.AddPolicy("BasePolicy", new OutputCachePolicy());

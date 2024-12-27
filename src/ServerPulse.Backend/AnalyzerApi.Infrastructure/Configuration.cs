@@ -22,5 +22,6 @@
         public static string LOAD_EVENT_PROCESSING_RESILLIENCE { get; } = "LoadEventProcessing:Resillience";
         public static string LOAD_EVENT_PROCESSING_BATCH_SIZE { get; } = "LoadEventProcessing:BatchSize";
         public static string LOAD_EVENT_PROCESSING_BATCH_INTERVAL_IN_MILLISECONDS { get; } = "LoadEventProcessing:BatchIntervalInMilliseconds";
+        public static string REDIS_SERVER_CONNECTION_STRING { get; } = "RedisServer";
     }
 }

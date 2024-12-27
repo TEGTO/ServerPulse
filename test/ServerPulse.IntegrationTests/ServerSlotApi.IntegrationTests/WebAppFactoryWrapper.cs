@@ -9,11 +9,13 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using ServerSlotApi.Infrastructure;
 using ServerSlotApi.Infrastructure.Data;
 using Testcontainers.PostgreSql;
+using Testcontainers.Redis;
 
 namespace ServerSlotApi.IntegrationTests
 {
     public sealed class WebAppFactoryWrapper : IAsyncDisposable
     {
+        private RedisContainer? RedisContainer { get; set; }
         private PostgreSqlContainer? DbContainer { get; set; }
         private WebApplicationFactory<Program>? WebApplicationFactory { get; set; }
 
@@ -29,6 +31,12 @@ namespace ServerSlotApi.IntegrationTests
 
         public async ValueTask DisposeAsync()
         {
+            if (RedisContainer != null)
+            {
+                await RedisContainer.StopAsync();
+                await RedisContainer.DisposeAsync();
+            }
+
             if (DbContainer != null)
             {
                 await DbContainer.StopAsync();
@@ -44,6 +52,10 @@ namespace ServerSlotApi.IntegrationTests
 
         private async Task InitializeContainersAsync()
         {
+            RedisContainer = new RedisBuilder()
+                .WithImage("redis:7.4")
+                .Build();
+
             DbContainer = new PostgreSqlBuilder()
                 .WithImage("postgres:17")
                 .WithDatabase("serverslot-db")
@@ -51,6 +63,7 @@ namespace ServerSlotApi.IntegrationTests
                 .WithPassword("postgres")
                 .Build();
 
+            await RedisContainer.StartAsync();
             await DbContainer.StartAsync();
         }
 
@@ -77,6 +90,7 @@ namespace ServerSlotApi.IntegrationTests
 
             configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
             {
+                { $"ConnectionStrings:{Configuration.REDIS_SERVER_CONNECTION_STRING}",  RedisContainer?.GetConnectionString()},
                 { $"ConnectionStrings:{Configuration.SERVER_SLOT_DATABASE_CONNECTION_STRING}", DbContainer?.GetConnectionString() },
                 { JwtConfiguration.JWT_SETTINGS_PUBLIC_KEY, TestRsaKeys.PUBLIC_KEY },
                 { JwtConfiguration.JWT_SETTINGS_PRIVATE_KEY, TestRsaKeys.PRIVATE_KEY },

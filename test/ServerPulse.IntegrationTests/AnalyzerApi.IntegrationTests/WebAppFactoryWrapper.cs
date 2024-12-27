@@ -47,7 +47,7 @@ namespace AnalyzerApi.IntegrationTests
         private async Task InitializeContainersAsync()
         {
             RedisContainer = new RedisBuilder()
-                .WithImage("redis:latest")
+                .WithImage("redis:7.4")
                 .Build();
 
             var kafkaContainerName = Guid.NewGuid().ToString("D");
@@ -77,7 +77,7 @@ namespace AnalyzerApi.IntegrationTests
 
             configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                { "ConnectionStrings:RedisServer",  RedisContainer?.GetConnectionString()},
+                 { $"ConnectionStrings:{Configuration.REDIS_SERVER_CONNECTION_STRING}",  RedisContainer?.GetConnectionString()},
                  { Configuration.KAFKA_CLIENT_ID, "analyzer" },
                  { Configuration.KAFKA_BOOTSTRAP_SERVERS, KafkaContainer?.GetBootstrapAddress() },
                  { Configuration.KAFKA_GROUP_ID, "analyzer-group" },

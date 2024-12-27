@@ -32,6 +32,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IntegrationTests", "IntegrationTests", "{0982AF25-AABE-4CED-8E03-280C1CCCFE84}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{79A11979-3949-4968-8C5F-A774070FC455}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\test\Directory.Packages.props = ..\..\test\Directory.Packages.props
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerSlotApi.IntegrationTests", "..\..\test\ServerPulse.IntegrationTests\ServerSlotApi.IntegrationTests\ServerSlotApi.IntegrationTests.csproj", "{88F5C66D-6546-4BEC-A201-BA6F8091D279}"
 EndProject
@@ -106,6 +109,11 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Helper", "Helper\Helper.csproj", "{C7C871F8-2FFD-4407-B29D-4B92D8726623}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HelperTests", "..\..\test\ServerPulse.UnitTests\ServerPulse.Backend\HelperTests\HelperTests.csproj", "{FD4E9EFD-675C-4660-B545-6AF41E3112C8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6E1605DB-71E7-44B7-932E-E6F3745167F2}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Packages.props = Directory.Packages.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
