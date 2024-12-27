@@ -7,7 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Store } from '@ngrx/store';
-import { loginUser, startRegisterUser } from '../..';
+import { loginUser, OAuthLoginProvider, startOAuthLogin, startRegisterUser } from '../..';
 import { ValidationMessage } from '../../../shared';
 import { LoginComponent } from './login.component';
 
@@ -121,6 +121,14 @@ describe('LoginComponent', () => {
 
     expect(storeSpy.dispatch).toHaveBeenCalledWith(
       startRegisterUser()
+    );
+  });
+
+  it('should dispatch startOAuthLogin on google login button click', () => {
+    fixture.debugElement.query(By.css('button#google-oath-button')).nativeElement.click();
+
+    expect(storeSpy.dispatch).toHaveBeenCalledWith(
+      startOAuthLogin({ loginProvider: OAuthLoginProvider.Google })
     );
   });
 });

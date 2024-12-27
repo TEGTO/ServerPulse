@@ -1,7 +1,7 @@
 import { HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, map, Observable } from 'rxjs';
-import { AuthData, AuthToken, AuthTokenResponse, mapAuthTokenResponseToAuthToken, mapUserAuthenticationResponseToUserAuthentication, UserAuthenticationRequest, UserAuthenticationResponse, UserRegistrationRequest, UserUpdateRequest } from '../..';
+import { AuthData, AuthToken, AuthTokenResponse, mapAuthTokenResponseToAuthToken, mapUserAuthenticationResponseToAuthData, UserAuthenticationRequest, UserAuthenticationResponse, UserRegistrationRequest, UserUpdateRequest } from '../..';
 import { BaseApiService } from '../../../shared';
 
 @Injectable({
@@ -11,14 +11,14 @@ export class AuthenticationApiService extends BaseApiService {
 
   loginUser(req: UserAuthenticationRequest): Observable<AuthData> {
     return this.httpClient.post<UserAuthenticationResponse>(this.combinePathWithAuthApiUrl(`/login`), req).pipe(
-      map((response) => mapUserAuthenticationResponseToUserAuthentication(response)),
+      map((response) => mapUserAuthenticationResponseToAuthData(response)),
       catchError((resp) => this.handleError(resp))
     );
   }
 
   registerUser(req: UserRegistrationRequest): Observable<AuthData> {
     return this.httpClient.post<UserAuthenticationResponse>(this.combinePathWithAuthApiUrl(`/register`), req).pipe(
-      map((response) => mapUserAuthenticationResponseToUserAuthentication(response)),
+      map((response) => mapUserAuthenticationResponseToAuthData(response)),
       catchError((resp) => this.handleError(resp))
     );
   }

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createAction, props } from "@ngrx/store";
-import { AuthData, AuthToken, UserAuthenticationRequest, UserRegistrationRequest, UserUpdateRequest } from "..";
+import { AuthData, AuthToken, OAuthLoginProvider, UserAuthenticationRequest, UserRegistrationRequest, UserUpdateRequest } from "..";
 
 export const startRegisterUser = createAction(
     '[Auth] Start Register New User'
@@ -77,6 +77,24 @@ export const updateUserDataSuccess = createAction(
 );
 export const updateUserDataFailure = createAction(
     '[Auth] Update User Data Failure',
+    props<{ error: any }>()
+);
+
+export const oauthLogin = createAction(
+    '[OAuth] OAuth Login',
+    props<{ code: string }>()
+);
+export const oauthLoginFailure = createAction(
+    '[OAuth] OAuth Login Failure',
+    props<{ error: any }>()
+);
+
+export const startOAuthLogin = createAction(
+    '[OAuth] Start OAuth Login',
+    props<{ loginProvider: OAuthLoginProvider }>()
+);
+export const startOAuthLoginFailure = createAction(
+    '[OAuth] Start OAuth Login Failure',
     props<{ error: any }>()
 );
 

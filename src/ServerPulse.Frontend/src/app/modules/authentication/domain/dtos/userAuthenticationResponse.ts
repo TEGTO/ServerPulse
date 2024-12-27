@@ -5,7 +5,7 @@ export interface UserAuthenticationResponse {
     email: string;
 }
 
-export function mapUserAuthenticationResponseToUserAuthentication(response: UserAuthenticationResponse): AuthData {
+export function mapUserAuthenticationResponseToAuthData(response: UserAuthenticationResponse): AuthData {
     return {
         isAuthenticated: true,
         authToken: mapAuthTokenResponseToAuthToken(response?.authToken),

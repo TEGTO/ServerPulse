@@ -41,7 +41,7 @@ namespace Shared.Tests
         public void AddCustomHttpClientServiceWithResilience_RegistersHttpClientAndDependencies()
         {
             // Act
-            services.AddHelperHttpClientServiceWithResilience(configurationMock.Object);
+            services.AddHttpClientHelperServiceWithResilience(configurationMock.Object);
 
             var serviceProvider = services.BuildServiceProvider();
 

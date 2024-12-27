@@ -1,6 +1,8 @@
 using Authentication;
+using Authentication.OAuth.Google;
 using Authentication.Token;
 using AuthenticationApi;
+using AuthenticationApi.Dtos.OAuth;
 using AuthenticationApi.Infrastructure;
 using AuthenticationApi.Infrastructure.Data;
 using AuthenticationApi.Infrastructure.Validators;
@@ -19,6 +21,8 @@ builder.Services.AddDbContextFactory<AuthIdentityDbContext>(
     builder.Configuration.GetConnectionString(Configuration.AUTH_DATABASE_CONNECTION_STRING)!,
     "AuthenticationApi"
 );
+
+builder.Services.AddHttpClientHelperServiceWithResilience(builder.Configuration);
 
 #region Identity 
 
@@ -44,6 +48,13 @@ builder.Services.AddScoped<ITokenHandler, JwtHandler>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+
+builder.Services.AddScoped<GoogleOAuthService>();
+builder.Services.AddScoped<IGoogleOAuthHttpClient, GoogleOAuthHttpClient>();
+builder.Services.AddScoped(provider => new Dictionary<OAuthLoginProvider, IOAuthService>
+    {
+        { OAuthLoginProvider.Google, provider.GetService<GoogleOAuthService>()! },
+    });
 
 #endregion
 

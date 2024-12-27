@@ -42,7 +42,8 @@
         "Period": "1s",
         "PeriodTimespan": 1,
         "Limit": 15
-      }
+      },
+      "SwaggerKey": "analyzer"
     },
     {
       "Key": "Analyzer_GetLoadStatisticsPerDay",
@@ -73,7 +74,8 @@
         "Period": "1s",
         "PeriodTimespan": 1,
         "Limit": 15
-      }
+      },
+      "SwaggerKey": "analyzer"
     },
     {
       "Key": "Analyzer_GetSomeLoadEvents",
@@ -104,7 +106,8 @@
         "Period": "1s",
         "PeriodTimespan": 1,
         "Limit": 15
-      }
+      },
+      "SwaggerKey": "analyzer"
     },
     {
       "Key": "Analyzer_GetSomeCustomEvents",
@@ -135,7 +138,8 @@
         "Period": "1s",
         "PeriodTimespan": 1,
         "Limit": 15
-      }
+      },
+      "SwaggerKey": "analyzer"
     },
     {
       "Key": "Analyzer_GetAmountStatisticsInRange",
@@ -166,7 +170,8 @@
         "Period": "1s",
         "PeriodTimespan": 1,
         "Limit": 15
-      }
+      },
+      "SwaggerKey": "analyzer"
     },
     {
       "Key": "Analyzer_GetSlotStatistics",
@@ -197,7 +202,8 @@
         "Period": "1s",
         "PeriodTimespan": 1,
         "Limit": 15
-      }
+      },
+      "SwaggerKey": "analyzer"
     },
     {
       "Key": "Analyzer_GetLifeCycleStatistics",
@@ -229,7 +235,8 @@
       },
       "AddHeadersToRequest": {
         "Authorization": "Bearer {token}"
-      }
+      },
+      "SwaggerKey": "analyzer"
     },
     {
       "Key": "Analyzer_GetLoadStatistics",
@@ -261,7 +268,8 @@
       },
       "AddHeadersToRequest": {
         "Authorization": "Bearer {token}"
-      }
+      },
+      "SwaggerKey": "analyzer"
     },
     {
       "Key": "Analyzer_GetCustomStatistics",
@@ -293,7 +301,8 @@
       },
       "AddHeadersToRequest": {
         "Authorization": "Bearer {token}"
-      }
+      },
+      "SwaggerKey": "analyzer"
     },
     {
       "Key": "EventProcessing_ProcessLoadEvent",
@@ -318,7 +327,8 @@
         "Period": "3s",
         "PeriodTimespan": 3,
         "Limit": 1
-      }
+      },
+      "SwaggerKey": "analyzer"
     },
     {
       "Key": "Authentication_Login",
@@ -343,7 +353,8 @@
         "Period": "1s",
         "PeriodTimespan": 1,
         "Limit": 5
-      }
+      },
+      "SwaggerKey": "authentication"
     },
     {
       "Key": "Authentication_Register",
@@ -368,7 +379,8 @@
         "Period": "1s",
         "PeriodTimespan": 1,
         "Limit": 5
-      }
+      },
+      "SwaggerKey": "authentication"
     },
     {
       "Key": "Authentication_Update",
@@ -399,7 +411,8 @@
         "Period": "1s",
         "PeriodTimespan": 1,
         "Limit": 5
-      }
+      },
+      "SwaggerKey": "authentication"
     },
     {
       "Key": "Authentication_Refresh",
@@ -424,7 +437,8 @@
         "Period": "1s",
         "PeriodTimespan": 1,
         "Limit": 5
-      }
+      },
+      "SwaggerKey": "authentication"
     },
     {
       "Key": "Authentication_Check",
@@ -449,7 +463,54 @@
         "Period": "1s",
         "PeriodTimespan": 1,
         "Limit": 5
-      }
+      },
+      "SwaggerKey": "authentication"
+    },
+    {
+      "Key": "OAuth_GetUrl",
+      "UpstreamPathTemplate": "/oauth",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DownstreamPathTemplate": "/oauth",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authenticationapi",
+          "Port": 8080
+        }
+      ],
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 5
+      },
+      "SwaggerKey": "authentication"
+    },
+    {
+      "Key": "OAuth_Login",
+      "UpstreamPathTemplate": "/oauth",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DownstreamPathTemplate": "/oauth",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authenticationapi",
+          "Port": 8080
+        }
+      ],
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 5
+      },
+      "SwaggerKey": "authentication"
     },
     {
       "Key": "ServerInteraction_SendConfiguration",
@@ -461,7 +522,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "servermonitorapi",
+          "Host": "serverservermonitorapi",
           "Port": 8080
         }
       ],
@@ -474,7 +535,8 @@
         "Period": "3s",
         "PeriodTimespan": 3,
         "Limit": 1
-      }
+      },
+      "SwaggerKey": "servermonitor"
     },
     {
       "Key": "ServerInteraction_SendAlive",
@@ -486,7 +548,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "servermonitorapi",
+          "Host": "serverservermonitorapi",
           "Port": 8080
         }
       ],
@@ -499,7 +561,8 @@
         "Period": "3s",
         "PeriodTimespan": 3,
         "Limit": 1
-      }
+      },
+      "SwaggerKey": "servermonitor"
     },
     {
       "Key": "ServerInteraction_SendLoad",
@@ -511,7 +574,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "servermonitorapi",
+          "Host": "serverservermonitorapi",
           "Port": 8080
         }
       ],
@@ -524,7 +587,8 @@
         "Period": "3s",
         "PeriodTimespan": 3,
         "Limit": 1
-      }
+      },
+      "SwaggerKey": "servermonitor"
     },
     {
       "Key": "ServerInteraction_SendCustom",
@@ -536,7 +600,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "servermonitorapi",
+          "Host": "serverservermonitorapi",
           "Port": 8080
         }
       ],
@@ -549,7 +613,8 @@
         "Period": "3s",
         "PeriodTimespan": 3,
         "Limit": 1
-      }
+      },
+      "SwaggerKey": "servermonitor"
     },
     {
       "Key": "ServerSlot_CRU",
@@ -582,7 +647,8 @@
         "Period": "1s",
         "PeriodTimespan": 1,
         "Limit": 5
-      }
+      },
+      "SwaggerKey": "serverslot"
     },
     {
       "Key": "ServerSlot_GetWithString",
@@ -613,7 +679,8 @@
         "Period": "1s",
         "PeriodTimespan": 1,
         "Limit": 5
-      }
+      },
+      "SwaggerKey": "serverslot"
     },
     {
       "Key": "ServerSlot_GetById",
@@ -644,7 +711,8 @@
         "Period": "1s",
         "PeriodTimespan": 1,
         "Limit": 5
-      }
+      },
+      "SwaggerKey": "serverslot"
     },
     {
       "Key": "ServerSlot_CheckIfExists",
@@ -669,7 +737,8 @@
         "Period": "1s",
         "PeriodTimespan": 1,
         "Limit": 5
-      }
+      },
+      "SwaggerKey": "serverslot"
     },
     {
       "Key": "ServerSlot_Delete",
@@ -700,7 +769,8 @@
         "Period": "1s",
         "PeriodTimespan": 1,
         "Limit": 5
-      }
+      },
+      "SwaggerKey": "serverslot"
     }
   ],
   "SwaggerEndPoints": [

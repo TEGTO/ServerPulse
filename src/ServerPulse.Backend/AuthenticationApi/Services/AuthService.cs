@@ -73,6 +73,43 @@ namespace AuthenticationApi.Services
             return errors.DistinctBy(e => e.Description).ToList();
         }
 
+        public async Task<AccessTokenData> LoginUserWithProviderAsync(ProviderLoginModel model, CancellationToken cancellationToken)
+        {
+            var user = await userManager.FindByLoginAsync(model.ProviderLogin, model.ProviderKey);
+
+            if (user != null)
+            {
+                return await tokenService.GenerateTokenAsync(user, cancellationToken);
+            }
+
+            user = await userManager.FindByEmailAsync(model.Email);
+
+            if (user == null)
+            {
+                user = new User
+                {
+                    Email = model.Email,
+                    UserName = model.Email,
+                    EmailConfirmed = true
+                };
+
+                await userManager.CreateAsync(user);
+            }
+
+            var userLoginInfo = new UserLoginInfo(model.ProviderLogin, model.ProviderKey, model.ProviderLogin.ToUpper());
+
+            var result = await userManager.AddLoginAsync(user, userLoginInfo);
+
+            if (result.Succeeded)
+            {
+                return await tokenService.GenerateTokenAsync(user, cancellationToken);
+            }
+            else
+            {
+                throw new InvalidOperationException($"Can't login user with '{model.ProviderLogin}' provider");
+            }
+        }
+
         #endregion
 
         #region Private Helpers

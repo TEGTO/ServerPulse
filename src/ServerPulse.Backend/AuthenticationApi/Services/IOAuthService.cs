@@ -1,13 +1,13 @@
-﻿using Authentication.Models;
+﻿using AuthenticationApi.Infrastructure.Models;
 
 namespace AuthenticationApi.Services
 {
-    public record GetAccessOnCodeParams(string Code, string CodeVerifier, string RedirectUrl);
-    public record GenerateOAuthRequestUrlParams(string RedirectUrl, string CodeVerifier);
+    public record OAuthAccessCodeParams(string Code, string CodeVerifier, string RedirectUrl);
+    public record OAuthRequestUrlParams(string RedirectUrl, string CodeVerifier);
 
     public interface IOAuthService
     {
-        public string GenerateOAuthRequestUrl(GenerateOAuthRequestUrlParams generateUrlParams);
-        public Task<AccessTokenData> GetAccessOnCodeAsync(GetAccessOnCodeParams accessOnCodeParams, CancellationToken cancellationToken);
+        public string GenerateOAuthRequestUrl(OAuthRequestUrlParams requestParams);
+        public Task<ProviderLoginModel> GetProviderModelOnCodeAsync(OAuthAccessCodeParams requestParams, CancellationToken cancellationToken);
     }
 }

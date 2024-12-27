@@ -318,5 +318,125 @@ namespace AuthenticationApi.Services.Tests
             Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
                 authService.UpdateUserAsync(new ClaimsPrincipal(), updateModel, false, CancellationToken.None));
         }
+
+        private static IEnumerable<TestCaseData> LoginUserWithProviderTestCases()
+        {
+            yield return new TestCaseData(
+                new ProviderLoginModel
+                {
+                    Email = "existinguser@example.com",
+                    ProviderLogin = "Google",
+                    ProviderKey = "provider-key"
+                },
+                new User { Email = "existinguser@example.com" },
+                true,
+                true,
+                new AccessTokenData { AccessToken = "access-token", RefreshToken = "refresh-token" }
+            ).SetDescription("Existing user found by login returns token.");
+
+            yield return new TestCaseData(
+                new ProviderLoginModel
+                {
+                    Email = "newuser@example.com",
+                    ProviderLogin = "Google",
+                    ProviderKey = "new-provider-key"
+                },
+                null,
+                false,
+                true,
+                new AccessTokenData { AccessToken = "new-access-token", RefreshToken = "new-refresh-token" }
+            ).SetDescription("New user created and login added successfully returns token.");
+
+            yield return new TestCaseData(
+                new ProviderLoginModel
+                {
+                    Email = "newuser@example.com",
+                    ProviderLogin = "Google",
+                    ProviderKey = "new-provider-key"
+                },
+                null,
+                false,
+                false,
+                null
+            ).SetDescription("Adding login fails throws InvalidOperationException.");
+        }
+
+        [Test]
+        [TestCaseSource(nameof(LoginUserWithProviderTestCases))]
+        public async Task LoginUserWithProviderAsync_TestCases(
+            ProviderLoginModel model,
+            User? user,
+            bool userFoundByLogin,
+            bool addLoginSuccess,
+            AccessTokenData? expectedToken)
+        {
+            // Arrange
+            if (userFoundByLogin)
+            {
+                userManagerMock.Setup(x => x.FindByLoginAsync(model.ProviderLogin, model.ProviderKey))
+                    .ReturnsAsync(user);
+
+                if (user != null)
+                {
+                    tokenServiceMock.Setup(x => x.GenerateTokenAsync(user, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(expectedToken!);
+                }
+            }
+            else
+            {
+                userManagerMock.Setup(x => x.FindByLoginAsync(model.ProviderLogin, model.ProviderKey))
+                    .ReturnsAsync((User?)null);
+
+                userManagerMock.Setup(x => x.FindByEmailAsync(model.Email))
+                    .ReturnsAsync(user);
+
+                if (user == null)
+                {
+                    var newUser = new User { Email = model.Email, UserName = model.Email, EmailConfirmed = true };
+                    userManagerMock.Setup(x => x.CreateAsync(It.Is<User>(u => u.Email == newUser.Email)))
+                        .ReturnsAsync(IdentityResult.Success);
+
+                    userManagerMock.Setup(x => x.AddLoginAsync(It.Is<User>(u => u.Email == newUser.Email),
+                            It.Is<UserLoginInfo>(info => info.LoginProvider == model.ProviderLogin && info.ProviderKey == model.ProviderKey)))
+                        .ReturnsAsync(addLoginSuccess ? IdentityResult.Success : IdentityResult.Failed());
+                }
+
+                if (addLoginSuccess)
+                {
+                    tokenServiceMock.Setup(x => x.GenerateTokenAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(expectedToken!);
+                }
+            }
+
+            // Act & Assert
+            if (!addLoginSuccess)
+            {
+                Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                    await authService.LoginUserWithProviderAsync(model, CancellationToken.None));
+            }
+            else
+            {
+                var result = await authService.LoginUserWithProviderAsync(model, CancellationToken.None);
+                Assert.That(result, Is.EqualTo(expectedToken));
+            }
+
+            userManagerMock.Verify(x => x.FindByLoginAsync(model.ProviderLogin, model.ProviderKey), Times.Once);
+
+            if (!userFoundByLogin)
+            {
+                userManagerMock.Verify(x => x.FindByEmailAsync(model.Email), Times.Once);
+
+                if (user == null)
+                {
+                    userManagerMock.Verify(x => x.CreateAsync(It.Is<User>(u => u.Email == model.Email)), Times.Once);
+                    userManagerMock.Verify(x => x.AddLoginAsync(It.IsAny<User>(), It.IsAny<UserLoginInfo>()), Times.Once);
+                }
+            }
+
+            if (expectedToken != null)
+            {
+                tokenServiceMock.Verify(x => x.GenerateTokenAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Once);
+            }
+        }
     }
 }

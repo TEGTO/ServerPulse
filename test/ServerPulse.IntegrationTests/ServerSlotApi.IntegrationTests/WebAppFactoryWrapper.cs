@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using Authentication.Token;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
@@ -77,15 +78,15 @@ namespace ServerSlotApi.IntegrationTests
             configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 { $"ConnectionStrings:{Configuration.SERVER_SLOT_DATABASE_CONNECTION_STRING}", DbContainer?.GetConnectionString() },
-                { "SlotsPerUser", "5" },
-                { "EFCreateDatabase", "true" },
-                { "AuthSettings:PublicKey", TestRsaKeys.PUBLIC_KEY },
-                { "AuthSettings:PrivateKey", TestRsaKeys.PRIVATE_KEY  },
-                { "AuthSettings:Issuer", "https://token.issuer.example.com" },
-                { "AuthSettings:ExpiryInMinutes", "30" },
-                { "AuthSettings:Audience", "https://api.example.com" },
-                { "Cache__GetServerSlotByEmailExpiryInSeconds", "2" },
-                { "Cache__ServerSlotCheckExpiryInSeconds", "2" },
+                { JwtConfiguration.JWT_SETTINGS_PUBLIC_KEY, TestRsaKeys.PUBLIC_KEY },
+                { JwtConfiguration.JWT_SETTINGS_PRIVATE_KEY, TestRsaKeys.PRIVATE_KEY },
+                { JwtConfiguration.JWT_SETTINGS_ISSUER, "https://token.issuer.example.com" },
+                { JwtConfiguration.JWT_SETTINGS_AUDIENCE, "https://api.example.com" },
+                { JwtConfiguration.JWT_SETTINGS_EXPIRY_IN_MINUTES, "30" },
+                { Configuration.CACHE_GET_BY_EMAIL_SERVER_SLOT_EXPIRY_IN_SECONDS, "2" },
+                { Configuration.CACHE_CHECK_SERVER_SLOT_EXPIRY_IN_SECONDS, "2" },
+                { Configuration.EF_CREATE_DATABASE, "true" },
+                { Configuration.SERVER_SLOTS_PER_USER, "5" },
             });
 
             return configurationBuilder.Build();

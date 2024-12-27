@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using AnalyzerApi.Infrastructure;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Testcontainers.Kafka;
@@ -76,25 +77,25 @@ namespace AnalyzerApi.IntegrationTests
 
             configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                { "Kafka:BootstrapServers", KafkaContainer?.GetBootstrapAddress() },
-                { "Kafka:ClientId", "analyzer" },
-                { "Kafka:GroupId", "analyzer-group" },
-                { "Kafka:AnalyzerReceiveTimeout", "10000" },
-                { "Kafka:TopicDataSaveInDays", "365" },
-                { "Kafka:AliveTopic", "AliveTopic_" },
-                { "Kafka:ConfigurationTopic", "ConfigurationTopic_" },
-                { "Kafka:LoadTopic", "LoadTopic_" },
-                { "Kafka:ProcessLoadEventTopic", "LoadEventProcessTopic" },
-                { "Kafka:CustomTopic", "CustomEventTopic_" },
-                { "Kafka:LoadMethodStatisticsTopic", "LoadMethodStatisticsTopic_" },
-                { "StatisticsCollectIntervalInMilliseconds", "500" },
                 { "ConnectionStrings:RedisServer",  RedisContainer?.GetConnectionString()},
-                { "Cache:Cache__ExpiryInMinutes", "5" },
-                { "MinimumStatisticsTimeSpanInSeconds", "0" },
-                { "MaxEventAmountToGetInSlotData", "25" },
-                { "MaxEventAmountToReadPerRequest", "20" },
-                { "LoadEventProcessing:BatchSize", "20" },
-                { "LoadEventProcessing:BatchIntervalInMilliseconds", "1000" },
+                 { Configuration.KAFKA_CLIENT_ID, "analyzer" },
+                 { Configuration.KAFKA_BOOTSTRAP_SERVERS, KafkaContainer?.GetBootstrapAddress() },
+                 { Configuration.KAFKA_GROUP_ID, "analyzer-group" },
+                 { Configuration.KAFKA_TIMEOUT_IN_MILLISECONDS, "10000" },
+                 { Configuration.KAFKA_TOPIC_DATA_SAVE_IN_DAYS, "365" },
+                 { Configuration.KAFKA_ALIVE_TOPIC, "AliveTopic_" },
+                 { Configuration.KAFKA_CONFIGURATION_TOPIC, "ConfigurationTopic_" },
+                 { Configuration.KAFKA_LOAD_TOPIC, "LoadTopic_" },
+                 { Configuration.KAFKA_LOAD_TOPIC_PROCESS, "LoadEventProcessTopic" },
+                 { Configuration.KAFKA_CUSTOM_TOPIC, "CustomEventTopic_" },
+                 { Configuration.KAFKA_LOAD_METHOD_STATISTICS_TOPIC, "LoadMethodStatisticsTopic_" },
+                 { Configuration.STATISTICS_COLLECT_INTERVAL_IN_MILLISECONDS, "500" },
+                 { Configuration.CACHE_EXPIRY_IN_MINUTES, "5" },
+                 { Configuration.MIN_STATISTICS_TIMESPAN_IN_SECONDS, "0" },
+                 { Configuration.MAX_EVENT_AMOUNT_TO_GET_IN_SLOT_DATA, "25" },
+                 { Configuration.MAX_EVENT_AMOUNT_PER_REQUEST, "20" },
+                 { Configuration.LOAD_EVENT_PROCESSING_BATCH_SIZE, "20" },
+                 { Configuration.LOAD_EVENT_PROCESSING_BATCH_INTERVAL_IN_MILLISECONDS, "1000" },
             });
 
             return configurationBuilder.Build();

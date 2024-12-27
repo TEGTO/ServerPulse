@@ -17,4 +17,8 @@ export class RedirectorService {
   redirectTo(path: string): void {
     this.router.navigate([path]);
   }
+
+  redirectToExternalUrl(url: string): void {
+    window.location.href = url;
+  }
 }

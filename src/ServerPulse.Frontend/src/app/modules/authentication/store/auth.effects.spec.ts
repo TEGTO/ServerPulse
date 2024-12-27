@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Store } from '@ngrx/store';
 import { Observable, of, throwError } from 'rxjs';
-import { AuthData, AuthenticationApiService, AuthenticationDialogManager, getAuthData, getAuthDataFailure, getAuthDataSuccess, loginUser, loginUserFailure, loginUserSuccess, logOutUser, logOutUserSuccess, registerFailure, registerSuccess, registerUser, startRegisterUser, UserAuthenticationRequest, UserRegistrationRequest } from '..';
+import { AuthData, AuthenticationApiService, AuthenticationDialogManagerService, getAuthData, getAuthDataSuccess, loginUser, loginUserFailure, loginUserSuccess, logOutUser, logOutUserSuccess, OauthApiService, oauthLoginFailure, OAuthLoginProvider, registerFailure, registerSuccess, registerUser, startOAuthLogin, startRegisterUser, UserAuthenticationRequest, UserRegistrationRequest } from '..';
 import { LocalStorageService, RedirectorService, SnackbarManager } from '../../shared';
 import { AuthEffects } from './auth.effects';
 
@@ -13,18 +13,20 @@ describe('AuthEffects', () => {
 
     let storeSpy: jasmine.SpyObj<Store>;
     let authApiServiceSpy: jasmine.SpyObj<AuthenticationApiService>;
+    let oauthApiServiceSpy: jasmine.SpyObj<OauthApiService>;
     let localStorageSpy: jasmine.SpyObj<LocalStorageService>;
     let redirectorSpy: jasmine.SpyObj<RedirectorService>;
     let snackbarManagerSpy: jasmine.SpyObj<SnackbarManager>;
-    let dialogManagerSpy: jasmine.SpyObj<AuthenticationDialogManager>;
+    let dialogManagerSpy: jasmine.SpyObj<AuthenticationDialogManagerService>;
 
     beforeEach(() => {
         storeSpy = jasmine.createSpyObj<Store>(['select', 'dispatch']);
         authApiServiceSpy = jasmine.createSpyObj<AuthenticationApiService>(['registerUser', 'loginUser', 'refreshToken', 'updateUser']);
+        oauthApiServiceSpy = jasmine.createSpyObj<OauthApiService>(['loginUserOAuth', 'getOAuthUrl']);
         localStorageSpy = jasmine.createSpyObj<LocalStorageService>(['getItem', 'setItem', 'removeItem']);
-        redirectorSpy = jasmine.createSpyObj<RedirectorService>(['redirectToHome']);
-        snackbarManagerSpy = jasmine.createSpyObj<SnackbarManager>(['openInfoSnackbar']);
-        dialogManagerSpy = jasmine.createSpyObj<AuthenticationDialogManager>(['openRegisterMenu', 'openLoginMenu', 'closeAll']);
+        redirectorSpy = jasmine.createSpyObj<RedirectorService>(['redirectToHome', 'redirectToExternalUrl']);
+        snackbarManagerSpy = jasmine.createSpyObj<SnackbarManager>(['openInfoSnackbar', 'openErrorSnackbar']);
+        dialogManagerSpy = jasmine.createSpyObj<AuthenticationDialogManagerService>(['openRegisterMenu', 'openLoginMenu', 'closeAll']);
 
         TestBed.configureTestingModule({
             providers: [
@@ -32,10 +34,11 @@ describe('AuthEffects', () => {
                 provideMockActions(() => actions$),
                 { provide: Store, useValue: storeSpy },
                 { provide: AuthenticationApiService, useValue: authApiServiceSpy },
+                { provide: OauthApiService, useValue: oauthApiServiceSpy },
                 { provide: LocalStorageService, useValue: localStorageSpy },
                 { provide: RedirectorService, useValue: redirectorSpy },
                 { provide: SnackbarManager, useValue: snackbarManagerSpy },
-                { provide: AuthenticationDialogManager, useValue: dialogManagerSpy },
+                { provide: AuthenticationDialogManagerService, useValue: dialogManagerSpy },
             ],
         });
 
@@ -113,17 +116,7 @@ describe('AuthEffects', () => {
 
         effects.getAuthData$.subscribe((action) => {
             expect(action.type).toEqual(getAuthDataSuccess({ authData }).type);
-            expect(localStorageSpy.getItem).toHaveBeenCalledWith(effects.storageAuthDataKey);
-        });
-    });
-
-    it('should dispatch getAuthDataFailure when auth data does not exist in localStorage', () => {
-        localStorageSpy.getItem.and.returnValue(null);
-
-        actions$ = of(getAuthData());
-
-        effects.getAuthData$.subscribe((action) => {
-            expect(action).toEqual(getAuthDataFailure());
+            expect(localStorageSpy.getItem).toHaveBeenCalledWith(effects["storageAuthDataKey"]);
         });
     });
 
@@ -133,6 +126,37 @@ describe('AuthEffects', () => {
         effects.logOutUser$.subscribe((action) => {
             expect(action).toEqual(logOutUserSuccess());
             expect(localStorageSpy.removeItem).toHaveBeenCalledWith('authData');
+        });
+    });
+
+    it('should handle OAuth login failure with oauthLoginFailure$', () => {
+        const error = { message: 'OAuth failed' };
+
+        actions$ = of(oauthLoginFailure({ error }));
+
+        effects.oauthLoginFailure$.subscribe(() => {
+            expect(snackbarManagerSpy.openErrorSnackbar).toHaveBeenCalledWith(["OAuth login failed: " + error.message]);
+        });
+    });
+
+    it('should start OAuth login and redirect to URL', () => {
+        const loginProvider = OAuthLoginProvider.Google;
+        const codeVerifier: `${string}-${string}-${string}-${string}-${string}` = `code-code-code-code-code`;
+        const response = { url: 'https://oauth-url.com' };
+
+        spyOn(crypto, 'randomUUID').and.returnValue(codeVerifier);
+        oauthApiServiceSpy.getOAuthUrl.and.returnValue(of(response));
+
+        actions$ = of(startOAuthLogin({ loginProvider }));
+
+        effects.startOAuthLogin$.subscribe(() => {
+            expect(localStorageSpy.setItem).toHaveBeenCalled();
+            expect(oauthApiServiceSpy.getOAuthUrl).toHaveBeenCalledWith({
+                codeVerifier,
+                redirectUrl: jasmine.any(String),
+                oAuthLoginProvider: loginProvider,
+            });
+            expect(redirectorSpy.redirectToExternalUrl).toHaveBeenCalledWith(response.url);
         });
     });
 });

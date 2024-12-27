@@ -21,7 +21,8 @@
         "Period": "1s",
         "PeriodTimespan": 1,
         "Limit": 5
-      }
+      },
+      "SwaggerKey": "authentication"
     },
     {
       "Key": "Authentication_Register",
@@ -44,7 +45,8 @@
         "Period": "1s",
         "PeriodTimespan": 1,
         "Limit": 5
-      }
+      },
+      "SwaggerKey": "authentication"
     },
     {
       "Key": "Authentication_Update",
@@ -73,7 +75,8 @@
         "Period": "1s",
         "PeriodTimespan": 1,
         "Limit": 5
-      }
+      },
+      "SwaggerKey": "authentication"
     },
     {
       "Key": "Authentication_Refresh",
@@ -96,7 +99,8 @@
         "Period": "1s",
         "PeriodTimespan": 1,
         "Limit": 5
-      }
+      },
+      "SwaggerKey": "authentication"
     },
     {
       "Key": "Authentication_Check",
@@ -119,7 +123,8 @@
         "Period": "1s",
         "PeriodTimespan": 1,
         "Limit": 5
-      }
+      },
+      "SwaggerKey": "authentication"
     }
   ]
 }

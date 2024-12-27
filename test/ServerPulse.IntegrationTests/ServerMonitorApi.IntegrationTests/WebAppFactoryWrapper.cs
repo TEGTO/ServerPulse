@@ -82,15 +82,15 @@ namespace ServerMonitorApi.IntegrationTests
 
             configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                { "Kafka:ClientId", "server-interaction" },
-                { "Kafka:BootstrapServers", KafkaContainer?.GetBootstrapAddress() },
-                { "Kafka:AliveTopic", "AliveTopic_" },
-                { "Kafka:ConfigurationTopic", "ConfigurationTopic_" },
-                { "Kafka:LoadTopic", "LoadTopic_" },
-                { "Kafka:ProcessLoadEventTopic", "LoadEventProcessTopic" },
-                { "Kafka:CustomTopic", "CustomEventTopic_" },
-                { "ServerSlotApi:Url", "http://apigateway:8080" },
-                { "ServerSlotApi:Check", "/serverslot/check" },
+                 { Configuration.KAFKA_CLIENT_ID, "server-interaction" },
+                 { Configuration.KAFKA_BOOTSTRAP_SERVERS, KafkaContainer?.GetBootstrapAddress() },
+                 { Configuration.KAFKA_ALIVE_TOPIC, "AliveTopic_" },
+                 { Configuration.KAFKA_CONFIGURATION_TOPIC, "ConfigurationTopic_" },
+                 { Configuration.KAFKA_LOAD_TOPIC, "LoadTopic_" },
+                 { Configuration.KAFKA_LOAD_TOPIC_PROCESS, "LoadEventProcessTopic" },
+                 { Configuration.KAFKA_CUSTOM_TOPIC, "CustomEventTopic_" },
+                 { Configuration.SERVER_SLOT_URL, "http://apigateway:8080" },
+                 { Configuration.SERVER_SLOT_ALIVE_CHECKER, "/serverslot/check"  },
             });
 
             return configurationBuilder.Build();

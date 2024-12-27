@@ -20,7 +20,7 @@ builder.Services.AddDbContextFactory<ServerSlotDbContext>(
     "ServerSlotApi"
 );
 
-builder.Services.AddHelperHttpClientServiceWithResilience(builder.Configuration);
+builder.Services.AddHttpClientHelperServiceWithResilience(builder.Configuration);
 
 #region Project Services
 

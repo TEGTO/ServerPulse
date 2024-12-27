@@ -1,34 +1,26 @@
-﻿using Authentication.OAuth.Google;
-using AuthenticationApi.Dtos.OAuth;
+﻿using AuthenticationApi.Dtos.OAuth;
+using AuthenticationApi.Services;
 using MediatR;
 
 namespace AuthenticationApi.Command.GetOAuthUrlQuery
 {
     public class GetOAuthUrlQueryHandler : IRequestHandler<GetOAuthUrlQuery, GetOAuthUrlResponse>
     {
-        private readonly IGoogleOAuthHttpClient googleHttpClient;
+        private readonly Dictionary<OAuthLoginProvider, IOAuthService> oAuthServices;
 
-        public GetOAuthUrlQueryHandler(IGoogleOAuthHttpClient httpClient)
+        public GetOAuthUrlQueryHandler(Dictionary<OAuthLoginProvider, IOAuthService> oAuthServices)
         {
-            this.googleHttpClient = httpClient;
+            this.oAuthServices = oAuthServices;
         }
 
         public Task<GetOAuthUrlResponse> Handle(GetOAuthUrlQuery request, CancellationToken cancellationToken)
         {
-            var oauthParams = request.QueryParams;
+            var oathProvider = request.QueryParams.OAuthLoginProvider;
 
-            string oauthUrlRquest;
+            var url = oAuthServices[oathProvider].GenerateOAuthRequestUrl(
+                new OAuthRequestUrlParams(request.QueryParams.RedirectUrl!, request.QueryParams.CodeVerifier!));
 
-            switch (oauthParams.OAuthLoginProvider)
-            {
-                case OAuthLoginProvider.Google:
-                    oauthUrlRquest = googleHttpClient.GenerateOAuthRequestUrl(oauthParams.Scope, oauthParams.RedirectUrl, oauthParams.CodeVerifier);
-                    break;
-                default:
-                    throw new InvalidOperationException($"Could not process '{oathProvider}' oauth login provider");
-            }
-
-            return Task.FromResult(new GetOAuthUrlResponse { Url = oauthUrlRquest });
+            return Task.FromResult(new GetOAuthUrlResponse { Url = url });
         }
     }
 }

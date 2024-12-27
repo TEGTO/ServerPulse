@@ -27,7 +27,7 @@ namespace Shared
             return services;
         }
 
-        public static IServiceCollection AddHelperHttpClientServiceWithResilience(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddHttpClientHelperServiceWithResilience(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddHttpClient(HelperConfiguration.HTTP_CLIENT_HELPER).AddStandardResilienceHandler();
             services.AddSingleton<IHttpHelper, HttpHelper>();

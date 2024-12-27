@@ -22,13 +22,13 @@ namespace AuthenticationApi.Command.LoginUser
             var request = command.Request;
 
             var loginModel = new LoginUserModel { Login = request.Login, Password = request.Password };
-            var token = await authService.LoginUserAsync(loginModel, cancellationToken);
+            var tokenData = await authService.LoginUserAsync(loginModel, cancellationToken);
 
-            var tokenDto = mapper.Map<AccessTokenDataDto>(token);
+            var tokenDataDto = mapper.Map<AccessTokenDataDto>(tokenData);
 
             return new UserAuthenticationResponse
             {
-                AuthToken = tokenDto,
+                AuthToken = tokenDataDto,
                 Email = request.Login,
             };
         }

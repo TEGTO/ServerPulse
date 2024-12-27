@@ -14,6 +14,9 @@ services:
       - AuthSettings__Issuer=${AuthSettings__Issuer}
       - AuthSettings__ExpiryInMinutes=${AuthSettings__ExpiryInMinutes}
       - AuthSettings__RefreshExpiryInDays=${AuthSettings__RefreshExpiryInDays}
+      - AuthSettings__GoogleOAuth__ClientId=${AuthSettings__GoogleOAuth__ClientId}
+      - AuthSettings__GoogleOAuth__ClientSecret=${AuthSettings__GoogleOAuth__ClientSecret}
+      - AuthSettings__GoogleOAuth__Scope=${AuthSettings__GoogleOAuth__Scope}
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro

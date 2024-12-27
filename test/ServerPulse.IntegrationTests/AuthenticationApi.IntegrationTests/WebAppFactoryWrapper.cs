@@ -1,4 +1,5 @@
-﻿using AuthenticationApi.Infrastructure.Data;
+﻿using Authentication.Token;
+using AuthenticationApi.Infrastructure.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -76,13 +77,13 @@ namespace AuthenticationApi.IntegrationTests
             configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 { $"ConnectionStrings:{Configuration.AUTH_DATABASE_CONNECTION_STRING}", DbContainer?.GetConnectionString() },
-                { "EFCreateDatabase", "true" },
-                { "AuthSettings:PublicKey", TestRsaKeys.PUBLIC_KEY },
-                { "AuthSettings:PrivateKey", TestRsaKeys.PRIVATE_KEY  },
-                { "AuthSettings:Issuer", "https://token.issuer.example.com" },
-                { "AuthSettings:ExpiryInMinutes", "30" },
-                { "AuthSettings:Audience", "https://api.example.com" },
-                { "AuthSettings:RefreshExpiryInDays", "5" },
+                { JwtConfiguration.JWT_SETTINGS_PUBLIC_KEY, TestRsaKeys.PUBLIC_KEY },
+                { JwtConfiguration.JWT_SETTINGS_PRIVATE_KEY, TestRsaKeys.PRIVATE_KEY },
+                { JwtConfiguration.JWT_SETTINGS_ISSUER, "https://token.issuer.example.com" },
+                { JwtConfiguration.JWT_SETTINGS_AUDIENCE, "https://api.example.com" },
+                { JwtConfiguration.JWT_SETTINGS_EXPIRY_IN_MINUTES, "30" },
+                { Configuration.AUTH_REFRESH_TOKEN_EXPIRY_IN_DAYS, "7" },
+                { Configuration.EF_CREATE_DATABASE, "true" },
             });
 
             return configurationBuilder.Build();
