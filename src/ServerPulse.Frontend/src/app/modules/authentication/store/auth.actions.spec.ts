@@ -1,7 +1,13 @@
-import { AuthData, AuthToken, getAuthData, getAuthDataFailure, getAuthDataSuccess, loginUser, loginUserFailure, loginUserSuccess, logOutUser, logOutUserSuccess, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerFailure, registerSuccess, registerUser, startLoginUser, startRegisterUser, updateUserData, updateUserDataFailure, updateUserDataSuccess, UserAuthenticationRequest, UserRegistrationRequest, UserUpdateRequest } from "..";
+import { AuthData, authFailure, AuthToken, confirmEmail, EmailConfirmationRequest, getAuthData, getAuthDataFailure, getAuthDataSuccess, loginUser, loginUserSuccess, logOutUser, logOutUserSuccess, oauthLogin, oauthLoginFailure, OAuthLoginProvider, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerUser, startLoginUser, startOAuthLogin, startOAuthLoginFailure, startRegisterUser, updateUserData, updateUserDataSuccess, UserAuthenticationRequest, UserRegistrationRequest, UserUpdateRequest } from "..";
 
 describe('Authentication Actions', () => {
     const error = { message: 'An error occurred' };
+
+    it('should create authFailure action', () => {
+        const action = authFailure({ error });
+        expect(action.type).toBe('[Auth] Auth Operation Failure');
+        expect(action.error).toEqual(error);
+    });
 
     describe('Register User Actions', () => {
         it('should create startRegisterUser action', () => {
@@ -11,6 +17,7 @@ describe('Authentication Actions', () => {
 
         it('should create registerUser action', () => {
             const req: UserRegistrationRequest = {
+                redirectConfirmUrl: 'some-url',
                 email: 'email@example.com',
                 password: 'password123',
                 confirmPassword: 'password123',
@@ -19,22 +26,14 @@ describe('Authentication Actions', () => {
             expect(action.type).toBe('[Auth] Register New User');
             expect(action.req).toBe(req);
         });
+    });
 
-        it('should create registerSuccess action', () => {
-            const authData: AuthData = {
-                isAuthenticated: true,
-                authToken: { accessToken: 'token', refreshToken: 'refreshToken', refreshTokenExpiryDate: new Date() },
-                email: 'email@example.com',
-            };
-            const action = registerSuccess({ authData });
-            expect(action.type).toBe('[Auth] Register New User Success');
-            expect(action.authData).toBe(authData);
-        });
-
-        it('should create registerFailure action', () => {
-            const action = registerFailure({ error });
-            expect(action.type).toBe('[Auth] Register New User Failure');
-            expect(action.error).toEqual(error);
+    describe('Confirm Email User Actions', () => {
+        it('should create confirmEmail action', () => {
+            const req: EmailConfirmationRequest = { email: 'email@example.com', token: 'some-token' };
+            const action = confirmEmail({ req });
+            expect(action.type).toBe('[Auth] Cofirm User Email');
+            expect(action.req).toBe(req);
         });
     });
 
@@ -60,12 +59,6 @@ describe('Authentication Actions', () => {
             const action = loginUserSuccess({ authData });
             expect(action.type).toBe('[Auth] Login By User Success');
             expect(action.authData).toBe(authData);
-        });
-
-        it('should create loginUserFailure action', () => {
-            const action = loginUserFailure({ error });
-            expect(action.type).toBe('[Auth] Login By User Failure');
-            expect(action.error).toEqual(error);
         });
     });
 
@@ -156,10 +149,34 @@ describe('Authentication Actions', () => {
             expect(action.type).toBe('[Auth] Update User Data Success');
             expect(action.req).toBe(req);
         });
+    });
 
-        it('should create updateUserDataFailure action', () => {
-            const action = updateUserDataFailure({ error });
-            expect(action.type).toBe('[Auth] Update User Data Failure');
+    describe('Start OAuth Login Actions', () => {
+        it('should create startOAuthLogin action', () => {
+            const provider = OAuthLoginProvider.Google;
+            const action = startOAuthLogin({ loginProvider: provider });
+            expect(action.type).toBe('[OAuth] Start OAuth Login');
+            expect(action.loginProvider).toBe(provider);
+        });
+
+        it('should create startOAuthLoginFailure action', () => {
+            const action = startOAuthLoginFailure({ error });
+            expect(action.type).toBe('[OAuth] Start OAuth Login Failure');
+            expect(action.error).toEqual(error);
+        });
+    });
+
+    describe('OAuth Login Actions', () => {
+        it('should create oauthLogin action', () => {
+            const code = 'some-code';
+            const action = oauthLogin({ code: code });
+            expect(action.type).toBe('[OAuth] OAuth Login');
+            expect(action.code).toBe(code);
+        });
+
+        it('should create oauthLoginFailure action', () => {
+            const action = oauthLoginFailure({ error });
+            expect(action.type).toBe('[OAuth] OAuth Login Failure');
             expect(action.error).toEqual(error);
         });
     });

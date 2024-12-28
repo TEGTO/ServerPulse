@@ -3,6 +3,7 @@ using AuthenticationApi.Dtos;
 using AuthenticationApi.Infrastructure.Models;
 using AuthenticationApi.Services;
 using AutoMapper;
+using Microsoft.FeatureManagement;
 using Moq;
 
 namespace AuthenticationApi.Command.LoginUser.Tests
@@ -11,6 +12,7 @@ namespace AuthenticationApi.Command.LoginUser.Tests
     internal class LoginUserCommandHandlerTests
     {
         private Mock<IAuthService> mockAuthService;
+        private Mock<IFeatureManager> mockFeatureManager;
         private Mock<IMapper> mockMapper;
         private LoginUserCommandHandler handler;
 
@@ -18,9 +20,10 @@ namespace AuthenticationApi.Command.LoginUser.Tests
         public void SetUp()
         {
             mockAuthService = new Mock<IAuthService>();
+            mockFeatureManager = new Mock<IFeatureManager>();
             mockMapper = new Mock<IMapper>();
 
-            handler = new LoginUserCommandHandler(mockAuthService.Object, mockMapper.Object);
+            handler = new LoginUserCommandHandler(mockAuthService.Object, mockFeatureManager.Object, mockMapper.Object);
         }
 
         private static IEnumerable<TestCaseData> LoginUserTestCases()
@@ -30,40 +33,84 @@ namespace AuthenticationApi.Command.LoginUser.Tests
             var validResponse = new UserAuthenticationResponse
             {
                 AuthToken = validToken,
-                Email = validRequest.Login, // !IMPORTANT!: Login == Email for this project!
+                Email = validRequest.Login, // Login == Email in this project
             };
 
             yield return new TestCaseData(
                 validRequest,
                 validToken,
-                validResponse
-            ).SetDescription("Valid login and password should return correct authentication response.");
+                validResponse,
+                true,
+                true
+            ).SetDescription("Valid login and password with email confirmation enabled and confirmed should return correct authentication response.");
 
+            yield return new TestCaseData(
+                validRequest,
+                null,
+                null,
+                true,
+                false
+            ).SetDescription("Valid login and password with email confirmation enabled but not confirmed should throw UnauthorizedAccessException.");
+
+            yield return new TestCaseData(
+                validRequest,
+                validToken,
+                validResponse,
+                false,
+                true
+            ).SetDescription("Valid login and password with email confirmation disabled should return correct authentication response.");
         }
 
         [Test]
         [TestCaseSource(nameof(LoginUserTestCases))]
-        public async Task Handle_LoginUserCommand_TestCases(UserAuthenticationRequest request, AccessTokenDataDto? token, UserAuthenticationResponse? expectedResponse)
+        public async Task Handle_LoginUserCommand_TestCases(
+            UserAuthenticationRequest request,
+            AccessTokenDataDto? token,
+            UserAuthenticationResponse? expectedResponse,
+            bool emailConfirmationEnabled,
+            bool isValid)
         {
             // Arrange
             var command = new LoginUserCommand(request);
 
-            mockAuthService.Setup(m => m.LoginUserAsync(It.Is<LoginUserModel>(l => l.Password == request.Password), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new AccessTokenData { AccessToken = token?.AccessToken!, RefreshToken = token?.RefreshToken! });
-            mockMapper.Setup(m => m.Map<AccessTokenDataDto>(It.IsAny<AccessTokenData>()))
-                .Returns(token!);
+            mockFeatureManager.Setup(m => m.IsEnabledAsync(ConfigurationKeys.REQUIRE_EMAIL_CONFIRMATION))
+                .ReturnsAsync(emailConfirmationEnabled);
 
-            // Act
-            var result = await handler.Handle(command, CancellationToken.None);
+            if (emailConfirmationEnabled)
+            {
+                mockAuthService.Setup(m => m.CheckEmailConfirmationAsync(request.Login))
+                    .ReturnsAsync(isValid);
+            }
 
-            // Assert
-            Assert.IsNotNull(result);
-            Assert.IsNotNull(expectedResponse);
+            if (isValid)
+            {
+                mockAuthService.Setup(m => m.LoginUserAsync(It.Is<LoginUserModel>(l => l.Login == request.Login && l.Password == request.Password), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new AccessTokenData { AccessToken = token?.AccessToken!, RefreshToken = token?.RefreshToken! });
+                mockMapper.Setup(m => m.Map<AccessTokenDataDto>(It.IsAny<AccessTokenData>()))
+                    .Returns(token!);
+            }
 
-            Assert.That(result.AuthToken, Is.EqualTo(expectedResponse.AuthToken));
-            Assert.That(result.Email, Is.EqualTo(expectedResponse.Email));
+            // Act & Assert
+            if (!isValid)
+            {
+                Assert.ThrowsAsync<UnauthorizedAccessException>(() => handler.Handle(command, CancellationToken.None));
+            }
+            else
+            {
+                var result = await handler.Handle(command, CancellationToken.None);
 
-            mockAuthService.Verify(x => x.LoginUserAsync(It.IsAny<LoginUserModel>(), It.IsAny<CancellationToken>()), Times.Once);
+                Assert.IsNotNull(result);
+                Assert.IsNotNull(expectedResponse);
+
+                Assert.That(result.AuthToken, Is.EqualTo(expectedResponse.AuthToken));
+                Assert.That(result.Email, Is.EqualTo(expectedResponse.Email));
+
+                mockAuthService.Verify(x => x.LoginUserAsync(It.IsAny<LoginUserModel>(), It.IsAny<CancellationToken>()), Times.Once);
+                if (emailConfirmationEnabled)
+                {
+                    mockAuthService.Verify(x => x.CheckEmailConfirmationAsync(request.Login), Times.Once);
+                }
+            }
         }
     }
 }

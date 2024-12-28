@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createAction, props } from "@ngrx/store";
-import { AuthData, AuthToken, OAuthLoginProvider, UserAuthenticationRequest, UserRegistrationRequest, UserUpdateRequest } from "..";
+import { AuthData, AuthToken, EmailConfirmationRequest, OAuthLoginProvider, UserAuthenticationRequest, UserRegistrationRequest, UserUpdateRequest } from "..";
+
+export const authFailure = createAction(
+    '[Auth] Auth Operation Failure',
+    props<{ error: any }>()
+);
 
 export const startRegisterUser = createAction(
     '[Auth] Start Register New User'
@@ -10,13 +15,10 @@ export const registerUser = createAction(
     '[Auth] Register New User',
     props<{ req: UserRegistrationRequest }>()
 );
-export const registerSuccess = createAction(
-    '[Auth] Register New User Success',
-    props<{ authData: AuthData }>()
-);
-export const registerFailure = createAction(
-    '[Auth] Register New User Failure',
-    props<{ error: any }>()
+
+export const confirmEmail = createAction(
+    '[Auth] Cofirm User Email',
+    props<{ req: EmailConfirmationRequest }>()
 );
 
 export const startLoginUser = createAction(
@@ -30,10 +32,6 @@ export const loginUser = createAction(
 export const loginUserSuccess = createAction(
     '[Auth] Login By User Success',
     props<{ authData: AuthData }>()
-);
-export const loginUserFailure = createAction(
-    '[Auth] Login By User Failure',
-    props<{ error: any }>()
 );
 
 export const getAuthData = createAction(
@@ -75,8 +73,13 @@ export const updateUserDataSuccess = createAction(
     '[Auth] Update User Data Success',
     props<{ req: UserUpdateRequest }>()
 );
-export const updateUserDataFailure = createAction(
-    '[Auth] Update User Data Failure',
+
+export const startOAuthLogin = createAction(
+    '[OAuth] Start OAuth Login',
+    props<{ loginProvider: OAuthLoginProvider }>()
+);
+export const startOAuthLoginFailure = createAction(
+    '[OAuth] Start OAuth Login Failure',
     props<{ error: any }>()
 );
 
@@ -89,12 +92,4 @@ export const oauthLoginFailure = createAction(
     props<{ error: any }>()
 );
 
-export const startOAuthLogin = createAction(
-    '[OAuth] Start OAuth Login',
-    props<{ loginProvider: OAuthLoginProvider }>()
-);
-export const startOAuthLoginFailure = createAction(
-    '[OAuth] Start OAuth Login Failure',
-    props<{ error: any }>()
-);
 

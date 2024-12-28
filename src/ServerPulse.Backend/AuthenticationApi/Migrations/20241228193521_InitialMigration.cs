@@ -33,7 +33,7 @@ namespace AuthenticationApi.Migrations
                     id = table.Column<string>(type: "text", nullable: false),
                     refresh_token = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     refresh_token_expiry_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    registred_at_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    registered_at_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     updated_at_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     user_name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     normalized_user_name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),

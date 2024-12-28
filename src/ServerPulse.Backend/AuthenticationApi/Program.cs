@@ -2,17 +2,24 @@ using Authentication;
 using Authentication.OAuth.Google;
 using Authentication.Token;
 using AuthenticationApi;
+using AuthenticationApi.BackgroundServices;
 using AuthenticationApi.Dtos.OAuth;
 using AuthenticationApi.Infrastructure;
 using AuthenticationApi.Infrastructure.Data;
 using AuthenticationApi.Infrastructure.Validators;
 using AuthenticationApi.Services;
+using BackgroundTask;
 using DatabaseControl;
+using EmailControl;
 using ExceptionHandling;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Logging;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.FeatureManagement;
 using Shared;
+using IBackgroundJobClient = BackgroundTask.IBackgroundJobClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,8 +30,11 @@ builder.Services.AddDbContextFactory<AuthIdentityDbContext>(
 );
 
 builder.Services.AddHttpClientHelperServiceWithResilience(builder.Configuration);
+builder.Services.AddFeatureManagement();
 
 #region Identity 
+
+var requireConfirmedEmail = bool.Parse(builder.Configuration[$"FeatureManagement:{ConfigurationKeys.REQUIRE_EMAIL_CONFIRMATION}"]! ?? "false");
 
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
@@ -34,6 +44,7 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
     options.Password.RequireUppercase = true;
     options.Password.RequireLowercase = false;
     options.User.RequireUniqueEmail = true;
+    options.SignIn.RequireConfirmedEmail = requireConfirmedEmail;
 })
 .AddEntityFrameworkStores<AuthIdentityDbContext>()
 .AddDefaultTokenProviders();
@@ -41,6 +52,15 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 builder.Services.ConfigureIdentityServices(builder.Configuration);
 builder.Services.AddOAuthServices(builder.Configuration);
 builder.Services.AddScoped<ITokenHandler, JwtHandler>();
+
+#endregion
+
+#region Hanffire
+
+builder.Services.AddHangfire(config =>
+    config.UsePostgreSqlStorage(c =>
+        c.UseNpgsqlConnection(builder.Configuration.GetConnectionString(ConfigurationKeys.AUTH_DATABASE_CONNECTION_STRING))));
+builder.Services.AddHangfireServer();
 
 #endregion
 
@@ -56,11 +76,15 @@ builder.Services.AddScoped(provider => new Dictionary<OAuthLoginProvider, IOAuth
         { OAuthLoginProvider.Google, provider.GetService<GoogleOAuthService>()! },
     });
 
+builder.Services.AddSingleton<IBackgroundJobClient, HangfireBackgroundJobClient>();
+
 #endregion
 
 builder.Services.AddRepositoryWithResilience<AuthIdentityDbContext>(builder.Configuration);
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
+builder.Services.AddEmailService(builder.Configuration);
 
 builder.Services.AddMediatR(conf =>
 {
@@ -95,10 +119,19 @@ else
     app.UseSwagger("Authentication API V1");
 }
 
+app.UseHangfireDashboard();
+
 app.UseIdentity();
 
 app.MapControllers();
 
 await app.RunAsync();
+
+var interval = int.Parse(app.Configuration[ConfigurationKeys.DELETE_UNCONRFIRMED_USERS_AFTER_MINUTES] ?? "60");
+
+RecurringJob.AddOrUpdate<UnconfirmedUserCleanupService>(
+    "CleanupUnconfirmedUsers",
+    service => service.CleanupUnconfirmedUsersAsync(CancellationToken.None),
+    Cron.Hourly(interval));
 
 public partial class Program { }

@@ -3,7 +3,8 @@ import { Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
 import { Store } from "@ngrx/store";
 import { catchError, map, of, switchMap, withLatestFrom } from "rxjs";
-import { AuthData, AuthenticationApiService, AuthenticationDialogManagerService, copyAuthTokenToAuthData, copyUserUpdateRequestToUserAuth, getAuthData, getAuthDataFailure, getAuthDataSuccess, getFullOAuthRedirectPath, GetOAuthUrlQueryParams, loginUser, loginUserFailure, loginUserSuccess, logOutUser, logOutUserSuccess, OauthApiService, oauthLogin, oauthLoginFailure, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerFailure, registerSuccess, registerUser, selectAuthState, startLoginUser, startOAuthLogin, startOAuthLoginFailure, startRegisterUser, updateUserData, updateUserDataFailure, updateUserDataSuccess, UserOAuthenticationRequest } from "..";
+import { AuthData, AuthenticationApiService, AuthenticationDialogManagerService, authFailure, confirmEmail, copyAuthTokenToAuthData, copyUserUpdateRequestToUserAuth, getAuthData, getAuthDataFailure, getAuthDataSuccess, getFullOAuthRedirectPath, GetOAuthUrlQueryParams, loginUser, loginUserSuccess, logOutUser, logOutUserSuccess, OauthApiService, oauthLogin, oauthLoginFailure, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerUser, selectAuthState, startLoginUser, startOAuthLogin, startOAuthLoginFailure, startRegisterUser, updateUserData, updateUserDataSuccess, UserOAuthenticationRequest } from "..";
+import { environment } from "../../../../environment/environment";
 import { LocalStorageService, RedirectorService, SnackbarManager } from "../../shared";
 
 @Injectable({
@@ -40,16 +41,36 @@ export class AuthEffects {
             ofType(registerUser),
             switchMap((action) =>
                 this.authApiService.registerUser(action.req).pipe(
+                    map(() => {
+                        if (!environment.isConfirmEmailEnabled) {
+                            return loginUser({ req: { login: action.req.email, password: action.req.password } });
+                        }
+                        this.snackbarManager.openInfoSnackbar('✔️ The registration is successful! Please confirm the email!', 15);
+                        this.dialogManager.closeAll();
+                        this.redirector.redirectToHome();
+                        return of();
+                    }),
+                    catchError((error) => of(authFailure({ error: error.message })))
+                )
+            )
+        ),
+        { dispatch: false }
+    );
+
+    confirmEmail$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(confirmEmail),
+            switchMap((action) =>
+                this.authApiService.confirmEmail(action.req).pipe(
                     map((response) => {
                         this.localStorage.setItem(this.storageAuthDataKey, JSON.stringify(response));
 
-                        this.snackbarManager.openInfoSnackbar('✔️ The registration is successful!', 5);
                         this.dialogManager.closeAll();
                         this.redirector.redirectToHome();
 
-                        return registerSuccess({ authData: response });
+                        return loginUserSuccess({ authData: response });
                     }),
-                    catchError(error => of(registerFailure({ error: error.message })))
+                    catchError(error => of(authFailure({ error: error.message })))
                 )
             )
         )
@@ -85,7 +106,7 @@ export class AuthEffects {
 
                         return loginUserSuccess({ authData: response });
                     }),
-                    catchError(error => of(loginUserFailure({ error: error.message })))
+                    catchError(error => of(authFailure({ error: error.message })))
                 )
             )
         )
@@ -167,7 +188,7 @@ export class AuthEffects {
                         return updateUserDataSuccess({ req: action.req });
                     }),
                     catchError(error => {
-                        return of(updateUserDataFailure({ error: error.message }));
+                        return of(authFailure({ error: error.message }));
                     })
                 )
             )
@@ -194,7 +215,7 @@ export class AuthEffects {
                             this.localStorage.setItem(this.storageAuthDataKey, JSON.stringify(response));
                             return loginUserSuccess({ authData: response });
                         }),
-                        catchError(error => of(loginUserFailure({ error: error.message })))
+                        catchError(error => of(authFailure({ error: error.message })))
                     )
                 }
                 return of(oauthLoginFailure({ error: new Error("Failed to get oauth url params!") }));
@@ -247,5 +268,4 @@ export class AuthEffects {
         ),
         { dispatch: false }
     );
-
 }

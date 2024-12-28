@@ -17,6 +17,10 @@ services:
       - AuthSettings__GoogleOAuth__ClientId=${AuthSettings__GoogleOAuth__ClientId}
       - AuthSettings__GoogleOAuth__ClientSecret=${AuthSettings__GoogleOAuth__ClientSecret}
       - AuthSettings__GoogleOAuth__Scope=${AuthSettings__GoogleOAuth__Scope}
+      - FeatureManagement__RequireEmailConfirmation=${FeatureManagement__RequireEmailConfirmation}
+      - Email__ConnectionString=${Email__ConnectionString}
+      - Email__SenderAddress=${Email__SenderAddress}
+      - DeleteUnconfirmedUserAfterMinutes=${DeleteUnconfirmedUserAfterMinutes}
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro

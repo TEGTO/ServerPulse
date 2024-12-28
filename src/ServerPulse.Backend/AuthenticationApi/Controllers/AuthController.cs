@@ -1,4 +1,5 @@
 ﻿using AuthenticationApi.Command;
+using AuthenticationApi.Command.ConfirmEmail;
 using AuthenticationApi.Command.LoginUser;
 using AuthenticationApi.Command.RefreshToken;
 using AuthenticationApi.Command.RegisterUser;
@@ -21,16 +22,23 @@ namespace AuthenticationApi.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<UserAuthenticationResponse>> Register(UserRegistrationRequest request, CancellationToken cancellationToken)
+        public async Task<IActionResult> Register(UserRegistrationRequest request, CancellationToken cancellationToken)
         {
-            var response = await mediator.Send(new RegisterUserCommand(request), cancellationToken);
-            return CreatedAtAction(nameof(Register), new { id = response.Email }, response);
+            await mediator.Send(new RegisterUserCommand(request), cancellationToken);
+            return Ok();
         }
 
         [HttpPost("login")]
         public async Task<ActionResult<UserAuthenticationResponse>> Login(UserAuthenticationRequest request, CancellationToken cancellationToken)
         {
             var response = await mediator.Send(new LoginUserCommand(request), cancellationToken);
+            return Ok(response);
+        }
+
+        [HttpPost("confirmation")]
+        public async Task<ActionResult<UserAuthenticationResponse>> ConfirmEmail(EmailConfirmationRequest request, CancellationToken cancellationToken)
+        {
+            var response = await mediator.Send(new ConfirmEmailCommand(request), cancellationToken);
             return Ok(response);
         }
 

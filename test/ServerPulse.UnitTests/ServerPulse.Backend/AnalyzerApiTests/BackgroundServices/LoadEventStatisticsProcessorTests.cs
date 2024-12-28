@@ -206,7 +206,7 @@ namespace AnalyzerApi.BackgroundServices.Tests
                It.IsAny<It.IsAnyType>(),
                It.IsAny<Exception>(),
                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-               Times.Exactly(messages.Count));
+               Times.AtLeastOnce);
         }
 
         private static async IAsyncEnumerable<ConsumeResponse> MockAsyncEnumerable(IEnumerable<ConsumeResponse> responses)

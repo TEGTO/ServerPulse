@@ -6,7 +6,7 @@ import { MatInputModule } from '@angular/material/input';
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Store } from '@ngrx/store';
-import { registerUser } from '../..';
+import { getFullEmailConfirmRedirectPath, registerUser } from '../..';
 import { ValidationMessage } from '../../../shared';
 import { RegisterComponent } from './register.component';
 
@@ -76,6 +76,7 @@ describe('RegisterComponent', () => {
 
   it('should call registerUser on valid form submission', () => {
     const formValues = {
+      redirectConfirmUrl: getFullEmailConfirmRedirectPath(),
       email: 'example@gmail,com',
       password: 'Password123',
       confirmPassword: 'Password123',

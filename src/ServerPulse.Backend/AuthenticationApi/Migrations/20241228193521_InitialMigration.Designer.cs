@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AuthenticationApi.Migrations
 {
     [DbContext(typeof(AuthIdentityDbContext))]
-    [Migration("20241215082824_InitialMigration")]
+    [Migration("20241228193521_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -88,9 +88,9 @@ namespace AuthenticationApi.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("refresh_token_expiry_date");
 
-                    b.Property<DateTime>("RegistredAtUtc")
+                    b.Property<DateTime>("RegisteredAtUtc")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("registred_at_utc");
+                        .HasColumnName("registered_at_utc");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text")

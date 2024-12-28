@@ -438,5 +438,209 @@ namespace AuthenticationApi.Services.Tests
                 tokenServiceMock.Verify(x => x.GenerateTokenAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Once);
             }
         }
+
+        private static IEnumerable<TestCaseData> GetEmailConfirmationTokenTestCases()
+        {
+            yield return new TestCaseData(
+                "validuser@example.com",
+                "valid_token",
+                true
+            ).SetDescription("Generate email confirmation token for valid user.");
+
+            yield return new TestCaseData(
+                "invaliduser@example.com",
+                null,
+                false
+            ).SetDescription("Generate email confirmation token fails for non-existent user.");
+        }
+
+        [Test]
+        [TestCaseSource(nameof(GetEmailConfirmationTokenTestCases))]
+        public async Task GetEmailConfirmationTokenAsync_TestCases(string email, string token, bool isValid)
+        {
+            // Arrange
+            if (isValid)
+            {
+                var user = new User { Email = email };
+                userManagerMock.Setup(x => x.Users).Returns(new[] { user }.AsQueryable().BuildMockDbSet().Object);
+            }
+            else
+            {
+                userManagerMock.Setup(x => x.Users).Returns(new User[0].AsQueryable().BuildMockDbSet().Object);
+            }
+
+            if (isValid)
+            {
+                userManagerMock.Setup(x => x.GenerateEmailConfirmationTokenAsync(It.IsAny<User>()))
+                    .ReturnsAsync(token!);
+            }
+
+            // Act & Assert
+            if (!isValid)
+            {
+                Assert.ThrowsAsync<InvalidOperationException>(() => authService.GetEmailConfirmationTokenAsync(email));
+            }
+            else
+            {
+                var result = await authService.GetEmailConfirmationTokenAsync(email);
+                Assert.That(result, Is.EqualTo(token));
+            }
+        }
+
+        private static IEnumerable<TestCaseData> ConfirmEmailTestCases()
+        {
+            yield return new TestCaseData(
+                "validuser@example.com",
+                "valid_token",
+                IdentityResult.Success,
+                true
+            ).SetDescription("Confirm email for valid user.");
+
+            yield return new TestCaseData(
+                "validuser@example.com",
+                "invalid_token",
+                IdentityResult.Failed(new IdentityError { Description = "Invalid token" }),
+                false
+            ).SetDescription("Confirm email fails with invalid token.");
+
+            yield return new TestCaseData(
+                "invaliduser@example.com",
+                "valid_token",
+                null,
+                false
+            ).SetDescription("Confirm email fails for non-existent user.");
+        }
+
+        [Test]
+        [TestCaseSource(nameof(ConfirmEmailTestCases))]
+        public async Task ConfirmEmailAsync_TestCases(string email, string token, IdentityResult result, bool isValid)
+        {
+            // Arrange
+            var user = isValid && result != null ? new User { Email = email } : null;
+
+            if (user != null)
+            {
+                userManagerMock.Setup(x => x.Users).Returns(new[] { user }.AsQueryable().BuildMockDbSet().Object);
+                userManagerMock.Setup(x => x.ConfirmEmailAsync(user, token)).ReturnsAsync(result!);
+            }
+            else
+            {
+                userManagerMock.Setup(x => x.Users).Returns(new User[0].AsQueryable().BuildMockDbSet().Object);
+            }
+
+            // Act & Assert
+            if (!isValid || result != IdentityResult.Success)
+            {
+                Assert.ThrowsAsync<InvalidOperationException>(() => authService.ConfirmEmailAsync(email, token));
+            }
+            else
+            {
+                var confirmResult = await authService.ConfirmEmailAsync(email, token);
+                Assert.That(confirmResult, Is.EqualTo(result));
+            }
+        }
+
+        private static IEnumerable<TestCaseData> LoginUserAfterConfirmationTestCases()
+        {
+            yield return new TestCaseData(
+                "validuser@example.com",
+                true,
+                new AccessTokenData { AccessToken = "token123", RefreshToken = "refresh123" },
+                true
+            ).SetDescription("Login user after email confirmation.");
+
+            yield return new TestCaseData(
+                "validuser@example.com",
+                false,
+                null,
+                true
+            ).SetDescription("Login user fails when email is not confirmed.");
+
+            yield return new TestCaseData(
+                "invaliduser@example.com",
+                false,
+                null,
+                false
+            ).SetDescription("Login user fails for non-existent user.");
+        }
+
+        [Test]
+        [TestCaseSource(nameof(LoginUserAfterConfirmationTestCases))]
+        public async Task LoginUserAfterConfirmationAsync_TestCases(string email, bool isEmailConfirmed, AccessTokenData? tokenData, bool isValid)
+        {
+            // Arrange
+            var user = isValid ? new User { Email = email } : null;
+
+            if (user != null)
+            {
+                userManagerMock.Setup(x => x.Users).Returns(new[] { user }.AsQueryable().BuildMockDbSet().Object);
+                userManagerMock.Setup(x => x.IsEmailConfirmedAsync(user)).ReturnsAsync(isEmailConfirmed);
+                if (isValid && isEmailConfirmed)
+                {
+                    tokenServiceMock.Setup(x => x.GenerateTokenAsync(user, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(tokenData!);
+                }
+            }
+            else
+            {
+                userManagerMock.Setup(x => x.Users).Returns(new User[0].AsQueryable().BuildMockDbSet().Object);
+            }
+
+            // Act & Assert
+            if (!isValid || !isEmailConfirmed)
+            {
+                Assert.ThrowsAsync<UnauthorizedAccessException>(() => authService.LoginUserAfterConfirmationAsync(email, CancellationToken.None));
+            }
+            else
+            {
+                var result = await authService.LoginUserAfterConfirmationAsync(email, CancellationToken.None);
+                Assert.That(result, Is.EqualTo(tokenData));
+            }
+        }
+
+        private static IEnumerable<TestCaseData> CheckEmailConfirmationTestCases()
+        {
+            yield return new TestCaseData(
+                "validuser@example.com",
+                true,
+                true
+            ).SetDescription("Check email confirmation returns true for confirmed email.");
+
+            yield return new TestCaseData(
+                "validuser@example.com",
+                false,
+                false
+            ).SetDescription("Check email confirmation returns false for unconfirmed email.");
+
+            yield return new TestCaseData(
+                "invaliduser@example.com",
+                false,
+                false
+            ).SetDescription("Check email confirmation returns false for non-existent user.");
+        }
+
+        [Test]
+        [TestCaseSource(nameof(CheckEmailConfirmationTestCases))]
+        public async Task CheckEmailConfirmationAsync_TestCases(string email, bool isEmailConfirmed, bool expectedResult)
+        {
+            // Arrange
+            var user = expectedResult || isEmailConfirmed ? new User { Email = email } : null;
+
+            if (user != null)
+            {
+                userManagerMock.Setup(x => x.Users).Returns(new[] { user }.AsQueryable().BuildMockDbSet().Object);
+                userManagerMock.Setup(x => x.IsEmailConfirmedAsync(user)).ReturnsAsync(isEmailConfirmed);
+            }
+            else
+            {
+                userManagerMock.Setup(x => x.Users).Returns(new User[0].AsQueryable().BuildMockDbSet().Object);
+            }
+
+            // Act
+            var result = await authService.CheckEmailConfirmationAsync(email);
+
+            // Assert
+            Assert.That(result, Is.EqualTo(expectedResult));
+        }
     }
 }

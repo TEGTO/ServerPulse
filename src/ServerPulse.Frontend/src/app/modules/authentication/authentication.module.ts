@@ -8,7 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
-import { AuthEffects, AuthenticatedComponent, AuthInterceptor, authReducer, LoginComponent, OAuthCallbackComponent, RegisterComponent, UnauthenticatedComponent } from '.';
+import { AuthEffects, AuthenticatedComponent, AuthInterceptor, authReducer, EmailCallbackComponent, LoginComponent, OAuthCallbackComponent, RegisterComponent, UnauthenticatedComponent } from '.';
 
 @NgModule({
   declarations: [
@@ -16,7 +16,8 @@ import { AuthEffects, AuthenticatedComponent, AuthInterceptor, authReducer, Logi
     AuthenticatedComponent,
     RegisterComponent,
     UnauthenticatedComponent,
-    OAuthCallbackComponent
+    OAuthCallbackComponent,
+    EmailCallbackComponent
   ],
   imports: [
     CommonModule,
@@ -35,6 +36,6 @@ import { AuthEffects, AuthenticatedComponent, AuthInterceptor, authReducer, Logi
     ),
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
   ],
-  exports: [UnauthenticatedComponent, OAuthCallbackComponent]
+  exports: [UnauthenticatedComponent, OAuthCallbackComponent, EmailCallbackComponent]
 })
 export class AuthenticationModule { }

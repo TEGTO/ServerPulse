@@ -1,12 +1,17 @@
 ﻿using Authentication.OAuth.Google;
 using Authentication.Token;
+using AuthenticationApi.Infrastructure;
+using BackgroundTask;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Moq;
 using static Google.Apis.Auth.GoogleJsonWebSignature;
+using IEmailSender = EmailControl.IEmailSender;
 
 namespace AuthenticationApi.IntegrationTests
 {
@@ -15,11 +20,14 @@ namespace AuthenticationApi.IntegrationTests
     {
         protected HttpClient client;
         protected JwtSettings settings;
+        protected UserManager<User> userManager;
+        protected bool isConfirmEmailEnabled;
         private WebAppFactoryWrapper wrapper;
         private WebApplicationFactory<Program> factory;
+        private IServiceScope scope;
         protected Mock<IGoogleOAuthHttpClient>? mockGoogleOAuthHttpClient;
         protected Mock<IGoogleTokenValidator>? mockGoogleTokenValidator;
-        private IServiceScope scope;
+        protected Mock<IBackgroundJobClient>? mockBackgroundJobClient;
 
         [OneTimeSetUp]
         public async Task GlobalSetup()
@@ -31,6 +39,8 @@ namespace AuthenticationApi.IntegrationTests
                 {
                     services.RemoveAll(typeof(IGoogleOAuthHttpClient));
                     services.RemoveAll(typeof(IGoogleTokenValidator));
+                    services.RemoveAll(typeof(IEmailSender));
+                    services.RemoveAll(typeof(IBackgroundJobClient));
 
                     mockGoogleOAuthHttpClient = new Mock<IGoogleOAuthHttpClient>();
                     mockGoogleOAuthHttpClient.Setup(x => x.ExchangeAuthorizationCodeAsync(
@@ -68,8 +78,15 @@ namespace AuthenticationApi.IntegrationTests
                         Subject = "someloginprovidersubject"
                     });
 
+                    var mockEmailSender = new Mock<IEmailSender>();
+
+                    mockBackgroundJobClient = new Mock<IBackgroundJobClient>();
+
+
                     services.AddScoped(_ => mockGoogleOAuthHttpClient.Object);
                     services.AddScoped(_ => mockGoogleTokenValidator.Object);
+                    services.AddScoped(_ => mockEmailSender.Object);
+                    services.AddScoped(_ => mockBackgroundJobClient.Object);
                 });
             });
 
@@ -81,6 +98,7 @@ namespace AuthenticationApi.IntegrationTests
         {
             scope.Dispose();
             client.Dispose();
+            userManager.Dispose();
             await factory.DisposeAsync();
             await wrapper.DisposeAsync();
         }
@@ -90,6 +108,15 @@ namespace AuthenticationApi.IntegrationTests
             scope = factory.Services.CreateScope();
             client = factory.CreateClient();
             settings = factory.Services.GetRequiredService<IOptions<JwtSettings>>().Value;
+
+            var scopedServices = scope.ServiceProvider;
+            userManager = scopedServices.GetRequiredService<UserManager<User>>();
+
+            var configuration = factory.Services.GetService<IConfiguration>();
+            if (configuration != null)
+            {
+                isConfirmEmailEnabled = bool.Parse(configuration[$"FeatureManagement:{ConfigurationKeys.REQUIRE_EMAIL_CONFIRMATION}"]!);
+            }
         }
     }
 }

@@ -10,19 +10,27 @@
   </PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Hangfire.PostgreSql" />
 		<PackageReference Include="MediatR" />
 		<PackageReference Include="AutoMapper" />
-		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" >
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.FeatureManagement" />
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
 	</ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\AuthenticationApi.Dtos\AuthenticationApi.Dtos.csproj" />
     <ProjectReference Include="..\AuthenticationApi.Infrastructure\AuthenticationApi.Infrastructure.csproj" />
+    <ProjectReference Include="..\BackgroundTask\BackgroundTask.csproj" />
     <ProjectReference Include="..\DatabaseControl\DatabaseControl.csproj" />
+    <ProjectReference Include="..\EmailControl\EmailControl.csproj" />
     <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 

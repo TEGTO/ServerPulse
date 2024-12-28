@@ -7,6 +7,7 @@ using System.Text.Json;
 
 namespace AuthenticationApi.IntegrationTests.Controllers.OAuthController
 {
+    [TestFixture]
     internal class LoginOAuthAuthControllerTests : BaseAuthControllerTest
     {
         [Test]

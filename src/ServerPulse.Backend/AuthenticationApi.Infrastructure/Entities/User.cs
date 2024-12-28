@@ -11,7 +11,7 @@ namespace AuthenticationApi.Infrastructure
         public string? RefreshToken { get; set; }
         public DateTime RefreshTokenExpiryDate { get; set; }
         [Required]
-        public DateTime RegistredAtUtc { get; set; }
+        public DateTime RegisteredAtUtc { get; set; }
         [Required]
         public DateTime UpdatedAtUtc { get; set; }
     }

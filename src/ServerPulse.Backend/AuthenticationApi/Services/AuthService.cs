@@ -73,6 +73,43 @@ namespace AuthenticationApi.Services
             return errors.DistinctBy(e => e.Description).ToList();
         }
 
+        public async Task<string> GetEmailConfirmationTokenAsync(string email)
+        {
+            var user = await GetUserByLoginAsync(email) ?? throw new InvalidOperationException("User not found.");
+            return await userManager.GenerateEmailConfirmationTokenAsync(user);
+        }
+
+        public async Task<IdentityResult> ConfirmEmailAsync(string email, string token)
+        {
+            var user = await GetUserByLoginAsync(email) ?? throw new InvalidOperationException("User not found.");
+            return await userManager.ConfirmEmailAsync(user, token);
+        }
+
+        public async Task<AccessTokenData> LoginUserAfterConfirmationAsync(string email, CancellationToken cancellationToken)
+        {
+            var user = await GetUserByLoginAsync(email)
+                ?? throw new UnauthorizedAccessException("User not found. Cannot login after confirmation.");
+
+            if (!await userManager.IsEmailConfirmedAsync(user))
+            {
+                throw new UnauthorizedAccessException("Email not confirmed. Cannot proceed with login.");
+            }
+
+            return await tokenService.GenerateTokenAsync(user, cancellationToken);
+        }
+
+        public async Task<bool> CheckEmailConfirmationAsync(string email)
+        {
+            var user = await GetUserByLoginAsync(email);
+
+            if (user == null || !await userManager.IsEmailConfirmedAsync(user))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         public async Task<AccessTokenData> LoginUserWithProviderAsync(ProviderLoginModel model, CancellationToken cancellationToken)
         {
             var user = await userManager.FindByLoginAsync(model.ProviderLogin, model.ProviderKey);

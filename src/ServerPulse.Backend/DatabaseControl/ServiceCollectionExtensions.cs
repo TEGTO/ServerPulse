@@ -27,11 +27,11 @@ namespace DatabaseControl
         }
 
         public static IServiceCollection AddDbContextFactory<Context>(
-        this IServiceCollection services,
-        string connectionString,
-        string? migrationAssembly = null,
-        Action<NpgsqlDbContextOptionsBuilder>? dbAdditionalConfig = null,
-        Action<DbContextOptionsBuilder>? additionalConfig = null
+            this IServiceCollection services,
+            string connectionString,
+            string? migrationAssembly = null,
+            Action<NpgsqlDbContextOptionsBuilder>? dbAdditionalConfig = null,
+            Action<DbContextOptionsBuilder>? additionalConfig = null
         ) where Context : DbContext
         {
             services.AddDbContextFactory<Context>(options =>

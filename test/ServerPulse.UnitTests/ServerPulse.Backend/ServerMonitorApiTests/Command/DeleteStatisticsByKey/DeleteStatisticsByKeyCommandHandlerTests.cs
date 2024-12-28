@@ -20,6 +20,16 @@ namespace ServerMonitorApi.Command.DeleteStatisticsByKey.Tests
             topicManagerMock = new Mock<ITopicManager>();
             optionsMock = new Mock<IOptions<MessageBusSettings>>();
 
+            var settings = new MessageBusSettings
+            {
+                ConfigurationTopic = "KafkaConfigurationTopic-",
+                AliveTopic = "KafkaAliveTopic-",
+                LoadTopic = "KafkaLoadTopic-",
+                CustomTopic = "KafkaCustomTopic-",
+            };
+
+            optionsMock.Setup(x => x.Value).Returns(settings);
+
             handler = new DeleteStatisticsByKeyCommandHandler(topicManagerMock.Object, optionsMock.Object);
             cancellationToken = CancellationToken.None;
         }
@@ -56,17 +66,6 @@ namespace ServerMonitorApi.Command.DeleteStatisticsByKey.Tests
         public async Task Handle_ValidKey_DeletesCorrectTopics(string key, List<string> expectedTopics)
         {
             // Arrange
-
-            var settings = new MessageBusSettings
-            {
-                ConfigurationTopic = "KafkaConfigurationTopic-",
-                AliveTopic = "KafkaAliveTopic-",
-                LoadTopic = "KafkaLoadTopic-",
-                CustomTopic = "KafkaCustomTopic-",
-            };
-
-            optionsMock.Setup(x => x.Value).Returns(settings);
-
             var command = new DeleteStatisticsByKeyCommand(key);
 
             // Act
