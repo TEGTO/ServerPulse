@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Testcontainers.PostgreSql;
 
-namespace AuthenticationApi.IntegrationTests
+namespace AuthenticationApi.UnconfirmedUserCleanupService.IntegrationTests
 {
     internal sealed class WebAppFactoryWrapper : IAsyncDisposable
     {
@@ -85,7 +85,7 @@ namespace AuthenticationApi.IntegrationTests
                 { ConfigurationKeys.AUTH_REFRESH_TOKEN_EXPIRY_IN_DAYS, "7" },
                 { ConfigurationKeys.EF_CREATE_DATABASE, "true" },
                 {$"FeatureManagement:{ConfigurationKeys.REQUIRE_EMAIL_CONFIRMATION}", "true" },
-                {$"{ConfigurationKeys.UNCONRFIRMED_USERS_CLEANUP_IN_MINUTES}", "120" },
+                {$"{ConfigurationKeys.UNCONRFIRMED_USERS_CLEANUP_IN_MINUTES}", "1" },
             };
 
             configurationBuilder.AddInMemoryCollection(configuration);

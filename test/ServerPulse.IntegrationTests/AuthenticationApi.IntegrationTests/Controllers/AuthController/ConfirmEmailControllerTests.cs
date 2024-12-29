@@ -15,7 +15,7 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
         {
             if (isConfirmEmailEnabled)
             {
-                // Assert
+                // Arrange
                 var email = "testuser@example.com";
 
                 await RegisterSampleUser(new UserRegistrationRequest
@@ -71,7 +71,7 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
         [Test]
         public async Task ConfirmEmail_InvalidRequest_ReturnsBadRequest()
         {
-            // Assert
+            // Arrange
             var request = new EmailConfirmationRequest
             {
                 Email = "",
@@ -93,7 +93,7 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
         {
             if (isConfirmEmailEnabled)
             {
-                // Assert
+                // Arrange
                 var email = "testuser1@example.com";
 
                 await RegisterSampleUser(new UserRegistrationRequest

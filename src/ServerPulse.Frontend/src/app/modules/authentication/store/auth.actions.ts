@@ -15,6 +15,9 @@ export const registerUser = createAction(
     '[Auth] Register New User',
     props<{ req: UserRegistrationRequest }>()
 );
+export const registerUserSuccess = createAction(
+    '[Auth] Register New User Success'
+);
 
 export const confirmEmail = createAction(
     '[Auth] Cofirm User Email',

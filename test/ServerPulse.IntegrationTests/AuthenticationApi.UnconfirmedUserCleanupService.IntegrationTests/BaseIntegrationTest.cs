@@ -1,5 +1,4 @@
-﻿using Authentication.OAuth.Google;
-using Authentication.Token;
+﻿using Authentication.Token;
 using AuthenticationApi.Infrastructure;
 using BackgroundTask;
 using Microsoft.AspNetCore.Identity;
@@ -10,10 +9,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Moq;
-using static Google.Apis.Auth.GoogleJsonWebSignature;
 using IEmailSender = EmailControl.IEmailSender;
 
-namespace AuthenticationApi.IntegrationTests
+namespace AuthenticationApi.UnconfirmedUserCleanupService.IntegrationTests
 {
     internal abstract class BaseIntegrationTest
     {
@@ -24,8 +22,6 @@ namespace AuthenticationApi.IntegrationTests
         private WebAppFactoryWrapper wrapper;
         private WebApplicationFactory<Program> factory;
         private IServiceScope scope;
-        protected Mock<IGoogleOAuthHttpClient>? mockGoogleOAuthHttpClient;
-        protected Mock<IGoogleTokenValidator>? mockGoogleTokenValidator;
         protected Mock<IBackgroundJobClient>? mockBackgroundJobClient;
 
         [OneTimeSetUp]
@@ -36,54 +32,14 @@ namespace AuthenticationApi.IntegrationTests
             {
                 builder.ConfigureTestServices(services =>
                 {
-                    services.RemoveAll(typeof(IGoogleOAuthHttpClient));
-                    services.RemoveAll(typeof(IGoogleTokenValidator));
                     services.RemoveAll(typeof(IEmailSender));
                     services.RemoveAll(typeof(IBackgroundJobClient));
-
-                    mockGoogleOAuthHttpClient = new Mock<IGoogleOAuthHttpClient>();
-                    mockGoogleOAuthHttpClient.Setup(x => x.ExchangeAuthorizationCodeAsync(
-                        "somecode",
-                        "someverifier",
-                        "someurl",
-                        It.IsAny<CancellationToken>()
-                    ))
-                    .ReturnsAsync(new GoogleOAuthTokenResult());
-
-                    mockGoogleOAuthHttpClient.Setup(x => x.ExchangeAuthorizationCodeAsync(
-                        It.Is<string>(x => x != "somecode"),
-                        It.Is<string>(x => x != "someverifier"),
-                        It.Is<string>(x => x != "someurl"),
-                        It.IsAny<CancellationToken>()
-                    ))
-                    .ThrowsAsync(new InvalidDataException());
-
-                    var expectedUrl = "https://oauth.example.com/auth?client_id=someClientId&redirect_uri=someurl&response_type=code&scope=email&code_challenge=hashedVerifier&code_challenge_method=S256&access_type=offline";
-
-                    mockGoogleOAuthHttpClient.Setup(x => x.GenerateOAuthRequestUrl(
-                        It.IsAny<string>(),
-                        "someurl",
-                        "someverifier"
-                    )).Returns(expectedUrl);
-
-                    mockGoogleTokenValidator = new Mock<IGoogleTokenValidator>();
-                    mockGoogleTokenValidator.Setup(x => x.ValidateAsync(
-                        It.IsAny<string>(),
-                        It.IsAny<ValidationSettings>()
-                    ))
-                    .ReturnsAsync(new Payload
-                    {
-                        Email = "someemail@gmail.com",
-                        Subject = "someloginprovidersubject"
-                    });
 
                     var mockEmailSender = new Mock<IEmailSender>();
 
                     mockBackgroundJobClient = new Mock<IBackgroundJobClient>();
 
 
-                    services.AddScoped(_ => mockGoogleOAuthHttpClient.Object);
-                    services.AddScoped(_ => mockGoogleTokenValidator.Object);
                     services.AddScoped(_ => mockEmailSender.Object);
                     services.AddScoped(_ => mockBackgroundJobClient.Object);
                 });

@@ -4,7 +4,7 @@ import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Store } from '@ngrx/store';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { AuthData, AuthenticationApiService, AuthenticationDialogManagerService, authFailure, AuthToken, confirmEmail, EmailConfirmationRequest, getAuthData, getAuthDataFailure, getAuthDataSuccess, loginUser, loginUserSuccess, logOutUser, logOutUserSuccess, OauthApiService, oauthLogin, oauthLoginFailure, OAuthLoginProvider, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerUser, startLoginUser, startOAuthLogin, startOAuthLoginFailure, startRegisterUser, updateUserData, updateUserDataSuccess, UserAuthenticationRequest, UserRegistrationRequest } from '..';
+import { AuthData, AuthenticationApiService, AuthenticationDialogManagerService, authFailure, AuthToken, confirmEmail, EmailConfirmationRequest, getAuthData, getAuthDataFailure, getAuthDataSuccess, loginUser, loginUserSuccess, logOutUser, logOutUserSuccess, OauthApiService, oauthLogin, oauthLoginFailure, OAuthLoginProvider, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerUser, registerUserSuccess, startLoginUser, startOAuthLogin, startOAuthLoginFailure, startRegisterUser, updateUserData, updateUserDataSuccess, UserAuthenticationRequest, UserRegistrationRequest } from '..';
 import { LocalStorageService, RedirectorService, SnackbarManager } from '../../shared';
 import { AuthEffects } from './auth.effects';
 
@@ -63,7 +63,7 @@ describe('AuthEffects', () => {
             expect(dialogManagerSpy.openRegisterMenu).toHaveBeenCalled();
         }));
 
-        it('should call registerUser API and handle success', fakeAsync(() => {
+        it('should call registerUser API and after success call registerUserSuccess', fakeAsync(() => {
             const req: UserRegistrationRequest = {
                 email: 'test@example.com',
                 password: 'password',
@@ -75,9 +75,22 @@ describe('AuthEffects', () => {
 
             actions$ = of(registerUser({ req }));
 
-            effects.registerUser$.subscribe();
+            effects.registerUser$.subscribe(action => {
+                expect(action).toEqual(registerUserSuccess());
+            });
+
             tick(1000);
+
             expect(authApiServiceSpy.registerUser).toHaveBeenCalledWith(req);
+        }));
+
+        it('should handle success', fakeAsync(() => {
+            actions$ = of(registerUserSuccess());
+
+            effects.registerUserSuccess$.subscribe();
+
+            tick(1000);
+
             expect(snackbarManagerSpy.openInfoSnackbar).toHaveBeenCalledWith(
                 '✔️ The registration is successful! Please confirm the email!',
                 15
@@ -396,14 +409,16 @@ describe('AuthEffects', () => {
             });
         });
 
-        it('should call snackbarManager.openErrorSnackbar', () => {
+        it('should call snackbarManager.openErrorSnackbar', fakeAsync(() => {
             const error = 'Some error occurred';
             actions$ = of(oauthLoginFailure({ error }));
 
-            effects.oauthLoginFailure$.subscribe(() => {
-                expect(snackbarManagerSpy.openErrorSnackbar).toHaveBeenCalledWith(['OAuth login failed: ' + error]);
-            });
-        });
+            effects.oauthLoginFailure$.subscribe();
+
+            tick();
+
+            expect(snackbarManagerSpy.openErrorSnackbar).toHaveBeenCalledWith(['OAuth login failed: ' + error]);
+        }));
     });
 
     describe('Start OAuth Login', () => {
@@ -433,13 +448,15 @@ describe('AuthEffects', () => {
             });
         });
 
-        it('should call snackbarManager.openErrorSnackbar', () => {
+        it('should call snackbarManager.openErrorSnackbar', fakeAsync(() => {
             const error = 'Some error occurred';
             actions$ = of(startOAuthLoginFailure({ error }));
 
-            effects.startOAuthLoginFailure$.subscribe(() => {
-                expect(snackbarManagerSpy.openErrorSnackbar).toHaveBeenCalledWith(['Failed to get oauth url: ' + error]);
-            });
-        });
+            effects.startOAuthLoginFailure$.subscribe();
+
+            tick();
+
+            expect(snackbarManagerSpy.openErrorSnackbar).toHaveBeenCalledWith(['Failed to get oauth url: ' + error]);
+        }));
     });
 });

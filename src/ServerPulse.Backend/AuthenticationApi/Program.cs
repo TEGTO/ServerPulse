@@ -2,7 +2,6 @@ using Authentication;
 using Authentication.OAuth.Google;
 using Authentication.Token;
 using AuthenticationApi;
-using AuthenticationApi.BackgroundServices;
 using AuthenticationApi.Dtos.OAuth;
 using AuthenticationApi.Infrastructure;
 using AuthenticationApi.Infrastructure.Data;
@@ -13,7 +12,6 @@ using DatabaseControl;
 using EmailControl;
 using ExceptionHandling;
 using Hangfire;
-using Hangfire.PostgreSql;
 using Logging;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -57,10 +55,8 @@ builder.Services.AddScoped<ITokenHandler, JwtHandler>();
 
 #region Hanffire
 
-builder.Services.AddHangfire(config =>
-    config.UsePostgreSqlStorage(c =>
-        c.UseNpgsqlConnection(builder.Configuration.GetConnectionString(ConfigurationKeys.AUTH_DATABASE_CONNECTION_STRING))));
-builder.Services.AddHangfireServer();
+var connectionString = builder.Configuration.GetConnectionString(ConfigurationKeys.AUTH_DATABASE_CONNECTION_STRING);
+builder.Services.ConfigureHangfireWthPostgreSql(connectionString);
 
 #endregion
 
@@ -120,18 +116,12 @@ else
 }
 
 app.UseHangfireDashboard();
+app.ConfigureRecurringJobs(app.Configuration);
 
 app.UseIdentity();
 
 app.MapControllers();
 
 await app.RunAsync();
-
-var interval = int.Parse(app.Configuration[ConfigurationKeys.DELETE_UNCONRFIRMED_USERS_AFTER_MINUTES] ?? "60");
-
-RecurringJob.AddOrUpdate<UnconfirmedUserCleanupService>(
-    "CleanupUnconfirmedUsers",
-    service => service.CleanupUnconfirmedUsersAsync(CancellationToken.None),
-    Cron.Hourly(interval));
 
 public partial class Program { }

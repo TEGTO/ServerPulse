@@ -3,7 +3,7 @@ import { Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
 import { Store } from "@ngrx/store";
 import { catchError, map, of, switchMap, withLatestFrom } from "rxjs";
-import { AuthData, AuthenticationApiService, AuthenticationDialogManagerService, authFailure, confirmEmail, copyAuthTokenToAuthData, copyUserUpdateRequestToUserAuth, getAuthData, getAuthDataFailure, getAuthDataSuccess, getFullOAuthRedirectPath, GetOAuthUrlQueryParams, loginUser, loginUserSuccess, logOutUser, logOutUserSuccess, OauthApiService, oauthLogin, oauthLoginFailure, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerUser, selectAuthState, startLoginUser, startOAuthLogin, startOAuthLoginFailure, startRegisterUser, updateUserData, updateUserDataSuccess, UserOAuthenticationRequest } from "..";
+import { AuthData, AuthenticationApiService, AuthenticationDialogManagerService, authFailure, confirmEmail, copyAuthTokenToAuthData, copyUserUpdateRequestToUserAuth, getAuthData, getAuthDataFailure, getAuthDataSuccess, getFullOAuthRedirectPath, GetOAuthUrlQueryParams, loginUser, loginUserSuccess, logOutUser, logOutUserSuccess, OauthApiService, oauthLogin, oauthLoginFailure, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerUser, registerUserSuccess, selectAuthState, startLoginUser, startOAuthLogin, startOAuthLoginFailure, startRegisterUser, updateUserData, updateUserDataSuccess, UserOAuthenticationRequest } from "..";
 import { environment } from "../../../../environment/environment";
 import { LocalStorageService, RedirectorService, SnackbarManager } from "../../shared";
 
@@ -45,14 +45,22 @@ export class AuthEffects {
                         if (!environment.isConfirmEmailEnabled) {
                             return loginUser({ req: { login: action.req.email, password: action.req.password } });
                         }
-                        this.snackbarManager.openInfoSnackbar('✔️ The registration is successful! Please confirm the email!', 15);
-                        this.dialogManager.closeAll();
-                        this.redirector.redirectToHome();
-                        return of();
+                        return registerUserSuccess();
                     }),
                     catchError((error) => of(authFailure({ error: error.message })))
                 )
             )
+        )
+    );
+    registerUserSuccess$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(registerUserSuccess),
+            switchMap(() => {
+                this.snackbarManager.openInfoSnackbar('✔️ The registration is successful! Please confirm the email!', 15);
+                this.dialogManager.closeAll();
+                this.redirector.redirectToHome();
+                return of();
+            })
         ),
         { dispatch: false }
     );

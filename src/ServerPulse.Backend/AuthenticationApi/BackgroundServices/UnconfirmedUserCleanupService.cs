@@ -1,38 +1,44 @@
 ﻿using AuthenticationApi.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.FeatureManagement;
 
 namespace AuthenticationApi.BackgroundServices
 {
     public class UnconfirmedUserCleanupService
     {
         private readonly UserManager<User> userManager;
+        private readonly IFeatureManager featureManager;
         private readonly ILogger<UnconfirmedUserCleanupService> logger;
-        private readonly int deleteUnconfirmedUserAfterMinutes;
+        private readonly int cleanUpInMinutes;
 
-        public UnconfirmedUserCleanupService(UserManager<User> userManager, ILogger<UnconfirmedUserCleanupService> logger, IConfiguration configuration)
+        public UnconfirmedUserCleanupService(UserManager<User> userManager, IFeatureManager featureManager, ILogger<UnconfirmedUserCleanupService> logger, IConfiguration configuration)
         {
             this.userManager = userManager;
+            this.featureManager = featureManager;
             this.logger = logger;
-            deleteUnconfirmedUserAfterMinutes = int.Parse(configuration[ConfigurationKeys.DELETE_UNCONRFIRMED_USERS_AFTER_MINUTES] ?? "60");
+            cleanUpInMinutes = int.Parse(configuration[ConfigurationKeys.UNCONRFIRMED_USERS_CLEANUP_IN_MINUTES] ?? "60");
         }
 
         public async Task CleanupUnconfirmedUsersAsync(CancellationToken cancellationToken = default)
         {
-            var users = await userManager.Users.Where(x => !x.EmailConfirmed).ToListAsync(cancellationToken);
-
-            var now = DateTime.UtcNow;
-
-            foreach (var user in users)
+            if (await featureManager.IsEnabledAsync(ConfigurationKeys.REQUIRE_EMAIL_CONFIRMATION))
             {
-                if (user.RegisteredAtUtc.AddMinutes(deleteUnconfirmedUserAfterMinutes) < now)
-                {
-                    var result = await userManager.DeleteAsync(user);
+                var users = await userManager.Users.Where(x => !x.EmailConfirmed).ToListAsync(cancellationToken);
 
-                    if (!result.Succeeded)
+                var now = DateTime.UtcNow;
+
+                foreach (var user in users)
+                {
+                    if (user.RegisteredAtUtc.AddMinutes(cleanUpInMinutes) < now)
                     {
-                        var str = $"Failed to delete user {user.Email}: {string.Join(", ", result.Errors.Select(e => e.Description))}";
-                        logger.LogWarning(str);
+                        var result = await userManager.DeleteAsync(user);
+
+                        if (!result.Succeeded)
+                        {
+                            var str = $"Failed to delete user {user.Email}: {string.Join(", ", result.Errors.Select(e => e.Description))}";
+                            logger.LogWarning(str);
+                        }
                     }
                 }
             }

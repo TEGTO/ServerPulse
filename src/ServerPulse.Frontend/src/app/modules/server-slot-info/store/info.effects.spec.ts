@@ -1,4 +1,4 @@
-import { TestBed } from "@angular/core/testing";
+import { fakeAsync, TestBed, tick } from "@angular/core/testing";
 import { provideMockActions } from "@ngrx/effects/testing";
 import { Action } from "@ngrx/store";
 import { Observable, of, throwError } from "rxjs";
@@ -67,15 +67,17 @@ describe('ServerSlotInfoEffects', () => {
         });
     });
 
-    it('should open dialog menu on getSomeLoadEventsFailure', () => {
-        const action = getSomeCustomEventsFailure({ error: 'Error occurred' });
+    it('should open dialog menu on getSomeLoadEventsFailure', fakeAsync(() => {
+        const action = getSomeLoadEventsFailure({ error: 'Error occurred' });
 
         actions$ = of(action);
 
-        effects.getSomeLoadEventsFailure$.subscribe(() => {
-            expect(snackbarManagerSpy.openErrorSnackbar).toHaveBeenCalledWith(['Failed to get load events: Error occurred']);
-        });
-    });
+        effects.getSomeLoadEventsFailure$.subscribe();
+
+        tick();
+
+        expect(snackbarManagerSpy.openErrorSnackbar).toHaveBeenCalledWith(['Failed to get load events: Error occurred']);
+    }));
 
     describe('getSomeCustomEvents$', () => {
         it('should dispatch getSomeCustomEventsSuccess when API call succeeds', () => {
@@ -105,15 +107,17 @@ describe('ServerSlotInfoEffects', () => {
         });
     });
 
-    it('should open dialog menu on getSomeCustomEventsFailure', () => {
+    it('should open dialog menu on getSomeCustomEventsFailure', fakeAsync(() => {
         const action = getSomeCustomEventsFailure({ error: 'Error occurred' });
 
         actions$ = of(action);
 
-        effects.getSomeLoadEventsFailure$.subscribe(() => {
-            expect(snackbarManagerSpy.openErrorSnackbar).toHaveBeenCalledWith(['Failed to get custom events: Error occurred']);
-        });
-    });
+        effects.getSomeCustomEventsFailure$.subscribe();
+
+        tick();
+
+        expect(snackbarManagerSpy.openErrorSnackbar).toHaveBeenCalledWith(['Failed to get custom events: Error occurred']);
+    }));
 
     describe('getDailyLoadAmountStatistics$', () => {
         it('should dispatch getDailyLoadAmountStatisticsSuccess when API call succeeds', () => {
@@ -142,24 +146,28 @@ describe('ServerSlotInfoEffects', () => {
         });
     });
 
-    it('should open dialog menu on getDailyLoadAmountStatisticsFailure', () => {
+    it('should open dialog menu on getDailyLoadAmountStatisticsFailure', fakeAsync(() => {
         const action = getDailyLoadAmountStatisticsFailure({ error: 'Error occurred' });
 
         actions$ = of(action);
 
-        effects.getSomeLoadEventsFailure$.subscribe(() => {
-            expect(snackbarManagerSpy.openErrorSnackbar).toHaveBeenCalledWith(['Failed to get daily load amount statistics: Error occurred']);
-        });
-    });
+        effects.getDailyLoadAmountStatisticsFailure$.subscribe();
+
+        tick();
+
+        expect(snackbarManagerSpy.openErrorSnackbar).toHaveBeenCalledWith(['Failed to get daily load amount statistics: Error occurred']);
+    }));
 
     describe('showCustomDetailsEvent$', () => {
-        it('should call dialogManager.openCustomEventDetails', () => {
+        it('should call dialogManager.openCustomEventDetails', fakeAsync(() => {
             const action = showCustomDetailsEvent({ event: { id: '4', key: 'key4', creationDateUTC: new Date(), name: 'Detail Event', description: '', serializedMessage: '{}' } });
             actions$ = of(action);
 
-            effects.showCustomDetailsEvent$.subscribe(() => {
-                expect(dialogManagerSpy.openCustomEventDetails).toHaveBeenCalledWith(action.event.serializedMessage);
-            });
-        });
+            effects.showCustomDetailsEvent$.subscribe();
+
+            tick();
+
+            expect(dialogManagerSpy.openCustomEventDetails).toHaveBeenCalledWith(action.event.serializedMessage);
+        }));
     });
 });

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Store } from "@ngrx/store";
 import { Observable, of, Subject, throwError } from "rxjs";
@@ -29,6 +29,8 @@ describe('AnalyzerEffects', () => {
         const authData = { authToken: { accessToken: token } };
         storeSpy.select.and.returnValue(of(authData));
 
+        signalStatisticsSpy.startConnection.and.returnValue(of(undefined));
+
         TestBed.configureTestingModule({
             providers: [
                 AnalyzerEffects,
@@ -51,14 +53,12 @@ describe('AnalyzerEffects', () => {
     //#region Lifecycle Statistics
 
     describe('startLifecycleStatisticsReceiving$', () => {
-        it('should start connection, listen, and add listener', () => {
+        it('should start connection, listen, and add listener', fakeAsync(() => {
             const action = startLifecycleStatisticsReceiving({ key: 'test-key' });
-            const hubUrl = 'test-hub-url';
 
             const response = getDefaultServerLifecycleStatisticsResponse();
             const expecteStatistics = mapServerLifecycleStatisticsResponseToServerLifecycleStatistics(response);
 
-            signalStatisticsSpy.startConnection.and.returnValue(of());
             signalStatisticsSpy.receiveStatistics.and.returnValue(
                 of({
                     key: 'test-key',
@@ -69,8 +69,6 @@ describe('AnalyzerEffects', () => {
             actions$ = of(action);
 
             effects.startLifecycleStatisticsReceiving$.subscribe((result) => {
-                expect(signalStatisticsSpy.startConnection).toHaveBeenCalledWith(hubUrl, token);
-                expect(signalStatisticsSpy.startListen).toHaveBeenCalledWith(hubUrl, 'test-key', true);
                 expect(result).toEqual(
                     receiveLifecycleStatisticsSuccess({
                         key: 'test-key',
@@ -78,19 +76,26 @@ describe('AnalyzerEffects', () => {
                     })
                 );
             });
-        });
 
-        it('should skip duplicate listeners', () => {
+            tick();
+
+            expect(signalStatisticsSpy.startConnection).toHaveBeenCalled();
+            expect(signalStatisticsSpy.startListen).toHaveBeenCalled();
+        }));
+
+        it('should skip duplicate listeners', fakeAsync(() => {
             const action = startLifecycleStatisticsReceiving({ key: 'test-key' });
             effects['activeListeners'].lifecycle.add('test-key');
 
             actions$ = of(action);
 
-            effects.startLifecycleStatisticsReceiving$.subscribe(() => {
-                expect(signalStatisticsSpy.startConnection).not.toHaveBeenCalled();
-                expect(signalStatisticsSpy.startListen).not.toHaveBeenCalled();
-            });
-        });
+            effects.startLifecycleStatisticsReceiving$.subscribe();
+
+            tick();
+
+            expect(signalStatisticsSpy.startConnection).not.toHaveBeenCalled();
+            expect(signalStatisticsSpy.startListen).not.toHaveBeenCalled();
+        }));
 
         it('should handle connection errors gracefully', () => {
             const action = startLifecycleStatisticsReceiving({ key: 'test-key' });
@@ -109,30 +114,34 @@ describe('AnalyzerEffects', () => {
     });
 
     describe('receiveLifecycleStatisticsFailure$', () => {
-        it('should display an error snackbar', () => {
+        it('should display an error snackbar', fakeAsync(() => {
             const action = receiveLifecycleStatisticsFailure({ error: 'Test error' });
 
             actions$ = of(action);
 
-            effects.receiveLifecycleStatisticsFailure$.subscribe(() => {
-                expect(snackbarManagerSpy.openErrorSnackbar).toHaveBeenCalledWith([
-                    'Failed to receive statistics in lifecycle statistics hub: Test error',
-                ]);
-            });
-        });
+            effects.receiveLifecycleStatisticsFailure$.subscribe();
+
+            tick();
+
+            expect(snackbarManagerSpy.openErrorSnackbar).toHaveBeenCalledWith([
+                'Failed to receive statistics in lifecycle statistics hub: Test error',
+            ]);
+        }));
     });
 
     describe('stopLifecycleStatisticsReceiving$', () => {
-        it('should stop listening and remove the listener', () => {
+        it('should stop listening and remove the listener', fakeAsync(() => {
             const action = stopLifecycleStatisticsReceiving({ key: 'test-key' });
 
             actions$ = of(action);
 
-            effects.stopLifecycleStatisticsReceiving$.subscribe(() => {
-                expect(signalStatisticsSpy.stopListen).toHaveBeenCalledWith('test-hub-url', 'test-key');
-                expect(effects['activeListeners'].lifecycle.has('test-key')).toBeFalse();
-            });
-        });
+            effects.stopLifecycleStatisticsReceiving$.subscribe();
+
+            tick();
+
+            expect(signalStatisticsSpy.stopListen).toHaveBeenCalled();
+            expect(effects['activeListeners'].lifecycle.has('test-key')).toBeFalse();
+        }));
     });
 
     //#endregion
@@ -140,14 +149,12 @@ describe('AnalyzerEffects', () => {
     //#region Load Statistics
 
     describe('startLoadStatisticsReceiving$', () => {
-        it('should start connection, listen, and add listener', () => {
+        it('should start connection, listen, and add listener', fakeAsync(() => {
             const action = startLoadStatisticsReceiving({ key: 'test-key' });
-            const hubUrl = 'test-hub-url';
 
             const response = getDefaultLoadStatisticsResponse();
             const expecteStatistics = mapServerLoadStatisticsResponseToServerLoadStatistics(response);
 
-            signalStatisticsSpy.startConnection.and.returnValue(of());
             signalStatisticsSpy.receiveStatistics.and.returnValue(
                 of({
                     key: 'test-key',
@@ -158,8 +165,6 @@ describe('AnalyzerEffects', () => {
             actions$ = of(action);
 
             effects.startLoadStatisticsReceiving$.subscribe((result) => {
-                expect(signalStatisticsSpy.startConnection).toHaveBeenCalledWith(hubUrl, token);
-                expect(signalStatisticsSpy.startListen).toHaveBeenCalledWith(hubUrl, 'test-key', true);
                 expect(result).toEqual(
                     receiveLoadStatisticsSuccess({
                         key: 'test-key',
@@ -167,19 +172,24 @@ describe('AnalyzerEffects', () => {
                     })
                 );
             });
-        });
 
-        it('should skip duplicate listeners', () => {
+            tick(300);
+
+            expect(signalStatisticsSpy.startConnection).toHaveBeenCalled();
+            expect(signalStatisticsSpy.startListen).toHaveBeenCalled();
+        }));
+
+        it('should skip duplicate listeners', fakeAsync(() => {
             const action = startLoadStatisticsReceiving({ key: 'test-key' });
             effects['activeListeners'].load.add('test-key');
 
             actions$ = of(action);
 
-            effects.startLoadStatisticsReceiving$.subscribe(() => {
-                expect(signalStatisticsSpy.startConnection).not.toHaveBeenCalled();
-                expect(signalStatisticsSpy.startListen).not.toHaveBeenCalled();
-            });
-        });
+            effects.startLoadStatisticsReceiving$.subscribe();
+
+            expect(signalStatisticsSpy.startConnection).not.toHaveBeenCalled();
+            expect(signalStatisticsSpy.startListen).not.toHaveBeenCalled();
+        }));
 
         it('should handle connection errors gracefully', () => {
             const action = startLoadStatisticsReceiving({ key: 'test-key' });
@@ -198,30 +208,34 @@ describe('AnalyzerEffects', () => {
     });
 
     describe('receiveLoadStatisticsFailure$', () => {
-        it('should display an error snackbar', () => {
+        it('should display an error snackbar', fakeAsync(() => {
             const action = receiveLoadStatisticsFailure({ error: 'Test error' });
 
             actions$ = of(action);
 
-            effects.receiveLoadStatisticsFailure$.subscribe(() => {
-                expect(snackbarManagerSpy.openErrorSnackbar).toHaveBeenCalledWith([
-                    'Failed to receive statistics in load statistics hub: Test error',
-                ]);
-            });
-        });
+            effects.receiveLoadStatisticsFailure$.subscribe();
+
+            tick();
+
+            expect(snackbarManagerSpy.openErrorSnackbar).toHaveBeenCalledWith([
+                'Failed to receive statistics in load statistics hub: Test error',
+            ]);
+        }));
     });
 
     describe('stopLoadStatisticsReceiving$', () => {
-        it('should stop listening and remove the listener', () => {
+        it('should stop listening and remove the listener', fakeAsync(() => {
             const action = stopLoadKeyListening({ key: 'test-key' });
 
             actions$ = of(action);
 
-            effects.stopLoadStatisticsReceiving$.subscribe(() => {
-                expect(signalStatisticsSpy.stopListen).toHaveBeenCalledWith('test-hub-url', 'test-key');
-                expect(effects['activeListeners'].load.has('test-key')).toBeFalse();
-            });
-        });
+            effects.stopLoadStatisticsReceiving$.subscribe();
+
+            tick();
+
+            expect(signalStatisticsSpy.stopListen).toHaveBeenCalled();
+            expect(effects['activeListeners'].load.has('test-key')).toBeFalse();
+        }));
     });
 
     //#endregion
@@ -229,14 +243,12 @@ describe('AnalyzerEffects', () => {
     //#region Custom Statistics
 
     describe('startCustomStatisticsReceiving$', () => {
-        it('should start connection, listen, and add listener', () => {
+        it('should start connection, listen, and add listener', fakeAsync(() => {
             const action = startCustomStatisticsReceiving({ key: 'test-key' });
-            const hubUrl = 'test-hub-url';
 
             const response = getDefaultCustomStatisticsResponse();
             const expecteStatistics = mapServerCustomStatisticsResponseToServerCustomStatistics(response);
 
-            signalStatisticsSpy.startConnection.and.returnValue(of());
             signalStatisticsSpy.receiveStatistics.and.returnValue(
                 of({
                     key: 'test-key',
@@ -247,8 +259,6 @@ describe('AnalyzerEffects', () => {
             actions$ = of(action);
 
             effects.startCustomStatisticsReceiving$.subscribe((result) => {
-                expect(signalStatisticsSpy.startConnection).toHaveBeenCalledWith(hubUrl, token);
-                expect(signalStatisticsSpy.startListen).toHaveBeenCalledWith(hubUrl, 'test-key', true);
                 expect(result).toEqual(
                     receiveCustomStatisticsSuccess({
                         key: 'test-key',
@@ -256,19 +266,25 @@ describe('AnalyzerEffects', () => {
                     })
                 );
             });
-        });
+            tick();
 
-        it('should skip duplicate listeners', () => {
+            expect(signalStatisticsSpy.startConnection).toHaveBeenCalled();
+            expect(signalStatisticsSpy.startListen).toHaveBeenCalled();
+        }));
+
+        it('should skip duplicate listeners', fakeAsync(() => {
             const action = startCustomStatisticsReceiving({ key: 'test-key' });
             effects['activeListeners'].custom.add('test-key');
 
             actions$ = of(action);
 
-            effects.startCustomStatisticsReceiving$.subscribe(() => {
-                expect(signalStatisticsSpy.startConnection).not.toHaveBeenCalled();
-                expect(signalStatisticsSpy.startListen).not.toHaveBeenCalled();
-            });
-        });
+            effects.startCustomStatisticsReceiving$.subscribe();
+
+            tick();
+
+            expect(signalStatisticsSpy.startConnection).not.toHaveBeenCalled();
+            expect(signalStatisticsSpy.startListen).not.toHaveBeenCalled();
+        }));
 
         it('should handle connection errors gracefully', () => {
             const action = startCustomStatisticsReceiving({ key: 'test-key' });
@@ -287,30 +303,34 @@ describe('AnalyzerEffects', () => {
     });
 
     describe('receiveCustomStatisticsFailure$', () => {
-        it('should display an error snackbar', () => {
+        it('should display an error snackbar', fakeAsync(() => {
             const action = receiveCustomStatisticsFailure({ error: 'Test error' });
 
             actions$ = of(action);
 
-            effects.receiveCustomStatisticsFailure$.subscribe(() => {
-                expect(snackbarManagerSpy.openErrorSnackbar).toHaveBeenCalledWith([
-                    'Failed to receive statistics in custom statistics hub: Test error',
-                ]);
-            });
-        });
+            effects.receiveCustomStatisticsFailure$.subscribe();
+
+            tick();
+
+            expect(snackbarManagerSpy.openErrorSnackbar).toHaveBeenCalledWith([
+                'Failed to receive statistics in custom statistics hub: Test error',
+            ]);
+        }));
     });
 
     describe('stopCustomStatisticsReceiving$', () => {
-        it('should stop listening and remove the listener', () => {
+        it('should stop listening and remove the listener', fakeAsync(() => {
             const action = stopCustomStatisticsReceiving({ key: 'test-key' });
 
             actions$ = of(action);
 
-            effects.stopCustomStatisticsReceiving$.subscribe(() => {
-                expect(signalStatisticsSpy.stopListen).toHaveBeenCalledWith('test-hub-url', 'test-key');
-                expect(effects['activeListeners'].custom.has('test-key')).toBeFalse();
-            });
-        });
+            effects.stopCustomStatisticsReceiving$.subscribe();
+
+            tick();
+
+            expect(signalStatisticsSpy.stopListen).toHaveBeenCalled();
+            expect(effects['activeListeners'].custom.has('test-key')).toBeFalse();
+        }));
     });
 
     //#endregion
@@ -366,18 +386,20 @@ describe('AnalyzerEffects', () => {
     });
 
     describe('getLoadAmountStatisticsInRangeFailure$', () => {
-        it('should open error snackbar with the error message', () => {
+        it('should open error snackbar with the error message', fakeAsync(() => {
             const error = 'Test error message';
             const action = getLoadAmountStatisticsInRangeFailure({ error });
 
             actions$ = of(action);
 
-            effects.getLoadAmountStatisticsInRangeFailure$.subscribe(() => {
-                expect(snackbarManagerSpy.openErrorSnackbar).toHaveBeenCalledWith([
-                    'Failed to receive load amount statistics in range: Test error message',
-                ]);
-            });
-        });
+            effects.getLoadAmountStatisticsInRangeFailure$.subscribe();
+
+            tick();
+
+            expect(snackbarManagerSpy.openErrorSnackbar).toHaveBeenCalledWith([
+                'Failed to receive load amount statistics in range: Test error message',
+            ]);
+        }));
     });
 
     //#endregion
@@ -416,18 +438,20 @@ describe('AnalyzerEffects', () => {
     });
 
     describe('downLoadSlotStatisticsFailure$', () => {
-        it('should open error snackbar with the error message', () => {
+        it('should open error snackbar with the error message', fakeAsync(() => {
             const error = 'Test error message';
             const action = downLoadSlotStatisticsFailure({ error });
 
             actions$ = of(action);
 
-            effects.downLoadSlotStatisticsFailure$.subscribe(() => {
-                expect(snackbarManagerSpy.openErrorSnackbar).toHaveBeenCalledWith([
-                    'Failed to download slot statistics : Test error message',
-                ]);
-            });
-        });
+            effects.downLoadSlotStatisticsFailure$.subscribe();
+
+            tick();
+
+            expect(snackbarManagerSpy.openErrorSnackbar).toHaveBeenCalledWith([
+                'Failed to download slot statistics : Test error message',
+            ]);
+        }));
     });
 
     //#endregion

@@ -10,7 +10,6 @@
   </PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Hangfire.PostgreSql" />
 		<PackageReference Include="MediatR" />
 		<PackageReference Include="AutoMapper" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design">
