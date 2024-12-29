@@ -1,9 +1,10 @@
-﻿using AnalyzerApi.Infrastructure;
-using AnalyzerApi.Infrastructure.Configurations;
+﻿using AnalyzerApi.Infrastructure.Configuration;
 using AnalyzerApi.Infrastructure.Models;
 using AnalyzerApi.Infrastructure.Models.Statistics;
+using AnalyzerApi.Infrastructure.TopicMapping;
 using MessageBus.Interfaces;
 using MessageBus.Models;
+using Microsoft.Extensions.Options;
 
 namespace AnalyzerApi.Services.Receivers.Statistics
 {
@@ -11,9 +12,9 @@ namespace AnalyzerApi.Services.Receivers.Statistics
     {
         private readonly int statisticsSaveDataInDays;
 
-        public LoadAmountStatisticsReceiver(IMessageConsumer messageConsumer, IConfiguration configuration, StatisticsReceiverTopicConfiguration<LoadAmountStatistics> topicData) : base(messageConsumer, configuration, topicData)
+        public LoadAmountStatisticsReceiver(IMessageConsumer messageConsumer, IOptions<MessageBusSettings> options, StatisticsTopicMapping<LoadAmountStatistics> topicData) : base(messageConsumer, options, topicData)
         {
-            statisticsSaveDataInDays = int.Parse(configuration[Configuration.KAFKA_TOPIC_DATA_SAVE_IN_DAYS]!);
+            statisticsSaveDataInDays = options.Value.TopicDataSaveInDays;
         }
 
         public override async Task<LoadAmountStatistics?> GetLastStatisticsAsync(string key, CancellationToken cancellationToken)

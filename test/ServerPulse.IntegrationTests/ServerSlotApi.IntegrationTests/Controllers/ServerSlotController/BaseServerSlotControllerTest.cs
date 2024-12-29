@@ -1,6 +1,7 @@
 ﻿using Authentication.Models;
 using Authentication.Token;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using ServerSlotApi.Dtos;
 using System.Net.Http.Headers;
 using System.Text;
@@ -26,7 +27,9 @@ namespace ServerSlotApi.IntegrationTests.Controllers.ServerSlotController
 
         protected AccessTokenData GetAccessTokenData(string userName, string email)
         {
-            var jwtHandler = new JwtHandler(settings);
+            var options = Options.Create(settings);
+
+            var jwtHandler = new JwtHandler(options);
 
             IdentityUser identity = new IdentityUser()
             {

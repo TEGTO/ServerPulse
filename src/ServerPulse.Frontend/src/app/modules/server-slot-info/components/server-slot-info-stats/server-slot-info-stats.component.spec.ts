@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CdkVirtualScrollViewport, ScrollingModule } from '@angular/cdk/scrolling';
 import { ChangeDetectorRef, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MemoizedSelector, Store } from '@ngrx/store';
 import { BehaviorSubject, of, Subject } from 'rxjs';
@@ -110,7 +110,7 @@ describe('ServerSlotInfoStatsComponent', () => {
     expect(mockStore.dispatch).toHaveBeenCalledWith(addNewLoadEvent({ event: mockEvent }));
   });
 
-  it('should monitor scrolling for fetching data', () => {
+  it('should monitor scrolling for fetching data', fakeAsync(() => {
     const mockScrollOffsets = [10, 5];
 
     const scrollerSubject = new Subject<number>();
@@ -133,11 +133,13 @@ describe('ServerSlotInfoStatsComponent', () => {
     scrollerSubject.next(mockScrollOffsets[0]);
     scrollerSubject.next(mockScrollOffsets[1]);
 
+    tick(300);
+
     expect(component['monitorScrollForFetching']).toHaveBeenCalled();
     expect(mockStore.dispatch).toHaveBeenCalledWith(jasmine.objectContaining({
       type: setReadFromDate.type
     }));
-  });
+  }));
 
   it('should render lifecycle statistics', () => {
     storeSelectSubject$.next({ ...getDefaultServerLifecycleStatistics(), dataExists: true, isAlive: true });

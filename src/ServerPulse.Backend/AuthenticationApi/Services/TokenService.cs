@@ -16,7 +16,7 @@ namespace AuthenticationApi.Services
         {
             this.tokenHandler = tokenHandler;
             this.userManager = userManager;
-            refreshTokenExpiryDays = double.Parse(configuration[Configuration.AUTH_REFRESH_TOKEN_EXPIRY_IN_DAYS]!);
+            refreshTokenExpiryDays = double.Parse(configuration[ConfigurationKeys.AUTH_REFRESH_TOKEN_EXPIRY_IN_DAYS]!);
         }
 
         public async Task<AccessTokenData> GenerateTokenAsync(User user, CancellationToken cancellationToken)

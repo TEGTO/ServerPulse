@@ -1,6 +1,6 @@
 ﻿using AnalyzerApi.Command.Builders;
 using AnalyzerApi.Command.Senders;
-using AnalyzerApi.Infrastructure;
+using AnalyzerApi.Infrastructure.Configuration;
 using AnalyzerApi.Infrastructure.Models.Statistics;
 using AnalyzerApi.Infrastructure.Models.Wrappers;
 using AnalyzerApi.Services.Receivers.Event;
@@ -28,7 +28,7 @@ namespace AnalyzerApi.Services.StatisticsDispatchers
             : base(receiver, mediator, logger)
         {
             this.cnfReceiver = cnfReceiver;
-            minimalSendPeriodInMilliseconds = int.Parse(configuration[Configuration.STATISTICS_COLLECT_INTERVAL_IN_MILLISECONDS]!);
+            minimalSendPeriodInMilliseconds = int.Parse(configuration[ConfigurationKeys.STATISTICS_COLLECT_INTERVAL_IN_MILLISECONDS]!);
         }
 
         protected override Task[] DispatchingTasks(string key, CancellationToken cancellationToken)

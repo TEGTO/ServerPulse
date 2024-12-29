@@ -1,6 +1,7 @@
 ﻿using DatabaseControl.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using ServerSlotApi.Infrastructure.Configuration;
 using ServerSlotApi.Infrastructure.Data;
 using ServerSlotApi.Infrastructure.Entities;
 using ServerSlotApi.Infrastructure.Models;
@@ -15,7 +16,7 @@ namespace ServerSlotApi.Infrastructure.Repositories
         public ServerSlotRepository(IDatabaseRepository<ServerSlotDbContext> repository, IConfiguration configuration)
         {
             this.repository = repository;
-            maxSlotsPerUser = int.Parse(configuration[Configuration.SERVER_SLOTS_PER_USER]!);
+            maxSlotsPerUser = int.Parse(configuration[ConfigurationKeys.SERVER_SLOTS_PER_USER]!);
         }
 
         public async Task<ServerSlot?> GetSlotAsync(SlotModel model, CancellationToken cancellationToken)

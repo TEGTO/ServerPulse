@@ -37,10 +37,10 @@ namespace MessageBus
             var configuration = serviceProvider.GetRequiredService<IConfiguration>();
 
             var pipelineConfiguration = configuration
-                .GetSection(MessageBusConfiguration.MESSAGE_BUS_RESILIENCE_PIPELINE)?
-                .Get<ResiliencePipelineConfiguration>() ?? new ResiliencePipelineConfiguration();
+                .GetSection(MessageBusConfigurationKeys.MESSAGE_BUS_RESILIENCE_PIPELINE)?
+                .Get<ResiliencePipelineSettings>() ?? new ResiliencePipelineSettings();
 
-            services.AddResiliencePipeline(MessageBusConfiguration.MESSAGE_BUS_RESILIENCE_PIPELINE, (builder, context) =>
+            services.AddResiliencePipeline(MessageBusConfigurationKeys.MESSAGE_BUS_RESILIENCE_PIPELINE, (builder, context) =>
             {
                 ResilienceHelpers.ConfigureResiliencePipeline(builder, context, pipelineConfiguration, false);
             });

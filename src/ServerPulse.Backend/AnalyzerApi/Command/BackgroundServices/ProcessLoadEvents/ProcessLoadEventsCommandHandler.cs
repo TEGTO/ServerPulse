@@ -1,9 +1,10 @@
-﻿using AnalyzerApi.Infrastructure;
+﻿using AnalyzerApi.Infrastructure.Configuration;
 using AnalyzerApi.Infrastructure.Models.Statistics;
 using AnalyzerApi.Services.Receivers.Statistics;
 using EventCommunication;
 using MediatR;
 using MessageBus.Interfaces;
+using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
 using System.Text.Json;
 
@@ -17,11 +18,11 @@ namespace AnalyzerApi.Command.BackgroundServices.ProcessLoadEvents
         private readonly IStatisticsReceiver<LoadMethodStatistics> receiver;
         private readonly string loadMethodStatisticsTopic;
 
-        public ProcessLoadEventsCommandHandler(IMessageProducer producer, IStatisticsReceiver<LoadMethodStatistics> receiver, IConfiguration configuration)
+        public ProcessLoadEventsCommandHandler(IMessageProducer producer, IStatisticsReceiver<LoadMethodStatistics> receiver, IOptions<MessageBusSettings> options)
         {
             this.producer = producer;
             this.receiver = receiver;
-            loadMethodStatisticsTopic = configuration[Configuration.KAFKA_LOAD_METHOD_STATISTICS_TOPIC]!;
+            loadMethodStatisticsTopic = options.Value.LoadMethodStatisticsTopic;
         }
 
         public async Task<Unit> Handle(ProcessLoadEventsCommand command, CancellationToken cancellationToken)

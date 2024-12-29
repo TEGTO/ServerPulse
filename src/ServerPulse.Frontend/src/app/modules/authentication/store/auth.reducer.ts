@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createReducer, on } from "@ngrx/store";
-import { AuthData, copyAuthTokenToAuthData, copyUserUpdateRequestToUserAuth, getAuthDataFailure, getAuthDataSuccess, getDefaultAuthData, loginUser, loginUserFailure, loginUserSuccess, logOutUserSuccess, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerFailure, registerSuccess, registerUser, updateUserData, updateUserDataFailure, updateUserDataSuccess } from "..";
+import { AuthData, authFailure, copyAuthTokenToAuthData, copyUserUpdateRequestToUserAuth, getAuthDataFailure, getAuthDataSuccess, getDefaultAuthData, loginUser, loginUserSuccess, logOutUserSuccess, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerUser, updateUserData, updateUserDataSuccess } from "..";
 
 export interface AuthState {
     isRefreshSuccessful: boolean,
@@ -17,17 +17,13 @@ const initialAuthState: AuthState = {
 export const authReducer = createReducer(
     initialAuthState,
 
-    on(registerUser, (state) => ({
-        ...initialAuthState,
-    })),
-    on(registerSuccess, (state, { authData }) => ({
-        ...state,
-        authData: authData,
-        error: null
-    })),
-    on(registerFailure, (state, { error }) => ({
+    on(authFailure, (state, { error }) => ({
         ...initialAuthState,
         error: error
+    })),
+
+    on(registerUser, (state) => ({
+        ...initialAuthState,
     })),
 
     on(loginUser, () => ({
@@ -37,10 +33,6 @@ export const authReducer = createReducer(
         ...state,
         authData: authData,
         error: null
-    })),
-    on(loginUserFailure, (state, { error }) => ({
-        ...initialAuthState,
-        error: error
     })),
 
     on(getAuthDataSuccess, (state, { authData }) => ({
@@ -69,6 +61,7 @@ export const authReducer = createReducer(
     })),
     on(refreshAccessTokenFailure, (state, { error }) => ({
         ...initialAuthState,
+        isRefreshSuccessful: false,
         error: error
     })),
 
@@ -80,9 +73,5 @@ export const authReducer = createReducer(
         ...state,
         authData: copyUserUpdateRequestToUserAuth(state.authData, updateRequest),
         error: null
-    })),
-    on(updateUserDataFailure, (state, { error }) => ({
-        ...state,
-        error: error
     })),
 );

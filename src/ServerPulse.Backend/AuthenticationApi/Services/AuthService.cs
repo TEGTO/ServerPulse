@@ -1,5 +1,6 @@
 ﻿using Authentication.Models;
 using AuthenticationApi.Infrastructure;
+using AuthenticationApi.Infrastructure.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -70,6 +71,80 @@ namespace AuthenticationApi.Services
             }
 
             return errors.DistinctBy(e => e.Description).ToList();
+        }
+
+        public async Task<string> GetEmailConfirmationTokenAsync(string email)
+        {
+            var user = await GetUserByLoginAsync(email) ?? throw new InvalidOperationException("User not found.");
+            return await userManager.GenerateEmailConfirmationTokenAsync(user);
+        }
+
+        public async Task<IdentityResult> ConfirmEmailAsync(string email, string token)
+        {
+            var user = await GetUserByLoginAsync(email) ?? throw new InvalidOperationException("User not found.");
+            return await userManager.ConfirmEmailAsync(user, token);
+        }
+
+        public async Task<AccessTokenData> LoginUserAfterConfirmationAsync(string email, CancellationToken cancellationToken)
+        {
+            var user = await GetUserByLoginAsync(email)
+                ?? throw new UnauthorizedAccessException("User not found. Cannot login after confirmation.");
+
+            if (!await userManager.IsEmailConfirmedAsync(user))
+            {
+                throw new UnauthorizedAccessException("Email not confirmed. Cannot proceed with login.");
+            }
+
+            return await tokenService.GenerateTokenAsync(user, cancellationToken);
+        }
+
+        public async Task<bool> CheckEmailConfirmationAsync(string email)
+        {
+            var user = await GetUserByLoginAsync(email);
+
+            if (user == null || !await userManager.IsEmailConfirmedAsync(user))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public async Task<AccessTokenData> LoginUserWithProviderAsync(ProviderLoginModel model, CancellationToken cancellationToken)
+        {
+            var user = await userManager.FindByLoginAsync(model.ProviderLogin, model.ProviderKey);
+
+            if (user != null)
+            {
+                return await tokenService.GenerateTokenAsync(user, cancellationToken);
+            }
+
+            user = await userManager.FindByEmailAsync(model.Email);
+
+            if (user == null)
+            {
+                user = new User
+                {
+                    Email = model.Email,
+                    UserName = model.Email,
+                    EmailConfirmed = true
+                };
+
+                await userManager.CreateAsync(user);
+            }
+
+            var userLoginInfo = new UserLoginInfo(model.ProviderLogin, model.ProviderKey, model.ProviderLogin.ToUpper());
+
+            var result = await userManager.AddLoginAsync(user, userLoginInfo);
+
+            if (result.Succeeded)
+            {
+                return await tokenService.GenerateTokenAsync(user, cancellationToken);
+            }
+            else
+            {
+                throw new InvalidOperationException($"Can't login user with '{model.ProviderLogin}' provider");
+            }
         }
 
         #endregion

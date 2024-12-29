@@ -1,10 +1,12 @@
-﻿using AnalyzerApi.Infrastructure.Configurations;
+﻿using AnalyzerApi.Infrastructure.Configuration;
 using AnalyzerApi.Infrastructure.Models;
 using AnalyzerApi.Infrastructure.Models.Wrappers;
+using AnalyzerApi.Infrastructure.TopicMapping;
 using AnalyzerApi.Services.SerializeStrategies;
 using Confluent.Kafka;
 using MessageBus.Interfaces;
 using MessageBus.Models;
+using Microsoft.Extensions.Options;
 using System.Runtime.CompilerServices;
 
 namespace AnalyzerApi.Services.Receivers.Event
@@ -12,13 +14,13 @@ namespace AnalyzerApi.Services.Receivers.Event
     public class EventReceiver<TWrapper> : BaseReceiver, IEventReceiver<TWrapper> where TWrapper : BaseEventWrapper
     {
         protected readonly IEventSerializeStrategy<TWrapper> eventSerializeStrategy;
-        protected readonly EventReceiverTopicConfiguration<TWrapper> topicData;
+        protected readonly EventTopicMapping<TWrapper> topicData;
 
         public EventReceiver(
             IMessageConsumer messageConsumer,
-            IConfiguration configuration,
+            IOptions<MessageBusSettings> options,
             IEventSerializeStrategy<TWrapper> eventSerializeStrategy,
-            EventReceiverTopicConfiguration<TWrapper> topicData) : base(messageConsumer, configuration)
+            EventTopicMapping<TWrapper> topicData) : base(messageConsumer, options)
         {
             this.topicData = topicData;
             this.eventSerializeStrategy = eventSerializeStrategy;

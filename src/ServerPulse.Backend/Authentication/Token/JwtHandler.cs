@@ -1,5 +1,6 @@
 ﻿using Authentication.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -13,12 +14,12 @@ namespace Authentication.Token
         private readonly RsaSecurityKey? rsaPublicKey;
         private readonly RsaSecurityKey? rsaPrivateKey;
 
-        public JwtHandler(JwtSettings jwtSettings)
+        public JwtHandler(IOptions<JwtSettings> options)
         {
-            this.jwtSettings = jwtSettings;
+            this.jwtSettings = options.Value;
 
-            rsaPublicKey = jwtSettings.GetRsaPublicKeyFromSettings();
-            rsaPrivateKey = jwtSettings.GetRsaPrivateKeyFromSettings();
+            rsaPublicKey = this.jwtSettings.GetRsaPublicKeyFromSettings();
+            rsaPrivateKey = this.jwtSettings.GetRsaPrivateKeyFromSettings();
         }
 
         #region ITokenHandler Members

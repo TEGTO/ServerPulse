@@ -3,19 +3,22 @@ import { Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
 import { Store } from "@ngrx/store";
 import { catchError, map, of, switchMap, withLatestFrom } from "rxjs";
-import { AuthData, AuthenticationApiService, AuthenticationDialogManagerService, copyAuthTokenToAuthData, copyUserUpdateRequestToUserAuth, getAuthData, getAuthDataFailure, getAuthDataSuccess, loginUser, loginUserFailure, loginUserSuccess, logOutUser, logOutUserSuccess, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerFailure, registerSuccess, registerUser, selectAuthState, startLoginUser, startRegisterUser, updateUserData, updateUserDataFailure, updateUserDataSuccess } from "..";
+import { AuthData, AuthenticationApiService, AuthenticationDialogManagerService, authFailure, confirmEmail, copyAuthTokenToAuthData, copyUserUpdateRequestToUserAuth, getAuthData, getAuthDataFailure, getAuthDataSuccess, getFullOAuthRedirectPath, GetOAuthUrlQueryParams, loginUser, loginUserSuccess, logOutUser, logOutUserSuccess, OauthApiService, oauthLogin, oauthLoginFailure, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerUser, registerUserSuccess, selectAuthState, startLoginUser, startOAuthLogin, startOAuthLoginFailure, startRegisterUser, updateUserData, updateUserDataSuccess, UserOAuthenticationRequest } from "..";
+import { environment } from "../../../../environment/environment";
 import { LocalStorageService, RedirectorService, SnackbarManager } from "../../shared";
 
 @Injectable({
     providedIn: 'root'
 })
 export class AuthEffects {
-    readonly storageAuthDataKey: string = "authData";
+    private readonly storageAuthDataKey: string = "authData";
+    private readonly storageOAuthParamsKey: string = "OAuthParams";
 
     constructor(
         private readonly actions$: Actions,
         private readonly store: Store,
         private readonly authApiService: AuthenticationApiService,
+        private readonly oAuthApiService: OauthApiService,
         private readonly localStorage: LocalStorageService,
         private readonly redirector: RedirectorService,
         private readonly snackbarManager: SnackbarManager,
@@ -38,16 +41,44 @@ export class AuthEffects {
             ofType(registerUser),
             switchMap((action) =>
                 this.authApiService.registerUser(action.req).pipe(
+                    map(() => {
+                        if (!environment.isConfirmEmailEnabled) {
+                            return loginUser({ req: { login: action.req.email, password: action.req.password } });
+                        }
+                        return registerUserSuccess();
+                    }),
+                    catchError((error) => of(authFailure({ error: error.message })))
+                )
+            )
+        )
+    );
+    registerUserSuccess$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(registerUserSuccess),
+            switchMap(() => {
+                this.snackbarManager.openInfoSnackbar('✔️ The registration is successful! Please confirm the email!', 15);
+                this.dialogManager.closeAll();
+                this.redirector.redirectToHome();
+                return of();
+            })
+        ),
+        { dispatch: false }
+    );
+
+    confirmEmail$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(confirmEmail),
+            switchMap((action) =>
+                this.authApiService.confirmEmail(action.req).pipe(
                     map((response) => {
                         this.localStorage.setItem(this.storageAuthDataKey, JSON.stringify(response));
 
-                        this.snackbarManager.openInfoSnackbar('✔️ The registration is successful!', 5);
                         this.dialogManager.closeAll();
                         this.redirector.redirectToHome();
 
-                        return registerSuccess({ authData: response });
+                        return loginUserSuccess({ authData: response });
                     }),
-                    catchError(error => of(registerFailure({ error: error.message })))
+                    catchError(error => of(authFailure({ error: error.message })))
                 )
             )
         )
@@ -83,7 +114,7 @@ export class AuthEffects {
 
                         return loginUserSuccess({ authData: response });
                     }),
-                    catchError(error => of(loginUserFailure({ error: error.message })))
+                    catchError(error => of(authFailure({ error: error.message })))
                 )
             )
         )
@@ -165,10 +196,84 @@ export class AuthEffects {
                         return updateUserDataSuccess({ req: action.req });
                     }),
                     catchError(error => {
-                        return of(updateUserDataFailure({ error: error.message }));
+                        return of(authFailure({ error: error.message }));
                     })
                 )
             )
         )
+    );
+
+    oauthLogin$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(oauthLogin),
+            switchMap((action) => {
+                const json = this.localStorage.getItem(this.storageOAuthParamsKey);
+                if (json !== null) {
+                    const params: GetOAuthUrlQueryParams = JSON.parse(json);
+
+                    const req: UserOAuthenticationRequest = {
+                        code: action.code,
+                        codeVerifier: params.codeVerifier,
+                        redirectUrl: params.redirectUrl,
+                        oAuthLoginProvider: params.oAuthLoginProvider
+                    };
+
+                    return this.oAuthApiService.loginUserOAuth(req).pipe(
+                        map((response) => {
+                            this.localStorage.setItem(this.storageAuthDataKey, JSON.stringify(response));
+                            return loginUserSuccess({ authData: response });
+                        }),
+                        catchError(error => of(authFailure({ error: error.message })))
+                    )
+                }
+                return of(oauthLoginFailure({ error: new Error("Failed to get oauth url params!") }));
+            })
+        )
+    );
+    oauthLoginFailure$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(oauthLoginFailure),
+            switchMap((action) => {
+                this.snackbarManager.openErrorSnackbar(["OAuth login failed: " + action.error]);
+                return of();
+            })
+        ),
+        { dispatch: false }
+    );
+
+    startOAuthLogin$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(startOAuthLogin),
+            switchMap((action) => {
+                const codeVerifier = crypto.randomUUID();
+
+                const req: GetOAuthUrlQueryParams = {
+                    codeVerifier: codeVerifier,
+                    redirectUrl: getFullOAuthRedirectPath(),
+                    oAuthLoginProvider: action.loginProvider
+                };
+
+                this.localStorage.setItem(this.storageOAuthParamsKey, JSON.stringify(req));
+
+                return this.oAuthApiService.getOAuthUrl(req).pipe(
+                    map((response) => {
+                        this.redirector.redirectToExternalUrl(response.url);
+                        return of();
+                    }),
+                    catchError(error => of(startOAuthLoginFailure({ error })))
+                )
+            })
+        ),
+        { dispatch: false }
+    );
+    startOAuthLoginFailure$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(startOAuthLoginFailure),
+            switchMap((action) => {
+                this.snackbarManager.openErrorSnackbar(["Failed to get oauth url: " + action.error]);
+                return of();
+            })
+        ),
+        { dispatch: false }
     );
 }

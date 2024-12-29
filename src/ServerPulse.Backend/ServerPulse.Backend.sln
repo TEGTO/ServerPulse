@@ -32,6 +32,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IntegrationTests", "IntegrationTests", "{0982AF25-AABE-4CED-8E03-280C1CCCFE84}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{79A11979-3949-4968-8C5F-A774070FC455}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\test\Directory.Packages.props = ..\..\test\Directory.Packages.props
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerSlotApi.IntegrationTests", "..\..\test\ServerPulse.IntegrationTests\ServerSlotApi.IntegrationTests\ServerSlotApi.IntegrationTests.csproj", "{88F5C66D-6546-4BEC-A201-BA6F8091D279}"
 EndProject
@@ -101,7 +104,26 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharedTests", "..\..\test\S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnalyzerApi.InfrastructureTests", "..\..\test\ServerPulse.UnitTests\ServerPulse.Backend\AnalyzerApi.InfrastructureTests\AnalyzerApi.InfrastructureTests.csproj", "{792306BF-9DAE-4858-B720-6E1FB38803CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventCommunication.ValidatorsTests", "..\..\test\ServerPulse.UnitTests\ServerPulse.EventCommunication\EventCommunication.ValidatorsTests\EventCommunication.ValidatorsTests.csproj", "{3AF53CDB-A7FC-4C8A-AA85-5E121C4CE305}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventCommunication.ValidatorsTests", "..\..\test\ServerPulse.UnitTests\ServerPulse.EventCommunication\EventCommunication.ValidatorsTests\EventCommunication.ValidatorsTests.csproj", "{3AF53CDB-A7FC-4C8A-AA85-5E121C4CE305}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Helper", "Helper\Helper.csproj", "{C7C871F8-2FFD-4407-B29D-4B92D8726623}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HelperTests", "..\..\test\ServerPulse.UnitTests\ServerPulse.Backend\HelperTests\HelperTests.csproj", "{FD4E9EFD-675C-4660-B545-6AF41E3112C8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6E1605DB-71E7-44B7-932E-E6F3745167F2}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Packages.props = Directory.Packages.props
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmailControl", "EmailControl\EmailControl.csproj", "{E356AE76-E350-41D5-9F13-BAD85215B1D8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmailControlTests", "..\..\test\ServerPulse.UnitTests\ServerPulse.Backend\EmailControlTests\EmailControlTests.csproj", "{D7E7F530-19BF-4F2F-9FC0-CC56770BA88C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BackgroundTask", "BackgroundTask\BackgroundTask.csproj", "{A904BF68-0601-4BC2-9193-24B183837ABE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthenticationApi.UnconfirmedUserCleanupService.IntegrationTests", "..\..\test\ServerPulse.IntegrationTests\AuthenticationApi.UnconfirmedUserCleanupService.IntegrationTests\AuthenticationApi.UnconfirmedUserCleanupService.IntegrationTests.csproj", "{8C71C7F7-5C6E-456E-A112-570E563ABC55}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnalyzerApi.LoadEventStatisticsProcessor.IntegrationTests", "..\..\test\ServerPulse.IntegrationTests\AnalyzerApi.LoadEventStatisticsProcessor.IntegrationTests\AnalyzerApi.LoadEventStatisticsProcessor.IntegrationTests.csproj", "{0AE8486C-52E8-4C76-A1A6-893ACA3D7ED3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -268,6 +290,34 @@ Global
 		{3AF53CDB-A7FC-4C8A-AA85-5E121C4CE305}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3AF53CDB-A7FC-4C8A-AA85-5E121C4CE305}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3AF53CDB-A7FC-4C8A-AA85-5E121C4CE305}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7C871F8-2FFD-4407-B29D-4B92D8726623}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7C871F8-2FFD-4407-B29D-4B92D8726623}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7C871F8-2FFD-4407-B29D-4B92D8726623}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7C871F8-2FFD-4407-B29D-4B92D8726623}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD4E9EFD-675C-4660-B545-6AF41E3112C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD4E9EFD-675C-4660-B545-6AF41E3112C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD4E9EFD-675C-4660-B545-6AF41E3112C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD4E9EFD-675C-4660-B545-6AF41E3112C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E356AE76-E350-41D5-9F13-BAD85215B1D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E356AE76-E350-41D5-9F13-BAD85215B1D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E356AE76-E350-41D5-9F13-BAD85215B1D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E356AE76-E350-41D5-9F13-BAD85215B1D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7E7F530-19BF-4F2F-9FC0-CC56770BA88C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7E7F530-19BF-4F2F-9FC0-CC56770BA88C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7E7F530-19BF-4F2F-9FC0-CC56770BA88C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7E7F530-19BF-4F2F-9FC0-CC56770BA88C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A904BF68-0601-4BC2-9193-24B183837ABE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A904BF68-0601-4BC2-9193-24B183837ABE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A904BF68-0601-4BC2-9193-24B183837ABE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A904BF68-0601-4BC2-9193-24B183837ABE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C71C7F7-5C6E-456E-A112-570E563ABC55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C71C7F7-5C6E-456E-A112-570E563ABC55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C71C7F7-5C6E-456E-A112-570E563ABC55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C71C7F7-5C6E-456E-A112-570E563ABC55}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0AE8486C-52E8-4C76-A1A6-893ACA3D7ED3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0AE8486C-52E8-4C76-A1A6-893ACA3D7ED3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0AE8486C-52E8-4C76-A1A6-893ACA3D7ED3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0AE8486C-52E8-4C76-A1A6-893ACA3D7ED3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -318,6 +368,13 @@ Global
 		{4220C611-3967-4B0D-9901-6F8D0D01FE69} = {0282EC42-88AA-4C4E-BCA8-6083EE7CEA7C}
 		{792306BF-9DAE-4858-B720-6E1FB38803CA} = {0282EC42-88AA-4C4E-BCA8-6083EE7CEA7C}
 		{3AF53CDB-A7FC-4C8A-AA85-5E121C4CE305} = {0282EC42-88AA-4C4E-BCA8-6083EE7CEA7C}
+		{C7C871F8-2FFD-4407-B29D-4B92D8726623} = {055C1BB6-678D-4258-80AC-4816688B1AF6}
+		{FD4E9EFD-675C-4660-B545-6AF41E3112C8} = {0282EC42-88AA-4C4E-BCA8-6083EE7CEA7C}
+		{E356AE76-E350-41D5-9F13-BAD85215B1D8} = {055C1BB6-678D-4258-80AC-4816688B1AF6}
+		{D7E7F530-19BF-4F2F-9FC0-CC56770BA88C} = {0282EC42-88AA-4C4E-BCA8-6083EE7CEA7C}
+		{A904BF68-0601-4BC2-9193-24B183837ABE} = {055C1BB6-678D-4258-80AC-4816688B1AF6}
+		{8C71C7F7-5C6E-456E-A112-570E563ABC55} = {0982AF25-AABE-4CED-8E03-280C1CCCFE84}
+		{0AE8486C-52E8-4C76-A1A6-893ACA3D7ED3} = {0982AF25-AABE-4CED-8E03-280C1CCCFE84}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {89B7B374-29A5-4E5B-A21F-6FC2B0DE9918}

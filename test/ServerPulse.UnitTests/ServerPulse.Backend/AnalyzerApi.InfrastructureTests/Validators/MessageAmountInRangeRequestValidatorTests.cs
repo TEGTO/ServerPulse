@@ -1,4 +1,5 @@
-﻿using AnalyzerApi.Infrastructure.Requests;
+﻿using AnalyzerApi.Infrastructure.Configuration;
+using AnalyzerApi.Infrastructure.Requests;
 using FluentValidation.TestHelper;
 using Microsoft.Extensions.Configuration;
 using Moq;
@@ -15,7 +16,7 @@ namespace AnalyzerApi.Infrastructure.Validators.Tests
         public void Setup()
         {
             mockConfiguration = new Mock<IConfiguration>();
-            mockConfiguration.Setup(c => c[Configuration.MIN_STATISTICS_TIMESPAN_IN_SECONDS]).Returns("60");
+            mockConfiguration.Setup(c => c[ConfigurationKeys.MIN_STATISTICS_TIMESPAN_IN_SECONDS]).Returns("60");
 
             validator = new MessageAmountInRangeRequestValidator(mockConfiguration.Object);
         }

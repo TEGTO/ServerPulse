@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { TestBed } from "@angular/core/testing";
+import { fakeAsync, TestBed, tick } from "@angular/core/testing";
 import { provideMockActions } from "@ngrx/effects/testing";
 import { Observable, of, throwError } from "rxjs";
 import { CreateServerSlotRequest, ServerSlot, ServerSlotApiService, ServerSlotDialogManagerService, UpdateServerSlotRequest } from "..";
@@ -141,7 +141,7 @@ describe('ServerSlotEffects', () => {
     });
 
     describe('updateServerSlot$', () => {
-        it('should dispatch updateServerSlotSuccess on success', () => {
+        it('should dispatch updateServerSlotSuccess on success', fakeAsync(() => {
             const request: UpdateServerSlotRequest = { id: '1', name: 'Updated Slot' };
             const action = updateServerSlot({ req: request });
             const outcome = updateServerSlotSuccess({ req: request });
@@ -152,9 +152,12 @@ describe('ServerSlotEffects', () => {
 
             effects.updateServerSlot$.subscribe((result) => {
                 expect(result).toEqual(outcome);
-                expect(apiServiceSpy.updateServerSlot).toHaveBeenCalledWith(request);
             });
-        });
+
+            tick();
+
+            expect(apiServiceSpy.updateServerSlot).toHaveBeenCalledWith(request);
+        }));
 
         it('should dispatch updateServerSlotFailure on failure', () => {
             const request: UpdateServerSlotRequest = { id: '1', name: 'Updated Slot' };
@@ -174,7 +177,7 @@ describe('ServerSlotEffects', () => {
     });
 
     describe('deleteServerSlot$', () => {
-        it('should dispatch deleteServerSlotSuccess on confirmation', () => {
+        it('should dispatch deleteServerSlotSuccess on confirmation', fakeAsync(() => {
             const action = deleteServerSlot({ id: '1' });
             const outcome = deleteServerSlotSuccess({ id: '1' });
 
@@ -187,11 +190,14 @@ describe('ServerSlotEffects', () => {
 
             effects.deleteServerSlot$.subscribe((result) => {
                 expect(result).toEqual(outcome);
-                expect(apiServiceSpy.deleteServerSlot).toHaveBeenCalledWith('1');
             });
-        });
 
-        it('should not proceed when confirmation is cancelled', () => {
+            tick();
+
+            expect(apiServiceSpy.deleteServerSlot).toHaveBeenCalledWith('1');
+        }));
+
+        it('should not proceed when confirmation is cancelled', fakeAsync(() => {
             const action = deleteServerSlot({ id: '1' });
 
             dialogManagerSpy.openDeleteSlotConfirmMenu.and.returnValue({
@@ -204,31 +210,39 @@ describe('ServerSlotEffects', () => {
                 next: () => fail('Expected no action to be dispatched'),
                 error: () => fail('Expected no error'),
             });
-        });
+
+            tick();
+
+            expect(apiServiceSpy.deleteServerSlot).not.toHaveBeenCalled();
+        }));
     });
 
     describe('showSlotInfo$', () => {
-        it('should redirect to the correct URL', () => {
+        it('should redirect to the correct URL', fakeAsync(() => {
             const action = showSlotInfo({ id: '1' });
 
             actions$ = of(action);
 
-            effects.showSlotInfo$.subscribe(() => {
-                expect(redirectorSpy.redirectTo).toHaveBeenCalledWith('info/1');
-            });
-        });
+            effects.showSlotInfo$.subscribe();
+
+            tick();
+
+            expect(redirectorSpy.redirectTo).toHaveBeenCalledWith('info/1');
+        }));
     });
 
     describe('showSlotKey$', () => {
-        it('should display the slot key in a snackbar', () => {
+        it('should display the slot key in a snackbar', fakeAsync(() => {
             const slot: ServerSlot = { id: '1', userEmail: 'test@example.com', name: 'Slot', slotKey: 'key' };
             const action = showSlotKey({ slot });
 
             actions$ = of(action);
 
-            effects.showSlotKey$.subscribe(() => {
-                expect(snackbarManagerSpy.openInfoSnackbar).toHaveBeenCalledWith('🔑: key', 10);
-            });
-        });
+            effects.showSlotKey$.subscribe();
+
+            tick();
+
+            expect(snackbarManagerSpy.openInfoSnackbar).toHaveBeenCalledWith('🔑: key', 10);
+        }));
     });
 });

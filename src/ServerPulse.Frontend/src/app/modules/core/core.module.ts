@@ -10,6 +10,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
 import { AnalyzerModule } from '../analyzer/analyzer.module';
+import { EmailCallbackComponent, getEmailConfirmRedirectPath, getOAuthRedirectPath, OAuthCallbackComponent } from '../authentication';
 import { AuthenticationModule } from '../authentication/authentication.module';
 import { CustomErrorHandler, ErrorHandler, JsonDownloader, JsonDownloaderService, ValidationMessage, ValidationMessageService } from '../shared';
 import { AppComponent, MainViewComponent } from './index';
@@ -28,6 +29,8 @@ const routes: Routes = [
       },
     ],
   },
+  { path: getEmailConfirmRedirectPath(), component: EmailCallbackComponent },
+  { path: getOAuthRedirectPath(), component: OAuthCallbackComponent },
   { path: '**', redirectTo: '' }
 ];
 @NgModule({

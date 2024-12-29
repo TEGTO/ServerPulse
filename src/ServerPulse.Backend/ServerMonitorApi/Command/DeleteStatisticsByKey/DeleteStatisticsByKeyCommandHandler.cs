@@ -1,16 +1,18 @@
 ﻿using MediatR;
 using MessageBus.Interfaces;
+using Microsoft.Extensions.Options;
+using ServerMonitorApi.Options;
 
 namespace ServerMonitorApi.Command.DeleteStatisticsByKey
 {
     public class DeleteStatisticsByKeyCommandHandler : IRequestHandler<DeleteStatisticsByKeyCommand, Unit>
     {
-        private readonly IConfiguration configuration;
+        private readonly MessageBusSettings settings;
         private readonly ITopicManager topicManager;
 
-        public DeleteStatisticsByKeyCommandHandler(ITopicManager topicManager, IConfiguration configuration)
+        public DeleteStatisticsByKeyCommandHandler(ITopicManager topicManager, IOptions<MessageBusSettings> options)
         {
-            this.configuration = configuration;
+            this.settings = options.Value;
             this.topicManager = topicManager;
         }
 
@@ -20,10 +22,10 @@ namespace ServerMonitorApi.Command.DeleteStatisticsByKey
 
             var topics = new List<string>
             {
-                configuration[Configuration.KAFKA_CONFIGURATION_TOPIC]! + key,
-                configuration[Configuration.KAFKA_ALIVE_TOPIC]! + key,
-                configuration[Configuration.KAFKA_LOAD_TOPIC]! + key,
-                configuration[Configuration.KAFKA_CUSTOM_TOPIC]! + key,
+                settings.ConfigurationTopic + key,
+                settings.AliveTopic + key,
+                settings.LoadTopic + key,
+                settings.CustomTopic + key,
             };
 
             await topicManager.DeleteTopicsAsync(topics);

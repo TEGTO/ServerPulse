@@ -1,5 +1,7 @@
 ﻿using MediatR;
 using MessageBus.Interfaces;
+using Microsoft.Extensions.Options;
+using ServerMonitorApi.Options;
 using ServerMonitorApi.Services;
 using System.Text.Json;
 
@@ -12,13 +14,13 @@ namespace ServerMonitorApi.Command.SendLoadEvents
         private readonly string loadTopic;
         private readonly string processLoadEventTopic;
 
-        public SendLoadEventsCommandHandler(ISlotKeyChecker serverSlotChecker, IMessageProducer producer, IConfiguration configuration)
+        public SendLoadEventsCommandHandler(ISlotKeyChecker serverSlotChecker, IMessageProducer producer, IOptions<MessageBusSettings> options)
         {
             this.serverSlotChecker = serverSlotChecker;
             this.producer = producer;
 
-            loadTopic = configuration[Configuration.KAFKA_LOAD_TOPIC]!;
-            processLoadEventTopic = configuration[Configuration.KAFKA_LOAD_TOPIC_PROCESS]!;
+            loadTopic = options.Value.LoadTopic;
+            processLoadEventTopic = options.Value.LoadTopicProcess;
         }
 
         public async Task<Unit> Handle(SendLoadEventsCommand command, CancellationToken cancellationToken)

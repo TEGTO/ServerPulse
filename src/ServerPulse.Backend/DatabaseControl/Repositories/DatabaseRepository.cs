@@ -12,7 +12,7 @@ namespace DatabaseControl.Repositories
         public DatabaseRepository(IDbContextFactory<TContext> dbContextFactory, ResiliencePipelineProvider<string> resiliencePipelineProvider)
         {
             this.dbContextFactory = dbContextFactory;
-            resiliencePipeline = resiliencePipelineProvider.GetPipeline(DatabaseConfiguration.REPOSITORY_RESILIENCE_PIPELINE);
+            resiliencePipeline = resiliencePipelineProvider.GetPipeline(DatabaseConfigurationKeys.REPOSITORY_RESILIENCE_PIPELINE);
         }
 
         #region IDatabaseRepository Members

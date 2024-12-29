@@ -5,6 +5,7 @@ using System.Text.Json;
 
 namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
 {
+    [TestFixture]
     internal class RefreshTokenAuthControllerTests : BaseAuthControllerTest
     {
         private async Task<AccessTokenDataDto> GetValidAuthToken()
@@ -16,16 +17,16 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
                 ConfirmPassword = "Test@123"
             });
 
-            var loginRequest = new UserAuthenticationRequest
+            var request = new UserAuthenticationRequest
             {
                 Login = "testuser@example.com",
                 Password = "Test@123"
             };
 
-            using var request = new HttpRequestMessage(HttpMethod.Post, "/auth/login");
-            request.Content = new StringContent(JsonSerializer.Serialize(loginRequest), Encoding.UTF8, "application/json");
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/auth/login");
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
-            var httpResponse = await client.SendAsync(request);
+            var httpResponse = await client.SendAsync(httpRequest);
             httpResponse.EnsureSuccessStatusCode();
 
             var content = await httpResponse.Content.ReadAsStringAsync();
@@ -39,12 +40,12 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
         {
             // Arrange
             var refreshRequest = await GetValidAuthToken();
-            using var request = new HttpRequestMessage(HttpMethod.Post, "/auth/refresh");
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/auth/refresh");
 
-            request.Content = new StringContent(JsonSerializer.Serialize(refreshRequest), Encoding.UTF8, "application/json");
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(refreshRequest), Encoding.UTF8, "application/json");
 
             // Act
-            var httpResponse = await client.SendAsync(request);
+            var httpResponse = await client.SendAsync(httpRequest);
 
             // Assert
             Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
@@ -67,11 +68,11 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
                 RefreshToken = "validRefreshToken"
             };
 
-            using var request = new HttpRequestMessage(HttpMethod.Post, "/auth/refresh");
-            request.Content = new StringContent(JsonSerializer.Serialize(refreshRequest), Encoding.UTF8, "application/json");
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/auth/refresh");
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(refreshRequest), Encoding.UTF8, "application/json");
 
             // Act
-            var httpResponse = await client.SendAsync(request);
+            var httpResponse = await client.SendAsync(httpRequest);
 
             // Assert
             Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));

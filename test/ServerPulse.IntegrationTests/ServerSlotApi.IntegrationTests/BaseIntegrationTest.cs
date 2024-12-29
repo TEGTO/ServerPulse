@@ -1,6 +1,7 @@
 ﻿using Authentication.Token;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace ServerSlotApi.IntegrationTests
 {
@@ -36,7 +37,7 @@ namespace ServerSlotApi.IntegrationTests
         {
             scope = factory.Services.CreateScope();
             client = factory.CreateClient();
-            settings = factory.Services.GetRequiredService<JwtSettings>();
+            settings = factory.Services.GetRequiredService<IOptions<JwtSettings>>().Value;
         }
     }
 }

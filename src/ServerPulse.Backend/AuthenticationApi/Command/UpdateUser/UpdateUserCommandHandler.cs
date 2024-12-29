@@ -1,4 +1,4 @@
-﻿using AuthenticationApi.Infrastructure;
+﻿using AuthenticationApi.Infrastructure.Models;
 using AuthenticationApi.Services;
 using AutoMapper;
 using ExceptionHandling;
@@ -19,7 +19,9 @@ namespace AuthenticationApi.Command
 
         public async Task<Unit> Handle(UpdateUserCommand command, CancellationToken cancellationToken)
         {
-            var updateModel = mapper.Map<UserUpdateModel>(command.Request);
+            var request = command.Request;
+
+            var updateModel = mapper.Map<UserUpdateModel>(request);
 
             var errors = await authService.UpdateUserAsync(command.UserPrincipal, updateModel, false, cancellationToken);
             if (Utilities.HasErrors(errors, out var errorResponse)) throw new AuthorizationException(errorResponse);

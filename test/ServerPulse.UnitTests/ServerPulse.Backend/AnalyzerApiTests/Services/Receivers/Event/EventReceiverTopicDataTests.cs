@@ -1,13 +1,13 @@
-﻿using AnalyzerApi.Infrastructure;
-using AnalyzerApi.Infrastructure.Configurations;
+﻿using AnalyzerApi.Infrastructure.Configuration;
 using AnalyzerApi.Infrastructure.Models;
 using AnalyzerApi.Infrastructure.Models.Wrappers;
+using AnalyzerApi.Infrastructure.TopicMapping;
 using AnalyzerApi.Services.SerializeStrategies;
 using Confluent.Kafka;
 using EventCommunication;
 using MessageBus.Interfaces;
 using MessageBus.Models;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Moq;
 using System.Text.Json;
 
@@ -16,30 +16,33 @@ namespace AnalyzerApi.Services.Receivers.Event.Tests
     [TestFixture]
     internal class EventReceiverTests
     {
-        private const string KafkaTimeoutInMilliseconds = "5000";
+        private const int TimeoutInMilliseconds = 5000;
         private const string TopicName = "test-topic";
 
         private Mock<IMessageConsumer> mockMessageConsumer;
-        private Mock<IConfiguration> mockConfiguration;
         private Mock<IEventSerializeStrategy<MockEventWrapper>> mockSerializeStrategy;
-        private EventReceiverTopicConfiguration<MockEventWrapper> topicData;
+        private EventTopicMapping<MockEventWrapper> topicData;
         private EventReceiver<MockEventWrapper> eventReceiver;
 
         [SetUp]
         public void Setup()
         {
             mockMessageConsumer = new Mock<IMessageConsumer>();
-            mockConfiguration = new Mock<IConfiguration>();
             mockSerializeStrategy = new Mock<IEventSerializeStrategy<MockEventWrapper>>();
 
-            mockConfiguration.SetupGet(c => c[Configuration.KAFKA_TIMEOUT_IN_MILLISECONDS])
-                .Returns(KafkaTimeoutInMilliseconds);
+            var messageBusSettings = new MessageBusSettings
+            {
+                ReceiveTimeoutInMilliseconds = TimeoutInMilliseconds,
+            };
 
-            topicData = new EventReceiverTopicConfiguration<MockEventWrapper>(TopicName);
+            var mockOptions = new Mock<IOptions<MessageBusSettings>>();
+            mockOptions.Setup(x => x.Value).Returns(messageBusSettings);
+
+            topicData = new EventTopicMapping<MockEventWrapper>(TopicName);
 
             eventReceiver = new EventReceiver<MockEventWrapper>(
                 mockMessageConsumer.Object,
-                mockConfiguration.Object,
+                mockOptions.Object,
                 mockSerializeStrategy.Object,
                 topicData
             );

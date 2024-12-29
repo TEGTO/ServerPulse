@@ -1,5 +1,5 @@
 ﻿using AuthenticationApi.Dtos;
-using AuthenticationApi.Infrastructure;
+using AuthenticationApi.Infrastructure.Models;
 using AuthenticationApi.Services;
 using AutoMapper;
 using ExceptionHandling;

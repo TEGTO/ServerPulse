@@ -14,7 +14,7 @@ builder.Host.AddLogging();
 
 #region Cors
 
-bool.TryParse(builder.Configuration[Configuration.USE_CORS], out bool useCors);
+bool.TryParse(builder.Configuration[ConfigurationKeys.USE_CORS], out bool useCors);
 var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 if (useCors)
@@ -41,6 +41,7 @@ Utility.MergeJsonFiles(
         $"ocelot.{env}.analyzer.json",
         $"ocelot.{env}.eventprocessing.json",
         $"ocelot.{env}.authentication.json",
+        $"ocelot.{env}.oauth.json",
         $"ocelot.{env}.interaction.json",
         $"ocelot.{env}.slot.json",
         $"ocelot.{env}.swagger.json",

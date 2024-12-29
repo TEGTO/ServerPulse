@@ -13,10 +13,10 @@ namespace DatabaseControl
     {
         public static IServiceCollection AddRepositoryWithResilience<Context>(this IServiceCollection services, IConfiguration configuration) where Context : DbContext
         {
-            var pipelineConfiguration = configuration.GetSection(DatabaseConfiguration.REPOSITORY_RESILIENCE_PIPELINE)
-                                        .Get<ResiliencePipelineConfiguration>() ?? new ResiliencePipelineConfiguration();
+            var pipelineConfiguration = configuration.GetSection(DatabaseConfigurationKeys.REPOSITORY_RESILIENCE_PIPELINE)
+                                        .Get<ResiliencePipelineSettings>() ?? new ResiliencePipelineSettings();
 
-            services.AddResiliencePipeline(DatabaseConfiguration.REPOSITORY_RESILIENCE_PIPELINE, (builder, context) =>
+            services.AddResiliencePipeline(DatabaseConfigurationKeys.REPOSITORY_RESILIENCE_PIPELINE, (builder, context) =>
             {
                 ResilienceHelpers.ConfigureResiliencePipeline(builder, context, pipelineConfiguration);
             });
@@ -27,11 +27,11 @@ namespace DatabaseControl
         }
 
         public static IServiceCollection AddDbContextFactory<Context>(
-        this IServiceCollection services,
-        string connectionString,
-        string? migrationAssembly = null,
-        Action<NpgsqlDbContextOptionsBuilder>? dbAdditionalConfig = null,
-        Action<DbContextOptionsBuilder>? additionalConfig = null
+            this IServiceCollection services,
+            string connectionString,
+            string? migrationAssembly = null,
+            Action<NpgsqlDbContextOptionsBuilder>? dbAdditionalConfig = null,
+            Action<DbContextOptionsBuilder>? additionalConfig = null
         ) where Context : DbContext
         {
             services.AddDbContextFactory<Context>(options =>

@@ -2,6 +2,7 @@
 using Authentication.Token;
 using AuthenticationApi.Dtos;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using System.Text;
 using System.Text.Json;
 
@@ -25,7 +26,10 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
 
         protected AccessTokenData GetAccessTokenData()
         {
-            var jwtHandler = new JwtHandler(settings);
+            var options = Options.Create(settings);
+
+            var jwtHandler = new JwtHandler(options);
+
             IdentityUser identity = new IdentityUser()
             {
                 UserName = "testuser",
@@ -34,18 +38,29 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
             return jwtHandler.CreateToken(identity);
         }
 
-        protected async Task RegisterSampleUser(UserRegistrationRequest registerRequest)
+        protected async Task RegisterSampleUser(UserRegistrationRequest request, bool confirmEmail = true)
         {
-            using var request = new HttpRequestMessage(HttpMethod.Post, "/auth/register");
+            using var registerHttpRequest = new HttpRequestMessage(HttpMethod.Post, "/auth/register");
 
-            request.Content = new StringContent(
-                JsonSerializer.Serialize(registerRequest),
+            registerHttpRequest.Content = new StringContent(
+                JsonSerializer.Serialize(request),
                 Encoding.UTF8,
                 "application/json"
             );
 
-            var httpResponse = await client.SendAsync(request);
+            var httpResponse = await client.SendAsync(registerHttpRequest);
             httpResponse.EnsureSuccessStatusCode();
+
+            if (isConfirmEmailEnabled && confirmEmail)
+            {
+                var user = await userManager.FindByEmailAsync(request.Email);
+
+                ArgumentNullException.ThrowIfNull(user);
+
+                var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+
+                await userManager.ConfirmEmailAsync(user, token);
+            }
         }
 
         protected async Task<string?> GetAccessKeyForUserAsync(UserAuthenticationRequest loginRequest)

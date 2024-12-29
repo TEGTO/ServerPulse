@@ -1,10 +1,11 @@
 ﻿using AnalyzerApi.Hubs;
+using AnalyzerApi.Infrastructure.Configuration;
 using AnalyzerApi.Infrastructure.Dtos.Responses.Statistics;
 using AnalyzerApi.Infrastructure.Models.Statistics;
 using AutoMapper;
 using MessageBus.Interfaces;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Moq;
 using System.Text.Json;
 
@@ -17,7 +18,6 @@ namespace AnalyzerApi.Command.Senders.LifecycleStatistics.Tests
         private Mock<IHubContext<StatisticsHub<ServerLifecycleStatistics>, IStatisticsHubClient>> mockHubContext;
         private Mock<IStatisticsHubClient> mockClientProxy;
         private Mock<IMapper> mockMapper;
-        private Mock<IConfiguration> mockConfiguration;
         private SendServerStatisticsSenderCommandHandler handler;
 
         [SetUp]
@@ -27,19 +27,24 @@ namespace AnalyzerApi.Command.Senders.LifecycleStatistics.Tests
             mockHubContext = new Mock<IHubContext<StatisticsHub<ServerLifecycleStatistics>, IStatisticsHubClient>>();
             mockClientProxy = new Mock<IStatisticsHubClient>();
             mockMapper = new Mock<IMapper>();
-            mockConfiguration = new Mock<IConfiguration>();
 
             var mockClients = new Mock<IHubClients<IStatisticsHubClient>>();
             mockClients.Setup(c => c.Group(It.IsAny<string>())).Returns(mockClientProxy.Object);
             mockHubContext.Setup(h => h.Clients).Returns(mockClients.Object);
 
-            mockConfiguration.Setup(c => c[It.IsAny<string>()]).Returns("server-statistics-topic-");
+            var settings = new MessageBusSettings
+            {
+                ServerStatisticsTopic = "server-statistics-topic-"
+            };
+
+            var mockOptions = new Mock<IOptions<MessageBusSettings>>();
+            mockOptions.Setup(x => x.Value).Returns(settings);
 
             handler = new SendServerStatisticsSenderCommandHandler(
                 mockProducer.Object,
                 mockHubContext.Object,
                 mockMapper.Object,
-                mockConfiguration.Object);
+                mockOptions.Object);
         }
 
         [Test]

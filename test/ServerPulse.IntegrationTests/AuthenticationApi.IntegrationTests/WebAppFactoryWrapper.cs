@@ -1,4 +1,5 @@
-﻿using AuthenticationApi.Infrastructure.Data;
+﻿using Authentication.Token;
+using AuthenticationApi.Infrastructure.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -10,7 +11,7 @@ using Testcontainers.PostgreSql;
 
 namespace AuthenticationApi.IntegrationTests
 {
-    public sealed class WebAppFactoryWrapper : IAsyncDisposable
+    internal sealed class WebAppFactoryWrapper : IAsyncDisposable
     {
         private PostgreSqlContainer? DbContainer { get; set; }
         private WebApplicationFactory<Program>? WebApplicationFactory { get; set; }
@@ -43,8 +44,8 @@ namespace AuthenticationApi.IntegrationTests
         private async Task InitializeContainersAsync()
         {
             DbContainer = new PostgreSqlBuilder()
-                .WithImage("postgres:latest")
-                .WithDatabase("elibrary-db")
+                .WithImage("postgres:17")
+                .WithDatabase($"elibrary-db")
                 .WithUsername("postgres")
                 .WithPassword("postgres")
                 .Build();
@@ -73,17 +74,20 @@ namespace AuthenticationApi.IntegrationTests
         {
             var configurationBuilder = new ConfigurationBuilder();
 
-            configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
+            var configuration = new Dictionary<string, string?>
             {
-                { $"ConnectionStrings:{Configuration.AUTH_DATABASE_CONNECTION_STRING}", DbContainer?.GetConnectionString() },
-                { "EFCreateDatabase", "true" },
-                { "AuthSettings:PublicKey", TestRsaKeys.PUBLIC_KEY },
-                { "AuthSettings:PrivateKey", TestRsaKeys.PRIVATE_KEY  },
-                { "AuthSettings:Issuer", "https://token.issuer.example.com" },
-                { "AuthSettings:ExpiryInMinutes", "30" },
-                { "AuthSettings:Audience", "https://api.example.com" },
-                { "AuthSettings:RefreshExpiryInDays", "5" },
-            });
+                { $"ConnectionStrings:{ConfigurationKeys.AUTH_DATABASE_CONNECTION_STRING}", DbContainer?.GetConnectionString() },
+                { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.PrivateKey)}", TestRsaKeys.PRIVATE_KEY },
+                { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.PublicKey)}", TestRsaKeys.PUBLIC_KEY },
+                { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.Audience)}", "https://api.example.com" },
+                { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.Issuer)}", "https://token.issuer.example.com" },
+                { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.ExpiryInMinutes)}", "30" },
+                { ConfigurationKeys.AUTH_REFRESH_TOKEN_EXPIRY_IN_DAYS, "7" },
+                { ConfigurationKeys.EF_CREATE_DATABASE, "true" },
+                {$"FeatureManagement:{ConfigurationKeys.REQUIRE_EMAIL_CONFIRMATION}", "true" },
+            };
+
+            configurationBuilder.AddInMemoryCollection(configuration);
 
             return configurationBuilder.Build();
         }

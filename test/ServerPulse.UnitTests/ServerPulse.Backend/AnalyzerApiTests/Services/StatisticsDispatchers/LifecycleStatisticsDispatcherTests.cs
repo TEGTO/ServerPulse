@@ -1,6 +1,6 @@
 ﻿using AnalyzerApi.Command.Builders;
 using AnalyzerApi.Command.Senders;
-using AnalyzerApi.Infrastructure;
+using AnalyzerApi.Infrastructure.Configuration;
 using AnalyzerApi.Infrastructure.Models.Statistics;
 using AnalyzerApi.Infrastructure.Models.Wrappers;
 using AnalyzerApi.Services.Receivers.Event;
@@ -35,7 +35,7 @@ namespace AnalyzerApi.Services.StatisticsDispatchers.Tests
             mockLogger = new Mock<ILogger<LifecycleStatisticsDispatcher>>();
             mockConfiguration = new Mock<IConfiguration>();
 
-            mockConfiguration.SetupGet(c => c[Configuration.STATISTICS_COLLECT_INTERVAL_IN_MILLISECONDS])
+            mockConfiguration.SetupGet(c => c[ConfigurationKeys.STATISTICS_COLLECT_INTERVAL_IN_MILLISECONDS])
                 .Returns(SendPeriodInMilliseconds.ToString());
 
             dispatcher = new LifecycleStatisticsDispatcher(

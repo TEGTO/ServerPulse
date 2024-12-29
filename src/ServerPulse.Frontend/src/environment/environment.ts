@@ -8,4 +8,5 @@ export const environment =
   lifecycleStatisticsHub: "https://localhost:7129/lifecyclestatisticshub",
   loadStatisticsHub: "https://localhost:7129/loadstatisticshub",
   customStatisticsHub: "https://localhost:7129/customstatisticshub",
+  isConfirmEmailEnabled: true,
 };

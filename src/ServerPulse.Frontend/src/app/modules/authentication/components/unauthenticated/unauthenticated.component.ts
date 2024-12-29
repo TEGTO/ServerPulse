@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { startLoginUser } from '../..';
+import { getAuthData, startLoginUser } from '../..';
 
 @Component({
   selector: 'app-unauthenticated',
@@ -8,10 +8,14 @@ import { startLoginUser } from '../..';
   styleUrl: './unauthenticated.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UnauthenticatedComponent {
+export class UnauthenticatedComponent implements OnInit {
   constructor(
     private readonly store: Store,
   ) { }
+
+  ngOnInit(): void {
+    this.store.dispatch(getAuthData());
+  }
 
   startLogin(): void {
     this.store.dispatch(startLoginUser());

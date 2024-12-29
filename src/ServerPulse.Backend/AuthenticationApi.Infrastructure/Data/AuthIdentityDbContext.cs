@@ -30,7 +30,7 @@ namespace AuthenticationApi.Infrastructure.Data
             {
                 if (entry.State == EntityState.Added)
                 {
-                    entry.Entity.RegistredAtUtc = DateTime.UtcNow;
+                    entry.Entity.RegisteredAtUtc = DateTime.UtcNow;
                     entry.Entity.UpdatedAtUtc = DateTime.UtcNow;
                 }
                 else if (entry.State == EntityState.Modified)

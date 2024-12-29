@@ -1,5 +1,7 @@
 ﻿using MediatR;
 using MessageBus.Interfaces;
+using Microsoft.Extensions.Options;
+using ServerMonitorApi.Options;
 using ServerMonitorApi.Services;
 using System.Text.Json;
 
@@ -11,12 +13,12 @@ namespace ServerMonitorApi.Command.SendCustomEvents
         private readonly IMessageProducer producer;
         private readonly string customTopic;
 
-        public SendCustomEventsCommandHandler(ISlotKeyChecker serverSlotChecker, IMessageProducer producer, IConfiguration configuration)
+        public SendCustomEventsCommandHandler(ISlotKeyChecker serverSlotChecker, IMessageProducer producer, IOptions<MessageBusSettings> options)
         {
             this.serverSlotChecker = serverSlotChecker;
             this.producer = producer;
 
-            customTopic = configuration[Configuration.KAFKA_CUSTOM_TOPIC]!;
+            customTopic = options.Value.CustomTopic;
         }
 
         public async Task<Unit> Handle(SendCustomEventsCommand command, CancellationToken cancellationToken)

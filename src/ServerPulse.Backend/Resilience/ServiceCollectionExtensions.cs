@@ -8,8 +8,8 @@ namespace Resilience
     {
         public static IServiceCollection AddDefaultResiliencePipeline(this IServiceCollection services, IConfiguration configuration, string defaultName = "Default")
         {
-            var pipelineConfiguration = configuration.GetSection(ResilienceConfiguration.DEFAULT_RESILIENCE_PIPELINE_SECTION)
-                                        .Get<ResiliencePipelineConfiguration>() ?? new ResiliencePipelineConfiguration();
+            var pipelineConfiguration = configuration.GetSection(ResilienceConfigurationKeys.DEFAULT_RESILIENCE_PIPELINE_SECTION)
+                                        .Get<ResiliencePipelineSettings>() ?? new ResiliencePipelineSettings();
 
             services.AddResiliencePipeline(defaultName, (builder, context) =>
             {

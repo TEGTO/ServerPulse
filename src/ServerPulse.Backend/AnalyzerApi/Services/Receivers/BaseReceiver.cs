@@ -1,6 +1,7 @@
-﻿using AnalyzerApi.Infrastructure;
+﻿using AnalyzerApi.Infrastructure.Configuration;
 using MessageBus.Interfaces;
 using MessageBus.Models;
+using Microsoft.Extensions.Options;
 
 namespace AnalyzerApi.Services.Receivers
 {
@@ -9,10 +10,10 @@ namespace AnalyzerApi.Services.Receivers
         protected readonly IMessageConsumer messageConsumer;
         protected readonly int timeoutInMilliseconds;
 
-        protected BaseReceiver(IMessageConsumer messageConsumer, IConfiguration configuration)
+        protected BaseReceiver(IMessageConsumer messageConsumer, IOptions<MessageBusSettings> options)
         {
             this.messageConsumer = messageConsumer;
-            timeoutInMilliseconds = int.Parse(configuration[Configuration.KAFKA_TIMEOUT_IN_MILLISECONDS]!);
+            timeoutInMilliseconds = options.Value.ReceiveTimeoutInMilliseconds;
         }
 
         protected async Task<ConsumeResponse?> GetLastMessageByKeyAsync(string topic, CancellationToken cancellationToken)

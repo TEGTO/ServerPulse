@@ -21,7 +21,8 @@
         "Period": "3s",
         "PeriodTimespan": 3,
         "Limit": 1
-      }
+      },
+      "SwaggerKey": "analyzer"
     }
   ]
 }

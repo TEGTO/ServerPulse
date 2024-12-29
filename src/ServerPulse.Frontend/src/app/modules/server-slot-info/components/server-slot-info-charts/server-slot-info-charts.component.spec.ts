@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { MemoizedSelector, Store } from '@ngrx/store';
 import { of } from 'rxjs';
 import { getDailyLoadAmountStatistics, selectLoadAmountStatistics, selectSecondaryLoadAmountStatistics, selectSelectedDate, setSelectedDate, SlotInfoState } from '../..';
@@ -66,7 +66,7 @@ describe('ServerSlotInfoChartsComponent', () => {
     expect(result[1][1]).toEqual(10);
   });
 
-  it('should update secondary chart data when selected date changes', () => {
+  it('should update secondary chart data when selected date changes', fakeAsync(() => {
     const mockDate = new Date();
     const oneHour = 1000 * 60 * 60;
     const mockStatistics = [
@@ -78,13 +78,15 @@ describe('ServerSlotInfoChartsComponent', () => {
 
     component["handleSelectedDateUpdates"]();
 
+    tick();
+
     const result = component["secondaryChartDataSubject$"].value.filter(x => x[1] > 0);
 
     expect(result.length).toEqual(2);
     expect(result[1][0] - result[0][0]).toEqual(oneHour);
     expect(result[0][1]).toEqual(15);
     expect(result[1][1]).toEqual(25);
-  });
+  }));
 
   it('should dispatch setSelectedDate on controlOnSelect', () => {
     const mockChartData: [number, number][] = [[1672531200000, 5]];
