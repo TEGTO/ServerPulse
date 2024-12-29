@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
 import { LoadAmountStatistics, startLoadStatisticsReceiving, stopLoadKeyListening } from '../../../analyzer';
@@ -76,7 +76,7 @@ describe('ServerSlotActivityPreviewComponent', () => {
   });
 
   describe('setChartDataObservable', () => {
-    it('should update chart data observable with time series', () => {
+    it('should update chart data observable with time series', fakeAsync(() => {
       const mockStatisticsSet = new Map<number, number>([
         [new Date().getTime(), 5],
         [new Date().getTime() + component.fiveMinutes, 3],
@@ -87,10 +87,12 @@ describe('ServerSlotActivityPreviewComponent', () => {
       component.serverSlot = mockServerSlot;
       component["setChartDataObservable"]();
 
+      tick();
+
       component.chartData$.subscribe((data) => {
         expect(data).toEqual([[0, 5], [1, 3]]);
       });
-    });
+    }));
 
     it('should dispatch addLoadEventToLoadAmountStatistics when last load event is available', () => {
       const mockEvent = { id: 'event1', creationDateUTC: new Date() };
@@ -120,7 +122,7 @@ describe('ServerSlotActivityPreviewComponent', () => {
   });
 
   describe('generate5MinutesTimeSeries', () => {
-    it('should generate a time series based on statistics', () => {
+    it('should generate a time series based on statistics', fakeAsync(() => {
       const startDate = new Date().getTime();
       const mockStatisticsSet = new Map<number, number>([
         [startDate, 5],
@@ -133,11 +135,13 @@ describe('ServerSlotActivityPreviewComponent', () => {
         mockStatisticsSet
       );
 
+      tick();
+
       expect(result).toEqual([
         [startDate, 5],
         [startDate + component.fiveMinutes, 3],
         [startDate + 2 * component.fiveMinutes, 0],
       ]);
-    });
+    }));
   });
 });
