@@ -1,6 +1,7 @@
 ﻿using Azure;
 using Azure.Communication.Email;
 using Microsoft.Extensions.Options;
+using System.Text.RegularExpressions;
 
 namespace EmailControl
 {
@@ -31,8 +32,7 @@ namespace EmailControl
 
         private static string HtmlToPlainText(string html)
         {
-            // Simple conversion of HTML to plain text for text email fallback
-            return System.Text.RegularExpressions.Regex.Replace(html, "<.*?>", string.Empty);
+            return Regex.Replace(html, "<.*?>", string.Empty, RegexOptions.None, TimeSpan.FromSeconds(1));
         }
     }
 }
