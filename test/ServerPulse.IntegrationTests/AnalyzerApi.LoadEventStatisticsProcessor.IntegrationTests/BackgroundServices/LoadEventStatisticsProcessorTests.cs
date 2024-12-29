@@ -1,7 +1,8 @@
 ﻿using AnalyzerApi.Infrastructure.Models.Statistics;
+using AnalyzerApi.LoadEventStatisticsProcessor.IntegrationTests;
 using EventCommunication;
 
-namespace AnalyzerApi.IntegrationTests.BackgroundServices
+namespace AnalyzerApi.LoadEventStatisticsProcessor.BackgroundServices
 {
     [TestFixture, Parallelizable(ParallelScope.All)]
     internal class LoadEventStatisticsProcessorTests : BaseIntegrationTest

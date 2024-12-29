@@ -20,7 +20,8 @@ services:
       - FeatureManagement__RequireEmailConfirmation=${FeatureManagement__RequireEmailConfirmation}
       - Email__ConnectionString=${Email__ConnectionString}
       - Email__SenderAddress=${Email__SenderAddress}
-      - UnconfirmedUsersCleanUpInMinutes=${UnconfirmedUsersCleanUpInMinutes}
+      - BackgroundServices__UseUserUnconfirmedCleanup=${BackgroundServices__UseUserUnconfirmedCleanup}
+      - BackgroundServices__UnconfirmedUsersCleanUpInMinutes=${BackgroundServices__UnconfirmedUsersCleanUpInMinutes}
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro

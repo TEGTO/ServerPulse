@@ -48,7 +48,10 @@ namespace AuthenticationApi.Command.RegisterUser
                 throw new AuthorizationException(errorResponse);
             }
 
-            backgroundJobClient.Enqueue(() => SendEmailConfirmationMessage(request));
+            if (await featureManager.IsEnabledAsync(ConfigurationKeys.REQUIRE_EMAIL_CONFIRMATION))
+            {
+                backgroundJobClient.Enqueue(() => SendEmailConfirmationMessage(request));
+            }
 
             return Unit.Value;
         }
@@ -56,21 +59,18 @@ namespace AuthenticationApi.Command.RegisterUser
         [AutomaticRetry(Attempts = 3)]
         public async Task SendEmailConfirmationMessage(UserRegistrationRequest request)
         {
-            if (await featureManager.IsEnabledAsync(ConfigurationKeys.REQUIRE_EMAIL_CONFIRMATION))
-            {
-                var token = await authService.GetEmailConfirmationTokenAsync(request.Email);
+            var token = await authService.GetEmailConfirmationTokenAsync(request.Email);
 
-                var confirmationUrl = $"{request.RedirectConfirmUrl}?token={Uri.EscapeDataString(token)}&email={Uri.EscapeDataString(request.Email)}";
+            var confirmationUrl = $"{request.RedirectConfirmUrl}?token={Uri.EscapeDataString(token)}&email={Uri.EscapeDataString(request.Email)}";
 
-                var emailBody = GenerateConfirmationEmailBody(confirmationUrl);
+            var emailBody = GenerateConfirmationEmailBody(confirmationUrl);
 
-                await emailSender.SendEmailAsync(
-                    toEmail: request.Email,
-                    subject: "[Server Pulse] Confirm Your Email Address",
-                    body: emailBody,
-                    cancellationToken: CancellationToken.None
-                );
-            }
+            await emailSender.SendEmailAsync(
+                toEmail: request.Email,
+                subject: "[Server Pulse] Confirm Your Email Address",
+                body: emailBody,
+                cancellationToken: CancellationToken.None
+            );
         }
 
         private static string GenerateConfirmationEmailBody(string confirmationUrl)

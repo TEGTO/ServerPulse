@@ -142,6 +142,7 @@ namespace AuthenticationApi.Command.RegisterUser.Tests
                 }
                 else
                 {
+                    mockBackgroundJobClient.Verify(x => x.Enqueue(It.IsAny<Expression<Func<Task>>>()), Times.Never);
                     mockAuthService.Verify(x => x.GetEmailConfirmationTokenAsync(request.Email), Times.Never);
                     mockEmailSender.Verify(x => x.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
                 }

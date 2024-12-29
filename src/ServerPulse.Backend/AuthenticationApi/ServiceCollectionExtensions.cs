@@ -7,37 +7,44 @@ namespace AuthenticationApi
     {
         public static void ConfigureRecurringJobs(this IApplicationBuilder builder, IConfiguration configuration)
         {
-            var intervalInMinutes = float.Parse(configuration[ConfigurationKeys.UNCONRFIRMED_USERS_CLEANUP_IN_MINUTES] ?? "60");
+            var useClenup = bool.Parse(configuration[ConfigurationKeys.USE_USER_UNCONFIRMED_CLEANUP] ?? "false");
+            if (useClenup)
+            {
+                var intervalInMinutes = float.Parse(configuration[ConfigurationKeys.UNCONRFIRMED_USERS_CLEANUP_IN_MINUTES] ?? "60");
 
-            RecurringJob.AddOrUpdate<UnconfirmedUserCleanupService>(
-                "CleanupUnconfirmedUsers",
-                service => service.CleanupUnconfirmedUsersAsync(CancellationToken.None),
-                GetCronExpressionForAnyInterval(intervalInMinutes)
-            );
+                RecurringJob.AddOrUpdate<UnconfirmedUserCleanupService>(
+                    "CleanupUnconfirmedUsers",
+                    service => service.CleanupUnconfirmedUsersAsync(CancellationToken.None),
+                    GetCronExpressionForAnyInterval(intervalInMinutes)
+                );
+            }
         }
 
         private static string GetCronExpressionForAnyInterval(float intervalInMinutes)
         {
-            if (intervalInMinutes <= 59 && intervalInMinutes >= 1)
+            int totalSeconds = (int)(intervalInMinutes * 60);
+
+            if (totalSeconds < 60)
             {
-                return $"*/{intervalInMinutes} * * * *";
-            }
-            else if (intervalInMinutes < 1)
-            {
-                int seconds = (int)(60f * intervalInMinutes);
-                return $"*/{seconds} * * * * *";
+                return $"*/{totalSeconds} * * * * *";
             }
 
-            int hours = (int)(intervalInMinutes / 60f);
-            int minutes = (int)(intervalInMinutes % 60f);
+            int minutes = totalSeconds / 60;
+            if (minutes <= 59)
+            {
+                return $"*/{minutes} * * * *";
+            }
 
-            if (minutes == 0)
+            int hours = minutes / 60;
+            int remainingMinutes = minutes % 60;
+
+            if (remainingMinutes == 0)
             {
                 return $"0 */{hours} * * *";
             }
             else
             {
-                return $"{minutes} */{hours} * * *";
+                return $"{remainingMinutes} */{hours} * * *";
             }
         }
     }

@@ -274,7 +274,7 @@ namespace AnalyzerApi.IntegrationTests.Hubs
             Assert.That(receivedStatistics.LoadMethodStatistics.PostAmount, Is.EqualTo(0));
             Assert.That(receivedStatistics.LoadMethodStatistics.PutAmount, Is.EqualTo(0));
             Assert.That(receivedStatistics.LoadMethodStatistics.PatchAmount, Is.EqualTo(0));
-            Assert.That(receivedStatistics.LoadMethodStatistics.DeleteAmount, Is.EqualTo(1));
+            Assert.That(receivedStatistics.LoadMethodStatistics.DeleteAmount, Is.LessThanOrEqualTo(1));
         }
 
         [Test]

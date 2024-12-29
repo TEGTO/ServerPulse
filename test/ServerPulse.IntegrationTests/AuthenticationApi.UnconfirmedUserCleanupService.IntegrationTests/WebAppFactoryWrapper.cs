@@ -45,7 +45,7 @@ namespace AuthenticationApi.UnconfirmedUserCleanupService.IntegrationTests
         {
             DbContainer = new PostgreSqlBuilder()
                 .WithImage("postgres:17")
-                .WithDatabase($"elibrary-db-{Guid.NewGuid()}")
+                .WithDatabase($"authbackgroundservice-db")
                 .WithUsername("postgres")
                 .WithPassword("postgres")
                 .Build();
@@ -85,6 +85,7 @@ namespace AuthenticationApi.UnconfirmedUserCleanupService.IntegrationTests
                 { ConfigurationKeys.AUTH_REFRESH_TOKEN_EXPIRY_IN_DAYS, "7" },
                 { ConfigurationKeys.EF_CREATE_DATABASE, "true" },
                 {$"FeatureManagement:{ConfigurationKeys.REQUIRE_EMAIL_CONFIRMATION}", "true" },
+                {$"{ConfigurationKeys.USE_USER_UNCONFIRMED_CLEANUP}", "true" },
                 {$"{ConfigurationKeys.UNCONRFIRMED_USERS_CLEANUP_IN_MINUTES}", "1" },
             };
 
