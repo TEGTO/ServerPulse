@@ -1,0 +1,25 @@
+<div class="acitivity-chart-control__wrapper">
+    <div id="chart-control">
+        <div class="flex flex-wrap gap-1">
+            <button (click)="updateControlOptions( '1w' )" [class.active]="activeOptionButton === '1w'">
+                1W
+            </button>
+            <button (click)="updateControlOptions( '1m' )" [class.active]="activeOptionButton === '1m'">
+                1M
+            </button>
+            <button (click)="updateControlOptions( '3m' )" [class.active]="activeOptionButton === '3m'">
+                3M
+            </button>
+            <button (click)="updateControlOptions( '6m' )" [class.active]="activeOptionButton === '6m'">
+                6M
+            </button>
+            <button (click)="updateControlOptions('all')" [class.active]="activeOptionButton === 'all'">
+                All
+            </button>
+        </div>
+        <apx-chart #chart [series]="chartOptions.series!" [chart]="chartOptions.chart!" [yaxis]="chartOptions.yaxis!"
+            [xaxis]="chartOptions.xaxis!" [colors]="chartOptions.colors!" [fill]="chartOptions.fill!"
+            [dataLabels]="chartOptions.dataLabels!" [yaxis]="chartOptions.yaxis!" [stroke]="chartOptions.stroke!"
+            [tooltip]="chartOptions.tooltip!" [legend]="{show: false}"></apx-chart>
+    </div>
+</div>

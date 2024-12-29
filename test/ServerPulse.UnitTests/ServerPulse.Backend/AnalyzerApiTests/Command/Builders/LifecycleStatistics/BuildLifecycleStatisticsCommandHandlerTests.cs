@@ -60,6 +60,7 @@ namespace AnalyzerApi.Command.Builders.LifecycleStatistics.Tests
             {
                 LastPulseDateTimeUTC = DateTime.Parse(lastPulseTimestamp, new CultureInfo("en-US")),
                 IsAlive = false,
+                DataExists = false,
                 ServerUptime = TimeSpan.FromHours(2)
             };
 
@@ -106,6 +107,7 @@ namespace AnalyzerApi.Command.Builders.LifecycleStatistics.Tests
             var lastStatistics = new ServerLifecycleStatistics
             {
                 IsAlive = true,
+                DataExists = true,
                 ServerUptime = TimeSpan.FromMinutes(initialUptimeMinutes),
                 LastPulseDateTimeUTC = now.AddSeconds(-pulseAgeSeconds)
             };
@@ -157,7 +159,8 @@ namespace AnalyzerApi.Command.Builders.LifecycleStatistics.Tests
                 ? new ServerLifecycleStatistics
                 {
                     LastPulseDateTimeUTC = DateTime.Parse(statsTimestamp, new CultureInfo("en-US")),
-                    IsAlive = true
+                    IsAlive = true,
+                    DataExists = true
                 }
                 : null;
 

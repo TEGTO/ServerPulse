@@ -1,0 +1,39 @@
+@use 'colors' as colors;
+@use 'utils' as utils;
+
+.slot-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    .slot-wrapper__header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 0 utils.pxToRem(48) 0 utils.pxToRem(16);
+        flex-wrap: wrap;
+        align-items: flex-start;
+        width: 100%;
+
+        * {
+            align-self: center;
+        }
+
+        .header__control-panel {
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-end;
+        }
+    }
+
+
+    .slot-wrapper__body {
+        flex: 1;
+        overflow-y: auto;
+        padding: utils.pxToRem(3) utils.pxToRem(8) utils.pxToRem(8) utils.pxToRem(8);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: utils.pxToRem(16);
+    }
+}

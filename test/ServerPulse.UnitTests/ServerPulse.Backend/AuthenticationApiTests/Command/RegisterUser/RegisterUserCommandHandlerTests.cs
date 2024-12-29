@@ -1,11 +1,15 @@
-﻿using Authentication.Models;
-using AuthenticationApi.Dtos;
+﻿using AuthenticationApi.Dtos;
 using AuthenticationApi.Infrastructure;
+using AuthenticationApi.Infrastructure.Models;
 using AuthenticationApi.Services;
 using AutoMapper;
+using BackgroundTask;
 using ExceptionHandling;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.FeatureManagement;
 using Moq;
+using System.Linq.Expressions;
+using IEmailSender = EmailControl.IEmailSender;
 
 namespace AuthenticationApi.Command.RegisterUser.Tests
 {
@@ -14,6 +18,9 @@ namespace AuthenticationApi.Command.RegisterUser.Tests
     {
         private Mock<IAuthService> mockAuthService;
         private Mock<IMapper> mockMapper;
+        private Mock<IEmailSender> mockEmailSender;
+        private Mock<IFeatureManager> mockFeatureManager;
+        private Mock<IBackgroundJobClient> mockBackgroundJobClient;
         private RegisterUserCommandHandler handler;
 
         [SetUp]
@@ -21,8 +28,16 @@ namespace AuthenticationApi.Command.RegisterUser.Tests
         {
             mockAuthService = new Mock<IAuthService>();
             mockMapper = new Mock<IMapper>();
+            mockEmailSender = new Mock<IEmailSender>();
+            mockFeatureManager = new Mock<IFeatureManager>();
+            mockBackgroundJobClient = new Mock<IBackgroundJobClient>();
 
-            handler = new RegisterUserCommandHandler(mockAuthService.Object, mockMapper.Object);
+            handler = new RegisterUserCommandHandler(
+                mockAuthService.Object,
+                mockFeatureManager.Object,
+                mockEmailSender.Object,
+                mockBackgroundJobClient.Object,
+                mockMapper.Object);
         }
 
         private static IEnumerable<TestCaseData> RegisterUserTestCases()
@@ -31,30 +46,31 @@ namespace AuthenticationApi.Command.RegisterUser.Tests
             {
                 Email = "validuser@example.com",
                 Password = "validpassword",
-                ConfirmPassword = "validpassword"
+                ConfirmPassword = "validpassword",
+                RedirectConfirmUrl = "https://example.com/confirm"
             };
 
             var validUser = new User { Email = validRequest.Email };
 
             var validRegisterModel = new RegisterUserModel { User = validUser, Password = validRequest.Password };
 
-            var validToken = new AccessTokenDataDto { AccessToken = "valid_token", RefreshToken = "valid_refresh_token" };
-
-            var validResponse = new UserAuthenticationResponse
-            {
-                AuthToken = validToken,
-                Email = validUser.Email,
-            };
+            yield return new TestCaseData(
+                validRequest,
+                validUser,
+                validRegisterModel,
+                IdentityResult.Success,
+                true,
+                true
+            ).SetDescription("Valid user registration with email confirmation enabled should succeed.");
 
             yield return new TestCaseData(
                 validRequest,
                 validUser,
                 validRegisterModel,
                 IdentityResult.Success,
-                validToken,
-                validResponse,
+                false,
                 true
-            ).SetDescription("Valid user registration should return authentication response.");
+            ).SetDescription("Valid user registration with email confirmation disabled should succeed.");
 
             var invalidRequest = new UserRegistrationRequest
             {
@@ -70,8 +86,7 @@ namespace AuthenticationApi.Command.RegisterUser.Tests
                 invalidUser,
                 new RegisterUserModel { User = invalidUser, Password = invalidRequest.Password },
                 IdentityResult.Failed(new IdentityError { Description = "Invalid password" }),
-                null,
-                null,
+                true,
                 false
             ).SetDescription("Invalid user registration should throw AuthorizationException.");
         }
@@ -83,8 +98,7 @@ namespace AuthenticationApi.Command.RegisterUser.Tests
             User user,
             RegisterUserModel registerModel,
             IdentityResult registerResult,
-            AccessTokenDataDto? token,
-            UserAuthenticationResponse? expectedResponse,
+            bool emailConfirmationEnabled,
             bool isValid)
         {
             // Arrange
@@ -93,13 +107,13 @@ namespace AuthenticationApi.Command.RegisterUser.Tests
             mockMapper.Setup(m => m.Map<User>(request)).Returns(user);
             mockAuthService.Setup(m => m.RegisterUserAsync(registerModel, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(registerResult);
+            mockFeatureManager.Setup(m => m.IsEnabledAsync(ConfigurationKeys.REQUIRE_EMAIL_CONFIRMATION))
+                .ReturnsAsync(emailConfirmationEnabled);
 
-            if (isValid)
+            if (emailConfirmationEnabled)
             {
-                mockAuthService.Setup(m => m.LoginUserAsync(It.IsAny<LoginUserModel>(), It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new AccessTokenData { AccessToken = token?.AccessToken!, RefreshToken = token?.RefreshToken! });
-
-                mockMapper.Setup(m => m.Map<AccessTokenDataDto>(It.IsAny<AccessTokenData>())).Returns(token!);
+                mockAuthService.Setup(m => m.GetEmailConfirmationTokenAsync(request.Email))
+                    .ReturnsAsync("test-token");
             }
 
             // Act & Assert
@@ -109,17 +123,29 @@ namespace AuthenticationApi.Command.RegisterUser.Tests
             }
             else
             {
-                var result = await handler.Handle(command, CancellationToken.None);
+                await handler.Handle(command, CancellationToken.None);
 
-                Assert.IsNotNull(result);
-                Assert.IsNotNull(expectedResponse);
-
-                Assert.That(result.AuthToken, Is.EqualTo(expectedResponse.AuthToken));
-                Assert.That(result.Email, Is.EqualTo(expectedResponse.Email));
+                Assert.Pass();
 
                 mockAuthService.Verify(x => x.RegisterUserAsync(registerModel, It.IsAny<CancellationToken>()), Times.Once);
-                mockAuthService.Verify(x => x.LoginUserAsync(It.IsAny<LoginUserModel>(), It.IsAny<CancellationToken>()), Times.Once);
-                mockMapper.Verify(x => x.Map<AccessTokenDataDto>(It.IsAny<AccessTokenData>()), Times.Once);
+
+                if (emailConfirmationEnabled)
+                {
+                    mockAuthService.Verify(x => x.GetEmailConfirmationTokenAsync(request.Email), Times.Once);
+                    mockEmailSender.Verify(x => x.SendEmailAsync(
+                        request.Email,
+                        "[Server Pulse] Confirm Your Email Address",
+                        It.Is<string>(body => body.Contains(request.RedirectConfirmUrl)),
+                        It.IsAny<CancellationToken>()), Times.Once);
+
+                    mockBackgroundJobClient.Verify(x => x.Enqueue(It.IsAny<Expression<Func<Task>>>()), Times.Once);
+                }
+                else
+                {
+                    mockBackgroundJobClient.Verify(x => x.Enqueue(It.IsAny<Expression<Func<Task>>>()), Times.Never);
+                    mockAuthService.Verify(x => x.GetEmailConfirmationTokenAsync(request.Email), Times.Never);
+                    mockEmailSender.Verify(x => x.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+                }
             }
         }
     }

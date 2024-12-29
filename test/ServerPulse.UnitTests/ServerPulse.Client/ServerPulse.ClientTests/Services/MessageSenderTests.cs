@@ -6,7 +6,7 @@ using System.Net;
 namespace ServerPulse.ClientTests.Services.Tests
 {
     [TestFixture]
-    public class MessageSenderTests
+    internal class MessageSenderTests
     {
         private Mock<IHttpClientFactory> httpClientFactoryMock;
         private MessageSender messageSender;
@@ -15,6 +15,7 @@ namespace ServerPulse.ClientTests.Services.Tests
         public void SetUp()
         {
             httpClientFactoryMock = new Mock<IHttpClientFactory>();
+
             messageSender = new MessageSender(httpClientFactoryMock.Object);
         }
 
@@ -25,16 +26,17 @@ namespace ServerPulse.ClientTests.Services.Tests
             var json = "{\"key\":\"value\"}";
             var url = "https://example.com/api";
             var cancellationToken = new CancellationToken();
-
             var handlerMock = new Mock<HttpMessageHandler>();
+            var httpClient = new HttpClient(handlerMock.Object);
+
             handlerMock.Protected()
                 .Setup<Task<HttpResponseMessage>>(
                     "SendAsync",
                     ItExpr.Is<HttpRequestMessage>(req =>
                         req.Method == HttpMethod.Post &&
                         req.RequestUri == new Uri(url) &&
-                        req.Content.ReadAsStringAsync().Result == json &&
-                        req.Content.Headers.ContentType.MediaType == "application/json"),
+                        req.Content!.ReadAsStringAsync()!.Result == json &&
+                        req.Content.Headers.ContentType!.MediaType == "application/json"),
                     ItExpr.IsAny<CancellationToken>()
                 )
                 .ReturnsAsync(new HttpResponseMessage
@@ -42,7 +44,6 @@ namespace ServerPulse.ClientTests.Services.Tests
                     StatusCode = HttpStatusCode.OK
                 });
 
-            var httpClient = new HttpClient(handlerMock.Object);
             httpClientFactoryMock.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(httpClient);
 
             // Act
@@ -58,6 +59,7 @@ namespace ServerPulse.ClientTests.Services.Tests
                 ItExpr.IsAny<CancellationToken>()
             );
         }
+
         [Test]
         public void SendJsonAsync_FailedPost_ThrowsHttpRequestException()
         {
@@ -65,16 +67,17 @@ namespace ServerPulse.ClientTests.Services.Tests
             var json = "{\"key\":\"value\"}";
             var url = "https://example.com/api";
             var cancellationToken = new CancellationToken();
-
             var handlerMock = new Mock<HttpMessageHandler>();
+            var httpClient = new HttpClient(handlerMock.Object);
+
             handlerMock.Protected()
                 .Setup<Task<HttpResponseMessage>>(
                     "SendAsync",
                     ItExpr.Is<HttpRequestMessage>(req =>
                         req.Method == HttpMethod.Post &&
                         req.RequestUri == new Uri(url) &&
-                        req.Content.ReadAsStringAsync().Result == json &&
-                        req.Content.Headers.ContentType.MediaType == "application/json"),
+                        req.Content!.ReadAsStringAsync()!.Result == json &&
+                        req.Content.Headers.ContentType!.MediaType == "application/json"),
                     ItExpr.IsAny<CancellationToken>()
                 )
                 .ReturnsAsync(new HttpResponseMessage
@@ -82,13 +85,15 @@ namespace ServerPulse.ClientTests.Services.Tests
                     StatusCode = HttpStatusCode.InternalServerError
                 });
 
-            var httpClient = new HttpClient(handlerMock.Object);
             httpClientFactoryMock.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(httpClient);
 
             // Act & Assert
             Assert.ThrowsAsync<HttpRequestException>(async () =>
-                await messageSender.SendJsonAsync(json, url, cancellationToken));
+            {
+                await messageSender.SendJsonAsync(json, url, cancellationToken);
+            });
         }
+
         [Test]
         public void SendJsonAsync_CancellationRequested_ThrowsTaskCanceledException()
         {
@@ -96,9 +101,11 @@ namespace ServerPulse.ClientTests.Services.Tests
             var json = "{\"key\":\"value\"}";
             var url = "https://example.com/api";
             var cancellationTokenSource = new CancellationTokenSource();
+            var handlerMock = new Mock<HttpMessageHandler>();
+            var httpClient = new HttpClient(handlerMock.Object);
+
             cancellationTokenSource.Cancel();
 
-            var handlerMock = new Mock<HttpMessageHandler>();
             handlerMock.Protected()
                 .Setup<Task<HttpResponseMessage>>(
                     "SendAsync",
@@ -110,12 +117,15 @@ namespace ServerPulse.ClientTests.Services.Tests
                     StatusCode = HttpStatusCode.OK
                 });
 
-            var httpClient = new HttpClient(handlerMock.Object);
             httpClientFactoryMock.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(httpClient);
 
             // Act & Assert
             Assert.ThrowsAsync<TaskCanceledException>(async () =>
-                await messageSender.SendJsonAsync(json, url, cancellationTokenSource.Token));
+            {
+                await messageSender.SendJsonAsync(json, url, cancellationTokenSource.Token);
+            });
+
+            cancellationTokenSource.Dispose();
         }
     }
 }

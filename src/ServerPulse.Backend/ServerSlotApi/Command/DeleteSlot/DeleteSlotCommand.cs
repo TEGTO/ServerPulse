@@ -2,5 +2,5 @@
 
 namespace ServerSlotApi.Command.DeleteSlot
 {
-    public record DeleteSlotCommand(string? Email, string Id, string Token) : IRequest<Unit>;
+    public record DeleteSlotCommand(string? Email, string Id) : IRequest<Unit>;
 }

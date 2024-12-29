@@ -1,8 +1,9 @@
 @use 'colors' as colors;
+@use 'utils' as utils;
 
 .close-button {
     position: absolute;
-    right: 10px;
+    right: utils.pxToRem(10);
     z-index: 1;
 }
 
@@ -17,7 +18,7 @@
 .actions__bottom-container {
     display: flex;
     flex-direction: column;
-    gap: 0.3rem;
+    gap: utils.pxToRem(5);
 
     button {
         width: 100%;
@@ -25,9 +26,5 @@
 
     #logout-button {
         margin: 0;
-    }
-
-    .primary-color {
-        color: colors.$link-light-blue;
     }
 }

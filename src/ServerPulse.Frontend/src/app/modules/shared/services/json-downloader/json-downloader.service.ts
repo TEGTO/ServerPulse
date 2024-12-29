@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@angular/core';
 import { JsonDownloader } from './json-downloader';
 
@@ -16,8 +17,8 @@ export class JsonDownloaderService implements JsonDownloader {
     window.URL.revokeObjectURL(url);
   }
 
-  private convertToJsonFile(objectToDownload: any) {
-    const jsonString = JSON.stringify(objectToDownload);
+  private convertToJsonFile(objectToDownload: any): Blob {
+    const jsonString = JSON.stringify(objectToDownload, null, 2);
     const blob = new Blob([jsonString], { type: 'application/json' });
     return blob;
   }

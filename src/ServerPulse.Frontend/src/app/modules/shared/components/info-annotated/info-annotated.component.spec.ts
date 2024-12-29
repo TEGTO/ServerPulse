@@ -1,6 +1,5 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { CommonModule } from '@angular/common';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_SNACK_BAR_DATA, MatSnackBarModule, MatSnackBarRef } from '@angular/material/snack-bar';
 import { By } from '@angular/platform-browser';
@@ -8,7 +7,6 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { InfoAnnotatedComponent } from './info-annotated.component';
 
 describe('InfoAnnotatedComponent', () => {
-  let component: InfoAnnotatedComponent;
   let fixture: ComponentFixture<InfoAnnotatedComponent>;
   let mockSnackBarRef: MatSnackBarRef<InfoAnnotatedComponent>;
 
@@ -30,7 +28,6 @@ describe('InfoAnnotatedComponent', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(InfoAnnotatedComponent);
-    component = fixture.componentInstance;
     fixture.detectChanges();
   });
 

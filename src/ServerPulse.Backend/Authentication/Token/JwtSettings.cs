@@ -2,10 +2,12 @@
 {
     public class JwtSettings
     {
-        public required string Issuer { get; set; }
-        public required string Audience { get; set; }
-        public required string PrivateKey { get; set; }
-        public required string PublicKey { get; set; }
+        public const string SETTINGS_SECTION = "AuthSettings";
+
+        public string Issuer { get; set; } = string.Empty;
+        public string Audience { get; set; } = string.Empty;
+        public string PrivateKey { get; set; } = string.Empty;
+        public string PublicKey { get; set; } = string.Empty;
         public double ExpiryInMinutes { get; set; }
     }
 }

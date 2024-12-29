@@ -1,7 +1,7 @@
 export class TimeSpan {
-    private totalMilliseconds: number;
+    private readonly totalMilliseconds: number;
 
-    constructor(hours: number = 0, minutes: number = 0, seconds: number = 0, milliseconds: number = 0) {
+    constructor(hours = 0, minutes = 0, seconds = 0, milliseconds = 0) {
         this.totalMilliseconds = ((hours * 60 * 60) + (minutes * 60) + seconds) * 1000 + milliseconds;
     }
 
@@ -22,20 +22,32 @@ export class TimeSpan {
         }
     }
 
-    get hours(): number {
+    private get hours(): number {
         return Math.floor(this.totalMilliseconds / (60 * 60 * 1000));
     }
 
-    get minutes(): number {
+    private get minutes(): number {
         return Math.floor((this.totalMilliseconds % (60 * 60 * 1000)) / (60 * 1000));
     }
 
-    get seconds(): number {
+    private get seconds(): number {
         return Math.floor((this.totalMilliseconds % (60 * 1000)) / 1000);
     }
 
-    get milliseconds(): number {
-        return this.totalMilliseconds % 1000;
+    get toTotalHours(): number {
+        return this.totalMilliseconds / 1000 / 60 / 60;
+    }
+
+    get toTotalMinutes(): number {
+        return this.totalMilliseconds / 1000 / 60;
+    }
+
+    get toTotalSeconds(): number {
+        return this.totalMilliseconds / 1000;
+    }
+
+    get toTotalMilliseconds(): number {
+        return this.totalMilliseconds;
     }
 
     toString(): string {

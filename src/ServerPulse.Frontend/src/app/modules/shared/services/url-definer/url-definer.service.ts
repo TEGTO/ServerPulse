@@ -6,15 +6,14 @@ import { environment } from '../../../../../environment/environment';
 })
 export class URLDefiner {
   combineWithServerSlotApiUrl(subpath: string): string {
-    return environment.api + "/serverslot" + subpath;
+    return environment.api + subpath;
   }
+
   combineWithAuthApiUrl(subpath: string): string {
-    return environment.authApi + subpath;
+    return environment.api + subpath;
   }
-  combineWithStatisticsApiUrl(subpath: string): string {
-    return environment.api + "/analyze" + subpath;
-  }
-  combineWithSlotDataApiUrl(subpath: string): string {
-    return environment.api + "/slotdata" + subpath;
+
+  combinePathWithAnalyzerApiUrl(subpath: string): string {
+    return environment.api + subpath;
   }
 }

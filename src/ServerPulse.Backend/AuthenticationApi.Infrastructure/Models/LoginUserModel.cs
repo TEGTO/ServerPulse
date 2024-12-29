@@ -1,4 +1,4 @@
-﻿namespace AuthenticationApi.Infrastructure
+﻿namespace AuthenticationApi.Infrastructure.Models
 {
     public class LoginUserModel
     {

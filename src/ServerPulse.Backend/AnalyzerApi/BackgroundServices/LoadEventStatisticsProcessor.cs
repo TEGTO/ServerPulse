@@ -1,10 +1,11 @@
 ﻿using AnalyzerApi.Command.BackgroundServices.ProcessLoadEvents;
-using AnalyzerApi.Infrastructure;
+using AnalyzerApi.Infrastructure.Configuration;
 using Confluent.Kafka;
 using EventCommunication;
 using MediatR;
 using MessageBus.Interfaces;
 using MessageBus.Models;
+using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Registry;
 using Shared;
@@ -18,7 +19,6 @@ namespace AnalyzerApi.BackgroundServices
     {
         private readonly IMessageConsumer messageConsumer;
         private readonly IMediator mediator;
-        private readonly ITopicManager topicManager;
         private readonly ILogger<LoadEventStatisticsProcessor> logger;
 
         private readonly ResiliencePipeline resiliencePipeline;
@@ -32,21 +32,20 @@ namespace AnalyzerApi.BackgroundServices
         public LoadEventStatisticsProcessor(
             IMessageConsumer messageConsumer,
             IMediator mediator,
-            ITopicManager topicManager,
-            IConfiguration configuration,
+            IOptions<MessageBusSettings> messageBusOptions,
+            IOptions<LoadProcessingSettings> processOptions,
             ResiliencePipelineProvider<string> resiliencePipelineProvider,
             ILogger<LoadEventStatisticsProcessor> logger)
         {
             this.messageConsumer = messageConsumer;
             this.mediator = mediator;
-            this.topicManager = topicManager;
             this.logger = logger;
 
-            processTopic = configuration[Configuration.KAFKA_LOAD_TOPIC_PROCESS]!;
-            timeoutInMilliseconds = int.Parse(configuration[Configuration.KAFKA_TIMEOUT_IN_MILLISECONDS]!);
+            processTopic = messageBusOptions.Value.LoadTopicProcess;
+            timeoutInMilliseconds = messageBusOptions.Value.ReceiveTimeoutInMilliseconds;
 
-            batchSize = int.Parse(configuration[Configuration.LOAD_EVENT_PROCESSING_BATCH_SIZE]!);
-            batchInterval = TimeSpan.FromMilliseconds(int.Parse(configuration[Configuration.LOAD_EVENT_PROCESSING_BATCH_INTERVAL_IN_MILLISECONDS]!));
+            batchSize = processOptions.Value.BatchSize;
+            batchInterval = TimeSpan.FromMilliseconds(processOptions.Value.BatchIntervalInMilliseconds);
 
             options = new JsonSerializerOptions
             {
@@ -56,14 +55,12 @@ namespace AnalyzerApi.BackgroundServices
                 ReadCommentHandling = JsonCommentHandling.Disallow,
             };
 
-            resiliencePipeline = resiliencePipelineProvider.GetPipeline(Configuration.LOAD_EVENT_PROCESSING_RESILLIENCE);
+            resiliencePipeline = resiliencePipelineProvider.GetPipeline(processOptions.Value.Resilience);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             logger.LogInformation("LoadEventStatisticsProcessor started.");
-
-            await EnsureTopicCreatedAsync(stoppingToken);
 
             using var batchTimer = new PeriodicTimer(batchInterval);
 
@@ -140,26 +137,6 @@ namespace AnalyzerApi.BackgroundServices
             {
                 logger.LogInformation("Processing batch of size {BatchCount}.", batchSnapshot.Count);
                 await ProcessBatchAsync(batchSnapshot, cancellationToken);
-            }
-        }
-
-        private async Task EnsureTopicCreatedAsync(CancellationToken stoppingToken)
-        {
-            try
-            {
-                await resiliencePipeline.ExecuteAsync(async token =>
-                {
-                    await topicManager.CreateTopicsAsync([processTopic], timeoutInMilliseconds: timeoutInMilliseconds);
-
-                    var message = $"Topic '{processTopic}' ensured to exist.";
-                    logger.LogInformation(message);
-
-                }, stoppingToken);
-            }
-            catch (Exception ex)
-            {
-                var message = $"Failed to create Kafka topic '{processTopic}'. The service will still attempt to process messages.";
-                logger.LogCritical(ex, message);
             }
         }
 

@@ -14,6 +14,14 @@ services:
       - AuthSettings__Issuer=${AuthSettings__Issuer}
       - AuthSettings__ExpiryInMinutes=${AuthSettings__ExpiryInMinutes}
       - AuthSettings__RefreshExpiryInDays=${AuthSettings__RefreshExpiryInDays}
+      - AuthSettings__GoogleOAuth__ClientId=${AuthSettings__GoogleOAuth__ClientId}
+      - AuthSettings__GoogleOAuth__ClientSecret=${AuthSettings__GoogleOAuth__ClientSecret}
+      - AuthSettings__GoogleOAuth__Scope=${AuthSettings__GoogleOAuth__Scope}
+      - FeatureManagement__RequireEmailConfirmation=${FeatureManagement__RequireEmailConfirmation}
+      - Email__ConnectionString=${Email__ConnectionString}
+      - Email__SenderAddress=${Email__SenderAddress}
+      - BackgroundServices__UseUserUnconfirmedCleanup=${BackgroundServices__UseUserUnconfirmedCleanup}
+      - BackgroundServices__UnconfirmedUsersCleanUpInMinutes=${BackgroundServices__UnconfirmedUsersCleanUpInMinutes}
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
@@ -26,12 +34,11 @@ services:
       - EFCreateDatabase=${EFCreateDatabase}
       - ConnectionStrings__ServerSlotDb=${ConnectionStrings__ServerSlotDb}
       - SlotsPerUser=${SlotsPerUser}
-      - ServerMonitorApi__DeleteStatistics=${ServerMonitorApi__DeleteStatistics}
-      - ApiGateway=${ApiGateway}
       - AuthSettings__PublicKey=${AuthSettings__PublicKey}
       - AuthSettings__Audience=${AuthSettings__Audience}
       - AuthSettings__Issuer=${AuthSettings__Issuer}
       - AuthSettings__ExpiryInMinutes=${AuthSettings__ExpiryInMinutes}
+      - ConnectionStrings__RedisServer=${ConnectionStrings__RedisServer}
       - Cache__GetServerSlotByEmailExpiryInSeconds=${Cache__GetServerSlotByEmailExpiryInSeconds}
       - Cache__ServerSlotCheckExpiryInSeconds=${Cache__ServerSlotCheckExpiryInSeconds}
     volumes:
@@ -42,16 +49,15 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
-      - ApiGateway=${ApiGateway}
       - Kafka__ClientId=${Kafka__ClientId__MonitorApi}
       - Kafka__BootstrapServers=${Kafka__BootstrapServers}
       - Kafka__AliveTopic=${Kafka__AliveTopic}
       - Kafka__ConfigurationTopic=${Kafka__ConfigurationTopic}
       - Kafka__LoadTopic=${Kafka__LoadTopic}
-      - Kafka__ProcessLoadEventTopic=${Kafka__ProcessLoadEventTopic}
+      - Kafka__LoadTopicProcess=${Kafka__LoadTopicProcess}
       - Kafka__CustomTopic=${Kafka__CustomTopic}
+      - ServerSlotApi__Url=${ApiGateway}
       - ServerSlotApi__Check=${ServerSlotApi__Check}
-      - ConnectionStrings__RedisServer=${ConnectionStrings__RedisServer}
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
@@ -63,11 +69,13 @@ services:
       - Kafka__BootstrapServers=${Kafka__BootstrapServers}
       - Kafka__ClientId=${Kafka__ClientId__Analyzer}
       - Kafka__GroupId=${Kafka__GroupId}
-      - Kafka__AnalyzerReceiveTimeout=${Kafka__AnalyzerReceiveTimeout}
+      - Kafka__ReceiveTimeoutInMilliseconds=${Kafka__ReceiveTimeoutInMilliseconds}
       - Kafka__AliveTopic=${Kafka__AliveTopic}
       - Kafka__ConfigurationTopic=${Kafka__ConfigurationTopic}
       - Kafka__LoadTopic=${Kafka__LoadTopic}
-      - Kafka__ProcessLoadEventTopic=${Kafka__ProcessLoadEventTopic}
+      - Kafka__CustomTopic=${Kafka__CustomTopic}
+      - Kafka__LoadMethodStatisticsTopic=${Kafka__LoadMethodStatisticsTopic}
+      - Kafka__LoadTopicProcess=${Kafka__LoadTopicProcess}
       - Kafka__ServerStatisticsTopic=${Kafka__ServerStatisticsTopic}
       - Kafka__TopicDataSaveInDays=${Kafka__TopicDataSaveInDays}
       - PulseEventIntervalInMilliseconds=${PulseEventIntervalInMilliseconds}

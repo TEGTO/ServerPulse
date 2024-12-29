@@ -1,10 +1,10 @@
-﻿using AnalyzerApi.Infrastructure;
-using AnalyzerApi.Infrastructure.Configurations;
+﻿using AnalyzerApi.Infrastructure.Configuration;
 using AnalyzerApi.Infrastructure.Models;
 using AnalyzerApi.Infrastructure.Models.Statistics;
+using AnalyzerApi.Infrastructure.TopicMapping;
 using MessageBus.Interfaces;
 using MessageBus.Models;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace AnalyzerApi.Services.Receivers.Statistics.Tests
@@ -14,28 +14,31 @@ namespace AnalyzerApi.Services.Receivers.Statistics.Tests
     {
         private const string TopicOriginName = "statistics-topic";
         private const int StatisticsSaveDataInDays = 30;
-        private const string KAFKA_TIMEOUT = "5";
+        private const int TimeoutInMilliseconds = 5;
 
         private Mock<IMessageConsumer> mockMessageConsumer;
-        private Mock<IConfiguration> mockConfiguration;
         private LoadAmountStatisticsReceiver loadAmountStatisticsReceiver;
-        private StatisticsReceiverTopicConfiguration<LoadAmountStatistics> topicData;
+        private StatisticsTopicMapping<LoadAmountStatistics> topicData;
 
         [SetUp]
         public void Setup()
         {
             mockMessageConsumer = new Mock<IMessageConsumer>();
-            mockConfiguration = new Mock<IConfiguration>();
 
-            mockConfiguration.SetupGet(c => c[Configuration.KAFKA_TOPIC_DATA_SAVE_IN_DAYS])
-                .Returns(StatisticsSaveDataInDays.ToString());
-            mockConfiguration.Setup(x => x[Configuration.KAFKA_TIMEOUT_IN_MILLISECONDS]).Returns(KAFKA_TIMEOUT);
+            var messageBusSettings = new MessageBusSettings
+            {
+                TopicDataSaveInDays = StatisticsSaveDataInDays,
+                ReceiveTimeoutInMilliseconds = TimeoutInMilliseconds,
+            };
 
-            topicData = new StatisticsReceiverTopicConfiguration<LoadAmountStatistics>(TopicOriginName);
+            var mockOptions = new Mock<IOptions<MessageBusSettings>>();
+            mockOptions.Setup(x => x.Value).Returns(messageBusSettings);
+
+            topicData = new StatisticsTopicMapping<LoadAmountStatistics>(TopicOriginName);
 
             loadAmountStatisticsReceiver = new LoadAmountStatisticsReceiver(
                 mockMessageConsumer.Object,
-                mockConfiguration.Object,
+                mockOptions.Object,
                 topicData);
         }
 

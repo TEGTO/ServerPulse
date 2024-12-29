@@ -1,0 +1,6 @@
+@use 'utils' as utils;
+
+.chart-activity__wrapper {
+    padding-left: utils.pxToRem(10);
+    max-width: 100%;
+}

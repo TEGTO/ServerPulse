@@ -1,6 +1,6 @@
 ﻿using AnalyzerApi.Command.Builders;
 using AnalyzerApi.Command.Senders;
-using AnalyzerApi.Infrastructure;
+using AnalyzerApi.Infrastructure.Configuration;
 using AnalyzerApi.Infrastructure.Models.Statistics;
 using AnalyzerApi.Infrastructure.Models.Wrappers;
 using AnalyzerApi.Services.Receivers.Event;
@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System.Collections.Concurrent;
+using static AnalyzerApi.Services.StatisticsDispatchers.LifecycleStatisticsDispatcher;
 
 namespace AnalyzerApi.Services.StatisticsDispatchers.Tests
 {
@@ -34,7 +35,7 @@ namespace AnalyzerApi.Services.StatisticsDispatchers.Tests
             mockLogger = new Mock<ILogger<LifecycleStatisticsDispatcher>>();
             mockConfiguration = new Mock<IConfiguration>();
 
-            mockConfiguration.SetupGet(c => c[Configuration.STATISTICS_COLLECT_INTERVAL_IN_MILLISECONDS])
+            mockConfiguration.SetupGet(c => c[ConfigurationKeys.STATISTICS_COLLECT_INTERVAL_IN_MILLISECONDS])
                 .Returns(SendPeriodInMilliseconds.ToString());
 
             dispatcher = new LifecycleStatisticsDispatcher(
@@ -60,6 +61,14 @@ namespace AnalyzerApi.Services.StatisticsDispatchers.Tests
                 await Task.Delay(delay);
             }
         }
+        private static async IAsyncEnumerable<ConfigurationEventWrapper> GenerateConfigurationEvents(IEnumerable<ConfigurationEventWrapper> events, int delay)
+        {
+            foreach (var ev in events)
+            {
+                yield return ev;
+                await Task.Delay(delay);
+            }
+        }
 
         [Test]
         [TestCase(10, 100, true, Description = "Sends at least 10 statistics within 1000ms.")]
@@ -71,7 +80,7 @@ namespace AnalyzerApi.Services.StatisticsDispatchers.Tests
         {
             // Arrange
             var key = "testKey";
-            var mockStatistics = new ServerLifecycleStatistics { IsAlive = true };
+            var mockStatistics = new ServerLifecycleStatistics { IsAlive = true, DataExists = true };
             var mockConfigurationEvent = new ConfigurationEventWrapper
             {
                 Id = "someId",
@@ -103,24 +112,27 @@ namespace AnalyzerApi.Services.StatisticsDispatchers.Tests
         }
 
         [Test]
-        public async Task SendStatisticsAsync_SkipsIfServerNotAlive()
+        public async Task MonitorPulseEventAsync_StopsWhenTokenCancelled()
         {
             // Arrange
             var key = "testKey";
-            var mockStatistics = new ServerLifecycleStatistics { IsAlive = false };
+            var cts = new CancellationTokenSource();
+            cts.CancelAfter(300);
 
-            mockMediator.Setup(m => m.Send(It.IsAny<BuildStatisticsCommand<ServerLifecycleStatistics>>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(mockStatistics);
+            mockReceiver.Setup(r => r.GetEventStreamAsync(key, It.IsAny<CancellationToken>()))
+                .Returns(GeneratePulseEvents([true, false, true], 100, key));
 
             // Act
             await dispatcher.StartStatisticsDispatchingAsync(key);
-            await Task.Delay(SendPeriodInMilliseconds * 2 + 1000);
+            await Task.Delay(500);
             await dispatcher.StopStatisticsDispatchingAsync(key);
 
             // Assert
-            mockMediator.Verify(m => m.Send(It.IsAny<BuildStatisticsCommand<ServerLifecycleStatistics>>(), It.IsAny<CancellationToken>()), Times.Once);
-            mockMediator.Verify(m => m.Send(It.IsAny<SendStatisticsCommand<ServerLifecycleStatistics>>(), It.IsAny<CancellationToken>()), Times.Once);
-            mockConfReceiver.Verify(m => m.GetLastEventByKeyAsync(key, It.IsAny<CancellationToken>()), Times.AtLeast(2));
+            Assert.That(() => cts.IsCancellationRequested, Is.True);
+
+            mockReceiver.Verify(r => r.GetEventStreamAsync(key, cts.Token), Times.AtMostOnce());
+
+            cts.Dispose();
         }
 
         [Test]
@@ -128,7 +140,7 @@ namespace AnalyzerApi.Services.StatisticsDispatchers.Tests
         {
             // Arrange
             var key = "testKey";
-            var mockStatistics = new ServerLifecycleStatistics { IsAlive = false, };
+            var mockStatistics = new ServerLifecycleStatistics { IsAlive = false, DataExists = false, };
             var pulseEvents = GeneratePulseEvents([true, true, true], 200, key);
             var mockConfigurationEvent = new ConfigurationEventWrapper
             {
@@ -152,7 +164,7 @@ namespace AnalyzerApi.Services.StatisticsDispatchers.Tests
             // Assert
             mockMediator.Verify(m => m.Send(It.IsAny<BuildStatisticsCommand<ServerLifecycleStatistics>>(), It.IsAny<CancellationToken>()), Times.AtLeast(2));
             mockMediator.Verify(m => m.Send(It.IsAny<SendStatisticsCommand<ServerLifecycleStatistics>>(), It.IsAny<CancellationToken>()), Times.AtLeast(2));
-            mockConfReceiver.Verify(m => m.GetLastEventByKeyAsync(key, It.IsAny<CancellationToken>()), Times.AtLeast(3));
+            mockConfReceiver.Verify(m => m.GetLastEventByKeyAsync(key, It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Test]
@@ -160,7 +172,7 @@ namespace AnalyzerApi.Services.StatisticsDispatchers.Tests
         {
             // Arrange
             var key = "testKey";
-            var mockStatistics = new ServerLifecycleStatistics { IsAlive = false };
+            var mockStatistics = new ServerLifecycleStatistics { IsAlive = false, DataExists = false, };
             var pulseEvents = GeneratePulseEvents([true, true, true], 200, key);
 
             mockMediator.Setup(m => m.Send(It.IsAny<BuildStatisticsCommand<ServerLifecycleStatistics>>(), It.IsAny<CancellationToken>()))
@@ -173,10 +185,11 @@ namespace AnalyzerApi.Services.StatisticsDispatchers.Tests
             await Task.Delay(100);
 
             // Assert
-            var listenerState = dispatcher.GetFieldValue<ConcurrentDictionary<string, (PeriodicTimer Timer, int ServerUpdateInterval, bool IsAlive)>>("listenerState");
+            var listenerState = dispatcher.GetFieldValue<ConcurrentDictionary<string, ListenerState>>("listenerState");
             Assert.IsNotNull(listenerState);
             Assert.IsTrue(listenerState.TryGetValue(key, out var state));
-            Assert.That(state.ServerUpdateInterval, Is.EqualTo(1000));
+            Assert.IsNotNull(state);
+            Assert.That(state.Timer.Period.TotalMilliseconds, Is.EqualTo(100));
 
             // Clean Up
             await dispatcher.StopStatisticsDispatchingAsync(key);
@@ -188,8 +201,8 @@ namespace AnalyzerApi.Services.StatisticsDispatchers.Tests
             // Arrange
             var key = "testKey";
             var initialInterval = 500;
-            var updatedInterval = 1000;
-            var mockStatistics = new ServerLifecycleStatistics { IsAlive = true };
+            var updatedInterval = 2000;
+            var mockStatistics = new ServerLifecycleStatistics { IsAlive = true, DataExists = true, };
             var initialConfig = new ConfigurationEventWrapper
             {
                 Id = "someId",
@@ -205,20 +218,23 @@ namespace AnalyzerApi.Services.StatisticsDispatchers.Tests
 
             mockMediator.Setup(m => m.Send(It.IsAny<BuildStatisticsCommand<ServerLifecycleStatistics>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(mockStatistics);
+
             mockConfReceiver.SetupSequence(c => c.GetLastEventByKeyAsync(key, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(initialConfig)
-                .ReturnsAsync(updatedConfig);
+                .ReturnsAsync(initialConfig);
+            mockConfReceiver.Setup(r => r.GetEventStreamAsync(key, It.IsAny<CancellationToken>()))
+                .Returns(GenerateConfigurationEvents([updatedConfig], 300));
 
             // Act
             await dispatcher.StartStatisticsDispatchingAsync(key);
             await Task.Delay(updatedInterval * 3);
 
             // Assert
-            mockConfReceiver.Verify(c => c.GetLastEventByKeyAsync(key, It.IsAny<CancellationToken>()), Times.AtLeast(2));
-            var listenerState = dispatcher.GetFieldValue<ConcurrentDictionary<string, (PeriodicTimer Timer, int ServerUpdateInterval, bool IsAlive)>>("listenerState");
+            mockConfReceiver.Verify(c => c.GetLastEventByKeyAsync(key, It.IsAny<CancellationToken>()), Times.Once);
+            var listenerState = dispatcher.GetFieldValue<ConcurrentDictionary<string, ListenerState>>("listenerState");
             Assert.IsNotNull(listenerState);
             Assert.IsTrue(listenerState.TryGetValue(key, out var state));
-            Assert.That(state.ServerUpdateInterval, Is.EqualTo(updatedInterval));
+            Assert.IsNotNull(state);
+            Assert.That(state.Timer.Period.TotalMilliseconds, Is.EqualTo(updatedInterval / 2));
 
             // Clean Up
             await dispatcher.StopStatisticsDispatchingAsync(key);
@@ -229,7 +245,7 @@ namespace AnalyzerApi.Services.StatisticsDispatchers.Tests
         {
             // Arrange
             var key = "testKey";
-            var mockStatistics = new ServerLifecycleStatistics { IsAlive = true };
+            var mockStatistics = new ServerLifecycleStatistics { IsAlive = true, DataExists = true, };
             var initialConfig = new ConfigurationEventWrapper
             {
                 Id = "someId",
@@ -251,7 +267,7 @@ namespace AnalyzerApi.Services.StatisticsDispatchers.Tests
             await dispatcher.StopStatisticsDispatchingAsync(key);
 
             // Assert
-            var listenerState = dispatcher.GetFieldValue<ConcurrentDictionary<string, (PeriodicTimer Timer, int ServerUpdateInterval, bool IsAlive)>>("listenerState");
+            var listenerState = dispatcher.GetFieldValue<ConcurrentDictionary<string, ListenerState>>("listenerState");
             Assert.IsNotNull(listenerState);
             Assert.IsFalse(listenerState.TryGetValue(key, out var _));
         }

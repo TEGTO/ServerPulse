@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿
+using FluentValidation;
 using System.Net;
 using System.Text.Json;
 
@@ -40,8 +41,8 @@ namespace ClientUseCase.Middlewares
             catch (ValidationException ex)
             {
                 var errors = ex.Errors
-                 .Select(e => $"{e.PropertyName}: {e.ErrorMessage}")
-                 .ToArray();
+                .Select(e => $"{e.PropertyName}: {e.ErrorMessage}")
+                .ToArray();
                 await SetError(httpContext, HttpStatusCode.BadRequest, ex, errors);
             }
             catch (UnauthorizedAccessException ex)
@@ -66,6 +67,7 @@ namespace ClientUseCase.Middlewares
             await httpContext.Response.WriteAsync(responseError.ToString());
         }
     }
+
     public static class ExceptionMiddlewareExtensions
     {
         public static IApplicationBuilder UseExceptionMiddleware(this IApplicationBuilder builder)

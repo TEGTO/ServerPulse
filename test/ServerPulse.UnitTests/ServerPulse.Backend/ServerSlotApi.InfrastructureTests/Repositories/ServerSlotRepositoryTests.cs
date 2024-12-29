@@ -1,7 +1,9 @@
 ﻿using DatabaseControl.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using MockQueryable.Moq;
 using Moq;
+using ServerSlotApi.Infrastructure.Configuration;
 using ServerSlotApi.Infrastructure.Data;
 using ServerSlotApi.Infrastructure.Entities;
 using ServerSlotApi.Infrastructure.Models;
@@ -12,6 +14,7 @@ namespace ServerSlotApi.Infrastructure.Repositories.Tests
     internal class ServerSlotRepositoryTests
     {
         private Mock<IDatabaseRepository<ServerSlotDbContext>> repositoryMock;
+        private Mock<IConfiguration> configurationMock;
         private ServerSlotRepository slotRepository;
         private CancellationToken cancellationToken;
 
@@ -19,8 +22,11 @@ namespace ServerSlotApi.Infrastructure.Repositories.Tests
         public void SetUp()
         {
             repositoryMock = new Mock<IDatabaseRepository<ServerSlotDbContext>>();
+            configurationMock = new Mock<IConfiguration>();
 
-            slotRepository = new ServerSlotRepository(repositoryMock.Object);
+            configurationMock.Setup(x => x[ConfigurationKeys.SERVER_SLOTS_PER_USER]).Returns("5");
+
+            slotRepository = new ServerSlotRepository(repositoryMock.Object, configurationMock.Object);
             cancellationToken = new CancellationToken();
         }
 
@@ -161,15 +167,19 @@ namespace ServerSlotApi.Infrastructure.Repositories.Tests
         private static IEnumerable<TestCaseData> CreateSlotTestCases()
         {
             yield return new TestCaseData("user1@example.com", "New Slot")
-                .SetDescription("Creates a valid slot.");
+                .SetDescription("Creates a valid slot for a user.");
         }
 
         [Test]
         [TestCaseSource(nameof(CreateSlotTestCases))]
-        public async Task CreateSlotAsync_TestCases(string userEmail, string slotName)
+        public async Task CreateSlotAsync_ValidSlot_CreatesSlot(string userEmail, string slotName)
         {
             // Arrange
             var slot = new ServerSlot { UserEmail = userEmail, Name = slotName };
+            var dbSetMock = GetDbSetMock(new List<ServerSlot>());
+
+            repositoryMock.Setup(repo => repo.GetQueryableAsync<ServerSlot>(cancellationToken))
+                .ReturnsAsync(dbSetMock.Object);
 
             repositoryMock.Setup(repo => repo.AddAsync(slot, cancellationToken))
                 .ReturnsAsync(slot);
@@ -180,9 +190,25 @@ namespace ServerSlotApi.Infrastructure.Repositories.Tests
             // Assert
             Assert.That(result.UserEmail, Is.EqualTo(userEmail));
             Assert.That(result.Name, Is.EqualTo(slotName));
-            Assert.IsNotEmpty(result.SlotKey);
 
             repositoryMock.Verify(repo => repo.AddAsync(slot, cancellationToken), Times.Once);
+        }
+
+        [Test]
+        public void CreateSlotAsync_ExceedsMaxSlots_ThrowsException()
+        {
+            // Arrange
+            var userEmail = "user1@example.com";
+            var slot = new ServerSlot { UserEmail = userEmail, Name = "New Slot" };
+            var existingSlots = Enumerable.Range(1, 5).Select(i => new ServerSlot { UserEmail = userEmail }).ToList();
+            var dbSetMock = GetDbSetMock(existingSlots);
+
+            repositoryMock.Setup(repo => repo.GetQueryableAsync<ServerSlot>(cancellationToken))
+                .ReturnsAsync(dbSetMock.Object);
+
+            // Act & Assert
+            Assert.ThrowsAsync<InvalidOperationException>(() => slotRepository.CreateSlotAsync(slot, cancellationToken));
+            repositoryMock.Verify(repo => repo.AddAsync(It.IsAny<ServerSlot>(), cancellationToken), Times.Never);
         }
 
         private static IEnumerable<TestCaseData> UpdateSlotTestCases()

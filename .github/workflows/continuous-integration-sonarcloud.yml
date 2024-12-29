@@ -6,6 +6,10 @@ on:
 env:
   DOTNET_VERSION: "8.0.x"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   download-and-merge:
     runs-on: ubuntu-latest

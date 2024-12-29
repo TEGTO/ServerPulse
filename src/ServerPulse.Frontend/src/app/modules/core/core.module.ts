@@ -9,9 +9,9 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule, Routes } from '@angular/router';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
+import { AnalyzerModule } from '../analyzer/analyzer.module';
+import { EmailCallbackComponent, getEmailConfirmRedirectPath, getOAuthRedirectPath, OAuthCallbackComponent } from '../authentication';
 import { AuthenticationModule } from '../authentication/authentication.module';
-import { ServerSlotInfoComponent, SlotBoardComponent } from '../server-slots';
-import { ServerSlotsModule } from '../server-slots/server-slots.module';
 import { CustomErrorHandler, ErrorHandler, JsonDownloader, JsonDownloaderService, ValidationMessage, ValidationMessageService } from '../shared';
 import { AppComponent, MainViewComponent } from './index';
 
@@ -19,10 +19,19 @@ const routes: Routes = [
   {
     path: "", component: MainViewComponent,
     children: [
-      { path: "", component: SlotBoardComponent },
-      { path: "serverslot/:id", component: ServerSlotInfoComponent },
-    ]
-  }
+      {
+        path: "",
+        loadChildren: () => import('../server-slot/server-slot.module').then(m => m.ServerSlotModule),
+      },
+      {
+        path: "info",
+        loadChildren: () => import('../server-slot-info/server-slot-info.module').then(m => m.ServerSlotInfoModule),
+      },
+    ],
+  },
+  { path: getEmailConfirmRedirectPath(), component: EmailCallbackComponent },
+  { path: getOAuthRedirectPath(), component: OAuthCallbackComponent },
+  { path: '**', redirectTo: '' }
 ];
 @NgModule({
   declarations: [
@@ -37,9 +46,9 @@ const routes: Routes = [
     MatToolbarModule,
     MatButtonModule,
     MatDialogModule,
+    AnalyzerModule,
     AuthenticationModule,
     MatDialogModule,
-    ServerSlotsModule,
     StoreModule.forRoot({}, {}),
     EffectsModule.forRoot([]),
   ],

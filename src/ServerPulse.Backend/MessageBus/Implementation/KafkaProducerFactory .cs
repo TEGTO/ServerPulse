@@ -14,7 +14,7 @@ namespace MessageBus.Kafka
         public KafkaProducerFactory(ProducerConfig config, ResiliencePipelineProvider<string> resiliencePipelineProvider)
         {
             producerBuilder = new ProducerBuilder<string, string>(config);
-            resiliencePipeline = resiliencePipelineProvider.GetPipeline(MessageBusConfiguration.MESSAGE_BUS_RESILIENCE_PIPELINE);
+            resiliencePipeline = resiliencePipelineProvider.GetPipeline(MessageBusConfigurationKeys.MESSAGE_BUS_RESILIENCE_PIPELINE);
         }
 
         public IProducer<string, string> CreateProducer()

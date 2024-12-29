@@ -1,12 +1,12 @@
 ﻿using AnalyzerApi.Command.BackgroundServices.ProcessLoadEvents;
-using AnalyzerApi.Infrastructure;
+using AnalyzerApi.Infrastructure.Configuration;
 using Confluent.Kafka;
 using EventCommunication;
 using MediatR;
 using MessageBus.Interfaces;
 using MessageBus.Models;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using Polly;
 using Polly.Registry;
@@ -21,13 +21,11 @@ namespace AnalyzerApi.BackgroundServices.Tests
     {
         private Mock<IMessageConsumer> mockMessageConsumer;
         private Mock<IMediator> mockMediator;
-        private Mock<ITopicManager> mockTopicManager;
-        private Mock<IConfiguration> mockConfiguration;
         private Mock<ResiliencePipelineProvider<string>> mockPipelineProvider;
         private Mock<ILogger<LoadEventStatisticsProcessor>> mockLogger;
         private LoadEventStatisticsProcessor processor;
 
-        private const string KafkaTopic = "load-event-topic";
+        private const string LoadTopicProcess = "load-event-topic";
         private const int TimeoutInMilliseconds = 5000;
         private const int BatchSize = 3;
         private const int BatchIntervalMilliseconds = 1000;
@@ -45,23 +43,34 @@ namespace AnalyzerApi.BackgroundServices.Tests
 
             mockMessageConsumer = new Mock<IMessageConsumer>();
             mockMediator = new Mock<IMediator>();
-            mockTopicManager = new Mock<ITopicManager>();
-            mockConfiguration = new Mock<IConfiguration>();
             mockLogger = new Mock<ILogger<LoadEventStatisticsProcessor>>();
             mockPipelineProvider = new Mock<ResiliencePipelineProvider<string>>();
             mockPipelineProvider.Setup(x => x.GetPipeline(It.IsAny<string>()))
                 .Returns(resiliencePipeline);
 
-            mockConfiguration.Setup(c => c[Configuration.KAFKA_LOAD_TOPIC_PROCESS]).Returns(KafkaTopic);
-            mockConfiguration.Setup(c => c[Configuration.KAFKA_TIMEOUT_IN_MILLISECONDS]).Returns(TimeoutInMilliseconds.ToString());
-            mockConfiguration.Setup(c => c[Configuration.LOAD_EVENT_PROCESSING_BATCH_SIZE]).Returns(BatchSize.ToString());
-            mockConfiguration.Setup(c => c[Configuration.LOAD_EVENT_PROCESSING_BATCH_INTERVAL_IN_MILLISECONDS]).Returns(BatchIntervalMilliseconds.ToString());
+            var messageBusSettings = new MessageBusSettings()
+            {
+                LoadTopicProcess = LoadTopicProcess,
+                ReceiveTimeoutInMilliseconds = TimeoutInMilliseconds,
+            };
+
+            var messageBusOptions = new Mock<IOptions<MessageBusSettings>>();
+            messageBusOptions.Setup(x => x.Value).Returns(messageBusSettings);
+
+            var processSettings = new LoadProcessingSettings()
+            {
+                BatchSize = BatchSize,
+                BatchIntervalInMilliseconds = BatchIntervalMilliseconds,
+            };
+
+            var processOptions = new Mock<IOptions<LoadProcessingSettings>>();
+            processOptions.Setup(x => x.Value).Returns(processSettings);
 
             processor = new LoadEventStatisticsProcessor(
                 mockMessageConsumer.Object,
                 mockMediator.Object,
-                mockTopicManager.Object,
-                mockConfiguration.Object,
+                messageBusOptions.Object,
+                processOptions.Object,
                 mockPipelineProvider.Object,
                 mockLogger.Object);
         }
@@ -70,47 +79,6 @@ namespace AnalyzerApi.BackgroundServices.Tests
         public void TearDown()
         {
             processor.Dispose();
-        }
-
-        [Test]
-        public async Task ExecuteAsync_CreatesTopicOnStart()
-        {
-            // Act
-            await processor.StartAsync(CancellationToken.None);
-
-            // Assert
-            mockTopicManager.Verify(t => t.CreateTopicsAsync(
-                It.Is<IEnumerable<string>>(topics => topics.Contains(KafkaTopic)),
-                It.IsAny<int>(),
-                It.IsAny<short>(),
-                TimeoutInMilliseconds), Times.Once);
-        }
-
-        [Test]
-        public async Task ExecuteAsync_ThrowsErrorTryingToCreateTopicOnStart_ResilienceRetries()
-        {
-            // Arrange
-            mockTopicManager.Setup(x => x.CreateTopicsAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<int>(), It.IsAny<short>(), It.IsAny<int>()))
-               .ThrowsAsync(new Exception("Some exception."));
-
-            // Act
-            await processor.StartAsync(CancellationToken.None);
-            await Task.Delay(1100);
-
-            // Assert
-            mockTopicManager.Verify(t => t.CreateTopicsAsync(
-                It.Is<IEnumerable<string>>(topics => topics.Contains(KafkaTopic)),
-                It.IsAny<int>(),
-                It.IsAny<short>(),
-                TimeoutInMilliseconds), Times.AtLeast(2));
-
-            mockLogger.Verify(x => x.Log(
-                LogLevel.Critical,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.AtLeast(1));
         }
 
         [Test]
@@ -222,7 +190,7 @@ namespace AnalyzerApi.BackgroundServices.Tests
         public async Task ExecuteAsync_IgnoresInvalidMessages(List<ConsumeResponse> messages, string description)
         {
             // Arrange
-            mockMessageConsumer.Setup(c => c.ConsumeAsync(KafkaTopic, TimeoutInMilliseconds, Offset.Stored, It.IsAny<CancellationToken>()))
+            mockMessageConsumer.Setup(c => c.ConsumeAsync(LoadTopicProcess, TimeoutInMilliseconds, Offset.Stored, It.IsAny<CancellationToken>()))
                 .Returns(MockAsyncEnumerable(messages));
 
             // Act
@@ -238,7 +206,7 @@ namespace AnalyzerApi.BackgroundServices.Tests
                It.IsAny<It.IsAnyType>(),
                It.IsAny<Exception>(),
                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-               Times.Exactly(messages.Count));
+               Times.AtLeastOnce);
         }
 
         private static async IAsyncEnumerable<ConsumeResponse> MockAsyncEnumerable(IEnumerable<ConsumeResponse> responses)

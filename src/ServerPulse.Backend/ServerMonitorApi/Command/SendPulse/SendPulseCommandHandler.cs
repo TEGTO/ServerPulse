@@ -1,5 +1,7 @@
 ﻿using MediatR;
 using MessageBus.Interfaces;
+using Microsoft.Extensions.Options;
+using ServerMonitorApi.Options;
 using ServerMonitorApi.Services;
 using System.Text.Json;
 
@@ -11,11 +13,11 @@ namespace ServerMonitorApi.Command.SendPulse
         private readonly IMessageProducer producer;
         private readonly string pulseTopic;
 
-        public SendPulseCommandHandler(ISlotKeyChecker serverSlotChecker, IMessageProducer producer, IConfiguration configuration)
+        public SendPulseCommandHandler(ISlotKeyChecker serverSlotChecker, IMessageProducer producer, IOptions<MessageBusSettings> options)
         {
             this.serverSlotChecker = serverSlotChecker;
             this.producer = producer;
-            pulseTopic = configuration[Configuration.KAFKA_ALIVE_TOPIC]!;
+            pulseTopic = options.Value.AliveTopic;
         }
 
         public async Task<Unit> Handle(SendPulseCommand command, CancellationToken cancellationToken)

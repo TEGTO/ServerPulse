@@ -30,7 +30,7 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
       CLUSTER_ID: "GLZOVd8vSKuXdgAApudsAg"
       KAFKA_NUM_PARTITIONS: ${Kafka__PartitionsAmount}
-      # KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       # KAFKA_DEFAULT_REPLICATION_FACTOR: 3
     volumes:
         - kafka-broker-1:/var/lib/kafka/data

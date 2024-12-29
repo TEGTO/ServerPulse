@@ -55,7 +55,7 @@ export class AuthenticatedComponent implements OnInit, OnDestroy {
     }
   }
 
-  updateUser() {
+  updateUser(): void {
     if (this.formGroup.valid) {
       const req: UserUpdateRequest = {
         email: this.emailInput.value,
@@ -69,7 +69,7 @@ export class AuthenticatedComponent implements OnInit, OnDestroy {
     }
   }
 
-  logOutUser() {
+  logOutUser(): void {
     this.store.dispatch(logOutUser());
   }
 }

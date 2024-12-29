@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/
 import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { Subject } from 'rxjs';
-import { loginUser, passwordValidator, startRegisterUser, UserAuthenticationRequest } from '../..';
+import { loginUser, OAuthLoginProvider, passwordValidator, startOAuthLogin, startRegisterUser, UserAuthenticationRequest } from '../..';
 import { noSpaces, notEmptyString, ValidationMessage } from '../../../shared';
 
 @Component({
@@ -49,11 +49,11 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
   }
 
-  openRegisterMenu() {
+  openRegisterMenu(): void {
     this.store.dispatch(startRegisterUser());
   }
 
-  loginUser() {
+  loginUser(): void {
     if (this.formGroup.valid) {
       const req: UserAuthenticationRequest =
       {
@@ -67,7 +67,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
   }
 
-  oauthLogin() {
-    //TODO: add oauth
+  googleOAuthLogin(): void {
+    this.store.dispatch(startOAuthLogin({ loginProvider: OAuthLoginProvider.Google }));
   }
 }

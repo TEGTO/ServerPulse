@@ -3,5 +3,5 @@ using MediatR;
 
 namespace AuthenticationApi.Command.RegisterUser
 {
-    public record RegisterUserCommand(UserRegistrationRequest Request) : IRequest<UserAuthenticationResponse>;
+    public record RegisterUserCommand(UserRegistrationRequest Request) : IRequest<Unit>;
 }

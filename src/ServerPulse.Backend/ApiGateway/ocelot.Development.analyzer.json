@@ -26,8 +26,9 @@
         "EnableRateLimiting": true,
         "Period": "1s",
         "PeriodTimespan": 1,
-        "Limit": 5
-      }
+        "Limit": 15
+      },
+      "SwaggerKey": "analyzer"
     },
     {
       "Key": "Analyzer_GetLoadStatisticsPerDay",
@@ -55,8 +56,9 @@
         "EnableRateLimiting": true,
         "Period": "1s",
         "PeriodTimespan": 1,
-        "Limit": 3
-      }
+        "Limit": 15
+      },
+      "SwaggerKey": "analyzer"
     },
     {
       "Key": "Analyzer_GetSomeLoadEvents",
@@ -84,8 +86,9 @@
         "EnableRateLimiting": true,
         "Period": "1s",
         "PeriodTimespan": 1,
-        "Limit": 5
-      }
+        "Limit": 15
+      },
+      "SwaggerKey": "analyzer"
     },
     {
       "Key": "Analyzer_GetSomeCustomEvents",
@@ -113,8 +116,9 @@
         "EnableRateLimiting": true,
         "Period": "1s",
         "PeriodTimespan": 1,
-        "Limit": 5
-      }
+        "Limit": 15
+      },
+      "SwaggerKey": "analyzer"
     },
     {
       "Key": "Analyzer_GetAmountStatisticsInRange",
@@ -142,13 +146,44 @@
         "EnableRateLimiting": true,
         "Period": "1s",
         "PeriodTimespan": 1,
-        "Limit": 5
-      }
+        "Limit": 15
+      },
+      "SwaggerKey": "analyzer"
     },
     {
-      "Key": "Analyzer_GetStatistics",
-      "UpstreamPathTemplate": "/statisticshub/{path}",
-      "DownstreamPathTemplate": "/statisticshub/{path}",
+      "Key": "Analyzer_GetSlotStatistics",
+      "UpstreamPathTemplate": "/analyze/slotstatistics/{key}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "DownstreamPathTemplate": "/analyze/slotstatistics/{key}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "analyzerapi",
+          "Port": 8080
+        }
+      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToRequest": {
+        "Authorization": "Bearer {token}"
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 15
+      },
+      "SwaggerKey": "analyzer"
+    },
+    {
+      "Key": "Analyzer_GetLifeCycleStatistics",
+      "UpstreamPathTemplate": "/lifecyclestatisticshub/{path}",
+      "DownstreamPathTemplate": "/lifecyclestatisticshub/{path}",
       "DownstreamScheme": "ws",
       "DownstreamHostAndPorts": [
         {
@@ -168,7 +203,8 @@
       },
       "AddHeadersToRequest": {
         "Authorization": "Bearer {token}"
-      }
+      },
+      "SwaggerKey": "analyzer"
     },
     {
       "Key": "Analyzer_GetLoadStatistics",
@@ -193,7 +229,8 @@
       },
       "AddHeadersToRequest": {
         "Authorization": "Bearer {token}"
-      }
+      },
+      "SwaggerKey": "analyzer"
     },
     {
       "Key": "Analyzer_GetCustomStatistics",
@@ -218,7 +255,8 @@
       },
       "AddHeadersToRequest": {
         "Authorization": "Bearer {token}"
-      }
+      },
+      "SwaggerKey": "analyzer"
     }
   ]
 }

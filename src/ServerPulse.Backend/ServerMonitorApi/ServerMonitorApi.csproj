@@ -10,16 +10,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-	  <PackageReference Include="MediatR" Version="12.4.1" />
-	  <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.20.1" />
-	  <PackageReference Include="StackExchange.Redis" Version="2.8.0" />
-	  <PackageReference Include="AutoMapper" Version="13.0.1" />
+	  <PackageReference Include="MediatR" />
+	  <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
+	  <PackageReference Include="AutoMapper" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\ServerPulse.EventCommunication\EventCommunication.Validators\EventCommunication.Validators.csproj" />
     <ProjectReference Include="..\..\ServerPulse.EventCommunication\EventCommunication\EventCommunication.csproj" />
     <ProjectReference Include="..\Authentication\Authentication.csproj" />
+    <ProjectReference Include="..\Helper\Helper.csproj" />
     <ProjectReference Include="..\MessageBus\MessageBus.csproj" />
     <ProjectReference Include="..\ServerSlotApi.Dtos\ServerSlotApi.Dtos.csproj" />
     <ProjectReference Include="..\Shared\Shared.csproj" />

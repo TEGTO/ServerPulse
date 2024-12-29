@@ -1,10 +1,10 @@
 ﻿using AnalyzerApi.Command.BackgroundServices.ProcessLoadEvents;
-using AnalyzerApi.Infrastructure;
+using AnalyzerApi.Infrastructure.Configuration;
 using AnalyzerApi.Infrastructure.Models.Statistics;
 using AnalyzerApi.Services.Receivers.Statistics;
 using EventCommunication;
 using MessageBus.Interfaces;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace AnalyzerApiTests.Command.BackgroundServices.ProcessLoadEvents
@@ -14,26 +14,28 @@ namespace AnalyzerApiTests.Command.BackgroundServices.ProcessLoadEvents
     {
         private Mock<IMessageProducer> mockProducer;
         private Mock<IStatisticsReceiver<LoadMethodStatistics>> mockReceiver;
-        private Mock<IConfiguration> mockConfiguration;
         private ProcessLoadEventsCommandHandler handler;
 
-        private const string KafkaTopic = "load-method-statistics";
+        private const string LoadMethodStatisticsTopic = "load-method-statistics";
 
         [SetUp]
         public void Setup()
         {
             mockProducer = new Mock<IMessageProducer>();
             mockReceiver = new Mock<IStatisticsReceiver<LoadMethodStatistics>>();
-            mockConfiguration = new Mock<IConfiguration>();
 
-            mockConfiguration
-                .Setup(c => c[Configuration.KAFKA_LOAD_METHOD_STATISTICS_TOPIC])
-                .Returns(KafkaTopic);
+            var settings = new MessageBusSettings
+            {
+                LoadMethodStatisticsTopic = LoadMethodStatisticsTopic
+            };
+
+            var mockOptions = new Mock<IOptions<MessageBusSettings>>();
+            mockOptions.Setup(x => x.Value).Returns(settings);
 
             handler = new ProcessLoadEventsCommandHandler(
                 mockProducer.Object,
                 mockReceiver.Object,
-                mockConfiguration.Object
+                mockOptions.Object
             );
         }
 
@@ -61,7 +63,7 @@ namespace AnalyzerApiTests.Command.BackgroundServices.ProcessLoadEvents
             // Assert
             mockProducer.Verify(p =>
                 p.ProduceAsync(
-                    $"{KafkaTopic}{key}",
+                    $"{LoadMethodStatisticsTopic}{key}",
                     It.Is<string>(s => s.Contains("\"GetAmount\":2") && s.Contains("\"PostAmount\":2")),
                     It.IsAny<CancellationToken>()
                 ), Times.Once);
@@ -94,7 +96,7 @@ namespace AnalyzerApiTests.Command.BackgroundServices.ProcessLoadEvents
             // Assert
             mockProducer.Verify(p =>
                 p.ProduceAsync(
-                    $"{KafkaTopic}{key}",
+                    $"{LoadMethodStatisticsTopic}{key}",
                     It.Is<string>(s => s.Contains("\"PatchAmount\":3") && s.Contains("\"PutAmount\":2")),
                     It.IsAny<CancellationToken>()
                 ), Times.Once);
@@ -130,8 +132,8 @@ namespace AnalyzerApiTests.Command.BackgroundServices.ProcessLoadEvents
             await handler.Handle(command, CancellationToken.None);
 
             // Assert
-            mockProducer.Verify(p => p.ProduceAsync(KafkaTopic + "key1", It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
-            mockProducer.Verify(p => p.ProduceAsync(KafkaTopic + "key2", It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+            mockProducer.Verify(p => p.ProduceAsync(LoadMethodStatisticsTopic + "key1", It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+            mockProducer.Verify(p => p.ProduceAsync(LoadMethodStatisticsTopic + "key2", It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
 
             mockReceiver.Verify(r => r.GetLastStatisticsAsync("key1", It.IsAny<CancellationToken>()), Times.Once);
             mockReceiver.Verify(r => r.GetLastStatisticsAsync("key2", It.IsAny<CancellationToken>()), Times.Once);
@@ -160,7 +162,7 @@ namespace AnalyzerApiTests.Command.BackgroundServices.ProcessLoadEvents
             // Assert
             mockProducer.Verify(p =>
                 p.ProduceAsync(
-                    $"{KafkaTopic}{key}",
+                    $"{LoadMethodStatisticsTopic}{key}",
                     It.Is<string>(s => s.Contains("\"GetAmount\":1") && s.Contains("\"DeleteAmount\":1")),
                     It.IsAny<CancellationToken>()
                 ), Times.Once);

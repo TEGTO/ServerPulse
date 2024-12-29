@@ -85,9 +85,9 @@ namespace AuthenticationApi.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("refresh_token_expiry_date");
 
-                    b.Property<DateTime>("RegistredAtUtc")
+                    b.Property<DateTime>("RegisteredAtUtc")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("registred_at_utc");
+                        .HasColumnName("registered_at_utc");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text")

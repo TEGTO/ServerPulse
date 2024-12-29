@@ -7,7 +7,7 @@ namespace Resilience
 {
     public static class ResilienceHelpers
     {
-        public static void ConfigureResiliencePipeline(ResiliencePipelineBuilder builder, AddResiliencePipelineContext<string> context, ResiliencePipelineConfiguration config, bool useCircuitBreaker = true)
+        public static void ConfigureResiliencePipeline(ResiliencePipelineBuilder builder, AddResiliencePipelineContext<string> context, ResiliencePipelineSettings config, bool useCircuitBreaker = true)
         {
             builder.AddRetry(new()
             {

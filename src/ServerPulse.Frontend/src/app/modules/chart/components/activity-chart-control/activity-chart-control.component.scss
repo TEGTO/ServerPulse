@@ -1,0 +1,31 @@
+@use 'utils' as utils;
+
+.acitivity-chart-control__wrapper {
+    padding-left: utils.pxToRem(10);
+    max-width: 100%;
+}
+
+#chart-control {
+    z-index: 10;
+    position: relative;
+}
+
+button {
+    background: #fff;
+    color: #222;
+    border: 1px solid #e7e7e7;
+    border-bottom: 2px solid #ddd;
+    border-radius: 2px;
+    padding: utils.pxToRem(1) utils.pxToRem(10);
+}
+
+button.active {
+    color: #fff;
+    background: #008ffb;
+    border: 1px solid blue;
+    border-bottom: 2px solid blue;
+}
+
+button:focus {
+    outline: 0;
+}

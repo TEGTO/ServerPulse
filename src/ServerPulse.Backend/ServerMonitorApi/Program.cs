@@ -4,7 +4,7 @@ using ExceptionHandling;
 using Logging;
 using MessageBus;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using ServerMonitorApi;
+using ServerMonitorApi.Options;
 using ServerMonitorApi.Services;
 using Shared;
 
@@ -17,19 +17,30 @@ builder.Services.Configure<KestrelServerOptions>(options =>
     options.Limits.MaxRequestBodySize = 1 * 1024 * 1024; //1 MB
 });
 
-builder.Services.AddCustomHttpClientServiceWithResilience(builder.Configuration);
+builder.Services.AddHttpClientHelperServiceWithResilience(builder.Configuration);
+
+#region Options
+
+var messageBusSettings = builder.Configuration.GetSection(MessageBusSettings.SETTINGS_SECTION).Get<MessageBusSettings>();
+
+ArgumentNullException.ThrowIfNull(messageBusSettings);
+
+builder.Services.Configure<MessageBusSettings>(builder.Configuration.GetSection(MessageBusSettings.SETTINGS_SECTION));
+
+#endregion
 
 #region Kafka
 
 var producerConfig = new ProducerConfig
 {
-    BootstrapServers = builder.Configuration[Configuration.KAFKA_BOOTSTRAP_SERVERS],
-    ClientId = builder.Configuration[Configuration.KAFKA_CLIENT_ID],
+    BootstrapServers = messageBusSettings.BootstrapServers,
+    ClientId = messageBusSettings.ClientId,
     EnableIdempotence = true,
 };
 var adminConfig = new AdminClientConfig
 {
-    BootstrapServers = builder.Configuration[Configuration.KAFKA_BOOTSTRAP_SERVERS]
+    BootstrapServers = messageBusSettings.BootstrapServers,
+    AllowAutoCreateTopics = true
 };
 builder.Services.AddKafkaProducer(producerConfig, adminConfig);
 

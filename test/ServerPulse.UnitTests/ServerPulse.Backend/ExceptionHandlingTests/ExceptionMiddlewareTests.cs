@@ -29,12 +29,13 @@ namespace ExceptionHandling.Tests
 
         [Test]
         [TestCase(typeof(ValidationException), HttpStatusCode.BadRequest, "Validation error.")]
+        [TestCase(typeof(SecurityTokenMalformedException), HttpStatusCode.Conflict, "Security token error.")]
+        [TestCase(typeof(ArgumentException), HttpStatusCode.BadRequest, "Invalid argument error.")]
         [TestCase(typeof(InvalidDataException), HttpStatusCode.BadRequest, "Invalid data error.")]
         [TestCase(typeof(UniqueConstraintException), HttpStatusCode.Conflict, "Constraint error.")]
         [TestCase(typeof(UnauthorizedAccessException), HttpStatusCode.Unauthorized, "Invalid Authentication.")]
         [TestCase(typeof(InvalidOperationException), HttpStatusCode.Conflict, "Operation error.")]
         [TestCase(typeof(AuthorizationException), HttpStatusCode.Conflict, "Authorization error occurred.")]
-        [TestCase(typeof(SecurityTokenMalformedException), HttpStatusCode.Conflict, "Security token error.")]
         [TestCase(typeof(Exception), HttpStatusCode.InternalServerError, "Internal Server Error.")]
         public async Task InvokeAsync_ExceptionThrown_SetsCorrectStatusCodeAndLogsError(Type exceptionType, HttpStatusCode expectedStatusCode, string exceptionMessage)
         {

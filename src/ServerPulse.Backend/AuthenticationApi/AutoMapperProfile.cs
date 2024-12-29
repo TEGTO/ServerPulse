@@ -1,6 +1,7 @@
 ﻿using Authentication.Models;
 using AuthenticationApi.Dtos;
 using AuthenticationApi.Infrastructure;
+using AuthenticationApi.Infrastructure.Models;
 using AutoMapper;
 
 namespace AuthenticationApi

@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { authReducer, AuthState, copyUserUpdateRequestToUserAuth, getAuthData, getAuthDataFailure, getAuthDataSuccess, getDefaultAuthData, getDefaultAuthToken, loginUser, loginUserFailure, loginUserSuccess, logOutUserSuccess, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerFailure, registerSuccess, registerUser, startLoginUser, startRegisterUser, updateUserData, updateUserDataFailure, updateUserDataSuccess } from "..";
+import { authFailure, authReducer, AuthState, copyUserUpdateRequestToUserAuth, getAuthData, getAuthDataFailure, getAuthDataSuccess, getDefaultAuthData, getDefaultAuthToken, loginUser, loginUserSuccess, logOutUserSuccess, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerUser, startLoginUser, startRegisterUser, updateUserData, updateUserDataSuccess } from "..";
 
 describe('Auth Reducer', () => {
     const initialState: AuthState = {
-        isRegistrationSuccessful: false,
-        isUpdateSuccessful: false,
         isRefreshSuccessful: false,
         authData: getDefaultAuthData(),
         error: null,
@@ -17,6 +15,14 @@ describe('Auth Reducer', () => {
         expect(state).toEqual(initialState);
     });
 
+    it('should set error on authFailure', () => {
+        const error = 'Login failed';
+        const action = authFailure({ error: error });
+        const state = authReducer(initialState, action);
+
+        expect(state.error).toEqual(error);
+    });
+
     describe('Registration Actions', () => {
         it('should reset state on startRegisterUser', () => {
             const action = startRegisterUser();
@@ -26,29 +32,10 @@ describe('Auth Reducer', () => {
         });
 
         it('should reset state on registerUser', () => {
-            const action = registerUser({ req: { email: 'test@example.com', password: 'password', confirmPassword: 'password' } });
+            const action = registerUser({ req: { redirectConfirmUrl: 'some-url', email: 'test@example.com', password: 'password', confirmPassword: 'password' } });
             const state = authReducer(initialState, action);
 
-            expect(state.isRegistrationSuccessful).toEqual(false);
             expect(state.authData.email).toEqual("");
-        });
-
-        it('should set registration success on registerSuccess', () => {
-            const authData = { isAuthenticated: true, authToken: getDefaultAuthToken(), email: 'test@example.com' };
-            const action = registerSuccess({ authData });
-            const state = authReducer(initialState, action);
-
-            expect(state.isRegistrationSuccessful).toBe(true);
-            expect(state.authData).toEqual(authData);
-            expect(state.error).toBeNull();
-        });
-
-        it('should set error on registerFailure', () => {
-            const error = 'Registration failed';
-            const action = registerFailure({ error });
-            const state = authReducer(initialState, action);
-
-            expect(state.error).toEqual(error);
         });
     });
 
@@ -64,7 +51,6 @@ describe('Auth Reducer', () => {
             const action = loginUser({ req: { login: 'user', password: 'password' } });
             const state = authReducer(initialState, action);
 
-            expect(state.isRegistrationSuccessful).toEqual(false);
             expect(state.authData.email).toEqual("");
         });
 
@@ -75,14 +61,6 @@ describe('Auth Reducer', () => {
 
             expect(state.authData).toEqual(authData);
             expect(state.error).toBeNull();
-        });
-
-        it('should set error on loginUserFailure', () => {
-            const error = 'Login failed';
-            const action = loginUserFailure({ error: error });
-            const state = authReducer(initialState, action);
-
-            expect(state.error).toEqual(error);
         });
     });
 
@@ -107,7 +85,6 @@ describe('Auth Reducer', () => {
             const action = getAuthDataFailure();
             const state = authReducer(initialState, action);
 
-            expect(state.isRegistrationSuccessful).toEqual(false);
             expect(state.authData.email).toEqual("");
         });
     });
@@ -117,7 +94,6 @@ describe('Auth Reducer', () => {
             const action = logOutUserSuccess();
             const state = authReducer(initialState, action);
 
-            expect(state.isRegistrationSuccessful).toEqual(false);
             expect(state.authData.email).toEqual("");
         });
     });
@@ -156,7 +132,6 @@ describe('Auth Reducer', () => {
             const action = updateUserData({ req: { email: 'test@example.com', oldPassword: 'oldPass', password: 'newPass' } });
             const state = authReducer(initialState, action);
 
-            expect(state.isUpdateSuccessful).toBe(false);
             expect(state.error).toBeNull();
         });
 
@@ -167,16 +142,7 @@ describe('Auth Reducer', () => {
 
             const updatedAuthData = copyUserUpdateRequestToUserAuth(initialState.authData, updateRequest);
 
-            expect(state.isUpdateSuccessful).toBe(true);
             expect(state.authData).toEqual(updatedAuthData);
-        });
-
-        it('should set error on updateUserDataFailure', () => {
-            const error = 'Update failed';
-            const action = updateUserDataFailure({ error });
-            const state = authReducer(initialState, action);
-
-            expect(state.error).toEqual(error);
         });
     });
 });

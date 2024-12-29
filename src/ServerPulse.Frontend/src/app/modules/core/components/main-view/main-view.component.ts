@@ -25,7 +25,7 @@ export class MainViewComponent implements OnInit {
     );
   }
 
-  startLogin() {
+  startLogin(): void {
     this.store.dispatch(startLoginUser());
   }
 }

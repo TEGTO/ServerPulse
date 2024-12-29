@@ -1,4 +1,5 @@
-﻿using Authentication.Token;
+﻿using Authentication.OAuth.Google;
+using Authentication.Token;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -10,21 +11,25 @@ namespace Authentication
 {
     public static class CustomAuthExtension
     {
+        public static IServiceCollection AddOAuthServices(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.Configure<GoogleOAuthSettings>(configuration.GetSection(GoogleOAuthSettings.SETTINGS_SECTION));
+
+            services.AddScoped<IGoogleTokenValidator, GoogleTokenValidator>();
+            services.AddScoped<IGoogleOAuthHttpClient, GoogleOAuthHttpClient>();
+
+            return services;
+        }
+
         public static IServiceCollection ConfigureIdentityServices(this IServiceCollection services, IConfiguration configuration)
         {
-            var jwtSettings = new JwtSettings()
-            {
-                PrivateKey = configuration[JwtConfiguration.JWT_SETTINGS_PRIVATE_KEY]!,
-                PublicKey = configuration[JwtConfiguration.JWT_SETTINGS_PUBLIC_KEY]!,
-                Audience = configuration[JwtConfiguration.JWT_SETTINGS_AUDIENCE]!,
-                Issuer = configuration[JwtConfiguration.JWT_SETTINGS_ISSUER]!,
-                ExpiryInMinutes = Convert.ToDouble(configuration[JwtConfiguration.JWT_SETTINGS_EXPIRY_IN_MINUTES]!),
-            };
+            var jwtSettings = configuration.GetSection(JwtSettings.SETTINGS_SECTION).Get<JwtSettings>();
 
-            services.AddSingleton(jwtSettings);
+            ArgumentNullException.ThrowIfNull(jwtSettings);
+
+            services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SETTINGS_SECTION));
 
             services.AddAuthorization();
-
             services.AddCustomAuthentication(jwtSettings);
 
             return services;

@@ -1,8 +1,9 @@
-﻿using AnalyzerApi.Command.Controllers.GetLoadAmountStatisticsInRange;
+﻿using AnalyzerApi.Command.Controllers.GetDailyLoadStatistics;
+using AnalyzerApi.Command.Controllers.GetLoadAmountStatisticsInRange;
 using AnalyzerApi.Command.Controllers.GetLoadEventsInDataRange;
+using AnalyzerApi.Command.Controllers.GetSlotStatistics;
 using AnalyzerApi.Command.Controllers.GetSomeCustomEvents;
 using AnalyzerApi.Command.Controllers.GetSomeLoadEvents;
-using AnalyzerApi.Command.Controllers.GetDailyLoadStatistics;
 using AnalyzerApi.Infrastructure.Dtos.Responses.Events;
 using AnalyzerApi.Infrastructure.Dtos.Responses.Statistics;
 using AnalyzerApi.Infrastructure.Requests;
@@ -73,7 +74,7 @@ namespace AnalyzerApi.Controllers.Tests
                 .ReturnsAsync(expectedResponse);
 
             // Act
-            var result = await controller.GetDailyLoadStatistics(key, CancellationToken.None);
+            var result = await controller.GetDailyLoadAmountStatistics(key, CancellationToken.None);
 
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(result.Result);
@@ -177,6 +178,43 @@ namespace AnalyzerApi.Controllers.Tests
             Assert.IsNotNull(okResult);
             Assert.That(okResult.Value, Is.EqualTo(expectedResponse));
             mockMediator.Verify(m => m.Send(It.IsAny<GetSomeCustomEventsQuery>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Test]
+        public async Task GetSlotStatistics_ValidKey_ReturnsOkWithResponse()
+        {
+            // Arrange
+            var key = "validKey";
+            var expectedResponse = new SlotStatisticsResponse
+            {
+                CollectedDateUTC = DateTime.UtcNow,
+                GeneralStatistics = new ServerLifecycleStatisticsResponse { IsAlive = true, DataExists = true },
+                LoadStatistics = new ServerLoadStatisticsResponse { AmountOfEvents = 5 },
+                CustomEventStatistics = new ServerCustomStatisticsResponse(),
+                LastLoadEvents = new List<LoadEventResponse>
+                {
+                    new LoadEventResponse { Endpoint = "/api/test", Method = "GET", StatusCode = 200, Duration = TimeSpan.FromMilliseconds(100) }
+                },
+                LastCustomEvents = new List<CustomEventResponse>
+                {
+                    new CustomEventResponse { Name = "CustomEvent", Description = "Test event" }
+                }
+            };
+
+            mockMediator
+                .Setup(m => m.Send(It.IsAny<GetSlotStatisticsQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedResponse);
+
+            // Act
+            var result = await controller.GetSlotStatistics(key, CancellationToken.None);
+
+            // Assert
+            Assert.IsInstanceOf<OkObjectResult>(result.Result);
+            var okResult = result.Result as OkObjectResult;
+            Assert.IsNotNull(okResult);
+            Assert.That(okResult.Value, Is.EqualTo(expectedResponse));
+
+            mockMediator.Verify(m => m.Send(It.IsAny<GetSlotStatisticsQuery>(), It.IsAny<CancellationToken>()), Times.Once);
         }
     }
 }

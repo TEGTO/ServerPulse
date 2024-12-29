@@ -1,8 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using EventCommunication;
+using Microsoft.Extensions.Logging;
 using Moq;
 using ServerPulse.Client;
 using ServerPulse.Client.Services;
-using ServerPulse.EventCommunication.Events;
 
 namespace ServerPulse.ClientTests.Services.Tests
 {
@@ -20,22 +20,24 @@ namespace ServerPulse.ClientTests.Services.Tests
         {
             mockMessageSender = new Mock<IMessageSender>();
             mockLogger = new Mock<ILogger<ServerStatusSender>>();
+
             pulseSettings = new SendingSettings<PulseEvent>()
             {
                 Key = "example",
-                SendingEndpoint = "http://localhost",
+                SendingEndpoint = "http://localhost/pulse",
                 MaxMessageSendingAmount = 10,
                 SendingInterval = 1
             };
             configurationSettings = new SendingSettings<ConfigurationEvent>()
             {
                 Key = "example",
-                SendingEndpoint = "http://localhost",
+                SendingEndpoint = "http://localhost/configuration",
                 MaxMessageSendingAmount = 10,
                 SendingInterval = 1
             };
-            serverStatusSender = new ServerStatusSender(mockMessageSender.Object, pulseSettings, configurationSettings, mockLogger.Object);
             cancellationTokenSource = new CancellationTokenSource();
+
+            serverStatusSender = new ServerStatusSender(mockMessageSender.Object, pulseSettings, configurationSettings, mockLogger.Object);
         }
 
         [TearDown]
@@ -49,92 +51,115 @@ namespace ServerPulse.ClientTests.Services.Tests
         public async Task ExecuteAsync_SendsInitialConfigurationEvent()
         {
             // Arrange
-            var confEvent = new ConfigurationEvent(pulseSettings.Key, TimeSpan.FromSeconds(pulseSettings.SendingInterval));
-            string confEventJson = confEvent.ToString();
-            mockMessageSender.Setup(m => m.SendJsonAsync(confEventJson, It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                             .Returns(Task.CompletedTask);
+            mockMessageSender.Setup(m => m.SendJsonAsync(It.IsAny<string>(), configurationSettings.SendingEndpoint, It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
             // Act
             var executeTask = serverStatusSender.StartAsync(cancellationTokenSource.Token);
-            await Task.Delay(500);
+
+            await Task.Delay(1500);
+
             // Assert
-            mockMessageSender.Verify(m => m.SendJsonAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
-            cancellationTokenSource.Cancel();
+            mockMessageSender.Verify(m => m.SendJsonAsync(It.IsAny<string>(), configurationSettings.SendingEndpoint, It.IsAny<CancellationToken>()), Times.Once);
+
+            await cancellationTokenSource.CancelAsync();
+
             await executeTask;
         }
+
         [Test]
         public async Task ExecuteAsync_SendsPulseEventPeriodically()
         {
             // Arrange
-            var ev = new PulseEvent(pulseSettings.Key, true);
-            string evJson = ev.ToString();
-            mockMessageSender.Setup(m => m.SendJsonAsync(evJson, It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                             .Returns(Task.CompletedTask);
+            mockMessageSender.Setup(m => m.SendJsonAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
             // Act
             var executeTask = serverStatusSender.StartAsync(cancellationTokenSource.Token);
+
             await Task.Delay(3500);
+
             // Assert
-            mockMessageSender.Verify(m => m.SendJsonAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeast(3));
-            cancellationTokenSource.Cancel();
+            mockMessageSender.Verify(m => m.SendJsonAsync(It.IsAny<string>(), pulseSettings.SendingEndpoint, It.IsAny<CancellationToken>()), Times.AtLeast(3));
+
+            await cancellationTokenSource.CancelAsync();
+
             await executeTask;
         }
+
         [Test]
         public async Task ExecuteAsync_CancellationStopsPeriodicSending()
         {
             // Arrange
-            var ev = new PulseEvent(pulseSettings.Key, true);
-            string evJson = ev.ToString();
-            mockMessageSender.Setup(m => m.SendJsonAsync(evJson, It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                             .Returns(Task.CompletedTask);
+            mockMessageSender.Setup(m => m.SendJsonAsync(It.IsAny<string>(), pulseSettings.SendingEndpoint, It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
             // Act
             var executeTask = serverStatusSender.StartAsync(cancellationTokenSource.Token);
+
             await Task.Delay(1500);
+
             // Act
-            cancellationTokenSource.Cancel();
+            await cancellationTokenSource.CancelAsync();
+
             await executeTask;
+
             // Assert
-            mockMessageSender.Verify(m => m.SendJsonAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeast(1));
-            mockMessageSender.Verify(m => m.SendJsonAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtMost(2));
+            mockMessageSender.Verify(m => m.SendJsonAsync(It.IsAny<string>(), configurationSettings.SendingEndpoint, It.IsAny<CancellationToken>()), Times.AtLeast(1));
+            mockMessageSender.Verify(m => m.SendJsonAsync(It.IsAny<string>(), pulseSettings.SendingEndpoint, It.IsAny<CancellationToken>()), Times.AtMost(2));
         }
+
         [Test]
         public async Task ExecuteAsync_LogsErrorOnInitialConfigurationEventFailure()
         {
             // Arrange
-            mockMessageSender.Setup(m => m.SendJsonAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                             .ThrowsAsync(new Exception("Test exception"));
+            mockMessageSender.Setup(m => m.SendJsonAsync(It.IsAny<string>(), configurationSettings.SendingEndpoint, It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new Exception("Test exception"));
+
             // Act
             var executeTask = serverStatusSender.StartAsync(cancellationTokenSource.Token);
-            await Task.Delay(500);
+
+            await Task.Delay(1500);
+
             // Assert
             mockLogger.Verify(
                 x => x.Log(
                     LogLevel.Error,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("An error occurred while sending load events.")),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("An error occurred while sending configuration event.")),
                     It.Is<Exception>(ex => ex.Message == "Test exception"),
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
-            cancellationTokenSource.Cancel();
+
+            await cancellationTokenSource.CancelAsync();
+
             await executeTask;
         }
+
         [Test]
         public async Task ExecuteAsync_LogsErrorOnPulseEventFailure()
         {
             // Arrange
-            mockMessageSender.Setup(m => m.SendJsonAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                             .ThrowsAsync(new Exception("Test exception"));
+            mockMessageSender.Setup(m => m.SendJsonAsync(It.IsAny<string>(), pulseSettings.SendingEndpoint, It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new Exception("Test exception"));
+
             // Act
             var executeTask = serverStatusSender.StartAsync(cancellationTokenSource.Token);
-            await Task.Delay(500);
+
+            await Task.Delay(1500);
+
             // Assert
             mockLogger.Verify(
                 x => x.Log(
                     LogLevel.Error,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("An error occurred while sending load events.")),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("An error occurred while sending pulse event.")),
                     It.Is<Exception>(ex => ex.Message == "Test exception"),
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.AtLeastOnce);
-            cancellationTokenSource.Cancel();
+
+            await cancellationTokenSource.CancelAsync();
+
             await executeTask;
         }
     }

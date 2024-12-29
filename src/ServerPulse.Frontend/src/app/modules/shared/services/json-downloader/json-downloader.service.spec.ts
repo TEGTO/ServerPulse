@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { TestBed } from '@angular/core/testing';
 import { JsonDownloaderService } from './json-downloader.service';
 
@@ -47,19 +48,5 @@ describe('JsonDownloaderService', () => {
     expect(mockAnchorElement.download).toBe(testFileName);
     expect(clickSpy).toHaveBeenCalled();
     expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:http://example.com/123456');
-  });
-
-  it('should convert an object to a Blob', () => {
-    const testData = { key: 'value' };
-    const result = (service as any).convertToJsonFile(testData);
-
-    expect(result).toBeInstanceOf(Blob);
-    expect(result.type).toBe('application/json');
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      expect(reader.result).toBe(JSON.stringify(testData));
-    };
-    reader.readAsText(result);
   });
 });

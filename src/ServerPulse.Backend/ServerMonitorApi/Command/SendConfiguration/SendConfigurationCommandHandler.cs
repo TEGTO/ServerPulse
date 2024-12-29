@@ -1,5 +1,7 @@
 ﻿using MediatR;
 using MessageBus.Interfaces;
+using Microsoft.Extensions.Options;
+using ServerMonitorApi.Options;
 using ServerMonitorApi.Services;
 using System.Text.Json;
 
@@ -11,11 +13,11 @@ namespace ServerMonitorApi.Command.SendConfiguration
         private readonly IMessageProducer producer;
         private readonly string configurationTopic;
 
-        public SendConfigurationCommandHandler(ISlotKeyChecker serverSlotChecker, IMessageProducer producer, IConfiguration configuration)
+        public SendConfigurationCommandHandler(ISlotKeyChecker serverSlotChecker, IMessageProducer producer, IOptions<MessageBusSettings> options)
         {
             this.serverSlotChecker = serverSlotChecker;
             this.producer = producer;
-            configurationTopic = configuration[Configuration.KAFKA_CONFIGURATION_TOPIC]!;
+            configurationTopic = options.Value.ConfigurationTopic;
         }
 
         public async Task<Unit> Handle(SendConfigurationCommand command, CancellationToken cancellationToken)

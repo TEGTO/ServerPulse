@@ -5,6 +5,7 @@ using System.Text.Json;
 
 namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
 {
+    [TestFixture]
     internal class LoginAuthControllerTests : BaseAuthControllerTest
     {
         [OneTimeSetUp]
@@ -22,17 +23,17 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
         public async Task Login_User_ValidRequest_ReturnsOkWithAuthData()
         {
             // Arrange
-            var loginRequest = new UserAuthenticationRequest
+            var request = new UserAuthenticationRequest
             {
                 Login = "testuser@example.com",
                 Password = "Test@123"
             };
 
-            using var request = new HttpRequestMessage(HttpMethod.Post, "/auth/login");
-            request.Content = new StringContent(JsonSerializer.Serialize(loginRequest), Encoding.UTF8, "application/json");
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/auth/login");
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
             // Act
-            var httpResponse = await client.SendAsync(request);
+            var httpResponse = await client.SendAsync(httpRequest);
 
             // Assert
             Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
@@ -51,20 +52,54 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
         public async Task Login_User_InvalidRequest_ReturnsUnauthorized()
         {
             // Arrange
-            var loginRequest = new UserAuthenticationRequest
+            var request = new UserAuthenticationRequest
             {
                 Login = "testuser@example.com",
                 Password = "WrongPassword" // Invalid
             };
 
-            using var request = new HttpRequestMessage(HttpMethod.Post, "/auth/login");
-            request.Content = new StringContent(JsonSerializer.Serialize(loginRequest), Encoding.UTF8, "application/json");
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/auth/login");
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
             // Act
-            var httpResponse = await client.SendAsync(request);
+            var httpResponse = await client.SendAsync(httpRequest);
 
             // Assert
             Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+        }
+
+        [Test]
+        public async Task Login_User_EmailIsNotConfirmed_ReturnsUnauthorized()
+        {
+            if (isConfirmEmailEnabled)
+            {
+                // Arrange
+                await RegisterSampleUser(new UserRegistrationRequest
+                {
+                    Email = "testuser1@example.com",
+                    Password = "Test@123",
+                    ConfirmPassword = "Test@123"
+                }, false);
+
+                var request = new UserAuthenticationRequest
+                {
+                    Login = "testuser1@example.com",
+                    Password = "Test@123"
+                };
+
+                using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/auth/login");
+                httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
+                // Act
+                var httpResponse = await client.SendAsync(httpRequest);
+
+                // Assert
+                Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+            }
+            else
+            {
+                Assert.Pass();
+            }
         }
     }
 }

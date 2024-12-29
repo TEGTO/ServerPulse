@@ -1,0 +1,61 @@
+<div class="additional-info__content">
+    <cdk-virtual-scroll-viewport #scroller class="content__left" [itemSize]="tableItemHeight">
+        <ng-container *ngIf="customEvents$ | async as customEvents; else eventLoading">
+            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                        <th scope="col" class="px-4 py-4">Name</th>
+                        <th scope="col" class="px-4 py-4">
+                            <div class="flex items-center">
+                                Creation Date
+                            </div>
+                        </th>
+                        <th scope="col" class="px-4 py-4">Description</th>
+                        <th scope="col" class="px-6 py-3">
+                            <span class="sr-only">Show</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <ng-container *cdkVirtualFor="let event of customEvents; trackBy:trackById">
+                        <tr class="border-b dark:bg-gray-800 dark:border-gray-700 px-4 py-4">
+                            <th scope="row"
+                                class="px-4 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                {{event.name}}
+                            </th>
+                            <td class="px-4 py-3">
+                                {{event.creationDateUTC | date:'dd.MM.yyyy HH:mm'}}
+                            </td>
+                            <td class="px-4 py-3">
+                                {{event.description}}
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <button class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                                    (click)="openDetailMenu(event)">Show</button>
+                            </td>
+                        </tr>
+                    </ng-container>
+                </tbody>
+            </table>
+        </ng-container>
+        <ng-template #eventLoading>
+            <div class="flex justify-center py-3 m-auto h-full items-center">
+                <mat-progress-spinner [mode]="'indeterminate'" diameter="100"></mat-progress-spinner>
+            </div>
+        </ng-template>
+    </cdk-virtual-scroll-viewport>
+    <section class="content__right">
+        <div class="left__chart h-full">
+            <ng-container *ngIf="chartData$ | async as chartData;">
+                @if (chartData.size > 0) {
+                <app-pie-chart [data$]="chartData$"></app-pie-chart>
+                }
+                @else {
+                <div class="flex justify-center items-center h-full w-96">
+                    <p class="text-gray-500 dark:text-gray-400">No Data</p>
+                </div>
+                }
+            </ng-container>
+        </div>
+    </section>
+</div>

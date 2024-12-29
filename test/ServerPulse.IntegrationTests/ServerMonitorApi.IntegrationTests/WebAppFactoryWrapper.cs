@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
+using ServerMonitorApi.Options;
 using Testcontainers.Kafka;
 
 namespace ServerMonitorApi.IntegrationTests
@@ -40,7 +41,6 @@ namespace ServerMonitorApi.IntegrationTests
 
         private async Task InitializeContainersAsync()
         {
-
             KafkaContainer = new KafkaBuilder()
                 .WithImage("confluentinc/cp-kafka:7.5.0")
                 .WithEnvironment("KAFKA_NUM_PARTITIONS", "3")
@@ -82,15 +82,15 @@ namespace ServerMonitorApi.IntegrationTests
 
             configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                { "Kafka:ClientId", "server-interaction" },
-                { "Kafka:BootstrapServers", KafkaContainer?.GetBootstrapAddress() },
-                { "Kafka:AliveTopic", "AliveTopic_" },
-                { "Kafka:ConfigurationTopic", "ConfigurationTopic_" },
-                { "Kafka:LoadTopic", "LoadTopic_" },
-                { "Kafka:ProcessLoadEventTopic", "LoadEventProcessTopic" },
-                { "Kafka:CustomTopic", "CustomEventTopic_" },
-                { "ApiGateway", "http://apigateway:8080" },
-                { "ServerSlotApi:Check", "/serverslot/check" },
+                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.BootstrapServers)}", KafkaContainer?.GetBootstrapAddress() },
+                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.ClientId)}", "server-interaction" },
+                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.AliveTopic)}", "AliveTopic_" },
+                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.ConfigurationTopic)}", "ConfigurationTopic_" },
+                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.LoadTopic)}", "LoadTopic_" },
+                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.LoadTopicProcess)}", "LoadEventProcessTopic" },
+                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.CustomTopic)}", "CustomEventTopic_" },
+                 { ConfigurationKeys.SERVER_SLOT_URL, "http://apigateway:8080" },
+                 { ConfigurationKeys.SERVER_SLOT_ALIVE_CHECKER, "/serverslot/check"  },
             });
 
             return configurationBuilder.Build();

@@ -7,7 +7,6 @@ using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Provider.Polly;
 using Shared;
-using Shared.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +14,7 @@ builder.Host.AddLogging();
 
 #region Cors
 
-bool.TryParse(builder.Configuration[Configuration.USE_CORS], out bool useCors);
+bool.TryParse(builder.Configuration[ConfigurationKeys.USE_CORS], out bool useCors);
 var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 if (useCors)
@@ -42,8 +41,8 @@ Utility.MergeJsonFiles(
         $"ocelot.{env}.analyzer.json",
         $"ocelot.{env}.eventprocessing.json",
         $"ocelot.{env}.authentication.json",
+        $"ocelot.{env}.oauth.json",
         $"ocelot.{env}.interaction.json",
-        $"ocelot.{env}.slotdata.json",
         $"ocelot.{env}.slot.json",
         $"ocelot.{env}.swagger.json",
     ], mergedPath);
@@ -69,14 +68,12 @@ if (useCors)
     app.UseCors(myAllowSpecificOrigins);
 }
 
-app.UseRouting();
-
-app.UseAuthentication();
-
-app.UseMiddleware<AccessTokenMiddleware>();
 app.UseSharedMiddleware();
 app.UseMiddleware<TokenFromQueryMiddleware>();
 
+app.UseRouting();
+
+app.UseAuthentication();
 app.UseAuthorization();
 
 if (!app.Environment.IsDevelopment())

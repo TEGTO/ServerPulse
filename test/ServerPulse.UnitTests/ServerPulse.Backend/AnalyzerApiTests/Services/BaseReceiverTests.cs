@@ -1,8 +1,8 @@
-﻿using AnalyzerApi.Infrastructure;
+﻿using AnalyzerApi.Infrastructure.Configuration;
 using AnalyzerApi.Services.Receivers;
 using MessageBus.Interfaces;
 using MessageBus.Models;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace AnalyzerApi.Services.Tests
@@ -10,23 +10,27 @@ namespace AnalyzerApi.Services.Tests
     [TestFixture]
     internal class BaseReceiverTests
     {
-        private const string KafkaTimeoutInMilliseconds = "5000";
+        private const int TimeoutInMilliseconds = 5000;
         private const string TopicName = "test-topic";
         private const string Key = "test-key";
 
         private Mock<IMessageConsumer> mockMessageConsumer;
-        private Mock<IConfiguration> mockConfiguration;
         private TestReceiver receiver;
 
         [SetUp]
         public void Setup()
         {
             mockMessageConsumer = new Mock<IMessageConsumer>();
-            mockConfiguration = new Mock<IConfiguration>();
-            mockConfiguration.SetupGet(c => c[Configuration.KAFKA_TIMEOUT_IN_MILLISECONDS])
-                .Returns(KafkaTimeoutInMilliseconds);
 
-            receiver = new TestReceiver(mockMessageConsumer.Object, mockConfiguration.Object);
+            var messageBusSettings = new MessageBusSettings
+            {
+                ReceiveTimeoutInMilliseconds = TimeoutInMilliseconds,
+            };
+
+            var mockOptions = new Mock<IOptions<MessageBusSettings>>();
+            mockOptions.Setup(x => x.Value).Returns(messageBusSettings);
+
+            receiver = new TestReceiver(mockMessageConsumer.Object, mockOptions.Object);
         }
 
         [Test]
@@ -61,8 +65,8 @@ namespace AnalyzerApi.Services.Tests
 
         private class TestReceiver : BaseReceiver
         {
-            public TestReceiver(IMessageConsumer messageConsumer, IConfiguration configuration)
-                : base(messageConsumer, configuration)
+            public TestReceiver(IMessageConsumer messageConsumer, IOptions<MessageBusSettings> options)
+                : base(messageConsumer, options)
             {
             }
 

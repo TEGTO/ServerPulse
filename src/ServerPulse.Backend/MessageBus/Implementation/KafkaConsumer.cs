@@ -22,6 +22,8 @@ namespace MessageBus.Kafka
         {
             await WaitForTopicAsync(topic, timeoutInMilliseconds, cancellationToken).ConfigureAwait(false);
 
+            consumeFrom = await AdjustOffsetAsync(topic, timeoutInMilliseconds, consumeFrom, cancellationToken);
+
             var topicPartitionOffsets = GetTopicPartitionMetadata(topic, timeoutInMilliseconds)
                 .Select(x => new TopicPartitionOffset(topic, x.PartitionId, consumeFrom));
 
@@ -99,7 +101,7 @@ namespace MessageBus.Kafka
 
             if (startDate > DateTime.UtcNow || startDate > endDate)
             {
-                throw new ArgumentException("Invalid Start Date! Must be less or equal than now (UTC) and End Date!");
+                throw new ArgumentException($"Invalid Start Date ({startDate})! Must be less or equal than current UTC ({DateTime.UtcNow}) and End Date ({endDate})!");
             }
 
             List<TopicPartitionOffset> startOffsets;
@@ -202,7 +204,7 @@ namespace MessageBus.Kafka
 
             if (fromDate > DateTime.UtcNow || fromDate > toDate)
             {
-                throw new ArgumentException("Invalid Start Date! Must be less or equal than now (UTC) and To Date!");
+                throw new ArgumentException($"Invalid From Date ({fromDate})! Must be less or equal than UTC ({DateTime.UtcNow}) and To Date ({toDate})!");
             }
 
             using var consumer = consumerFactory.CreateConsumer();
@@ -307,7 +309,7 @@ namespace MessageBus.Kafka
 
             if (startDate > DateTime.UtcNow && options.ReadNew)
             {
-                throw new ArgumentException("Invalid Start Date! Must be less or equal than now!");
+                throw new ArgumentException($"Invalid Start Date ({startDate})! Must be less or equal than UTC ({DateTime.UtcNow})!");
             }
 
             List<TopicPartitionOffset> startPartitionOffsets;
@@ -426,6 +428,20 @@ namespace MessageBus.Kafka
             using var consumer = consumerFactory.CreateConsumer();
             consumer.Assign(partitionOffset);
             return consumer.Consume(options.TimeoutInMilliseconds);
+        }
+
+        private async Task<Offset> AdjustOffsetAsync(string topic, int timeoutInMilliseconds, Offset consumeFrom, CancellationToken cancellationToken)
+        {
+            if (consumeFrom == Offset.Stored)
+            {
+                var topicMessageAmount = await GetTopicMessageAmountAsync(topic, timeoutInMilliseconds, cancellationToken).ConfigureAwait(false);
+                if (topicMessageAmount == 0)
+                {
+                    consumeFrom = Offset.Beginning;
+                }
+            }
+
+            return consumeFrom;
         }
 
         private static TopicPartitionOffset? GetNextOffset(ConsumeResult<string, string> consumeResult, bool readNew, Offset lowWatermark, Offset highWatermark)

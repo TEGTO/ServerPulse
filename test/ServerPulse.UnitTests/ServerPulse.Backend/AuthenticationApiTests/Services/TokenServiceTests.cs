@@ -25,7 +25,7 @@ namespace AuthenticationApi.Services.Tests
             userManagerMock = new Mock<UserManager<User>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
             configurationMock = new Mock<IConfiguration>();
 
-            configurationMock.Setup(c => c[Configuration.AUTH_REFRESH_TOKEN_EXPIRY_IN_DAYS]).Returns("7");
+            configurationMock.Setup(c => c[ConfigurationKeys.AUTH_REFRESH_TOKEN_EXPIRY_IN_DAYS]).Returns("7");
 
             tokenService = new TokenService(tokenHandlerMock.Object, userManagerMock.Object, configurationMock.Object);
         }

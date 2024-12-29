@@ -1,9 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using EventCommunication;
+using Microsoft.Extensions.Logging;
 using Moq;
 using ServerPulse.Client;
 using ServerPulse.Client.Services;
-using ServerPulse.EventCommunication;
-using ServerPulse.EventCommunication.Events;
+using System.Reflection;
 using System.Text.Json;
 
 namespace ServerPulse.ClientTests.Services.Tests
@@ -12,31 +12,39 @@ namespace ServerPulse.ClientTests.Services.Tests
     internal class CustomEventSenderTests
     {
         private Mock<IMessageSender> mockMessageSender;
-        private QueueMessageSender<CustomEventWrapper> customEventSender;
-        private SendingSettings<CustomEventWrapper> configuration;
+        private QueueMessageSender<CustomEventContainer> customEventContainerSender;
+        private SendingSettings<CustomEventContainer> configuration;
         private CancellationTokenSource cancellationTokenSource;
-        private Mock<ILogger<QueueMessageSender<CustomEventWrapper>>> mockLogger;
+        private Mock<ILogger<QueueMessageSender<CustomEventContainer>>> mockLogger;
 
         [SetUp]
         public void Setup()
         {
             mockMessageSender = new Mock<IMessageSender>();
-            mockLogger = new Mock<ILogger<QueueMessageSender<CustomEventWrapper>>>();
-            configuration = new SendingSettings<CustomEventWrapper>
+            mockLogger = new Mock<ILogger<QueueMessageSender<CustomEventContainer>>>();
+
+            configuration = new SendingSettings<CustomEventContainer>
             {
                 Key = "customKey",
                 SendingEndpoint = "http://localhost/custom",
                 MaxMessageSendingAmount = 5,
                 SendingInterval = 1
             };
-            customEventSender = new QueueMessageSender<CustomEventWrapper>(mockMessageSender.Object, configuration, mockLogger.Object);
             cancellationTokenSource = new CancellationTokenSource();
+
+            customEventContainerSender = new QueueMessageSender<CustomEventContainer>(mockMessageSender.Object, configuration, mockLogger.Object);
         }
+
         [TearDown]
         public void TearDown()
         {
-            customEventSender?.Dispose();
+            customEventContainerSender?.Dispose();
             cancellationTokenSource?.Dispose();
+        }
+
+        private static MethodInfo? GetPrivateMethod(string name, object instance)
+        {
+            return instance.GetType().GetMethod(name, BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
         [Test]
@@ -44,15 +52,23 @@ namespace ServerPulse.ClientTests.Services.Tests
         {
             // Arrange
             var customEvent = new CustomEvent("key1", "EventName", "EventDescription");
-            customEventSender.SendMessage(new CustomEventWrapper(customEvent, JsonSerializer.Serialize(customEvent)));
+
+            customEventContainerSender.SendMessage(new CustomEventContainer(customEvent, JsonSerializer.Serialize(customEvent)));
+
             // Act
-            var executeTask = customEventSender.StartAsync(cancellationTokenSource.Token);
+            var executeTask = customEventContainerSender.StartAsync(cancellationTokenSource.Token);
             await Task.Delay(1500);
-            cancellationTokenSource.Cancel();
+
+            await cancellationTokenSource.CancelAsync();
+
             await executeTask;
+
             // Assert
-            mockMessageSender.Verify(m => m.SendJsonAsync(It.IsAny<string>(), configuration.SendingEndpoint, It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+            mockMessageSender.Verify(
+                m => m.SendJsonAsync(It.IsAny<string>(), configuration.SendingEndpoint, It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
         }
+
         [Test]
         public async Task ExecuteAsync_SendsCorrectNumberOfCustomEvents()
         {
@@ -60,32 +76,52 @@ namespace ServerPulse.ClientTests.Services.Tests
             for (int i = 0; i < 10; i++)
             {
                 var customEvent = new CustomEvent($"key{i}", $"EventName{i}", $"EventDescription{i}");
-                customEventSender.SendMessage(new CustomEventWrapper(customEvent, JsonSerializer.Serialize(customEvent)));
+                customEventContainerSender.SendMessage(new CustomEventContainer(customEvent, JsonSerializer.Serialize(customEvent)));
             }
+
             // Act
-            var executeTask = customEventSender.StartAsync(cancellationTokenSource.Token);
+            var executeTask = customEventContainerSender.StartAsync(cancellationTokenSource.Token);
+
             await Task.Delay(1500);
-            cancellationTokenSource.Cancel();
+
+            await cancellationTokenSource.CancelAsync();
+
             await executeTask;
+
             // Assert
-            mockMessageSender.Verify(m => m.SendJsonAsync(It.IsAny<string>(), configuration.SendingEndpoint, It.IsAny<CancellationToken>()), Times.AtLeastOnce);
-            mockMessageSender.Verify(m => m.SendJsonAsync(It.IsAny<string>(), configuration.SendingEndpoint, It.IsAny<CancellationToken>()), Times.AtMost(2));
+            mockMessageSender.Verify(
+                m => m.SendJsonAsync(It.IsAny<string>(), configuration.SendingEndpoint, It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
+            mockMessageSender.Verify(
+                m => m.SendJsonAsync(It.IsAny<string>(), configuration.SendingEndpoint, It.IsAny<CancellationToken>()),
+                Times.AtMost(2));
         }
+
         [Test]
-        public void GetEventsJson_ReturnsSerializedCustomEventWrappers()
+        public void GetEventsJson_ReturnsSerializedCustomEventContainers()
         {
             // Arrange
             for (int i = 0; i < 3; i++)
             {
                 var customEvent = new CustomEvent($"key{i}", $"EventName{i}", $"EventDescription{i}");
-                customEventSender.SendMessage(new CustomEventWrapper(customEvent, JsonSerializer.Serialize(customEvent)));
+                customEventContainerSender.SendMessage(new CustomEventContainer(customEvent, JsonSerializer.Serialize(customEvent)));
             }
+
             // Act
-            var resultJson = customEventSender.GetType().GetMethod("GetEventsJson", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(customEventSender, null) as string;
+            var method = GetPrivateMethod("GetEventsJson", customEventContainerSender);
+
+            Assert.IsNotNull(method);
+
+            var resultJson = method.Invoke(customEventContainerSender, null) as string;
+
             // Assert
             Assert.IsNotNull(resultJson);
-            var deserialized = JsonSerializer.Deserialize<List<CustomEventWrapper>>(resultJson);
-            Assert.AreEqual(3, deserialized.Count);
+
+            var deserialized = JsonSerializer.Deserialize<List<CustomEventContainer>>(resultJson);
+
+            Assert.IsNotNull(deserialized);
+
+            Assert.That(deserialized.Count, Is.EqualTo(3));
         }
 
         [Test]
@@ -93,22 +129,31 @@ namespace ServerPulse.ClientTests.Services.Tests
         {
             // Arrange
             var customEvent = new CustomEvent("key1", "EventName", "EventDescription");
-            customEventSender.SendMessage(new CustomEventWrapper(customEvent, JsonSerializer.Serialize(customEvent)));
-            mockMessageSender.Setup(m => m.SendJsonAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                             .ThrowsAsync(new Exception("Test exception"));
+
+            customEventContainerSender.SendMessage(new CustomEventContainer(customEvent, JsonSerializer.Serialize(customEvent)));
+
+            mockMessageSender.Setup(m => m.SendJsonAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("Test exception"));
+
             // Act
-            var executeTask = customEventSender.StartAsync(cancellationTokenSource.Token);
+            var executeTask = customEventContainerSender.StartAsync(cancellationTokenSource.Token);
             await Task.Delay(1500);
+
             // Assert
             mockLogger.Verify(
                 x => x.Log(
                     LogLevel.Error,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("An error occurred while sending CustomEventWrapper events.")),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("An error occurred while sending CustomEventContainer events.")),
                     It.Is<Exception>(ex => ex.Message == "Test exception"),
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.AtLeastOnce);
-            cancellationTokenSource.Cancel();
+
+            await cancellationTokenSource.CancelAsync();
+
             await executeTask;
         }
     }

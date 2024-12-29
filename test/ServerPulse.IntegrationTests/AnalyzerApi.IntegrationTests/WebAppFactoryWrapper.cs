@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using AnalyzerApi.Infrastructure.Configuration;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Testcontainers.Kafka;
@@ -46,7 +47,7 @@ namespace AnalyzerApi.IntegrationTests
         private async Task InitializeContainersAsync()
         {
             RedisContainer = new RedisBuilder()
-                .WithImage("redis:latest")
+                .WithImage("redis:7.4")
                 .Build();
 
             var kafkaContainerName = Guid.NewGuid().ToString("D");
@@ -76,26 +77,25 @@ namespace AnalyzerApi.IntegrationTests
 
             configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                { "Kafka:BootstrapServers", KafkaContainer?.GetBootstrapAddress() },
-                { "Kafka:ClientId", "analyzer" },
-                { "Kafka:GroupId", "analyzer-group" },
-                { "Kafka:AnalyzerReceiveTimeout", "10000" },
-                { "Kafka:TopicDataSaveInDays", "365" },
-                { "Kafka:AliveTopic", "AliveTopic_" },
-                { "Kafka:ConfigurationTopic", "ConfigurationTopic_" },
-                { "Kafka:LoadTopic", "LoadTopic_" },
-                { "Kafka:ProcessLoadEventTopic", "LoadEventProcessTopic" },
-                { "Kafka:CustomTopic", "CustomEventTopic_" },
-                { "Kafka:LoadMethodStatisticsTopic", "LoadMethodStatisticsTopic_" },
-                { "PulseEventIntervalInMilliseconds", "20000" },
-                { "StatisticsCollectIntervalInMilliseconds", "500" },
-                { "ConnectionStrings:RedisServer",  RedisContainer?.GetConnectionString()},
-                { "Cache:Cache__ExpiryInMinutes", "5" },
-                { "MinimumStatisticsTimeSpanInSeconds", "0" },
-                { "MaxEventAmountToGetInSlotData", "25" },
-                { "MaxEventAmountToReadPerRequest", "20" },
-                { "LoadEventProcessing:BatchSize", "20" },
-                { "LoadEventProcessing:BatchIntervalInMilliseconds", "1000" },
+                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.BootstrapServers)}", KafkaContainer?.GetBootstrapAddress() },
+                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.ClientId)}", "analyzer" },
+                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.GroupId)}", "analyzer-group" },
+                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.ReceiveTimeoutInMilliseconds)}", "10000" },
+                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.AliveTopic)}", "AliveTopic_" },
+                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.ConfigurationTopic)}", "ConfigurationTopic_" },
+                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.LoadTopic)}", "LoadTopic_" },
+                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.LoadTopicProcess)}", "LoadEventProcessTopic" },
+                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.CustomTopic)}", "CustomEventTopic_" },
+                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.LoadMethodStatisticsTopic)}", "LoadMethodStatisticsTopic_" },
+                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.TopicDataSaveInDays)}", "365" },
+                 { $"ConnectionStrings:{CacheSettings.REDIS_SERVER_CONNECTION_STRING}",  RedisContainer?.GetConnectionString()},
+                 { $"{CacheSettings.SETTINGS_SECTION}:{nameof(CacheSettings.ExpiryInMinutes)}", "5" },
+                 { $"{LoadProcessingSettings.SETTINGS_SECTION}:{nameof(LoadProcessingSettings.BatchSize)}", "20" },
+                 { $"{LoadProcessingSettings.SETTINGS_SECTION}:{nameof(LoadProcessingSettings.BatchIntervalInMilliseconds)}", "1000" },
+                 { ConfigurationKeys.STATISTICS_COLLECT_INTERVAL_IN_MILLISECONDS, "500" },
+                 { ConfigurationKeys.MIN_STATISTICS_TIMESPAN_IN_SECONDS, "0" },
+                 { ConfigurationKeys.MAX_EVENT_AMOUNT_TO_GET_IN_SLOT_DATA, "25" },
+                 { ConfigurationKeys.MAX_EVENT_AMOUNT_PER_REQUEST, "20" },
             });
 
             return configurationBuilder.Build();

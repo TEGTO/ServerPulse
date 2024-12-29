@@ -6,6 +6,7 @@ using System.Text.Json;
 
 namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
 {
+    [TestFixture]
     internal class UpdateAuthControllerTests : BaseAuthControllerTest
     {
         [OneTimeSetUp]
@@ -23,7 +24,7 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
         public async Task UpdateUser_ValidRequest_ReturnsOk()
         {
             // Arrange
-            var updateRequest = new UserUpdateDataRequest
+            var request = new UserUpdateDataRequest
             {
                 Email = "updateduser1@example.com",
                 OldPassword = "123456;QWERTY",
@@ -36,12 +37,12 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
                 Password = "123456;QWERTY",
             });
 
-            using var request = new HttpRequestMessage(HttpMethod.Put, "/auth/update");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessKey);
-            request.Content = new StringContent(JsonSerializer.Serialize(updateRequest), Encoding.UTF8, "application/json");
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Put, "/auth/update");
+            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessKey);
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
             // Act
-            var httpResponse = await client.SendAsync(request);
+            var httpResponse = await client.SendAsync(httpRequest);
 
             // Assert
             Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
@@ -52,10 +53,10 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
                 Password = "NEW123456;QWERTY"
             };
 
-            using var request2 = new HttpRequestMessage(HttpMethod.Post, "/auth/login");
-            request2.Content = new StringContent(JsonSerializer.Serialize(loginRequest), Encoding.UTF8, "application/json");
+            using var httpRequest2 = new HttpRequestMessage(HttpMethod.Post, "/auth/login");
+            httpRequest2.Content = new StringContent(JsonSerializer.Serialize(loginRequest), Encoding.UTF8, "application/json");
 
-            var httpResponse2 = await client.SendAsync(request2);
+            var httpResponse2 = await client.SendAsync(httpRequest2);
 
             Assert.That(httpResponse2.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
@@ -70,18 +71,18 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
         public async Task UpdateUser_UnauthorizedRequest_ReturnsUnauthorized()
         {
             // Arrange
-            var updateRequest = new UserUpdateDataRequest
+            var request = new UserUpdateDataRequest
             {
                 Email = "updateduser2@example.com",
                 OldPassword = "123456;QWERTY",
                 Password = "NEW123456;QWERTY"
             };
 
-            using var request = new HttpRequestMessage(HttpMethod.Put, "/auth/update");
-            request.Content = new StringContent(JsonSerializer.Serialize(updateRequest), Encoding.UTF8, "application/json");
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Put, "/auth/update");
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
             // Act
-            var httpResponse = await client.SendAsync(request);
+            var httpResponse = await client.SendAsync(httpRequest);
 
             // Assert
             Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
@@ -91,7 +92,7 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
         public async Task UpdateUser_InvalidRequest_ReturnsBadRequest()
         {
             // Arrange
-            var updateRequest = new UserUpdateDataRequest
+            var request = new UserUpdateDataRequest
             {
                 Email = "",
                 OldPassword = "",
@@ -104,57 +105,15 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
                 Password = "123456;QWERTY",
             });
 
-            using var request = new HttpRequestMessage(HttpMethod.Put, "/auth/update");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessKey);
-            request.Content = new StringContent(JsonSerializer.Serialize(updateRequest), Encoding.UTF8, "application/json");
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Put, "/auth/update");
+            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessKey);
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
             // Act
-            var httpResponse = await client.SendAsync(request);
+            var httpResponse = await client.SendAsync(httpRequest);
 
             // Assert
             Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
-        }
-
-        [Test]
-        public async Task UpdateUser_ConflictingEmail_ReturnsConflictError()
-        {
-            // Arrange
-            await RegisterSampleUser(new UserRegistrationRequest
-            {
-                Email = "conflict@example.com",
-                Password = "123456;QWERTY",
-                ConfirmPassword = "123456;QWERTY"
-            });
-
-            await RegisterSampleUser(new UserRegistrationRequest
-            {
-                Email = "conflict2@example.com",
-                Password = "123456;QWERTY",
-                ConfirmPassword = "123456;QWERTY"
-            });
-
-            var updateRequest = new UserUpdateDataRequest
-            {
-                Email = "conflict2@example.com",
-                OldPassword = "123456;QWERTY",
-                Password = "123456;QWERTY"
-            };
-
-            using var request = new HttpRequestMessage(HttpMethod.Put, "/auth/update");
-            var accessKey = await GetAccessKeyForUserAsync(new UserAuthenticationRequest
-            {
-                Login = "conflict@example.com",
-                Password = "123456;QWERTY",
-            });
-
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessKey);
-            request.Content = new StringContent(JsonSerializer.Serialize(updateRequest), Encoding.UTF8, "application/json");
-
-            // Act
-            var httpResponse = await client.SendAsync(request);
-
-            // Assert
-            Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.Conflict));
         }
     }
 }

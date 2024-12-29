@@ -4,7 +4,7 @@ import { ErrorAnnotatedComponent, InfoAnnotatedComponent } from "../..";
 import { SnackbarManager } from "./snackbar-manager.service";
 
 describe('SnackbarManager', () => {
-    var mockSnackBar: jasmine.SpyObj<MatSnackBar>;
+    let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
     let service: SnackbarManager;
 
     beforeEach(() => {
@@ -23,8 +23,8 @@ describe('SnackbarManager', () => {
     });
 
     it('should openFromComponent be called with InfoAnnotatedComponent', () => {
-        let message = "message";
-        let durationInSeconds = 5;
+        const message = "message";
+        const durationInSeconds = 5;
         service.openInfoSnackbar(message, durationInSeconds);
         expect(mockSnackBar.openFromComponent).toHaveBeenCalledWith(InfoAnnotatedComponent, {
             duration: durationInSeconds * 1000,
@@ -35,7 +35,7 @@ describe('SnackbarManager', () => {
     });
 
     it('should openFromComponent be called with ErrorAnnotatedComponent', () => {
-        let message = ["message"];
+        const message = ["message"];
         service.openErrorSnackbar(message);
         expect(mockSnackBar.openFromComponent).toHaveBeenCalledWith(ErrorAnnotatedComponent, {
             duration: service.errorDurationInSeconds * 1000,
@@ -44,5 +44,4 @@ describe('SnackbarManager', () => {
             }
         });
     });
-
 });
