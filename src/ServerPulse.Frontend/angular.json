@@ -115,7 +115,8 @@
             },
             "scripts": [
               "node_modules/apexcharts/dist/apexcharts.min.js"
-            ]
+            ],
+            "karmaConfig": "karma.conf.js"
           }
         },
         "lint": {
