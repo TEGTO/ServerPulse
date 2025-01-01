@@ -23,10 +23,7 @@
 		<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
 		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
-	</ItemGroup>
-
-	<ItemGroup>
-	<ProjectReference Include="..\..\ServerPulse.EventCommunication\EventCommunication\EventCommunication.csproj" />
+		<PackageReference Include="TEGTO.ServerPulse.EventCommunication" Version="1.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>

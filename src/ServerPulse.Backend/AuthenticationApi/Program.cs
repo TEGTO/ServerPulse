@@ -32,7 +32,7 @@ builder.Services.AddFeatureManagement();
 
 #region Identity 
 
-var requireConfirmedEmail = bool.Parse(builder.Configuration[$"FeatureManagement:{ConfigurationKeys.REQUIRE_EMAIL_CONFIRMATION}"]! ?? "false");
+var requireConfirmedEmail = bool.Parse(builder.Configuration[$"FeatureManagement:{Features.EMAIL_CONFIRMATION}"]! ?? "false");
 
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
@@ -47,8 +47,13 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 .AddEntityFrameworkStores<AuthIdentityDbContext>()
 .AddDefaultTokenProviders();
 
+var isOAuthEnabled = bool.Parse(builder.Configuration[$"FeatureManagement:{Features.OAUTH}"]! ?? "false");
+if (isOAuthEnabled)
+{
+    builder.Services.AddOAuthServices(builder.Configuration);
+}
+
 builder.Services.ConfigureIdentityServices(builder.Configuration);
-builder.Services.AddOAuthServices(builder.Configuration);
 builder.Services.AddScoped<ITokenHandler, JwtHandler>();
 
 #endregion
@@ -65,12 +70,19 @@ builder.Services.ConfigureHangfireWthPostgreSql(connectionString);
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
-builder.Services.AddScoped<GoogleOAuthService>();
-builder.Services.AddScoped<IGoogleOAuthHttpClient, GoogleOAuthHttpClient>();
-builder.Services.AddScoped(provider => new Dictionary<OAuthLoginProvider, IOAuthService>
+if (isOAuthEnabled)
+{
+    builder.Services.AddScoped<GoogleOAuthService>();
+    builder.Services.AddScoped<IGoogleOAuthHttpClient, GoogleOAuthHttpClient>();
+    builder.Services.AddScoped(provider => new Dictionary<OAuthLoginProvider, IOAuthService>
     {
         { OAuthLoginProvider.Google, provider.GetService<GoogleOAuthService>()! },
     });
+}
+else
+{
+    builder.Services.AddScoped(provider => new Dictionary<OAuthLoginProvider, IOAuthService>());
+}
 
 builder.Services.AddSingleton<IBackgroundJobClient, HangfireBackgroundJobClient>();
 
@@ -106,13 +118,13 @@ if (app.Configuration[ConfigurationKeys.EF_CREATE_DATABASE] == "true")
 
 app.UseSharedMiddleware();
 
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
-    app.UseHttpsRedirection();
+    app.UseSwagger("Authentication API V1");
 }
 else
 {
-    app.UseSwagger("Authentication API V1");
+    app.UseHttpsRedirection();
 }
 
 app.UseHangfireDashboard();

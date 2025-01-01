@@ -7,6 +7,7 @@
 	<WarningsAsErrors>CS8618;CS8601;CS8602;CS8603;CS8604</WarningsAsErrors>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
+    <UserSecretsId>13f687fe-7409-4126-8cb7-5ec514ee7429</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,8 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ServerPulse.EventCommunication\EventCommunication.Validators\EventCommunication.Validators.csproj" />
-    <ProjectReference Include="..\..\ServerPulse.EventCommunication\EventCommunication\EventCommunication.csproj" />
+	<PackageReference Include="TEGTO.ServerPulse.EventCommunication" />
+	<PackageReference Include="TEGTO.ServerPulse.EventCommunication.Validators" />
     <ProjectReference Include="..\Authentication\Authentication.csproj" />
     <ProjectReference Include="..\Helper\Helper.csproj" />
     <ProjectReference Include="..\MessageBus\MessageBus.csproj" />

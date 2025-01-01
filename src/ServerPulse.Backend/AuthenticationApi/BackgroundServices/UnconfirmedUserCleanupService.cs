@@ -22,7 +22,7 @@ namespace AuthenticationApi.BackgroundServices
 
         public async Task CleanupUnconfirmedUsersAsync(CancellationToken cancellationToken = default)
         {
-            if (await featureManager.IsEnabledAsync(ConfigurationKeys.REQUIRE_EMAIL_CONFIRMATION))
+            if (await featureManager.IsEnabledAsync(Features.EMAIL_CONFIRMATION))
             {
                 var users = await userManager.Users.Where(x => !x.EmailConfirmed).ToListAsync(cancellationToken);
 

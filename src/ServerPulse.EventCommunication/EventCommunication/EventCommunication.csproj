@@ -5,6 +5,26 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	<WarningsAsErrors>CS8618;CS8601;CS8602;CS8603;CS8604</WarningsAsErrors>
+	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+	<PackageId>TEGTO.ServerPulse.$(AssemblyName)</PackageId>
+	<Title>ServerPulse.EventCommunication</Title>
+	<Authors>TEGTO</Authors>
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	<PackageIcon>icon.png</PackageIcon>
+	<RepositoryUrl>https://github.com/TEGTO/ServerPulse</RepositoryUrl>
+	<PackageTags>Analysis, Analyzer, Logging, Monitoring, Metrics, Http</PackageTags>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\assets\icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
 </Project>

@@ -10,62 +10,63 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
     [TestFixture]
     internal class ConfirmEmailControllerTests : BaseAuthControllerTest
     {
+        [SetUp]
+        public void TestSetUp()
+        {
+            if (!isConfirmEmailEnabled)
+            {
+                Assert.Ignore("Email confirmation feature is disabled. Skipping test.");
+            }
+        }
+
         [Test]
         public async Task ConfirmEmail_ValidRequest_ConfrimsUserEmailAndReturnsAuthData()
         {
-            if (isConfirmEmailEnabled)
+            // Arrange
+            var email = "testuser@example.com";
+
+            await RegisterSampleUser(new UserRegistrationRequest
             {
-                // Arrange
-                var email = "testuser@example.com";
+                Email = email,
+                Password = "Test@123",
+                ConfirmPassword = "Test@123"
+            }, false);
 
-                await RegisterSampleUser(new UserRegistrationRequest
-                {
-                    Email = email,
-                    Password = "Test@123",
-                    ConfirmPassword = "Test@123"
-                }, false);
+            mockBackgroundJobClient!.Verify
+            (
+                x => x.Enqueue(It.IsAny<Expression<Func<Task>>>()),
+                Times.AtLeastOnce
+            );
 
-                mockBackgroundJobClient!.Verify
-                (
-                    x => x.Enqueue(It.IsAny<Expression<Func<Task>>>()),
-                    Times.AtLeastOnce
-                );
+            var user = await userManager.FindByEmailAsync(email);
 
-                var user = await userManager.FindByEmailAsync(email);
+            Assert.IsNotNull(user);
 
-                Assert.IsNotNull(user);
+            var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
 
-                var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-
-                var request = new EmailConfirmationRequest
-                {
-                    Email = email,
-                    Token = token
-                };
-
-                using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/auth/confirmation");
-                httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
-
-                // Act
-                var httpResponse = await client.SendAsync(httpRequest);
-
-                // Assert
-                Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-
-                var content = await httpResponse.Content.ReadAsStringAsync();
-                var authResponse = JsonSerializer.Deserialize<UserAuthenticationResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-                Assert.NotNull(authResponse);
-                Assert.That(authResponse.Email, Is.EqualTo(email));
-
-                Assert.NotNull(authResponse.AuthToken);
-                Assert.NotNull(authResponse.AuthToken.AccessToken);
-
-            }
-            else
+            var request = new EmailConfirmationRequest
             {
-                Assert.Pass();
-            }
+                Email = email,
+                Token = token
+            };
+
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/auth/confirmation");
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
+            // Act
+            var httpResponse = await client.SendAsync(httpRequest);
+
+            // Assert
+            Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+            var content = await httpResponse.Content.ReadAsStringAsync();
+            var authResponse = JsonSerializer.Deserialize<UserAuthenticationResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            Assert.NotNull(authResponse);
+            Assert.That(authResponse.Email, Is.EqualTo(email));
+
+            Assert.NotNull(authResponse.AuthToken);
+            Assert.NotNull(authResponse.AuthToken.AccessToken);
         }
 
         [Test]
@@ -91,49 +92,42 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
         [Test]
         public async Task ConfirmEmail_WrongToken_ReturnsConflict()
         {
-            if (isConfirmEmailEnabled)
+            // Arrange
+            var email = "testuser1@example.com";
+
+            await RegisterSampleUser(new UserRegistrationRequest
             {
-                // Arrange
-                var email = "testuser1@example.com";
+                Email = email,
+                Password = "Test@123",
+                ConfirmPassword = "Test@123"
+            }, false);
 
-                await RegisterSampleUser(new UserRegistrationRequest
-                {
-                    Email = email,
-                    Password = "Test@123",
-                    ConfirmPassword = "Test@123"
-                }, false);
+            mockBackgroundJobClient!.Verify
+           (
+               x => x.Enqueue(It.IsAny<Expression<Func<Task>>>()),
+               Times.AtLeastOnce
+           );
 
-                mockBackgroundJobClient!.Verify
-               (
-                   x => x.Enqueue(It.IsAny<Expression<Func<Task>>>()),
-                   Times.AtLeastOnce
-               );
+            var user = await userManager.FindByEmailAsync(email);
 
-                var user = await userManager.FindByEmailAsync(email);
+            Assert.IsNotNull(user);
 
-                Assert.IsNotNull(user);
+            var token = "some-wrong-token";
 
-                var token = "some-wrong-token";
-
-                var request = new EmailConfirmationRequest
-                {
-                    Email = email,
-                    Token = token
-                };
-
-                using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/auth/confirmation");
-                httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
-
-                // Act
-                var httpResponse = await client.SendAsync(httpRequest);
-
-                // Assert
-                Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.Conflict));
-            }
-            else
+            var request = new EmailConfirmationRequest
             {
-                Assert.Pass();
-            }
+                Email = email,
+                Token = token
+            };
+
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/auth/confirmation");
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
+            // Act
+            var httpResponse = await client.SendAsync(httpRequest);
+
+            // Assert
+            Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.Conflict));
         }
     }
 }

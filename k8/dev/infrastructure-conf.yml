@@ -1,0 +1,21 @@
+#DB Secrets
+apiVersion: v1
+kind: Secret
+metadata:
+  namespace: server-pulse
+  name: db-secret
+type: Opaque
+data:
+  POSTGRES_DB: ZWxpYnJhcnktZGI=
+  POSTGRES_USER: dXNlcjE=
+  POSTGRES_PASSWORD: MTIzNDU=
+---
+#REDIS Secrets
+apiVersion: v1
+kind: Secret
+metadata:
+  namespace: server-pulse
+  name: redis-secret
+type: Opaque
+data:
+  REDIS_PASSWORD: MTIzNDU=

@@ -16,6 +16,12 @@
 		<ModulePath>.*NUnit3.TestAdapter.*</ModulePath>
 		<ModulePath>.*Testcontainers.*</ModulePath>
 		<ModulePath>.*Testcontainers.PostgreSql.*</ModulePath>
+		<ModulePath>.*Dapper.*</ModulePath>
+		<ModulePath>.*Hangfire.*</ModulePath>
+		<ModulePath>.*Pipelines.Sockets.Unofficial.*</ModulePath>
+		<ModulePath>.*RichardSzalay.*</ModulePath>
+		<ModulePath>.*Serilog.*</ModulePath>
+		<ModulePath>.*StackExchange.*</ModulePath>
 		<ModulePath>.*\\coverlet.collector.*</ModulePath>
               </Exclude>
             </ModulePaths>

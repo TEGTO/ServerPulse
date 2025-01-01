@@ -73,7 +73,7 @@
       "SwaggerKey": "authentication"
     },
     {
-      "Key": "Authentication_Update",
+      "Key": "Authentication_UserUpdate",
       "UpstreamPathTemplate": "/auth/update",
       "UpstreamHttpMethod": [ "PUT" ],
       "DownstreamPathTemplate": "/auth/update",

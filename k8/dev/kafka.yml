@@ -1,0 +1,138 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: server-pulse
+  name: kafka
+  labels:
+    app: kafka-app
+spec:
+  serviceName: kafka-svc
+  replicas: 3
+  selector:
+    matchLabels:
+      app: kafka-app
+  template:
+    metadata:
+      labels:
+        app: kafka-app
+    spec:
+      containers:
+        - name: kafka-container
+          image: doughgle/kafka-kraft
+          ports:
+            - containerPort: 9092
+            - containerPort: 9093
+          env:
+            - name: REPLICAS
+              value: "3"
+            - name: SERVICE
+              value: kafka-svc
+            - name: NAMESPACE
+              value: server-pulse
+            - name: SHARE_DIR
+              value: /mnt/kafka
+            - name: CLUSTER_ID
+              value: GLZOVd8vSKuXdgAApudsAg
+            - name: DEFAULT_REPLICATION_FACTOR
+              value: "3"
+            - name: DEFAULT_MIN_INSYNC_REPLICAS
+              value: "2"
+          volumeMounts:
+            - name: kafka-data
+              mountPath: /mnt/kafka
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+              ephemeral-storage: "1Gi"
+            limits:
+              memory: "1Gi"
+              cpu: "750m"
+              ephemeral-storage: "2Gi"
+      volumes:
+        - name: kafka-data
+          persistentVolumeClaim:
+            claimName: kafka-pvc
+      automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: server-pulse
+  name: kafka-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: server-pulse
+  name: kafka-svc
+  labels:
+    app: kafka-app
+spec:
+  selector:
+    app: kafka-app
+  type: NodePort
+  ports:
+    - name: "9092"
+      port: 9092
+      protocol: TCP
+      targetPort: 9092
+      nodePort: 30092
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: server-pulse
+  name: kafdrop
+  labels:
+    app: kafdrop
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafdrop
+  template:
+    metadata:
+      labels:
+        app: kafdrop
+    spec:
+      containers:
+        - name: kafdrop
+          image: obsidiandynamics/kafdrop:4.1.0
+          ports:
+            - containerPort: 9000
+          env:
+            - name: KAFKA_BROKER_CONNECT
+              value: kafka-svc:9092
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+              ephemeral-storage: "512Mi"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+              ephemeral-storage: "512Mi"
+      automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: server-pulse
+  name: kafdrop-svc
+spec:
+  selector:
+    app: kafdrop
+  type: NodePort
+  ports:
+    - name: "9000"
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+      nodePort: 30090

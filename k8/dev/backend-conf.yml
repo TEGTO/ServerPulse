@@ -1,0 +1,82 @@
+#Config
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: server-pulse
+  name: backend-config
+data:
+  ASPNETCORE_ENVIRONMENT: "Development"
+
+  Kafka__BootstrapServers: "kafka-svc:9092"
+  Kafka__ClientId__Analyzer: "analyzer"
+  Kafka__ClientId__MonitorApi: "server-interaction"
+  Kafka__GroupId: "analyzer-group"
+  Kafka__ReceiveTimeoutInMilliseconds: "5000"
+  Kafka__AliveTopic: "AliveTopic_"
+  Kafka__ConfigurationTopic: "ConfigurationTopic_"
+  Kafka__LoadTopic: "LoadTopic_"
+  Kafka__LoadTopicProcess: "LoadEventProcessTopic"
+  Kafka__ServerStatisticsTopic: "ServerStatisticsTopic_"
+  Kafka__LoadMethodStatisticsTopic: "LoadMethodStatisticsTopic_"
+  Kafka__CustomTopic: "CustomEventTopic_"
+  Kafka__TopicDataSaveInDays: "365"
+
+  Cache__GetServerSlotByEmailExpiryInSeconds: "1"
+  Cache__ServerSlotCheckExpiryInSeconds: "3"
+  Cache__ServerSlotExpiryInMinutes: "30"
+  Cache__ExpiryInMinutes: "60"
+
+  ApiGateway: "http://apigateway:8080"
+  ServerSlotApi__Url: "http://serverslotapi:8080"
+  ServerSlotApi__Check: "/serverslot/check"
+
+  LoadEventProcessing__BatchSize: "10"
+  LoadEventProcessing__BatchIntervalInMilliseconds: "10000"
+
+  BackgroundServices__UseUserUnconfirmedCleanup: "false"
+  # BackgroundServices__UnconfirmedUsersCleanUpInMinutes: "60"
+
+  FeatureManagement__OAuth: "false"
+  FeatureManagement__EmailConfirmation: "false"
+
+  UseCORS: "true"
+
+  EFCreateDatabase: "true"
+
+  AllowedCORSOrigins: ""
+
+  PulseEventIntervalInMilliseconds: "20000"
+
+  StatisticsCollectIntervalInMilliseconds: "5000"
+
+  MinimumStatisticsTimeSpanInSeconds: "5"
+
+  MaxEventAmountToGetInSlotData: "25"
+
+  MaxEventAmountToReadPerRequest: "50"
+---
+#Secret
+apiVersion: v1
+kind: Secret
+metadata:
+  namespace: server-pulse
+  name: backend-secret
+type: Opaque
+data:
+  AuthSettings__Key: MTAxNDQyNGMtNjgyNi00NzI5LWI0ZTQtOWQwYjgyNmJmM2Y2
+  AuthSettings__Issuer: aHR0cHM6Ly90b2tlbi5pc3N1ZXIuZXhhbXBsZS5jb20=
+  AuthSettings__ExpiryInMinutes: MzA=
+  AuthSettings__Audience: aHR0cHM6Ly9hcGkuZXhhbXBsZS5jb20=
+  AuthSettings__RefreshExpiryInDays: MTA=
+  AuthSettings__PublicKey: LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0gTUZzd0RRWUpLb1pJaHZjTkFRRUJCUUFEU2dBd1J3SkFYVHB1MjJvVlRaZTdMMk9MZ092bXVvdWczeHZKdlRqNiAxdEdFSHhhVlRyM1lyN2pkK0s4OTN4T040V050MGZzMFJVZysrd1gvb0dtN3JaeFRyelNQN1FJREFRQUIgLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0t
+  AuthSettings__PrivateKey: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLSBNSUlCT0FJQkFBSkFYVHB1MjJvVlRaZTdMMk9MZ092bXVvdWczeHZKdlRqNjF0R0VIeGFWVHIzWXI3amQrSzg5IDN4T040V050MGZzMFJVZysrd1gvb0dtN3JaeFRyelNQN1FJREFRQUJBa0FyWEM4Tks5VEdwdWh2alB2b05VKzEgdVpWVHoyZlA4ejF2UmprT0FJSG5BZ040N1pQTjQ3eElWM0c2emg2ZVE4WjJLTGtUOGlMWnJnYlE1VXY4NVgxQiBBaUVBb2FDZzUzOFhHYmdyVVhYU0YrZHErUjVMYkNjN29pYkFwTE9WSXZNVFZQMENJUUNUcWNuUzRzaDlybU56IHpxNkduZkJob3JUNGpHelcxbTdzdllvMTdwb1JzUUlnQmI4S09YREJSMzdPdTNTdTVYNnF4UFNZeGQyWE55cWQgaXIxL3ZlQmFmWmtDSURJNkNxQms2M1Ywbi9lQVVmVVFPL2U1OUh5bXAwN2NXWmJGVWdIT1N6SEJBaUIyMitPWiB1bVBsT1dVQW5CdWxzRWlpQ05rVVFvdk5aSHFEZXZ2Q2xtNEFJUT09IC0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0t
+  # AuthSettings__GoogleOAuth__ClientId:
+  # AuthSettings__GoogleOAuth__ClientSecret:
+  # AuthSettings__GoogleOAuth__Scope: aHR0cHM6Ly93d3cuZ29vZ2xlYXBpcy5jb20vYXV0aC91c2VyaW5mby5lbWFpbCBodHRwczovL3d3dy5nb29nbGVhcGlzLmNvbS9hdXRoL3VzZXJpbmZvLnByb2ZpbGU=
+
+  # Email__ConnectionString:
+  # Email__SenderAddress:
+
+  ConnectionStrings__AuthenticationDb: VXNlciBJRD11c2VyMTtQYXNzd29yZD0xMjM0NTtIb3N0PWRiLXN2YztQb3J0PTU0MzI7RGF0YWJhc2U9c2VydmVycHVsc2UtZGI7UG9vbGluZz10cnVlO01pblBvb2xTaXplPTA7TWF4UG9vbFNpemU9MTAwO0Nvbm5lY3Rpb25MaWZldGltZT0wO1RydXN0U2VydmVyQ2VydGlmaWNhdGU9dHJ1ZQ==
+  ConnectionStrings__ServerSlotDb: VXNlciBJRD11c2VyMTtQYXNzd29yZD0xMjM0NTtIb3N0PWRiLXN2YztQb3J0PTU0MzI7RGF0YWJhc2U9c2VydmVycHVsc2UtZGI7UG9vbGluZz10cnVlO01pblBvb2xTaXplPTA7TWF4UG9vbFNpemU9MTAwO0Nvbm5lY3Rpb25MaWZldGltZT0wO1RydXN0U2VydmVyQ2VydGlmaWNhdGU9dHJ1ZQ==
+  ConnectionStrings__RedisServer: cmVkaXMtc3ZjOjYzNzkscGFzc3dvcmQ9MTIzNDU=
