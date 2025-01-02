@@ -20,7 +20,7 @@ describe('ServerSlotEffects', () => {
         apiServiceSpy = jasmine.createSpyObj<ServerSlotApiService>(
             ['getServerSlotById', 'getUserServerSlots', 'createServerSlot', 'updateServerSlot', 'deleteServerSlot']
         );
-        snackbarManagerSpy = jasmine.createSpyObj<SnackbarManager>(['openErrorSnackbar', 'openInfoSnackbar']);
+        snackbarManagerSpy = jasmine.createSpyObj<SnackbarManager>(['openErrorSnackbar', 'openInfoSnackbar', 'openInfoCopySnackbar']);
         redirectorSpy = jasmine.createSpyObj<RedirectorService>(['redirectTo']);
         dialogManagerSpy = jasmine.createSpyObj<ServerSlotDialogManagerService>(['openDeleteSlotConfirmMenu']);
 
@@ -242,7 +242,7 @@ describe('ServerSlotEffects', () => {
 
             tick();
 
-            expect(snackbarManagerSpy.openInfoSnackbar).toHaveBeenCalledWith('🔑: key', 10);
+            expect(snackbarManagerSpy.openInfoCopySnackbar).toHaveBeenCalledWith('🔑: key', 'key', 10);
         }));
     });
 });

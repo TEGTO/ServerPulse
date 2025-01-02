@@ -1,0 +1,130 @@
+{
+  "Routes": [
+    {
+      "Key": "Authentication_Login",
+      "UpstreamPathTemplate": "/auth/login",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamPathTemplate": "/auth/login",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authenticationapi",
+          "Port": 8080
+        }
+      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 5
+      },
+      "SwaggerKey": "authentication"
+    },
+    {
+      "Key": "Authentication_Register",
+      "UpstreamPathTemplate": "/auth/register",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamPathTemplate": "/auth/register",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authenticationapi",
+          "Port": 8080
+        }
+      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 5
+      },
+      "SwaggerKey": "authentication"
+    },
+    {
+      "Key": "Authentication_EmailConfirm",
+      "UpstreamPathTemplate": "/auth/confirmation",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamPathTemplate": "/auth/confirmation",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authenticationapi",
+          "Port": 8080
+        }
+      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 5
+      },
+      "SwaggerKey": "authentication"
+    },
+    {
+      "Key": "Authentication_UserUpdate",
+      "UpstreamPathTemplate": "/auth/update",
+      "UpstreamHttpMethod": [ "PUT" ],
+      "DownstreamPathTemplate": "/auth/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authenticationapi",
+          "Port": 8080
+        }
+      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToRequest": {
+        "Authorization": "Bearer {token}"
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 5
+      },
+      "SwaggerKey": "authentication"
+    },
+    {
+      "Key": "Authentication_Refresh",
+      "UpstreamPathTemplate": "/auth/refresh",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamPathTemplate": "/auth/refresh",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authenticationapi",
+          "Port": 8080
+        }
+      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 5
+      },
+      "SwaggerKey": "authentication"
+    }
+  ]
+}

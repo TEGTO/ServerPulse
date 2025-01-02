@@ -80,7 +80,7 @@ namespace AuthenticationApi.BackgroundServices.Tests
             bool isDeletionFailed)
         {
             // Arrange
-            featureManagerMock.Setup(x => x.IsEnabledAsync(ConfigurationKeys.REQUIRE_EMAIL_CONFIRMATION))
+            featureManagerMock.Setup(x => x.IsEnabledAsync(Features.EMAIL_CONFIRMATION))
                 .ReturnsAsync(isFeatureEnabled);
 
             userManagerMock.Setup(x => x.Users).Returns(users.AsQueryable().BuildMockDbSet().Object);

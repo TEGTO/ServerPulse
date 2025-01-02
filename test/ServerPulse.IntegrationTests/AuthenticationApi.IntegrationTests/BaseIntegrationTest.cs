@@ -21,6 +21,7 @@ namespace AuthenticationApi.IntegrationTests
         protected JwtSettings settings;
         protected UserManager<User> userManager;
         protected bool isConfirmEmailEnabled;
+        protected bool isOAuthEnabled;
         private WebAppFactoryWrapper wrapper;
         private WebApplicationFactory<Program> factory;
         private IServiceScope scope;
@@ -114,7 +115,8 @@ namespace AuthenticationApi.IntegrationTests
             var configuration = factory.Services.GetService<IConfiguration>();
             if (configuration != null)
             {
-                isConfirmEmailEnabled = bool.Parse(configuration[$"FeatureManagement:{ConfigurationKeys.REQUIRE_EMAIL_CONFIRMATION}"]!);
+                isConfirmEmailEnabled = bool.Parse(configuration[$"FeatureManagement:{Features.EMAIL_CONFIRMATION}"]!);
+                isOAuthEnabled = bool.Parse(configuration[$"FeatureManagement:{Features.OAUTH}"]!);
             }
         }
     }

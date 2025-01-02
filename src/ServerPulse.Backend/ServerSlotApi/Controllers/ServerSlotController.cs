@@ -55,7 +55,7 @@ namespace ServerSlotApi.Controllers
             return Ok(response);
         }
 
-        [Route("/check")]
+        [Route("check")]
         [HttpPost]
         [OutputCache(PolicyName = "CheckSlotKeyPolicy")]
         public async Task<ActionResult<CheckSlotKeyResponse>> CheckSlotKey(CheckSlotKeyRequest request, CancellationToken cancellationToken)

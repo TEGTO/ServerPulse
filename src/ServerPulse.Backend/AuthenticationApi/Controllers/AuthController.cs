@@ -7,6 +7,7 @@ using AuthenticationApi.Dtos;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement.Mvc;
 
 namespace AuthenticationApi.Controllers
 {
@@ -35,6 +36,7 @@ namespace AuthenticationApi.Controllers
             return Ok(response);
         }
 
+        [FeatureGate(Features.EMAIL_CONFIRMATION)]
         [HttpPost("confirmation")]
         public async Task<ActionResult<UserAuthenticationResponse>> ConfirmEmail(EmailConfirmationRequest request, CancellationToken cancellationToken)
         {

@@ -9,9 +9,18 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
+COPY ["Directory.Packages.props", "."]
 COPY ["ServerSlotApi/ServerSlotApi.csproj", "ServerSlotApi/"]
 COPY ["Authentication/Authentication.csproj", "Authentication/"]
+COPY ["Helper/Helper.csproj", "Helper/"]
+COPY ["Caching/Caching.csproj", "Caching/"]
+COPY ["DatabaseControl/DatabaseControl.csproj", "DatabaseControl/"]
+COPY ["Resilience/Resilience.csproj", "Resilience/"]
+COPY ["ServerSlotApi.Dtos/ServerSlotApi.Dtos.csproj", "ServerSlotApi.Dtos/"]
+COPY ["ServerSlotApi.Infrastructure/ServerSlotApi.Infrastructure.csproj", "ServerSlotApi.Infrastructure/"]
 COPY ["Shared/Shared.csproj", "Shared/"]
+COPY ["ExceptionHandling/ExceptionHandling.csproj", "ExceptionHandling/"]
+COPY ["Logging/Logging.csproj", "Logging/"]
 RUN dotnet restore "./ServerSlotApi/ServerSlotApi.csproj"
 COPY . .
 WORKDIR "/src/ServerSlotApi"

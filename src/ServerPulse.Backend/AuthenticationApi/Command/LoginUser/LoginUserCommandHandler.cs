@@ -43,7 +43,7 @@ namespace AuthenticationApi.Command.LoginUser
 
         private async Task<bool> CheckEmailConfirmation(UserAuthenticationRequest request)
         {
-            if (await featureManager.IsEnabledAsync(ConfigurationKeys.REQUIRE_EMAIL_CONFIRMATION)
+            if (await featureManager.IsEnabledAsync(Features.EMAIL_CONFIRMATION)
                 && !await authService.CheckEmailConfirmationAsync(request.Login))
             {
                 return false;

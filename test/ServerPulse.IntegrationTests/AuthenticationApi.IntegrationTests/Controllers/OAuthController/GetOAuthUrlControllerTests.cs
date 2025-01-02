@@ -9,6 +9,15 @@ namespace AuthenticationApi.IntegrationTests.Controllers.OAuthController
     [TestFixture]
     internal class GetOAuthUrlControllerTests : BaseAuthControllerTest
     {
+        [SetUp]
+        public void TestSetUp()
+        {
+            if (!isOAuthEnabled)
+            {
+                Assert.Ignore("OAuth feature is disabled. Skipping test.");
+            }
+        }
+
         [Test]
         public async Task GetOAuthUrl_ValidRequest_ReturnsOkWithUrl()
         {

@@ -73,13 +73,13 @@ var app = builder.Build();
 
 app.UseSharedMiddleware();
 
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
-    app.UseHttpsRedirection();
+    app.UseSwagger("Server Monitor API V1");
 }
 else
 {
-    app.UseSwagger("Server Monitor API V1");
+    app.UseHttpsRedirection();
 }
 
 app.MapControllers();

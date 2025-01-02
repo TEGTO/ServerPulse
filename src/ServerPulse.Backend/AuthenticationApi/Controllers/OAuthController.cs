@@ -4,9 +4,11 @@ using AuthenticationApi.Dtos;
 using AuthenticationApi.Dtos.OAuth;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement.Mvc;
 
 namespace AuthenticationApi.Controllers
 {
+    [FeatureGate(Features.OAUTH)]
     [Route("oauth")]
     [ApiController]
     public class OAuthController : ControllerBase

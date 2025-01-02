@@ -70,7 +70,7 @@ namespace AuthenticationApi.UnconfirmedUserCleanupService.IntegrationTests
             var configuration = factory.Services.GetService<IConfiguration>();
             if (configuration != null)
             {
-                isConfirmEmailEnabled = bool.Parse(configuration[$"FeatureManagement:{ConfigurationKeys.REQUIRE_EMAIL_CONFIRMATION}"]!);
+                isConfirmEmailEnabled = bool.Parse(configuration[$"FeatureManagement:{Features.EMAIL_CONFIRMATION}"]!);
             }
         }
     }

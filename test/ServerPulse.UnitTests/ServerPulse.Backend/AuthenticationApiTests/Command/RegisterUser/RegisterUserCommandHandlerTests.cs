@@ -107,7 +107,7 @@ namespace AuthenticationApi.Command.RegisterUser.Tests
             mockMapper.Setup(m => m.Map<User>(request)).Returns(user);
             mockAuthService.Setup(m => m.RegisterUserAsync(registerModel, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(registerResult);
-            mockFeatureManager.Setup(m => m.IsEnabledAsync(ConfigurationKeys.REQUIRE_EMAIL_CONFIRMATION))
+            mockFeatureManager.Setup(m => m.IsEnabledAsync(Features.EMAIL_CONFIRMATION))
                 .ReturnsAsync(emailConfirmationEnabled);
 
             if (emailConfirmationEnabled)

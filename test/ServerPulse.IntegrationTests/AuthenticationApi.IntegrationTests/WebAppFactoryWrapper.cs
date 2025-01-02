@@ -84,7 +84,8 @@ namespace AuthenticationApi.IntegrationTests
                 { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.ExpiryInMinutes)}", "30" },
                 { ConfigurationKeys.AUTH_REFRESH_TOKEN_EXPIRY_IN_DAYS, "7" },
                 { ConfigurationKeys.EF_CREATE_DATABASE, "true" },
-                {$"FeatureManagement:{ConfigurationKeys.REQUIRE_EMAIL_CONFIRMATION}", "true" },
+                {$"FeatureManagement:{Features.EMAIL_CONFIRMATION}", "true" },
+                {$"FeatureManagement:{Features.OAUTH}", "true" },
             };
 
             configurationBuilder.AddInMemoryCollection(configuration);

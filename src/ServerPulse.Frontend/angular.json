@@ -69,6 +69,17 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "k8": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environment/environment.ts",
+                  "with": "src/environment/environment.k8.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"

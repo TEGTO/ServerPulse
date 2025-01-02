@@ -7,13 +7,14 @@
 	<WarningsAsErrors>CS8618;CS8601;CS8602;CS8603;CS8604</WarningsAsErrors>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
+    <UserSecretsId>95b93b2f-1968-4ce3-9cbd-409e42ee31f4</UserSecretsId>
   </PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="MediatR" />
 		<PackageReference Include="AutoMapper" />
 		<PackageReference Include="Microsoft.AspNetCore.OutputCaching.StackExchangeRedis" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" >
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>

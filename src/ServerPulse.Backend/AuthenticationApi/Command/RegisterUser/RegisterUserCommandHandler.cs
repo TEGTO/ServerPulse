@@ -48,7 +48,7 @@ namespace AuthenticationApi.Command.RegisterUser
                 throw new AuthorizationException(errorResponse);
             }
 
-            if (await featureManager.IsEnabledAsync(ConfigurationKeys.REQUIRE_EMAIL_CONFIRMATION))
+            if (await featureManager.IsEnabledAsync(Features.EMAIL_CONFIRMATION))
             {
                 backgroundJobClient.Enqueue(() => SendEmailConfirmationMessage(request));
             }

@@ -98,7 +98,7 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
             }
             else
             {
-                Assert.Pass();
+                Assert.Ignore("Email confirmation feature is disabled. Skipping test.");
             }
         }
     }

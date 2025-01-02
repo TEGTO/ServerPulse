@@ -7,6 +7,7 @@
 	<WarningsAsErrors>CS8618;CS8601;CS8602;CS8603;CS8604</WarningsAsErrors>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
+    <UserSecretsId>abcf12f8-187f-4e51-8fd2-9e72d9b3b31f</UserSecretsId>
   </PropertyGroup>
 
 	<ItemGroup>
@@ -20,7 +21,7 @@
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.FeatureManagement" />
+		<PackageReference Include="Microsoft.FeatureManagement.AspNetCore" />
 		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
 	</ItemGroup>
 

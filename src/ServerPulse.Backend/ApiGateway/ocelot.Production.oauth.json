@@ -1,0 +1,50 @@
+{
+  "Routes": [
+    {
+      "Key": "OAuth_GetUrl",
+      "UpstreamPathTemplate": "/oauth",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DownstreamPathTemplate": "/oauth",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authenticationapi",
+          "Port": 8080
+        }
+      ],
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 5
+      },
+      "SwaggerKey": "authentication"
+    },
+    {
+      "Key": "OAuth_Login",
+      "UpstreamPathTemplate": "/oauth",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DownstreamPathTemplate": "/oauth",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authenticationapi",
+          "Port": 8080
+        }
+      ],
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 5
+      },
+      "SwaggerKey": "authentication"
+    }
+  ]
+}
