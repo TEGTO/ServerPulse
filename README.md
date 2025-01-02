@@ -11,6 +11,7 @@
 	<img src="https://img.shields.io/github/languages/top/TEGTO/ServerPulse?style=flat&color=0080ff" alt="repo-top-language">
 	<img src="https://img.shields.io/github/languages/count/TEGTO/ServerPulse?style=flat&color=0080ff" alt="repo-language-count">
 	<img src="https://img.shields.io/sonar/coverage/TEGTO_ServerPulse?server=https%3A%2F%2Fsonarcloud.io" alt="sonar-cloud-codecoverage">
+	<img src="https://sonarcloud.io/api/project_badges/measure?project=TEGTO_ServerPulse&metric=ncloc" alt="sonar-cloud-lineofcode">
 </p>
 <p align="center">
 		<em>Built with the tools and technologies:</em>
