@@ -137,7 +137,8 @@ export class ServerSlotEffects {
         this.actions$.pipe(
             ofType(showSlotKey),
             switchMap((action) => {
-                this.snackbarManager.openInfoSnackbar(`🔑: ${action.slot.slotKey}`, 10);
+                const key = action.slot.slotKey;
+                this.snackbarManager.openInfoCopySnackbar(`🔑: ${key}`, key, 10);
                 return of();
             })
         ),

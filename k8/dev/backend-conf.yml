@@ -54,6 +54,8 @@ data:
   MaxEventAmountToGetInSlotData: "25"
 
   MaxEventAmountToReadPerRequest: "50"
+
+  SlotsPerUser: "5"
 ---
 #Secret
 apiVersion: v1

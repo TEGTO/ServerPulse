@@ -1,5 +1,6 @@
 export * from "./components/error-annotated/error-annotated.component"
 export * from "./components/info-annotated/info-annotated.component"
+export * from "./components/info-copy-annotated/info-copy-annotated.component"
 export * from "./services/base-api/base-api.service"
 export * from "./services/encryptor/encryptor.service"
 export * from "./services/error-handler/custom-error-handler.service"

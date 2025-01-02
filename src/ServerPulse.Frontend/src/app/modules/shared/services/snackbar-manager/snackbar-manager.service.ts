@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ErrorAnnotatedComponent, InfoAnnotatedComponent } from '../..';
+import { ErrorAnnotatedComponent, InfoAnnotatedComponent, InfoCopyAnnotatedComponent } from '../..';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +17,16 @@ export class SnackbarManager {
       duration: durationInSeconds * 1000,
       data: {
         message: message
+      }
+    });
+  }
+
+  openInfoCopySnackbar(message: string, copyMessage: string, durationInSeconds: number): void {
+    this.snackBar.openFromComponent(InfoCopyAnnotatedComponent, {
+      duration: durationInSeconds * 1000,
+      data: {
+        message: message,
+        copyMessage: copyMessage,
       }
     });
   }

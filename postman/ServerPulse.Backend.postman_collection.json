@@ -10,6 +10,110 @@
 			"name": "auth",
 			"item": [
 				{
+					"name": "email-confirm",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"example@gmail.com\",\r\n    \"token\": \"CfDJ8LJ5SqQ4t8BEhWNsI37JMosDGuQIAyNQ5MWMJ6QnyAGYUtp6sRkVj1Lb32l2MgSSz7gYzEHu+MppzvVEud74n0tcmgK70j0rCGV7te/k1lCJmZ6T57sqDyyKTqTrw/1q4XCGrcW7ROr+JX5uzxHwCpKHpCV87Jf32M4iEg5Z+zh/vb4dG+uPllt5hSTiR6SfkBSm7FtlyFnO22Tvh+ZpN0P0d6SEzoJ/249+QeYMDgW6IXjA8vEMFWApyoFwulPuyQ==\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7129/auth/confirmation",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7129",
+							"path": [
+								"auth",
+								"confirmation"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "auth-login",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Login status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"login\": \"example@gmail.com\",\r\n    \"password\": \"123456QWERTY\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7129/auth/login",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7129",
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "auth-register",
 					"event": [
 						{
@@ -62,7 +166,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"userName\": \"example\",\r\n  \"email\": \"example@gmail.com\",\r\n  \"password\": \"123456QWERTY\",\r\n  \"confirmPassword\": \"123456QWERTY\"\r\n}",
+							"raw": "{\r\n    \"redirectConfirmUrl\": \"someurl\",\r\n    \"email\": \"example@gmail.com\",\r\n    \"password\": \"123456QWERTY\",\r\n    \"confirmPassword\": \"123456QWERTY\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -85,37 +189,21 @@
 					"response": []
 				},
 				{
-					"name": "auth-login",
+					"name": "auth-refresh",
 					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"var registrationSuccess = pm.environment.get(\"registration_success\");\r",
-									"if (!registrationSuccess) {\r",
-									"     console.error(\"Registration is failed!\")\r",
-									"    pm.execution.skipRequest();\r",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Login status code is 200\", function () {\r",
+									"pm.test(\"Refresh status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"\r",
 									"if (pm.response.code === 200) {\r",
 									"    var jsonResponse = pm.response.json();\r",
-									"    pm.environment.set(\"accessToken\", jsonResponse.authToken.accessToken);\r",
-									"    pm.environment.set(\"refreshToken\", jsonResponse.authToken.refreshToken);\r",
-									"    pm.environment.set(\"refreshTokenExpiryDate\", jsonResponse.authToken.refreshTokenExpiryDate);\r",
-									"    pm.environment.set(\"userName\", jsonResponse.userName);\r",
-									"    pm.environment.set(\"email\", jsonResponse.email);\r",
+									"    pm.environment.set(\"accessToken\", jsonResponse.accessToken);\r",
+									"    pm.environment.set(\"refreshToken\", jsonResponse.refreshToken);\r",
+									"    pm.environment.set(\"refreshTokenExpiryDate\", jsonResponse.refreshTokenExpiryDate);\r",
 									"}"
 								],
 								"type": "text/javascript",
@@ -128,7 +216,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"login\": \"example@gmail.com\",\r\n  \"password\": \"123456QWERTY\"\r\n}",
+							"raw": "{\r\n    \"accessToken\": \"{{accessToken}}\",\r\n    \"refreshToken\": \"{{refreshToken}}\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -136,7 +224,7 @@
 							}
 						},
 						"url": {
-							"raw": "https://localhost:7129/auth/login",
+							"raw": "https://localhost:7129/auth/refresh",
 							"protocol": "https",
 							"host": [
 								"localhost"
@@ -144,7 +232,7 @@
 							"port": "7129",
 							"path": [
 								"auth",
-								"login"
+								"refresh"
 							]
 						}
 					},
@@ -184,11 +272,9 @@
 									"        body: {\r",
 									"            mode: 'raw',\r",
 									"            raw: JSON.stringify({\r",
-									"                \"userName\": \"example\",\r",
-									"                \"oldEmail\": \"example1@gmail.com\",\r",
-									"                \"newEmail\": \"example@gmail.com\",\r",
-									"                \"oldPassword\": \"123456QWERTY\",\r",
-									"                \"newPassword\": \"\"\r",
+									"                \"email\": \"example@gmail.com\",\r",
+									"                \"password\": \"\",\r",
+									"                \"oldPassword\": \"\"\r",
 									"            })\r",
 									"        }\r",
 									"    }, function (err, rollbackRes) {\r",
@@ -224,7 +310,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"userName\": \"example\",\r\n  \"oldEmail\": \"example@gmail.com\",\r\n  \"newEmail\": \"example1@gmail.com\",\r\n  \"oldPassword\": \"123456QWERTY\",\r\n  \"newPassword\": \"\"\r\n}",
+							"raw": "{\r\n    \"email\": \"example1@gmail.com\",\r\n    \"password\": \"\",\r\n    \"oldPassword\": \"123456QWERTY\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -245,36 +331,45 @@
 						}
 					},
 					"response": []
-				},
+				}
+			]
+		},
+		{
+			"name": "oauth",
+			"item": [
 				{
-					"name": "auth-refresh",
+					"name": "oauth-get-url",
 					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Refresh status code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"if (pm.response.code === 200) {\r",
-									"    var jsonResponse = pm.response.json();\r",
-									"    pm.environment.set(\"accessToken\", jsonResponse.accessToken);\r",
-									"    pm.environment.set(\"refreshToken\", jsonResponse.refreshToken);\r",
-									"    pm.environment.set(\"refreshTokenExpiryDate\", jsonResponse.refreshTokenExpiryDate);\r",
-									"}"
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
 							}
 						}
 					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
 					"request": {
-						"method": "POST",
+						"method": "GET",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"accessToken\": \"{{accessToken}}\",\r\n  \"refreshToken\": \"{{refreshToken}}\"\r\n}",
+							"raw": "",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -282,35 +377,53 @@
 							}
 						},
 						"url": {
-							"raw": "https://localhost:7129/auth/refresh",
+							"raw": "https://localhost:7129/oauth?oAuthLoginProvider=0&redirectUrl=someurl&codeVerifier=somecode",
 							"protocol": "https",
 							"host": [
 								"localhost"
 							],
 							"port": "7129",
 							"path": [
-								"auth",
-								"refresh"
+								"oauth"
+							],
+							"query": [
+								{
+									"key": "oAuthLoginProvider",
+									"value": "0",
+									"description": "0 - Google"
+								},
+								{
+									"key": "redirectUrl",
+									"value": "someurl",
+									"description": "Url that will get the auth verification token as param"
+								},
+								{
+									"key": "codeVerifier",
+									"value": "somecode"
+								}
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "auth-check",
+					"name": "oauth-login",
 					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Check status code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"var jsonResponse = pm.response.json();\r",
-									"pm.test(\"Is isCorrect should be true\", function () {\r",
-									"    pm.expect(jsonResponse.isCorrect).to.be.true;\r",
-									"});"
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -318,14 +431,11 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"login\": \"example@gmail.com\",\r\n  \"password\": \"123456QWERTY\"\r\n}",
+							"raw": "{\r\n    \"code\": \"somecode\",\r\n    \"codeVerifier\": \"codeVerifier\",\r\n    \"redirectUrl\": \"someUrl\",\r\n    \"oAuthLoginProvider\": 0 // 0 - Google\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -333,15 +443,14 @@
 							}
 						},
 						"url": {
-							"raw": "https://localhost:7129/auth/check",
+							"raw": "https://localhost:7129/oauth",
 							"protocol": "https",
 							"host": [
 								"localhost"
 							],
 							"port": "7129",
 							"path": [
-								"auth",
-								"check"
+								"oauth"
 							]
 						}
 					},
@@ -394,7 +503,7 @@
 							}
 						},
 						"url": {
-							"raw": "https://localhost:7129/serverslot",
+							"raw": "https://localhost:7129/serverslot?contains=",
 							"protocol": "https",
 							"host": [
 								"localhost"
@@ -402,6 +511,13 @@
 							"port": "7129",
 							"path": [
 								"serverslot"
+							],
+							"query": [
+								{
+									"key": "contains",
+									"value": "",
+									"description": "Search by name contains"
+								}
 							]
 						}
 					},
@@ -416,17 +532,6 @@
 								"exec": [
 									"pm.test(\"Get by id status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
-									"    var jsonResponse = pm.response.json();\r",
-									"\r",
-									"    var expectedSlotId = pm.environment.get(\"serverslot_id\");\r",
-									"    var expectedSloName = pm.environment.get(\"serverslot_name\");\r",
-									"    var expectedSlotKey = pm.environment.get(\"serverslot_slotKey\");\r",
-									"    var expectedSlotUserEmail = pm.environment.get(\"serverslot_userEmail\");\r",
-									"\r",
-									"    pm.expect(jsonResponse.id).to.eql(expectedSlotId);\r",
-									"    pm.expect(jsonResponse.userEmail).to.eql(expectedSlotUserEmail);\r",
-									"    pm.expect(jsonResponse.name).to.eql(expectedSloName);\r",
-									"    pm.expect(jsonResponse.slotKey).to.eql(expectedSlotKey);\r",
 									"});"
 								],
 								"type": "text/javascript",
@@ -463,63 +568,6 @@
 					"response": []
 				},
 				{
-					"name": "server-slot-get-string",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Get slot correct data\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "https://localhost:7129/serverslot/contains/example",
-							"protocol": "https",
-							"host": [
-								"localhost"
-							],
-							"port": "7129",
-							"path": [
-								"serverslot",
-								"contains",
-								"example"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "server-slot-create",
 					"event": [
 						{
@@ -528,15 +576,7 @@
 								"exec": [
 									"pm.test(\"Create slot status code is 201\", function () {\r",
 									"    pm.response.to.have.status(201);\r",
-									"});\r",
-									"\r",
-									"if (pm.response.code === 201) {\r",
-									"    var jsonResponse = pm.response.json();\r",
-									"    pm.environment.set(\"serverslot_id\", jsonResponse.id);\r",
-									"    pm.environment.set(\"serverslot_userEmail\", jsonResponse.userEmail);\r",
-									"    pm.environment.set(\"serverslot_name\", jsonResponse.name);\r",
-									"    pm.environment.set(\"serverslot_slotKey\", jsonResponse.slotKey);\r",
-									"}"
+									"});"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -558,7 +598,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\":\"example123\"\r\n}",
+							"raw": "{\r\n    \"name\": \"example123\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -588,38 +628,7 @@
 								"exec": [
 									"pm.test(\"Update status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"if (pm.response.code === 200) {\r",
-									"    var token = pm.environment.get(\"accessToken\"); \r",
-									"    var serverslotId = pm.environment.get(\"serverslot_id\"); \r",
-									"    var serverslotName = pm.environment.get(\"serverslot_name\");\r",
-									"    \r",
-									"    pm.sendRequest({\r",
-									"        url: 'https://localhost:7129/serverslot',\r",
-									"        method: 'PUT',\r",
-									"        header: {\r",
-									"            'Content-Type': 'application/json',\r",
-									"            'Authorization': 'Bearer ' + token \r",
-									"        },\r",
-									"        body: {\r",
-									"            mode: 'raw',\r",
-									"            raw: JSON.stringify({\r",
-									"                \"id\": serverslotId,\r",
-									"                \"name\": serverslotName,\r",
-									"            })\r",
-									"        }\r",
-									"    }, function (err, rollbackRes) {\r",
-									"        if (err) {\r",
-									"            console.error('Rollback failed:', err);\r",
-									"            return;\r",
-									"        }\r",
-									"\r",
-									"        pm.test(\"Update rollback status code is 200\", function () {\r",
-									"            pm.expect(rollbackRes).to.have.status(200);\r",
-									"        });\r",
-									"    });\r",
-									"}"
+									"});"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -641,7 +650,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"id\":\"{{serverslot_id}}\",\r\n    \"name\":\"newName\"\r\n}",
+							"raw": "{\r\n    \"id\": \"{{serverslot_id}}\",\r\n    \"name\": \"newName\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -671,44 +680,7 @@
 								"exec": [
 									"pm.test(\"Delete status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"if (pm.response.code === 200) {\r",
-									"    var token = pm.environment.get(\"accessToken\");\r",
-									"    var serverslotName = pm.environment.get(\"serverslot_name\");\r",
-									"\r",
-									"    pm.sendRequest({\r",
-									"        url: 'https://localhost:7129/serverslot',\r",
-									"        method: 'POST',\r",
-									"        header: {\r",
-									"            'Content-Type': 'application/json',\r",
-									"            'Authorization': 'Bearer ' + token\r",
-									"        },\r",
-									"        body: {\r",
-									"            mode: 'raw',\r",
-									"            raw: JSON.stringify({\r",
-									"                \"name\": serverslotName\r",
-									"            })\r",
-									"        }\r",
-									"    }, function (err, rollbackRes) {\r",
-									"        if (err) {\r",
-									"            console.error('Delete rollback failed:', err);\r",
-									"            return;\r",
-									"        }\r",
-									"\r",
-									"        pm.test(\"Delete rollback status code is 201\", function () {\r",
-									"            pm.expect(rollbackRes).to.have.status(201);\r",
-									"        });\r",
-									"\r",
-									"        if (rollbackRes.status === 'Created') {\r",
-									"            var jsonResponse = rollbackRes.json();\r",
-									"            pm.environment.set(\"serverslot_id\", jsonResponse.id);\r",
-									"            pm.environment.set(\"serverslot_userEmail\", jsonResponse.userEmail);\r",
-									"            pm.environment.set(\"serverslot_name\", jsonResponse.name);\r",
-									"            pm.environment.set(\"serverslot_slotKey\", jsonResponse.slotKey);\r",
-									"        }\r",
-									"    });\r",
-									"}"
+									"});"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -753,7 +725,7 @@
 					"response": []
 				},
 				{
-					"name": "server-slot-check",
+					"name": "dev-only-server-slot-check",
 					"event": [
 						{
 							"listen": "test",
@@ -761,12 +733,6 @@
 								"exec": [
 									"pm.test(\"Get slot correct data\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
-									"    var jsonResponse = pm.response.json();\r",
-									"\r",
-									"    var expectedSlotKey = pm.environment.get(\"serverslot_slotkey\");\r",
-									"\r",
-									"    pm.expect(jsonResponse.isExisting).to.eql(true);\r",
-									"    pm.expect(jsonResponse.slotKey).to.eql(expectedSlotKey);\r",
 									"});"
 								],
 								"type": "text/javascript",
@@ -782,7 +748,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"SlotKey\":\"{{serverslot_slotKey}}\"\r\n}",
+							"raw": "{\r\n    \"SlotKey\": \"{{serverslot_slotKey}}\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -807,10 +773,10 @@
 			]
 		},
 		{
-			"name": "server-interaction",
+			"name": "server-event",
 			"item": [
 				{
-					"name": "server-interaction-send-configuration",
+					"name": "server-event-configuration",
 					"event": [
 						{
 							"listen": "test",
@@ -830,7 +796,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"Id\":\"someid\",\r\n    \"Key\":\"{{serverslot_slotKey}}\",\r\n    \"CreationDateUTC\":\"2030-09-04T11:51:45.4656254Z\",\r\n    \"ServerKeepAliveInterval\":\"01:00:08\"\r\n}",
+							"raw": "{\r\n    \"id\": \"someid\",\r\n    \"key\": \"{{serverslot_slotKey}}\",\r\n    \"serverKeepAliveInterval\": \"01:00:08\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -853,7 +819,7 @@
 					"response": []
 				},
 				{
-					"name": "server-interaction-send-pulse",
+					"name": "server-event-pulse",
 					"event": [
 						{
 							"listen": "test",
@@ -873,7 +839,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"Key\":\"{{serverslot_slotKey}}\",\r\n    \"CreationDateUTC\":\"2030-09-04T11:51:45.4656254Z\",\r\n    \"IsAlive\":true\r\n}",
+							"raw": "{\r\n    \"id\": \"someid\",\r\n    \"key\": \"{{serverslot_slotKey}}\",\r\n    \"isAlive\": true\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -896,7 +862,7 @@
 					"response": []
 				},
 				{
-					"name": "server-interaction-send-load",
+					"name": "server-event-load",
 					"event": [
 						{
 							"listen": "test",
@@ -916,7 +882,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\r\n    {\r\n        \"Id\": \"someid\",\r\n        \"Key\": \"{{serverslot_slotKey}}\",\r\n        \"CreationDateUTC\": \"2024-08-07T14:30:45.4656254Z\",\r\n        \"Endpoint\": \"/api/v1/resource\",\r\n        \"Method\": \"GET\",\r\n        \"StatusCode\": 200,\r\n        \"Duration\": \"00:00:00.1500000\",\r\n        \"TimestampUTC\": \"2024-08-07T14:30:45.4656254Z\"\r\n    }\r\n]",
+							"raw": "[\r\n    {\r\n        \"id\": \"someid\",\r\n        \"key\": \"{{serverslot_slotKey}}\",\r\n        \"endpoint\": \"/api/v1/resource\",\r\n        \"method\": \"GET\",\r\n        \"statusCode\": 200,\r\n        \"duration\": \"00:00:00.1500000\",\r\n        \"timestampUTC\": \"2024-08-07T14:30:45.4656254Z\"\r\n    }\r\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -939,7 +905,7 @@
 					"response": []
 				},
 				{
-					"name": "server-interaction-send-custom",
+					"name": "server-event-custom",
 					"event": [
 						{
 							"listen": "test",
@@ -959,7 +925,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\r\n    {\r\n        \"CustomEvent\":{\r\n            \"Id\": \"someid\",\r\n            \"Key\": \"{{serverslot_slotKey}}\",\r\n            \"CreationDateUTC\": \"2024-08-07T14:30:45.4656254Z\",\r\n            \"Name\": \"CustomEvent\",\r\n            \"Description\": \"A custom test event, made for testing. Sent from postman.\"\r\n        },\r\n        \"CustomEventSerialized\": \"{\\\"Id\\\":\\\"someid\\\",\\\"Key\\\":\\\"serverslot_slotKey\\\",\\\"CreationDateUTC\\\":\\\"2024-08-07T14:30:45.4656254Z\\\",\\\"Name\\\":\\\"CustomEvent\\\",\\\"Description\\\":\\\"A custom test event, made for testing. Sent from postman.\\\",\\\"AdditionalFields\\\":\\\"Some value\\\",\\\"Number\\\":\\\"SomeNumber\\\"}\"\r\n    }\r\n]",
+							"raw": "[\r\n    {\r\n        \"CustomEvent\": {\r\n            \"id\": \"someid\",\r\n            \"key\": \"{{serverslot_slotKey}}\",\r\n            \"name\": \"CustomEvent\",\r\n            \"description\": \"A custom test event, made for testing. Sent from postman.\"\r\n        },\r\n        \"customEventSerialized\": \"{\\\"Id\\\":\\\"someid\\\",\\\"Key\\\":\\\"serverslot_slotKey\\\",\\\"CreationDateUTC\\\":\\\"2024-08-07T14:30:45.4656254Z\\\",\\\"Name\\\":\\\"CustomEvent\\\",\\\"Description\\\":\\\"A custom test event, made for testing. Sent from postman.\\\",\\\"AdditionalFields\\\":\\\"Some value\\\",\\\"Number\\\":\\\"SomeNumber\\\"}\"\r\n    }\r\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -987,7 +953,7 @@
 			"name": "analyzer",
 			"item": [
 				{
-					"name": "analyzer-load-range",
+					"name": "analyzer-load-daterange",
 					"event": [
 						{
 							"listen": "test",
@@ -995,8 +961,6 @@
 								"exec": [
 									"pm.test(\"Get messages in date range status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
-									"    var jsonResponse = pm.response.json();\r",
-									"    pm.expect(jsonResponse.length).to.be.above(0);\r",
 									"});\r",
 									""
 								],
@@ -1020,7 +984,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"Key\":\"{{serverslot_slotKey}}\",\r\n    \"From\":\"2020-08-03T09:45:45.4656254Z\",\r\n    \"To\":\"2044-08-25T09:45:45.4656254Z\"\r\n}",
+							"raw": "{\r\n    \"key\":\"{{serverslot_slotKey}}\",\r\n    \"from\":\"2020-08-03T09:45:45.4656254Z\",\r\n    \"to\":\"2044-08-25T09:45:45.4656254Z\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1043,119 +1007,7 @@
 					"response": []
 				},
 				{
-					"name": "analyzer-load-some",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Get some messages from date status code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
-									"    var jsonResponse = pm.response.json();\r",
-									"    pm.expect(jsonResponse.length).to.be.above(0);\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"Key\": \"{{serverslot_slotKey}}\",\r\n    \"NumberOfMessages\" : \"1\",\r\n    \"StartDate\": \"2020-08-14T14:10:45.4656254Z\",\r\n    \"ReadNew\": true\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "https://localhost:7129/analyze/someevents",
-							"protocol": "https",
-							"host": [
-								"localhost"
-							],
-							"port": "7129",
-							"path": [
-								"analyze",
-								"someevents"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "analyzer-load-somecustomevents",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Get some custom messages from date status code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
-									"    var jsonResponse = pm.response.json();\r",
-									"    pm.expect(jsonResponse.length).to.be.above(0);\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"Key\": \"{{serverslot_slotKey}}\",\r\n    \"NumberOfMessages\" : \"1\",\r\n    \"StartDate\": \"2020-08-14T14:10:45.4656254Z\",\r\n    \"ReadNew\": true\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "https://localhost:7129/analyze/somecustomevents",
-							"protocol": "https",
-							"host": [
-								"localhost"
-							],
-							"port": "7129",
-							"path": [
-								"analyze",
-								"somecustomevents"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "analyzer-load-amount-amountrange",
+					"name": "analyzer-load-amount-in-range",
 					"event": [
 						{
 							"listen": "test",
@@ -1163,9 +1015,6 @@
 								"exec": [
 									"pm.test(\"Get message amount from date status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
-									"    var jsonResponse = pm.response.json();\r",
-									"    pm.expect(jsonResponse.length).to.be.above(0);\r",
-									"    pm.expect( jsonResponse[0].amountOfEvents).to.be.above(0);\r",
 									"});\r",
 									""
 								],
@@ -1189,7 +1038,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"Key\": \"{{serverslot_slotKey}}\",\r\n    \"From\": \"2020-08-10T13:10:45.4656254Z\",\r\n    \"To\": \"2034-08-10T14:00:45.4656254Z\",\r\n    \"TimeSpan\": \"23:00:00\"\r\n}",
+							"raw": "{\r\n    \"key\": \"{{serverslot_slotKey}}\",\r\n    \"from\": \"2020-08-10T13:10:45.4656254Z\",\r\n    \"to\": \"2034-08-10T14:00:45.4656254Z\",\r\n    \"timeSpan\": \"23:00:00\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1212,6 +1061,114 @@
 					"response": []
 				},
 				{
+					"name": "analyzer-load-someevents",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get some messages from date status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"key\": \"{{serverslot_slotKey}}\",\r\n    \"numberOfMessages\": \"1\",\r\n    \"startDate\": \"2020-08-14T14:10:45.4656254Z\",\r\n    \"readNew\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7129/analyze/someevents",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7129",
+							"path": [
+								"analyze",
+								"someevents"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "analyzer-custom-someevents",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get some custom messages from date status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"key\": \"{{serverslot_slotKey}}\",\r\n    \"numberOfMessages\": \"12\",\r\n    \"startDate\": \"2024-12-24T20:10:45.4656254Z\",\r\n    \"readNew\": false\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7129/analyze/somecustomevents",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7129",
+							"path": [
+								"analyze",
+								"somecustomevents"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "analyzer-load-amount-perday",
 					"event": [
 						{
@@ -1220,9 +1177,6 @@
 								"exec": [
 									"pm.test(\"Get message amount per day status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
-									"    var jsonResponse = pm.response.json();\r",
-									"    pm.expect(jsonResponse.length).to.be.above(0);\r",
-									"    pm.expect( jsonResponse[0].amountOfEvents).to.be.above(0);\r",
 									"});\r",
 									""
 								],
@@ -1273,61 +1227,7 @@
 					"response": []
 				},
 				{
-					"name": "analyzer-eventprocessing-load",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Process load event status code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "[\r\n    {\r\n        \"Id\": \"someid\",\r\n        \"Key\": \"{{serverslot_slotKey}}\",\r\n        \"CreationDateUTC\": \"2024-08-07T14:30:45.4656254Z\",\r\n        \"Endpoint\": \"/api/v1/resource\",\r\n        \"Method\": \"GET\",\r\n        \"StatusCode\": 200,\r\n        \"Duration\": \"00:00:00.1500000\",\r\n        \"TimestampUTC\": \"2024-08-07T14:30:45.4656254Z\"\r\n    }\r\n]",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "https://localhost:7129/eventprocessing/load",
-							"protocol": "https",
-							"host": [
-								"localhost"
-							],
-							"port": "7129",
-							"path": [
-								"eventprocessing",
-								"load"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "analyzer-load-amount-slotdata",
+					"name": "analyzer-slotstatistics",
 					"event": [
 						{
 							"listen": "test",
@@ -1369,14 +1269,15 @@
 							}
 						},
 						"url": {
-							"raw": "https://localhost:7129/slotdata/{{serverslot_slotKey}}",
+							"raw": "https://localhost:7129/analyze/slotstatistics/{{serverslot_slotKey}}",
 							"protocol": "https",
 							"host": [
 								"localhost"
 							],
 							"port": "7129",
 							"path": [
-								"slotdata",
+								"analyze",
+								"slotstatistics",
 								"{{serverslot_slotKey}}"
 							]
 						}
@@ -1398,7 +1299,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"//TODO: Make test"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -1429,7 +1330,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"//TODO: Make test"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
