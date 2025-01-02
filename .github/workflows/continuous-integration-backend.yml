@@ -114,9 +114,7 @@ jobs:
 
   docker:
     needs: run-ci
-    concurrency:
-      group: "backend-docker-dev"
-      cancel-in-progress: false
+    # if: ${{ github.ref == 'refs/heads/develop-release' }}
     runs-on: ubuntu-latest
 
     strategy:

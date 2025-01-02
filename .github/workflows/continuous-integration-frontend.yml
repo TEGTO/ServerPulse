@@ -80,6 +80,36 @@ jobs:
             https://api.github.com/repos/${{ github.repository }}/actions/workflows/continuous-integration-sonarcloud.yml/dispatches \
             -d '{"ref": "${{ github.ref_name }}"}'
 
+  docker:
+    needs: run-ci
+    # if: ${{ github.ref == 'refs/heads/develop-release' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: src/ServerPulse.Frontend
+          push: true
+          tags: tegto/serverpulse.frontend:dev
+          build-args: |
+            ENV=k8
+
   # docs:
   #   if: ${{ github.ref == 'refs/heads/main' }}
   #   concurrency:
