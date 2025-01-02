@@ -82,7 +82,7 @@ jobs:
 
   docker:
     needs: run-ci
-    # if: ${{ github.ref == 'refs/heads/develop-release' }}
+    if: ${{ github.ref == 'refs/heads/develop-release' }}
     runs-on: ubuntu-latest
 
     steps:
