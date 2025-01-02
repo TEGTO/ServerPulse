@@ -113,10 +113,10 @@ jobs:
             -d '{"ref": "${{ github.ref_name }}"}'
 
   docker:
-    # if: ${{ github.ref == 'refs/heads/develop-release' }}
+    needs: run-ci
     concurrency:
       group: "backend-docker-dev"
-      cancel-in-progress: true
+      cancel-in-progress: false
     runs-on: ubuntu-latest
 
     strategy:
@@ -167,7 +167,7 @@ jobs:
           tags: ${{ matrix.service.tag }}
           file: src/ServerPulse.Backend/${{ matrix.service.file }}
           build-args: |
-            BUILD_CONFIGURATION=${{ matrix.configuration }}
+            BUILD_CONFIGURATION=${{ matrix.service.configuration }}
 
   # docs:
   #   if: ${{ github.ref == 'refs/heads/main' }}
