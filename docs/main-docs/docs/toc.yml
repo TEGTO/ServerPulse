@@ -1,0 +1,8 @@
+- name: Introduction
+  href: introduction.md
+- name: Getting Started
+  href: getting-started.md
+- name: Manual Event Sending
+  href: event-sending.md
+- name: Local Kubernetes & Minikube Setup
+  href: run-locally.md

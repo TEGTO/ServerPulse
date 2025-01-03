@@ -1,0 +1,56 @@
+{
+  "metadata": [
+    {
+      "src": [
+        {
+          "src": "../../src/ServerPulse.Client",
+          "files": [
+            "**/*.csproj"
+          ]
+        }
+      ],
+      "dest": "client-api"
+    },
+    {
+      "src": [
+        {
+          "src": "../../src/ServerPulse.Backend",
+          "files": [
+            "**/*.csproj"
+          ]
+        }
+      ],
+      "dest": "backend-api"
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": [
+          "**/*.{md,yml}"
+        ],
+        "exclude": [
+          "output/**"
+        ]
+      }
+    ],
+    "resource": [
+      {
+        "files": [
+          "images/**"
+        ]
+      }
+    ],
+    "output": "output",
+    "template": [
+      "default",
+      "modern"
+    ],
+    "globalMetadata": {
+      "_appName": "Server Pulse",
+      "_appTitle": "Server Pulse",
+      "_enableSearch": true,
+      "pdf": true
+    }
+  }
+}

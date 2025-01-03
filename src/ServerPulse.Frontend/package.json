@@ -10,7 +10,10 @@
     "test:ci": "ng test --no-watch --no-progress --browsers=ChromeHeadless",
     "coverage": "ng test --no-watch --code-coverage",
     "environment-start": "npm i && node custom-environment.config.js && ng serve",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "compodoc:build": "compodoc -p tsconfig.doc.json -d ../../docs/frontend/docs",
+    "compodoc:build-and-serve": "compodoc -p tsconfig.doc.json -d ../../docs/frontend/docs -s",
+    "compodoc:serve": "compodoc -s"
   },
   "private": true,
   "dependencies": {
@@ -41,6 +44,7 @@
     "@angular-devkit/build-angular": "^18.0.7",
     "@angular/cli": "^18.0.7",
     "@angular/compiler-cli": "^18.0.6",
+    "@compodoc/compodoc": "^1.1.26",
     "@types/jasmine": "~5.1.0",
     "angular-eslint": "19.0.2",
     "autoprefixer": "^10.4.19",

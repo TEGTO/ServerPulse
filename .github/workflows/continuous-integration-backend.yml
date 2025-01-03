@@ -166,38 +166,3 @@ jobs:
           file: src/ServerPulse.Backend/${{ matrix.service.file }}
           build-args: |
             BUILD_CONFIGURATION=${{ matrix.service.configuration }}
-
-  # docs:
-  #   if: ${{ github.ref == 'refs/heads/main' }}
-  #   concurrency:
-  #     group: "ci-backend-docs"
-  #     cancel-in-progress: true
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
-
-  #     - name: Setup .NET
-  #       uses: actions/setup-dotnet@v3
-  #       with:
-  #         dotnet-version: ${{ env.DOTNET_VERSION }}
-
-  #     - name: Generate Backend Documentation with DocFX
-  #       run: |
-  #         dotnet tool update -g docfx
-  #         docfx docfx.json
-  #       working-directory: docs/backend
-
-  #     - name: Upload Backend Documentation Artifact
-  #       uses: actions/upload-artifact@v3
-  #       with:
-  #         name: backend-docs
-  #         path: docs/backend/output
-
-  #     - name: Deploy Backend Documentation to External Repository
-  #       uses: peaceiris/actions-gh-pages@v3
-  #       with:
-  #         personal_token: ${{ secrets.PERSONAL_DOCS_TOKEN }}
-  #         publish_dir: docs/backend/output
-  #         external_repository: TEGTO/ServerPulse.Docs.Backend
-  #         branch: gh-pages
