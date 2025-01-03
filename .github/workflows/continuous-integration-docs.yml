@@ -5,7 +5,6 @@ on:
   push:
     branches:
       - main
-      - develop-release-docs
     paths:
       - "src/ServerPulse.Backend/**"
       - "src/ServerPulse.Client/**"
@@ -49,7 +48,7 @@ jobs:
   frontend-docs:
     concurrency:
       group: "ci-frontend-docs"
-      cancel-in-progress: false
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
