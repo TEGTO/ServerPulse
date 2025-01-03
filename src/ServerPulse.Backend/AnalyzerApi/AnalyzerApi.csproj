@@ -7,6 +7,7 @@
 	<WarningsAsErrors>CS8618;CS8601;CS8602;CS8603;CS8604</WarningsAsErrors>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
+    <UserSecretsId>57152349-e411-4e43-b019-21e29109cbb8</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,11 +16,11 @@
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
 	<PackageReference Include="AutoMapper" />
+	<PackageReference Include="TEGTO.ServerPulse.EventCommunication" />
+	<PackageReference Include="TEGTO.ServerPulse.EventCommunication.Validators" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ServerPulse.EventCommunication\EventCommunication.Validators\EventCommunication.Validators.csproj" />
-    <ProjectReference Include="..\..\ServerPulse.EventCommunication\EventCommunication\EventCommunication.csproj" />
     <ProjectReference Include="..\AnalyzerApi.Infrastructure\AnalyzerApi.Infrastructure.csproj" />
     <ProjectReference Include="..\Caching\Caching.csproj" />
     <ProjectReference Include="..\MessageBus\MessageBus.csproj" />

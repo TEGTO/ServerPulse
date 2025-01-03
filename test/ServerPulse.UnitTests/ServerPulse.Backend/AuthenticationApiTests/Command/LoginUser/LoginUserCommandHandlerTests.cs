@@ -73,7 +73,7 @@ namespace AuthenticationApi.Command.LoginUser.Tests
             // Arrange
             var command = new LoginUserCommand(request);
 
-            mockFeatureManager.Setup(m => m.IsEnabledAsync(ConfigurationKeys.REQUIRE_EMAIL_CONFIRMATION))
+            mockFeatureManager.Setup(m => m.IsEnabledAsync(Features.EMAIL_CONFIRMATION))
                 .ReturnsAsync(emailConfirmationEnabled);
 
             if (emailConfirmationEnabled)

@@ -39,7 +39,6 @@ Utility.MergeJsonFiles(
     [
         $"ocelot.{env}.json",
         $"ocelot.{env}.analyzer.json",
-        $"ocelot.{env}.eventprocessing.json",
         $"ocelot.{env}.authentication.json",
         $"ocelot.{env}.oauth.json",
         $"ocelot.{env}.interaction.json",

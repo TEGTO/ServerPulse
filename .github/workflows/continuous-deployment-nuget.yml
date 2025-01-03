@@ -1,0 +1,101 @@
+name: Publish NuGet Packages
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "src/ServerPulse.EventCommunication/**"
+      - "src/ServerPulse.Client/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: write-all
+
+env:
+  DOTNET_VERSION: "8.0.x"
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache .NET packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Determine Changed Files
+        id: changes
+        run: |
+          git fetch origin ${{ github.base_ref }} --depth=1
+          git diff --name-only origin/${{ github.base_ref }} HEAD > changed-files.txt
+          echo "Changed files:"
+          cat changed-files.txt
+
+      - name: Check if EventCommunication changed
+        id: event_communication_changed
+        run: |
+          if grep -q '^src/ServerPulse.EventCommunication/EventCommunication/' changed-files.txt; then
+            echo "event_communication_changed=true" >> $GITHUB_ENV
+          else
+            echo "event_communication_changed=false" >> $GITHUB_ENV
+          fi
+
+      - name: Check if EventCommunication.Validators changed
+        id: event_communication_validators_changed
+        run: |
+          if grep -q '^src/ServerPulse.EventCommunication/EventCommunication.Validators/' changed-files.txt; then
+            echo "event_communication_validators_changed=true" >> $GITHUB_ENV
+          else
+            echo "event_communication_validators_changed=false" >> $GITHUB_ENV
+          fi
+
+      - name: Check if ServerPulse.Client changed
+        id: serverpulse_client_changed
+        run: |
+          if grep -q '^src/ServerPulse.Client/' changed-files.txt; then
+            echo "serverpulse_client_changed=true" >> $GITHUB_ENV
+          else
+            echo "serverpulse_client_changed=false" >> $GITHUB_ENV
+          fi
+
+      - name: Build and Publish EventCommunication
+        continue-on-error: true
+        if: env.event_communication_changed == 'true'
+        run: |
+          dotnet restore src/ServerPulse.EventCommunication/EventCommunication/EventCommunication.csproj
+          dotnet build src/ServerPulse.EventCommunication/EventCommunication/EventCommunication.csproj --configuration Release
+          dotnet pack src/ServerPulse.EventCommunication/EventCommunication/EventCommunication.csproj --configuration Release --output ./nupkgs
+          dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+
+      - name: Build and Publish EventCommunication.Validators
+        continue-on-error: true
+        if: env.event_communication_validators_changed == 'true'
+        run: |
+          dotnet restore src/ServerPulse.EventCommunication/EventCommunication.Validators/EventCommunication.Validators.csproj
+          dotnet build src/ServerPulse.EventCommunication/EventCommunication.Validators/EventCommunication.Validators.csproj --configuration Release
+          dotnet pack src/ServerPulse.EventCommunication/EventCommunication.Validators/EventCommunication.Validators.csproj --configuration Release --output ./nupkgs
+          dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+
+      - name: Build and Publish ServerPulse.Client
+        continue-on-error: true
+        if: env.serverpulse_client_changed == 'true'
+        run: |
+          dotnet restore src/ServerPulse.Client/ServerPulse.Client.sln
+          dotnet build src/ServerPulse.Client/ServerPulse.Client.sln --configuration Release
+          dotnet pack src/ServerPulse.Client/ServerPulse.Client.sln --configuration Release --output ./nupkgs
+          dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json

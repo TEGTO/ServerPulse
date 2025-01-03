@@ -207,13 +207,13 @@ var app = builder.Build();
 
 app.UseSharedMiddleware();
 
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
-    app.UseHttpsRedirection();
+    app.UseSwagger("Analyzer API V1");
 }
 else
 {
-    app.UseSwagger("Analyzer API V1");
+    app.UseHttpsRedirection();
 }
 
 app.MapControllers();

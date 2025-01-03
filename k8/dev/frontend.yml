@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: server-pulse
+  name: frontend-app
+  labels:
+    app: frontend-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend-app
+  template:
+    metadata:
+      labels:
+        app: frontend-app
+    spec:
+      containers:
+        - name: frontend-app
+          image: tegto/serverpulse.frontend:dev
+          ports:
+            - containerPort: 80
+          imagePullPolicy: Always
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+              ephemeral-storage: "512Mi"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+              ephemeral-storage: "512Mi"
+      automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: server-pulse
+  name: frontend
+spec:
+  type: NodePort
+  selector:
+    app: frontend-app
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 80
+      nodePort: 30009

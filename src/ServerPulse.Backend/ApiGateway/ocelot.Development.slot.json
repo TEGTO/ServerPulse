@@ -30,8 +30,9 @@
       },
       "SwaggerKey": "serverslot"
     },
+
     {
-      "Key": "ServerSlot_GetWithString",
+      "Key": "ServerSlot_GetSlotsByEmailByAuth",
       "UpstreamPathTemplate": "/serverslot/{str}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/serverslot/{str}",
@@ -94,7 +95,7 @@
       "Key": "ServerSlot_CheckIfExists",
       "UpstreamPathTemplate": "/serverslot/check",
       "UpstreamHttpMethod": [ "POST" ],
-      "DownstreamPathTemplate": "/check",
+      "DownstreamPathTemplate": "/serverslot/check",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {

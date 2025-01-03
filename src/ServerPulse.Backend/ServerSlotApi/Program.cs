@@ -83,16 +83,21 @@ if (builder.Environment.IsDevelopment())
 
 var app = builder.Build();
 
+app.UseSharedMiddleware();
+
 if (app.Configuration[ConfigurationKeys.EF_CREATE_DATABASE] == "true")
 {
     await app.ConfigureDatabaseAsync<ServerSlotDbContext>(CancellationToken.None);
 }
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger("Server Monitor API V1");
+}
 else
 {
-    app.UseSwagger("Server Slot API V1");
+    app.UseHttpsRedirection();
 }
-
-app.UseSharedMiddleware();
 
 app.UseIdentity();
 

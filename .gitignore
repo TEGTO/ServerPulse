@@ -484,3 +484,4 @@ $RECYCLE.BIN/
 *.swp
 
 /test/ServerPulse.IntegrationTests/AnalyzerApi.IntegrationTests/Hubs/ServerStatisticsHubTests.cs
+k8/dev/backend-conf-local.yml

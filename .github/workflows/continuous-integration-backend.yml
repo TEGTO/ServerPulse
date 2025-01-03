@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
@@ -112,37 +112,57 @@ jobs:
             https://api.github.com/repos/${{ github.repository }}/actions/workflows/continuous-integration-sonarcloud.yml/dispatches \
             -d '{"ref": "${{ github.ref_name }}"}'
 
-  # docs:
-  #   if: ${{ github.ref == 'refs/heads/main' }}
-  #   concurrency:
-  #     group: "ci-backend-docs"
-  #     cancel-in-progress: false
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v3
+  docker:
+    needs: run-ci
+    if: ${{ github.ref == 'refs/heads/develop-release' }}
+    runs-on: ubuntu-latest
 
-  #     - name: Setup .NET
-  #       uses: actions/setup-dotnet@v3
-  #       with:
-  #         dotnet-version: ${{ env.DOTNET_VERSION }}
+    strategy:
+      matrix:
+        service:
+          - name: ApiGateway
+            tag: tegto/serverpulse.apigateway:dev
+            file: ApiGateway/Dockerfile
+            configuration: Development
+          - name: AuthenticationApi
+            tag: tegto/serverpulse.authenticationapi:dev
+            file: AuthenticationApi/Dockerfile
+            configuration: Development
+          - name: AnalyzerApi
+            tag: tegto/serverpulse.analyzerapi:dev
+            file: AnalyzerApi/Dockerfile
+            configuration: Development
+          - name: ServerMonitorApi
+            tag: tegto/serverpulse.servermonitorapi:dev
+            file: ServerMonitorApi/Dockerfile
+            configuration: Development
+          - name: ServerSlotApi
+            tag: tegto/serverpulse.serverslotapi:dev
+            file: ServerSlotApi/Dockerfile
+            configuration: Development
 
-  #     - name: Generate Backend Documentation with DocFX
-  #       run: |
-  #         dotnet tool update -g docfx
-  #         docfx docfx.json
-  #       working-directory: docs/backend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  #     - name: Upload Backend Documentation Artifact
-  #       uses: actions/upload-artifact@v3
-  #       with:
-  #         name: backend-docs
-  #         path: docs/backend/output
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-  #     - name: Deploy Backend Documentation to External Repository
-  #       uses: peaceiris/actions-gh-pages@v3
-  #       with:
-  #         personal_token: ${{ secrets.PERSONAL_DOCS_TOKEN }}
-  #         publish_dir: docs/backend/output
-  #         external_repository: TEGTO/ServerPulse.Docs.Backend
-  #         branch: gh-pages
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push ${{ matrix.service.name }}
+        uses: docker/build-push-action@v6
+        with:
+          context: src/ServerPulse.Backend
+          push: true
+          tags: ${{ matrix.service.tag }}
+          file: src/ServerPulse.Backend/${{ matrix.service.file }}
+          build-args: |
+            BUILD_CONFIGURATION=${{ matrix.service.configuration }}

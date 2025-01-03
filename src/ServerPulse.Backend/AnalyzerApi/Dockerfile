@@ -9,9 +9,16 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
+COPY ["Directory.Packages.props", "."]
 COPY ["AnalyzerApi/AnalyzerApi.csproj", "AnalyzerApi/"]
+COPY ["AnalyzerApi.Infrastructure/AnalyzerApi.Infrastructure.csproj", "AnalyzerApi.Infrastructure/"]
+COPY ["Caching/Caching.csproj", "Caching/"]
 COPY ["MessageBus/MessageBus.csproj", "MessageBus/"]
+COPY ["Resilience/Resilience.csproj", "Resilience/"]
 COPY ["Shared/Shared.csproj", "Shared/"]
+COPY ["ExceptionHandling/ExceptionHandling.csproj", "ExceptionHandling/"]
+COPY ["Helper/Helper.csproj", "Helper/"]
+COPY ["Logging/Logging.csproj", "Logging/"]
 RUN dotnet restore "./AnalyzerApi/AnalyzerApi.csproj"
 COPY . .
 WORKDIR "/src/AnalyzerApi"

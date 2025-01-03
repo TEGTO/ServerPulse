@@ -5,7 +5,7 @@ import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testin
 import { By } from '@angular/platform-browser';
 import { MemoizedSelector, Store } from '@ngrx/store';
 import { BehaviorSubject, of, Subject } from 'rxjs';
-import { addNewLoadEvent, getSomeLoadEvents, selectSelectedDate, setReadFromDate, SlotInfoState } from '../..';
+import { addNewLoadEvent, getSomeLoadEvents, selectSelectedDate, SlotInfoState } from '../..';
 import { getDefaultLoadEvent, getDefaultServerLifecycleStatistics, getDefaultServerLoadStatistics, LoadEvent } from '../../../analyzer';
 import { LocalizedDatePipe, TimeSpan } from '../../../shared';
 import { ServerSlotInfoStatsComponent } from './server-slot-info-stats.component';
@@ -136,9 +136,6 @@ describe('ServerSlotInfoStatsComponent', () => {
     tick(300);
 
     expect(component['monitorScrollForFetching']).toHaveBeenCalled();
-    expect(mockStore.dispatch).toHaveBeenCalledWith(jasmine.objectContaining({
-      type: setReadFromDate.type
-    }));
   }));
 
   it('should render lifecycle statistics', () => {

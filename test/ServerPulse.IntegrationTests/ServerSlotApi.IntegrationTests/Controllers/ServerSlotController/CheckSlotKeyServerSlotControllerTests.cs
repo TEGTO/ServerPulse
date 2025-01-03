@@ -21,7 +21,7 @@ namespace ServerSlotApi.IntegrationTests.Controllers.ServerSlotController
         {
             // Arrange
             var request = new CheckSlotKeyRequest { SlotKey = serverSlotReponses[0].SlotKey ?? "" };
-            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"/check");
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"/serverslot/check");
 
             httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
             httpRequest.Content = new StringContent(
@@ -54,9 +54,9 @@ namespace ServerSlotApi.IntegrationTests.Controllers.ServerSlotController
             var slotKey = serverSlotReponses[1].SlotKey ?? "";
 
             var request = new CheckSlotKeyRequest { SlotKey = slotKey };
-            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"/check");
-            using var httpRequest2 = new HttpRequestMessage(HttpMethod.Post, $"/check");
-            using var httpRequest3 = new HttpRequestMessage(HttpMethod.Post, $"/check");
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"/serverslot/check");
+            using var httpRequest2 = new HttpRequestMessage(HttpMethod.Post, $"/serverslot/check");
+            using var httpRequest3 = new HttpRequestMessage(HttpMethod.Post, $"/serverslot/check");
 
             httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
             httpRequest.Content = new StringContent(
@@ -133,7 +133,7 @@ namespace ServerSlotApi.IntegrationTests.Controllers.ServerSlotController
             // Arrange
             var request = new CheckSlotKeyRequest { SlotKey = null! };
 
-            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"/check");
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"/serverslot/check");
 
             httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
             httpRequest.Content = new StringContent(
@@ -154,7 +154,7 @@ namespace ServerSlotApi.IntegrationTests.Controllers.ServerSlotController
         {
             // Arrange
             var request = new CheckSlotKeyRequest { SlotKey = "invalidKey" };
-            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"/check");
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"/serverslot/check");
 
             httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
             httpRequest.Content = new StringContent(

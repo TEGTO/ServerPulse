@@ -17,7 +17,8 @@ services:
       - AuthSettings__GoogleOAuth__ClientId=${AuthSettings__GoogleOAuth__ClientId}
       - AuthSettings__GoogleOAuth__ClientSecret=${AuthSettings__GoogleOAuth__ClientSecret}
       - AuthSettings__GoogleOAuth__Scope=${AuthSettings__GoogleOAuth__Scope}
-      - FeatureManagement__RequireEmailConfirmation=${FeatureManagement__RequireEmailConfirmation}
+      - FeatureManagement__OAuth=${FeatureManagement__OAuth}
+      - FeatureManagement__EmailConfirmation=${FeatureManagement__EmailConfirmation}
       - Email__ConnectionString=${Email__ConnectionString}
       - Email__SenderAddress=${Email__SenderAddress}
       - BackgroundServices__UseUserUnconfirmedCleanup=${BackgroundServices__UseUserUnconfirmedCleanup}
@@ -56,7 +57,7 @@ services:
       - Kafka__LoadTopic=${Kafka__LoadTopic}
       - Kafka__LoadTopicProcess=${Kafka__LoadTopicProcess}
       - Kafka__CustomTopic=${Kafka__CustomTopic}
-      - ServerSlotApi__Url=${ApiGateway}
+      - ServerSlotApi__Url=${ServerSlotApi__Url}
       - ServerSlotApi__Check=${ServerSlotApi__Check}
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro

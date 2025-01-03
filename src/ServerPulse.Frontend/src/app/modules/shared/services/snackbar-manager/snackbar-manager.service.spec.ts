@@ -1,6 +1,6 @@
 import { TestBed } from "@angular/core/testing";
 import { MatSnackBar } from "@angular/material/snack-bar";
-import { ErrorAnnotatedComponent, InfoAnnotatedComponent } from "../..";
+import { ErrorAnnotatedComponent, InfoAnnotatedComponent, InfoCopyAnnotatedComponent } from "../..";
 import { SnackbarManager } from "./snackbar-manager.service";
 
 describe('SnackbarManager', () => {
@@ -30,6 +30,20 @@ describe('SnackbarManager', () => {
             duration: durationInSeconds * 1000,
             data: {
                 message: message
+            }
+        });
+    });
+
+    it('should openFromComponent be called with InfoCopyAnnotatedComponent', () => {
+        const message = "message";
+        const copyMessage = "copyMessage";
+        const durationInSeconds = 5;
+        service.openInfoCopySnackbar(message, copyMessage, durationInSeconds);
+        expect(mockSnackBar.openFromComponent).toHaveBeenCalledWith(InfoCopyAnnotatedComponent, {
+            duration: durationInSeconds * 1000,
+            data: {
+                message: message,
+                copyMessage: copyMessage
             }
         });
     });

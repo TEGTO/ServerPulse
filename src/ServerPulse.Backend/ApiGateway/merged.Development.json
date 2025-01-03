@@ -305,32 +305,6 @@
       "SwaggerKey": "analyzer"
     },
     {
-      "Key": "EventProcessing_ProcessLoadEvent",
-      "UpstreamPathTemplate": "/eventprocessing/load",
-      "UpstreamHttpMethod": [
-        "POST"
-      ],
-      "DownstreamPathTemplate": "/eventprocessing/load",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "analyzerapi",
-          "Port": 8080
-        }
-      ],
-      "LoadBalancerOptions": {
-        "Type": "LeastConnection"
-      },
-      "RateLimitOptions": {
-        "ClientWhitelist": [],
-        "EnableRateLimiting": true,
-        "Period": "3s",
-        "PeriodTimespan": 3,
-        "Limit": 1
-      },
-      "SwaggerKey": "analyzer"
-    },
-    {
       "Key": "Authentication_Login",
       "UpstreamPathTemplate": "/auth/login",
       "UpstreamHttpMethod": [
@@ -467,32 +441,6 @@
       "SwaggerKey": "authentication"
     },
     {
-      "Key": "Authentication_Check",
-      "UpstreamPathTemplate": "/auth/check",
-      "UpstreamHttpMethod": [
-        "POST"
-      ],
-      "DownstreamPathTemplate": "/auth/check",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "authenticationapi",
-          "Port": 8080
-        }
-      ],
-      "LoadBalancerOptions": {
-        "Type": "LeastConnection"
-      },
-      "RateLimitOptions": {
-        "ClientWhitelist": [],
-        "EnableRateLimiting": true,
-        "Period": "1s",
-        "PeriodTimespan": 1,
-        "Limit": 5
-      },
-      "SwaggerKey": "authentication"
-    },
-    {
       "Key": "OAuth_GetUrl",
       "UpstreamPathTemplate": "/oauth",
       "UpstreamHttpMethod": [
@@ -548,7 +496,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "serverservermonitorapi",
+          "Host": "servermonitorapi",
           "Port": 8080
         }
       ],
@@ -574,7 +522,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "serverservermonitorapi",
+          "Host": "servermonitorapi",
           "Port": 8080
         }
       ],
@@ -600,7 +548,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "serverservermonitorapi",
+          "Host": "servermonitorapi",
           "Port": 8080
         }
       ],
@@ -626,7 +574,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "serverservermonitorapi",
+          "Host": "servermonitorapi",
           "Port": 8080
         }
       ],
@@ -677,7 +625,7 @@
       "SwaggerKey": "serverslot"
     },
     {
-      "Key": "ServerSlot_GetWithString",
+      "Key": "ServerSlot_GetSlotsByEmailByAuth",
       "UpstreamPathTemplate": "/serverslot/{str}",
       "UpstreamHttpMethod": [
         "GET"
@@ -746,7 +694,7 @@
       "UpstreamHttpMethod": [
         "POST"
       ],
-      "DownstreamPathTemplate": "/check",
+      "DownstreamPathTemplate": "/serverslot/check",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {

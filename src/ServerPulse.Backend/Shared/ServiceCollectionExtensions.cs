@@ -59,10 +59,12 @@ namespace Shared
         {
             services.AddSwaggerGen(c =>
             {
+                c.DescribeAllParametersInCamelCase();
+
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Title = title,
-                    Version = "v1"
+                    Version = "v1",
                 });
 
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
