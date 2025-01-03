@@ -74,6 +74,7 @@ jobs:
           fi
 
       - name: Build and Publish EventCommunication
+        continue-on-error: true
         if: env.event_communication_changed == 'true'
         run: |
           dotnet restore src/ServerPulse.EventCommunication/EventCommunication/EventCommunication.csproj
@@ -82,6 +83,7 @@ jobs:
           dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
 
       - name: Build and Publish EventCommunication.Validators
+        continue-on-error: true
         if: env.event_communication_validators_changed == 'true'
         run: |
           dotnet restore src/ServerPulse.EventCommunication/EventCommunication.Validators/EventCommunication.Validators.csproj
@@ -90,6 +92,7 @@ jobs:
           dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
 
       - name: Build and Publish ServerPulse.Client
+        continue-on-error: true
         if: env.serverpulse_client_changed == 'true'
         run: |
           dotnet restore src/ServerPulse.Client/ServerPulse.Client.sln

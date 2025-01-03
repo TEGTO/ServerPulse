@@ -27,7 +27,7 @@ namespace AuthenticationApi.Services
             var tokenResult = await httpClient.ExchangeAuthorizationCodeAsync
                 (requestParams.Code, requestParams.CodeVerifier, requestParams.RedirectUrl, cancellationToken);
 
-            Payload payload = new();
+            var payload = new Payload();
 
             payload = await googleTokenValidator.ValidateAsync(tokenResult?.IdToken ?? "", new ValidationSettings
             {

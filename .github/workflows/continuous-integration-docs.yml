@@ -1,0 +1,93 @@
+name: Continuous Integration Docs
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "src/ServerPulse.Backend/**"
+      - "src/ServerPulse.Client/**"
+      - "src/ServerPulse.Frontend/**"
+      - "docs/**"
+
+jobs:
+  main-docs:
+    concurrency:
+      group: "ci-main-docs"
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Generate Main Documentation with DocFX
+        run: |
+          dotnet tool update -g docfx
+          docfx docfx.json
+        working-directory: docs/main-docs
+
+      - name: Upload Main Documentation Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: main-docs
+          path: docs/main-docs/output
+
+      - name: Deploy to Azure Static Web App
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_MAIN_DOCS_DEPLOYMENT_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "docs/main-docs/output"
+  frontend-docs:
+    concurrency:
+      group: "ci-frontend-docs"
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          lfs: false
+
+      - name: Cache Node.js dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm install @compodoc/compodoc@1.1.26
+        working-directory: src/ServerPulse.Frontend
+
+      - name: Generate Documentation with Compodoc
+        run: npm run compodoc:build
+        working-directory: src/ServerPulse.Frontend
+
+      - name: Upload Documentation Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-docs
+          path: docs/frontend
+
+      - name: Deploy to Azure Static Web App
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_FRONTEND_DOCS_DEPLOYMENT_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "docs/frontend"

@@ -3,23 +3,30 @@
     public class SendingSettings
     {
         /// <summary>
-        /// The server slot key.
+        /// The Server Slot key. Required to link metrics to Server Pulse.
         /// </summary>
         public required string Key { get; set; }
+
         /// <summary>
-        /// Event monitoring server uri. 
+        /// The Server Pulse API URL or Server Monitor API URL for local setups.
         /// </summary>
         public required string EventServer { get; set; } = default!;
+
         /// <summary>
-        /// The frequency, in seconds, at which a message containing pulse event data will be sent.
+        /// The frequency (in seconds) for sending pulse events. 
+        /// Backend default is one message every 3 seconds.
         /// </summary>
         public double ServerKeepAliveInterval { get; set; } = 10d;
+
         /// <summary>
-        /// The maximum number of events that will be attached to a message (exclude pulse events).
+        /// Maximum number of events per message (excluding pulse events). 
+        /// Backend default is 99 messages.
         /// </summary>
         public int MaxEventSendingAmount { get; set; } = 10;
+
         /// <summary>
-        /// How often a message with event data will be sent in seconds (exclude pulse events).
+        /// Frequency (in seconds) for sending event data messages (excluding pulse events). 
+        /// Backend default is one message every 3 seconds.
         /// </summary>
         public double SendingInterval { get; set; } = 15d;
     }

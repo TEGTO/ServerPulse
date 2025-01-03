@@ -1,7 +1,6 @@
 using ClientUseCase.CustomEvents;
 using EventCommunication;
 using Microsoft.AspNetCore.Mvc;
-using ServerPulse.Client;
 using ServerPulse.Client.Services.Interfaces;
 using System.Text.Json;
 
@@ -18,13 +17,13 @@ namespace ClientUseCase.Controllers
 
         private readonly IQueueMessageSender<LoadEvent> loadSender;
         private readonly IQueueMessageSender<CustomEventContainer> customSender;
-        private readonly SendingSettings configuration;
+        private readonly string key;
 
-        public WeatherForecastController(IQueueMessageSender<LoadEvent> loadSender, IQueueMessageSender<CustomEventContainer> customSender, SendingSettings configuration)
+        public WeatherForecastController(IQueueMessageSender<LoadEvent> loadSender, IQueueMessageSender<CustomEventContainer> customSender, IConfiguration configuration)
         {
             this.loadSender = loadSender;
             this.customSender = customSender;
-            this.configuration = configuration;
+            key = configuration["ServerPulse:Key"]!;
         }
 
         [HttpGet]
@@ -41,9 +40,9 @@ namespace ClientUseCase.Controllers
 
             var weatherForecastControllerGetEvent = new WeatherForecastControllerGetEvent
             (
-                Key: configuration.Key,
-                Name: "weatherForecastControllerGetEvent",
-                Description: "Event shows what forecasts were sent through api",
+                Key: key,
+                Name: "WeatherForecastControllerGetEvent",
+                Description: "Event shows what forecasts were sent through the API",
                 RequestDate: DateTime.UtcNow,
                 SerializedRequest: JsonSerializer.Serialize(forecasts)
             );
@@ -70,12 +69,12 @@ namespace ClientUseCase.Controllers
 
             var loadEvent = new LoadEvent
             (
-              Key: configuration.Key,
-              Endpoint: "/weatherforecast/manual",
-              Method: "GET",
-              StatusCode: 200,
-              Duration: endTime - startTime,
-              TimestampUTC: startTime
+                Key: key,
+                Endpoint: "/weatherforecast/manual",
+                Method: "GET",
+                StatusCode: 200,
+                Duration: endTime - startTime,
+                TimestampUTC: startTime
             );
             loadSender.SendMessage(loadEvent);
 
