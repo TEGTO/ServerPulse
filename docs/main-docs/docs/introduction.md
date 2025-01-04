@@ -10,7 +10,7 @@ Server Pulse streamlines the monitoring and visualization of system performance,
 ### How It Works
 1. **Data Collection**: Metrics are collected from APIs via middleware or agents.
 2. **Processing**: Metrics are processed in the backend using Kafka for event-driven architecture and Redis for caching.
-3. **Service Discovery**: Consul manages service registrations and discovery within the microservices architecture.
+3. **Visualization**: Processed data is sent to the Angular-based frontend and displayed in real-time using SignalR.
 4. **Security**: JWT authentication ensures secure access to API and frontend.
 
 ### Why Server Pulse
