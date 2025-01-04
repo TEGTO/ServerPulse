@@ -121,13 +121,17 @@ app.UseSharedMiddleware();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger("Authentication API V1");
+
+    app.UseHangfireDashboard(options: new DashboardOptions()
+    {
+        Authorization = []
+    });
 }
 else
 {
     app.UseHttpsRedirection();
 }
 
-app.UseHangfireDashboard();
 app.ConfigureRecurringJobs(app.Configuration);
 
 app.UseIdentity();

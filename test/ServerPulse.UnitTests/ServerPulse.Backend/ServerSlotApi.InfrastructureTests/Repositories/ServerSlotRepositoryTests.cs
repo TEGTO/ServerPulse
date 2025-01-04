@@ -1,5 +1,6 @@
 ﻿using DatabaseControl.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Configuration;
 using MockQueryable.Moq;
 using Moq;
@@ -7,6 +8,7 @@ using ServerSlotApi.Infrastructure.Configuration;
 using ServerSlotApi.Infrastructure.Data;
 using ServerSlotApi.Infrastructure.Entities;
 using ServerSlotApi.Infrastructure.Models;
+using System.Data;
 
 namespace ServerSlotApi.Infrastructure.Repositories.Tests
 {
@@ -15,6 +17,7 @@ namespace ServerSlotApi.Infrastructure.Repositories.Tests
     {
         private Mock<IDatabaseRepository<ServerSlotDbContext>> repositoryMock;
         private Mock<IConfiguration> configurationMock;
+        private Mock<IDbContextTransaction> transactionMock;
         private ServerSlotRepository slotRepository;
         private CancellationToken cancellationToken;
 
@@ -23,7 +26,11 @@ namespace ServerSlotApi.Infrastructure.Repositories.Tests
         {
             repositoryMock = new Mock<IDatabaseRepository<ServerSlotDbContext>>();
             configurationMock = new Mock<IConfiguration>();
+            transactionMock = new Mock<IDbContextTransaction>();
 
+            repositoryMock.Setup(x => x.GetDbContextAsync(It.IsAny<CancellationToken>())).ReturnsAsync(() => null!);
+            repositoryMock.Setup(x => x.BeginTransactionAsync(It.IsAny<ServerSlotDbContext>(), It.IsAny<IsolationLevel>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(transactionMock.Object);
             configurationMock.Setup(x => x[ConfigurationKeys.SERVER_SLOTS_PER_USER]).Returns("5");
 
             slotRepository = new ServerSlotRepository(repositoryMock.Object, configurationMock.Object);
@@ -62,8 +69,8 @@ namespace ServerSlotApi.Infrastructure.Repositories.Tests
             };
             var dbSetMock = GetDbSetMock(slots);
 
-            repositoryMock.Setup(repo => repo.GetQueryableAsync<ServerSlot>(cancellationToken))
-                .ReturnsAsync(dbSetMock.Object);
+            repositoryMock.Setup(repo => repo.Query<ServerSlot>(It.IsAny<ServerSlotDbContext>()))
+                .Returns(dbSetMock.Object);
 
             // Act
             var result = await slotRepository.GetSlotAsync(model, cancellationToken);
@@ -81,7 +88,8 @@ namespace ServerSlotApi.Infrastructure.Repositories.Tests
                 Assert.IsNull(result);
             }
 
-            repositoryMock.Verify(repo => repo.GetQueryableAsync<ServerSlot>(cancellationToken), Times.Once);
+            repositoryMock.Verify(repo => repo.GetDbContextAsync(cancellationToken), Times.Once);
+            repositoryMock.Verify(repo => repo.Query<ServerSlot>(It.IsAny<ServerSlotDbContext>()), Times.Once);
         }
 
         private static IEnumerable<TestCaseData> GetSlotByKeyTestCases()
@@ -106,8 +114,8 @@ namespace ServerSlotApi.Infrastructure.Repositories.Tests
             // Arrange
             var dbSetMock = GetDbSetMock(slots);
 
-            repositoryMock.Setup(repo => repo.GetQueryableAsync<ServerSlot>(cancellationToken))
-                .ReturnsAsync(dbSetMock.Object);
+            repositoryMock.Setup(repo => repo.Query<ServerSlot>(It.IsAny<ServerSlotDbContext>()))
+                .Returns(dbSetMock.Object);
 
             // Act
             var result = await slotRepository.GetSlotByKeyAsync(key, cancellationToken);
@@ -124,7 +132,8 @@ namespace ServerSlotApi.Infrastructure.Repositories.Tests
                 Assert.IsNull(result);
             }
 
-            repositoryMock.Verify(repo => repo.GetQueryableAsync<ServerSlot>(cancellationToken), Times.Once);
+            repositoryMock.Verify(repo => repo.GetDbContextAsync(cancellationToken), Times.Once);
+            repositoryMock.Verify(repo => repo.Query<ServerSlot>(It.IsAny<ServerSlotDbContext>()), Times.Once);
         }
 
         private static IEnumerable<TestCaseData> GetSlotsByUserEmailTestCases()
@@ -152,8 +161,8 @@ namespace ServerSlotApi.Infrastructure.Repositories.Tests
             };
             var dbSetMock = GetDbSetMock(slots);
 
-            repositoryMock.Setup(repo => repo.GetQueryableAsync<ServerSlot>(cancellationToken))
-                .ReturnsAsync(dbSetMock.Object);
+            repositoryMock.Setup(repo => repo.Query<ServerSlot>(It.IsAny<ServerSlotDbContext>()))
+                .Returns(dbSetMock.Object);
 
             // Act
             var result = await slotRepository.GetSlotsByUserEmailAsync(email, nameFilter, cancellationToken);
@@ -161,7 +170,8 @@ namespace ServerSlotApi.Infrastructure.Repositories.Tests
             // Assert
             Assert.That(result.Count(), Is.EqualTo(expectedCount));
 
-            repositoryMock.Verify(repo => repo.GetQueryableAsync<ServerSlot>(cancellationToken), Times.Once);
+            repositoryMock.Verify(repo => repo.GetDbContextAsync(cancellationToken), Times.Once);
+            repositoryMock.Verify(repo => repo.Query<ServerSlot>(It.IsAny<ServerSlotDbContext>()), Times.Once);
         }
 
         private static IEnumerable<TestCaseData> CreateSlotTestCases()
@@ -178,10 +188,10 @@ namespace ServerSlotApi.Infrastructure.Repositories.Tests
             var slot = new ServerSlot { UserEmail = userEmail, Name = slotName };
             var dbSetMock = GetDbSetMock(new List<ServerSlot>());
 
-            repositoryMock.Setup(repo => repo.GetQueryableAsync<ServerSlot>(cancellationToken))
-                .ReturnsAsync(dbSetMock.Object);
+            repositoryMock.Setup(repo => repo.Query<ServerSlot>(It.IsAny<ServerSlotDbContext>()))
+                .Returns(dbSetMock.Object);
 
-            repositoryMock.Setup(repo => repo.AddAsync(slot, cancellationToken))
+            repositoryMock.Setup(repo => repo.AddAsync(It.IsAny<ServerSlotDbContext>(), slot, cancellationToken))
                 .ReturnsAsync(slot);
 
             // Act
@@ -191,7 +201,12 @@ namespace ServerSlotApi.Infrastructure.Repositories.Tests
             Assert.That(result.UserEmail, Is.EqualTo(userEmail));
             Assert.That(result.Name, Is.EqualTo(slotName));
 
-            repositoryMock.Verify(repo => repo.AddAsync(slot, cancellationToken), Times.Once);
+            repositoryMock.Verify(repo => repo.GetDbContextAsync(cancellationToken), Times.Once);
+            repositoryMock.Verify(repo => repo.BeginTransactionAsync(It.IsAny<ServerSlotDbContext>(), IsolationLevel.Serializable, cancellationToken), Times.Once);
+            repositoryMock.Verify(repo => repo.Query<ServerSlot>(It.IsAny<ServerSlotDbContext>()), Times.Once);
+            repositoryMock.Verify(repo => repo.AddAsync(It.IsAny<ServerSlotDbContext>(), slot, cancellationToken), Times.Once);
+            repositoryMock.Verify(repo => repo.SaveChangesAsync(It.IsAny<ServerSlotDbContext>(), cancellationToken), Times.Once);
+            transactionMock.Verify(repo => repo.CommitAsync(cancellationToken), Times.Once);
         }
 
         [Test]
@@ -203,12 +218,20 @@ namespace ServerSlotApi.Infrastructure.Repositories.Tests
             var existingSlots = Enumerable.Range(1, 5).Select(i => new ServerSlot { UserEmail = userEmail }).ToList();
             var dbSetMock = GetDbSetMock(existingSlots);
 
-            repositoryMock.Setup(repo => repo.GetQueryableAsync<ServerSlot>(cancellationToken))
-                .ReturnsAsync(dbSetMock.Object);
+            repositoryMock.Setup(repo => repo.Query<ServerSlot>(It.IsAny<ServerSlotDbContext>()))
+                .Returns(dbSetMock.Object);
 
             // Act & Assert
             Assert.ThrowsAsync<InvalidOperationException>(() => slotRepository.CreateSlotAsync(slot, cancellationToken));
-            repositoryMock.Verify(repo => repo.AddAsync(It.IsAny<ServerSlot>(), cancellationToken), Times.Never);
+
+            repositoryMock.Verify(repo => repo.GetDbContextAsync(cancellationToken), Times.Once);
+            repositoryMock.Verify(repo => repo.BeginTransactionAsync(It.IsAny<ServerSlotDbContext>(), IsolationLevel.Serializable, cancellationToken), Times.Once);
+            repositoryMock.Verify(repo => repo.Query<ServerSlot>(It.IsAny<ServerSlotDbContext>()), Times.Once);
+            transactionMock.Verify(repo => repo.RollbackAsync(cancellationToken), Times.Once);
+
+            repositoryMock.Verify(repo => repo.AddAsync(It.IsAny<ServerSlotDbContext>(), slot, cancellationToken), Times.Never);
+            repositoryMock.Verify(repo => repo.SaveChangesAsync(It.IsAny<ServerSlotDbContext>(), cancellationToken), Times.Never);
+            transactionMock.Verify(repo => repo.CommitAsync(cancellationToken), Times.Never);
         }
 
         private static IEnumerable<TestCaseData> UpdateSlotTestCases()
@@ -228,7 +251,9 @@ namespace ServerSlotApi.Infrastructure.Repositories.Tests
             await slotRepository.UpdateSlotAsync(slot, cancellationToken);
 
             // Assert
-            repositoryMock.Verify(repo => repo.UpdateAsync(slot, cancellationToken), Times.Once);
+            repositoryMock.Verify(repo => repo.GetDbContextAsync(cancellationToken), Times.Once);
+            repositoryMock.Verify(repo => repo.Update(It.IsAny<ServerSlotDbContext>(), slot), Times.Once);
+            repositoryMock.Verify(repo => repo.SaveChangesAsync(It.IsAny<ServerSlotDbContext>(), cancellationToken), Times.Once);
         }
 
         private static IEnumerable<TestCaseData> DeleteSlotTestCases()
@@ -248,7 +273,9 @@ namespace ServerSlotApi.Infrastructure.Repositories.Tests
             await slotRepository.DeleteSlotAsync(slot, cancellationToken);
 
             // Assert
-            repositoryMock.Verify(repo => repo.DeleteAsync(slot, cancellationToken), Times.Once);
+            repositoryMock.Verify(repo => repo.GetDbContextAsync(cancellationToken), Times.Once);
+            repositoryMock.Verify(repo => repo.Remove(It.IsAny<ServerSlotDbContext>(), slot), Times.Once);
+            repositoryMock.Verify(repo => repo.SaveChangesAsync(It.IsAny<ServerSlotDbContext>(), cancellationToken), Times.Once);
         }
     }
 }
