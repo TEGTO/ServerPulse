@@ -1,4 +1,4 @@
-name: Continuous Integration Docs
+name: Docs Pipeline
 
 on:
   workflow_dispatch:
@@ -45,6 +45,7 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "docs/main-docs/output"
+
   frontend-docs:
     concurrency:
       group: "ci-frontend-docs"

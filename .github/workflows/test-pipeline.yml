@@ -1,0 +1,173 @@
+name: Test Pipeline
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - develop-release
+    paths:
+      - "src/ServerPulse.EventCommunication/**"
+      - "src/ServerPulse.Backend/**"
+      - "src/ServerPulse.Frontend/**"
+      - "test/**"
+  pull_request:
+    branches:
+      - main
+      - develop-release
+    paths:
+      - "src/ServerPulse.EventCommunication/**"
+      - "src/ServerPulse.Backend/**"
+      - "src/ServerPulse.Frontend/**"
+      - "test/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: write-all
+
+env:
+  DOTNET_VERSION: "8.0.x"
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache .NET packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Install coverage tools
+        run: |
+          dotnet tool install --global dotnet-coverage
+          dotnet tool install --global dotnet-reportgenerator-globaltool
+
+      - name: Build projects
+        run: |
+          dotnet build src/ServerPulse.Backend/ServerPulse.Backend.sln
+
+      - name: Run tests with coverage
+        run: |
+          dotnet-coverage collect dotnet test src/ServerPulse.Backend/ServerPulse.Backend.sln --configuration Release --logger "trx;LogFileName=test-results.trx" --results-directory ./TestResults -f xml -o coverage.xml --settings coverage.runsettings
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-test-results
+          path: ./TestResults
+
+      - name: Upload code coverage results
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-code-coverage
+          path: coverage.xml
+
+      - name: Install ReportGenerator
+        run: |
+          dotnet tool install -g dotnet-reportgenerator-globaltool
+
+      - name: Generate HTML report from coverage
+        run: |
+          reportgenerator -reports:coverage.xml -targetdir:./coverage-report -reporttypes:Html
+
+      - name: Upload coverage report artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-coverage-report
+          path: ./coverage-report
+
+  test-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          lfs: false
+
+      - name: Cache Node.js dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm install --force
+        working-directory: src/ServerPulse.Frontend
+
+      - name: Run tests with coverage
+        run: npm run test:ci -- --code-coverage
+        working-directory: src/ServerPulse.Frontend
+
+      - name: Upload code coverage
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-coverage-report
+          path: src/ServerPulse.Frontend/coverage
+
+  sonarcloud:
+    needs: [test-backend, test-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Backend Coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-coverage-report
+          path: ./coverage/backend
+
+      - name: Download Frontend Coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-coverage-report
+          path: ./coverage/frontend
+
+      - name: Merge Coverage Reports
+        run: |
+          mkdir merged-coverage
+          cp ./coverage/backend/coverage.xml merged-coverage/coverage-backend.xml
+          cp ./coverage/frontend/lcov.info merged-coverage/coverage-frontend.lcov
+          rm -r ./coverage
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Add SonarCloud
+        run: |
+          dotnet tool install --global dotnet-sonarscanner
+          dotnet sonarscanner begin \
+            /k:"${{ secrets.SONAR_PROJECT_KEY }}" \
+            /o:"${{ secrets.SONAR_ORGANIZATION }}" \
+            /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.cs.vscoveragexml.reportsPaths="merged-coverage/coverage-backend.xml" \
+            /d:sonar.javascript.lcov.reportPaths="merged-coverage/coverage-frontend.lcov" \
+            /d:sonar.branch.name="${{ github.ref_name }}" 
+          dotnet build --configuration Release src/ServerPulse.Backend/ServerPulse.Backend.sln
+          dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
