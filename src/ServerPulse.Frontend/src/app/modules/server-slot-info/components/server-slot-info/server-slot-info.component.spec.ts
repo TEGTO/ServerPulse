@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ChangeDetectorRef, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -55,15 +55,19 @@ describe('ServerSlotInfoComponent', () => {
   });
 
   describe('ngOnInit', () => {
-    it('should initialize slotId$ and dispatch actions for the slot', () => {
+    it('should initialize slotId$ and dispatch actions for the slot', fakeAsync(() => {
       spyOn(component['slotId$'], 'next').and.callThrough();
 
       component.ngOnInit();
 
+      tick();
+
+      component.serverSlot$.subscribe();
+
       expect(component['slotId$'].next).toHaveBeenCalledWith('slot1');
       expect(storeSpy.dispatch).toHaveBeenCalledWith(getServerSlotById({ id: 'slot1' }));
       expect(storeSpy.select).toHaveBeenCalled();
-    });
+    }));
 
     it('should dispatch statistics receiving actions for the slot', fakeAsync(() => {
       component.ngOnInit();

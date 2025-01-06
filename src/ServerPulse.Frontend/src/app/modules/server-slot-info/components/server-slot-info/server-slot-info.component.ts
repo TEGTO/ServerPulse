@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { BehaviorSubject, filter, Observable, Subject, takeUntil, tap } from 'rxjs';
+import { BehaviorSubject, EMPTY, filter, Observable, Subject, switchMap, takeUntil, tap } from 'rxjs';
 import { startCustomStatisticsReceiving, startLifecycleStatisticsReceiving, startLoadStatisticsReceiving } from '../../../analyzer';
 import { deleteServerSlot, getServerSlotById, selectServerSlotById, ServerSlot, showSlotKey } from '../../../server-slot-shared';
 
@@ -19,29 +19,31 @@ export class ServerSlotInfoComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly store: Store,
-    private readonly route: ActivatedRoute
+    private readonly route: ActivatedRoute,
   ) { }
 
   ngOnInit(): void {
-    this.route.paramMap
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(params => {
-        const slotId = params.get('id');
-        this.slotId$.next(slotId);
+    this.serverSlot$ = this.route.paramMap
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap(params => {
+          const slotId = params.get('id');
+          this.slotId$.next(slotId);
 
-        if (slotId) {
-          this.store.dispatch(getServerSlotById({ id: slotId }));
-
-          this.serverSlot$ = this.store.select(selectServerSlotById(slotId)).pipe(
-            filter((x): x is ServerSlot => x !== undefined && x !== null),
-            tap(serverSlot => {
-              this.store.dispatch(startLoadStatisticsReceiving({ key: serverSlot.slotKey }));
-              this.store.dispatch(startCustomStatisticsReceiving({ key: serverSlot.slotKey, getInitial: false }));
-              this.store.dispatch(startLifecycleStatisticsReceiving({ key: serverSlot.slotKey }));
-            })
-          );
-        }
-      });
+          if (slotId) {
+            this.store.dispatch(getServerSlotById({ id: slotId }));
+            return this.store.select(selectServerSlotById(slotId)).pipe(
+              filter((x): x is ServerSlot => x !== undefined && x !== null),
+              tap(serverSlot => {
+                this.store.dispatch(startLoadStatisticsReceiving({ key: serverSlot.slotKey }));
+                this.store.dispatch(startCustomStatisticsReceiving({ key: serverSlot.slotKey, getInitial: false }));
+                this.store.dispatch(startLifecycleStatisticsReceiving({ key: serverSlot.slotKey }));
+              })
+            );
+          }
+          return EMPTY;
+        })
+      );
   }
 
   ngOnDestroy(): void {

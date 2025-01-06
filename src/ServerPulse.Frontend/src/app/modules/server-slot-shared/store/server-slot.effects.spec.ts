@@ -21,7 +21,7 @@ describe('ServerSlotEffects', () => {
             ['getServerSlotById', 'getUserServerSlots', 'createServerSlot', 'updateServerSlot', 'deleteServerSlot']
         );
         snackbarManagerSpy = jasmine.createSpyObj<SnackbarManager>(['openErrorSnackbar', 'openInfoSnackbar', 'openInfoCopySnackbar']);
-        redirectorSpy = jasmine.createSpyObj<RedirectorService>(['redirectTo']);
+        redirectorSpy = jasmine.createSpyObj<RedirectorService>(['redirectTo', 'redirectToHome']);
         dialogManagerSpy = jasmine.createSpyObj<ServerSlotDialogManagerService>(['openDeleteSlotConfirmMenu']);
 
         TestBed.configureTestingModule({
@@ -71,6 +71,19 @@ describe('ServerSlotEffects', () => {
                 expect(result).toEqual(outcome);
                 expect(apiServiceSpy.getServerSlotById).toHaveBeenCalledWith('1');
             });
+        });
+    });
+
+    describe('getServerSlotByIdFailure$', () => {
+        it('should redirect to home page and open snackbar error on failure', () => {
+            const action = getServerSlotByIdFailure({ error: new Error('Some Error') });
+
+            actions$ = of(action);
+
+            effects.getServerSlotByIdFailure$.subscribe();
+
+            expect(redirectorSpy.redirectToHome).toHaveBeenCalled();
+            expect(snackbarManagerSpy.openErrorSnackbar).toHaveBeenCalled();
         });
     });
 

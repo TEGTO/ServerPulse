@@ -31,6 +31,12 @@ export class ServerSlotInfoAdditionalInformationComponent implements OnInit, Aft
   ngOnInit(): void {
     this.chartData$ = this.store.select(selectLastLoadStatisticsByKey(this.slotKey)).pipe(
       map(statistics => this.generateChartSeries(statistics)),
+      map(data => {
+        return new Map(
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          Array.from(data).filter(([_, value]) => value > 0)
+        );
+      })
     );
 
     this.store.select(selectLastCustomEventByKey(this.slotKey))

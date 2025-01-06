@@ -33,6 +33,7 @@ export class ServerSlotEffects {
         this.actions$.pipe(
             ofType(getServerSlotByIdFailure),
             switchMap((action) => {
+                this.redirector.redirectToHome();
                 this.snackbarManager.openErrorSnackbar(["Failed to get server slot by id: " + action.error]);
                 return of();
             })

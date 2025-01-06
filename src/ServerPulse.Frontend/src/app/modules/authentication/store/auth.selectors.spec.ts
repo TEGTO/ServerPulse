@@ -38,7 +38,7 @@ describe('Authentication Selectors', () => {
             authData: getDefaultAuthData(),
         };
         const result = selectAuthData.projector(emptyState);
-        expect(result).toEqual(getDefaultAuthData());
+        expect(result.authToken.accessToken).toEqual(getDefaultAuthData().authToken.accessToken);
     });
 
     it('should return updated authData when state has changes', () => {

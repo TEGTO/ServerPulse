@@ -49,7 +49,9 @@ describe('ActivityChartControlComponent', () => {
   });
 
   it('should update chart data when data$ changes', fakeAsync(() => {
-    component.ngAfterViewInit();
+    component.ngOnInit();
+
+    component.activeOptionButton = "all"
 
     const newData = [{ x: new Date().getTime(), y: 20 }];
     mockData$.next(newData);
@@ -61,12 +63,15 @@ describe('ActivityChartControlComponent', () => {
   }));
 
   it('should update control chart range when date range changes', fakeAsync(() => {
-    component.ngAfterViewInit();
+    component.ngOnInit();
 
     const prevDateFrom = component.chartOptions.xaxis!.min;
     const prevDateTo = component.chartOptions.xaxis!.max;
 
     tick(300);
+
+    component.data$.subscribe();
+    fixture.detectChanges();
 
     const newDateFrom = new Date('2023-02-01T00:00:00Z');
     const newDateTo = new Date('2023-02-01T01:00:00Z');

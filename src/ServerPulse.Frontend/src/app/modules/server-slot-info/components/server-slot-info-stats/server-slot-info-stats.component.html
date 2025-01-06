@@ -44,6 +44,7 @@
 
     <cdk-virtual-scroll-viewport #scroller class="content__right" [itemSize]="tableItemHeight">
         <ng-container *ngIf="loadEvents$ | async as loadEvents; else eventLoading">
+            @if (loadEvents.length > 0) {
             <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
@@ -80,6 +81,13 @@
 
                 </tbody>
             </table>
+            }
+            @else {
+            <div class="flex justify-center items-center h-80 w-full">
+                <p class="text-gray-500 dark:text-gray-400">No Data</p>
+            </div>
+            }
+
         </ng-container>
         <ng-template #eventLoading>
             <div class="flex justify-center py-3 m-auto h-full items-center">

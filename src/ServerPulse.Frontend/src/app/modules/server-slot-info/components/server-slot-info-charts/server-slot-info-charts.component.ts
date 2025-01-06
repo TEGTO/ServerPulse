@@ -70,7 +70,7 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
         takeUntil(this.destroy$),
         tap(statistics => {
           const set = this.getStatisticsSet(statistics);
-          const series = this.generateTimeSeries(
+          const series = this.generateTimeSeriesForControl(
             this.controlDateFromSubject$.value,
             this.controlDateToSubject$.value,
             this.controlIntervalTime,
@@ -177,13 +177,39 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
     return series;
   }
 
+  private generateTimeSeriesForControl(fromDate: Date, toDate: Date, intervalTime: number, statistics: Map<number, number>): [number, number][] {
+    const periods = Math.ceil((toDate.getTime() - fromDate.getTime()) / intervalTime);
+
+    // Generate the series atomically
+    const series = Array.from({ length: periods + 1 }, (_, i) => {
+      const index = periods - i;
+      const localTo = fromDate.getTime() + index * intervalTime;
+      let count = 0;
+
+      for (const [timestamp, amount] of statistics) {
+        if (timestamp >= localTo - intervalTime && timestamp <= localTo) {
+          count += amount;
+          console.log("timestamp: " + new Date(timestamp));
+          console.log("Local from: " + new Date(localTo - intervalTime));
+          console.log("Local to: " + new Date(localTo));
+        }
+      }
+
+      return [localTo, count] as [number, number];
+    });
+
+    return series;
+  }
+
   controlFormatter(val: number): string {
-    const date = new Date(val);
-    return date.toLocaleDateString(undefined, {
+    const dateFrom = new Date(val);
+
+    const strFrom = dateFrom.toLocaleDateString(undefined, {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
     });
+    return `${strFrom}`;
   }
 
   secondaryFormatter(val: number): string {
