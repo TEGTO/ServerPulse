@@ -48,7 +48,7 @@ describe('ServerSlotInfoChartsComponent', () => {
     );
   });
 
-  fit('should fetch control statistics and update controlChartData$', () => {
+  it('should fetch control statistics and update controlChartData$', () => {
     const oneDay = 1000 * 60 * 60 * 24;
     const mockStatistics = [
       { dateFrom: new Date(new Date().getTime() - oneDay), amountOfEvents: 20 },
