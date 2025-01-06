@@ -1,92 +1,71 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Polly;
-using Polly.Registry;
+using Microsoft.EntityFrameworkCore.Storage;
+using Resilience;
+using System.Data;
 
 namespace DatabaseControl.Repositories
 {
     public class DatabaseRepository<TContext> : IDatabaseRepository<TContext> where TContext : DbContext
     {
         private readonly IDbContextFactory<TContext> dbContextFactory;
-        private readonly ResiliencePipeline resiliencePipeline;
 
-        public DatabaseRepository(IDbContextFactory<TContext> dbContextFactory, ResiliencePipelineProvider<string> resiliencePipelineProvider)
+        public DatabaseRepository(IDbContextFactory<TContext> dbContextFactory)
         {
             this.dbContextFactory = dbContextFactory;
-            resiliencePipeline = resiliencePipelineProvider.GetPipeline(DatabaseConfigurationKeys.REPOSITORY_RESILIENCE_PIPELINE);
         }
 
         #region IDatabaseRepository Members
 
+        [Resilience]
         public async Task MigrateDatabaseAsync(CancellationToken cancellationToken)
         {
-            await resiliencePipeline.ExecuteAsync(async ct =>
-            {
-                var dbContext = await CreateDbContextAsync(ct).ConfigureAwait(false);
-                await dbContext.Database.MigrateAsync(ct).ConfigureAwait(false);
-            }, cancellationToken).ConfigureAwait(false);
+            using var dbContext = await CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+            await dbContext.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<T> AddAsync<T>(T obj, CancellationToken cancellationToken) where T : class
+        public async Task<TContext> GetDbContextAsync(CancellationToken cancellationToken)
         {
-            return await resiliencePipeline.ExecuteAsync(async ct =>
-            {
-                var dbContext = await CreateDbContextAsync(ct).ConfigureAwait(false);
-                await dbContext.AddAsync(obj, ct).ConfigureAwait(false);
-                await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
-                return obj;
-            }, cancellationToken).ConfigureAwait(false);
+            return await CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<IQueryable<T>> GetQueryableAsync<T>(CancellationToken cancellationToken) where T : class
+        public IQueryable<T> Query<T>(TContext dbContext) where T : class
         {
-            return await resiliencePipeline.ExecuteAsync(async ct =>
-            {
-                var dbContext = await CreateDbContextAsync(ct).ConfigureAwait(false);
-                return dbContext.Set<T>().AsQueryable();
-            }, cancellationToken).ConfigureAwait(false);
+            return dbContext.Set<T>().AsQueryable();
         }
 
-        public async Task<T> UpdateAsync<T>(T obj, CancellationToken cancellationToken) where T : class
+        public async Task<T> AddAsync<T>(TContext dbContext, T obj, CancellationToken cancellationToken) where T : class
         {
-            return await resiliencePipeline.ExecuteAsync(async ct =>
-            {
-                var dbContext = await CreateDbContextAsync(ct).ConfigureAwait(false);
-                dbContext.Update(obj);
-                await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
-                return obj;
-            }, cancellationToken).ConfigureAwait(false);
+            var addedEntity = await dbContext.AddAsync(obj, cancellationToken).ConfigureAwait(false);
+            return addedEntity.Entity;
         }
 
-        public async Task UpdateRangeAsync<T>(IEnumerable<T> obj, CancellationToken cancellationToken) where T : class
+        public T Update<T>(TContext dbContext, T obj) where T : class
         {
-            await resiliencePipeline.ExecuteAsync(async ct =>
-            {
-                var dbContext = await CreateDbContextAsync(ct).ConfigureAwait(false);
-                dbContext.UpdateRange(obj);
-                await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
-                return obj;
-            }, cancellationToken).ConfigureAwait(false);
+            return dbContext.Update(obj).Entity;
         }
 
-        public async Task DeleteAsync<T>(T obj, CancellationToken cancellationToken) where T : class
+        public void Remove<T>(TContext dbContext, T obj) where T : class
         {
-            await resiliencePipeline.ExecuteAsync(async ct =>
-            {
-                var dbContext = await CreateDbContextAsync(ct).ConfigureAwait(false);
-                dbContext.Remove(obj);
-                await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
-            }, cancellationToken).ConfigureAwait(false);
+            dbContext.Remove(obj);
+        }
+
+        [Resilience]
+        public async Task SaveChangesAsync(TContext dbContext, CancellationToken cancellationToken)
+        {
+            await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        [Resilience]
+        public async Task<IDbContextTransaction> BeginTransactionAsync(TContext dbContext, IsolationLevel isolationLevel, CancellationToken cancellationToken)
+        {
+            return await dbContext.Database.BeginTransactionAsync(isolationLevel, cancellationToken).ConfigureAwait(false);
         }
 
         #endregion
-
-        #region Protected Helpers
 
         protected async Task<TContext> CreateDbContextAsync(CancellationToken cancellationToken)
         {
             return await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         }
-
-        #endregion
     }
 }

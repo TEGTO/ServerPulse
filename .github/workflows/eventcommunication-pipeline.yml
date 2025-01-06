@@ -1,0 +1,157 @@
+name: Event Communication Pipeline
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "src/ServerPulse.EventCommunication/**"
+      - "test/ServerPulse.UnitTests/ServerPulse.EventCommunication/**"
+  pull_request:
+    paths:
+      - "src/ServerPulse.EventCommunication/**"
+      - "test/ServerPulse.UnitTests/ServerPulse.EventCommunication/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: write-all
+
+env:
+  DOTNET_VERSION: "8.0.x"
+
+jobs:
+  run-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install coverage tools
+        run: |
+          dotnet tool install --global dotnet-coverage
+          dotnet tool install --global dotnet-reportgenerator-globaltool
+
+      - name: Cache .NET packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Build projects
+        run: |
+          dotnet build src/ServerPulse.EventCommunication/EventCommunication/EventCommunication.csproj --configuration Release --output ./output/event-communication
+          dotnet build src/ServerPulse.EventCommunication/EventCommunication.Validators/EventCommunication.Validators.csproj --configuration Release --output ./output/event-communication-validators
+
+      - name: Run unit tests with coverage
+        run: |
+          dotnet-coverage collect dotnet test \
+            test/ServerPulse.UnitTests/ServerPulse.EventCommunication/EventCommunication.ValidatorsTests/EventCommunication.ValidatorsTests.csproj \
+            --configuration Release \
+            --logger "trx;LogFileName=test-results.trx" \
+            --results-directory ./TestResults \
+            -f xml \
+            -o coverage.xml \
+            --settings coverage.runsettings
+
+      - name: Publish projects
+        run: |
+          dotnet publish src/ServerPulse.EventCommunication/EventCommunication/EventCommunication.csproj --configuration Release --output ./publish/event-communication
+          dotnet publish src/ServerPulse.EventCommunication/EventCommunication.Validators/EventCommunication.Validators.csproj --configuration Release --output ./publish/event-communication-validators
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ./TestResults
+
+      - name: Upload code coverage results
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage
+          path: coverage.xml
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: validated-build
+          path: ./output
+
+      - name: Upload publish artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish-build
+          path: ./publish
+
+  publish-nuget:
+    if: github.ref == 'refs/heads/main'
+    needs: run-ci
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: validated-build
+          path: ./validated-output
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache .NET packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Determine Changed Files
+        id: changes
+        run: |
+          git fetch origin ${{ github.ref_name }} --depth=1
+          git diff --name-only origin/${{ github.ref_name }} HEAD > changed-files.txt
+          echo "Changed files:"
+          cat changed-files.txt
+
+      - name: Check if EventCommunication changed
+        id: event_communication_changed
+        run: |
+          if grep -q '^src/ServerPulse.EventCommunication/EventCommunication/' changed-files.txt; then
+            echo "event_communication_changed=true" >> $GITHUB_ENV
+          else
+            echo "event_communication_changed=false" >> $GITHUB_ENV
+          fi
+
+      - name: Check if EventCommunication.Validators changed
+        id: event_communication_validators_changed
+        run: |
+          if grep -q '^src/ServerPulse.EventCommunication/EventCommunication.Validators/' changed-files.txt; then
+            echo "event_communication_validators_changed=true" >> $GITHUB_ENV
+          else
+            echo "event_communication_validators_changed=false" >> $GITHUB_ENV
+          fi
+
+      - name: Publish EventCommunication to NuGet
+        continue-on-error: true
+        if: env.event_communication_changed == 'true'
+        run: |
+          dotnet nuget push ./validated-output/event-communication/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+
+      - name: Publish EventCommunication.Validators to NuGet
+        continue-on-error: true
+        if: env.event_communication_validators_changed == 'true'
+        run: |
+          dotnet nuget push ./validated-output/event-communication-validators/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json

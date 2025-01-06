@@ -5,6 +5,7 @@ using ServerSlotApi.Infrastructure.Configuration;
 using ServerSlotApi.Infrastructure.Data;
 using ServerSlotApi.Infrastructure.Entities;
 using ServerSlotApi.Infrastructure.Models;
+using System.Data;
 
 namespace ServerSlotApi.Infrastructure.Repositories
 {
@@ -21,7 +22,8 @@ namespace ServerSlotApi.Infrastructure.Repositories
 
         public async Task<ServerSlot?> GetSlotAsync(SlotModel model, CancellationToken cancellationToken)
         {
-            var slotQueryable = await repository.GetQueryableAsync<ServerSlot>(cancellationToken);
+            using var dbContext = await repository.GetDbContextAsync(cancellationToken);
+            var slotQueryable = repository.Query<ServerSlot>(dbContext);
 
             var slot = await slotQueryable
                 .AsNoTracking()
@@ -32,7 +34,8 @@ namespace ServerSlotApi.Infrastructure.Repositories
 
         public async Task<ServerSlot?> GetSlotByKeyAsync(string key, CancellationToken cancellationToken)
         {
-            var slotQueryable = await repository.GetQueryableAsync<ServerSlot>(cancellationToken);
+            using var dbContext = await repository.GetDbContextAsync(cancellationToken);
+            var slotQueryable = repository.Query<ServerSlot>(dbContext);
 
             var slot = await slotQueryable
                 .AsNoTracking()
@@ -43,7 +46,8 @@ namespace ServerSlotApi.Infrastructure.Repositories
 
         public async Task<IEnumerable<ServerSlot>> GetSlotsByUserEmailAsync(string email, string str = "", CancellationToken cancellationToken = default)
         {
-            var slotQueryable = await repository.GetQueryableAsync<ServerSlot>(cancellationToken);
+            using var dbContext = await repository.GetDbContextAsync(cancellationToken);
+            var slotQueryable = repository.Query<ServerSlot>(dbContext);
 
             var slots = await slotQueryable
                 .AsNoTracking()
@@ -55,26 +59,46 @@ namespace ServerSlotApi.Infrastructure.Repositories
 
         public async Task<ServerSlot> CreateSlotAsync(ServerSlot serverSlot, CancellationToken cancellationToken)
         {
-            var slotQueryable = await repository.GetQueryableAsync<ServerSlot>(cancellationToken);
+            using var dbContext = await repository.GetDbContextAsync(cancellationToken);
+            using var transaction = await repository.BeginTransactionAsync(dbContext, IsolationLevel.Serializable, cancellationToken);
 
-            var userSlotAmount = await slotQueryable.AsNoTracking().Where(x => x.UserEmail == serverSlot.UserEmail).CountAsync(cancellationToken);
-
-            if (userSlotAmount >= maxSlotsPerUser)
+            try
             {
-                throw new InvalidOperationException("Too many slots for a single user!");
-            }
+                var userSlotAmount = await repository.Query<ServerSlot>(dbContext)
+                    .Where(x => x.UserEmail == serverSlot.UserEmail)
+                    .CountAsync(cancellationToken);
 
-            return await repository.AddAsync(serverSlot, cancellationToken);
+                if (userSlotAmount >= maxSlotsPerUser)
+                {
+                    throw new InvalidOperationException("Too many slots for a single user!");
+                }
+
+                var addedSlot = await repository.AddAsync(dbContext, serverSlot, cancellationToken);
+                await repository.SaveChangesAsync(dbContext, cancellationToken);
+
+                await transaction.CommitAsync(cancellationToken);
+
+                return addedSlot;
+            }
+            catch
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                throw;
+            }
         }
 
         public async Task UpdateSlotAsync(ServerSlot serverSlot, CancellationToken cancellationToken)
         {
-            await repository.UpdateAsync(serverSlot, cancellationToken);
+            using var dbContext = await repository.GetDbContextAsync(cancellationToken);
+            repository.Update(dbContext, serverSlot);
+            await repository.SaveChangesAsync(dbContext, cancellationToken);
         }
 
         public async Task DeleteSlotAsync(ServerSlot serverSlot, CancellationToken cancellationToken)
         {
-            await repository.DeleteAsync(serverSlot, cancellationToken);
+            using var dbContext = await repository.GetDbContextAsync(cancellationToken);
+            repository.Remove(dbContext, serverSlot);
+            await repository.SaveChangesAsync(dbContext, cancellationToken);
         }
     }
 }

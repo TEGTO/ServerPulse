@@ -1,10 +1,12 @@
-﻿using DatabaseControl.Repositories;
+﻿using Castle.DynamicProxy;
+using DatabaseControl.Repositories;
 using EntityFramework.Exceptions.PostgreSQL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure;
 using Polly;
+using Polly.Registry;
 using Resilience;
 
 namespace DatabaseControl
@@ -21,7 +23,22 @@ namespace DatabaseControl
                 ResilienceHelpers.ConfigureResiliencePipeline(builder, context, pipelineConfiguration);
             });
 
-            services.AddSingleton<IDatabaseRepository<Context>, DatabaseRepository<Context>>();
+            services.AddSingleton<DatabaseRepository<Context>>();
+
+            services.AddSingleton(sp =>
+            {
+                var resiliencePipelineProvider = sp.GetRequiredService<ResiliencePipelineProvider<string>>();
+                var resiliencePipeline = resiliencePipelineProvider.GetPipeline(DatabaseConfigurationKeys.REPOSITORY_RESILIENCE_PIPELINE);
+
+                var repository = sp.GetRequiredService<DatabaseRepository<Context>>();
+
+                var generator = new ProxyGenerator();
+
+                return generator.CreateInterfaceProxyWithTarget<IDatabaseRepository<Context>>(
+                    repository,
+                    new ResilienceInterceptor(resiliencePipeline)
+                );
+            });
 
             return services;
         }

@@ -1,0 +1,131 @@
+name: Client Pipeline
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "src/ServerPulse.Client/**"
+      - "test/ServerPulse.UnitTests/ServerPulse.Client/**"
+  pull_request:
+    paths:
+      - "src/ServerPulse.Client/**"
+      - "test/ServerPulse.UnitTests/ServerPulse.Client/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: write-all
+
+env:
+  DOTNET_VERSION: "8.0.x"
+
+jobs:
+  run-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install coverage tools
+        run: |
+          dotnet tool install --global dotnet-coverage
+          dotnet tool install --global dotnet-reportgenerator-globaltool
+
+      - name: Cache .NET packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Build projects
+        run: dotnet build src/ServerPulse.Client/ServerPulse.Client.sln --configuration Release --output ./output/client-library
+
+      - name: Run unit tests with coverage
+        run: |
+          dotnet-coverage collect dotnet test src/ServerPulse.Client/ServerPulse.Client.sln --configuration Release --logger "trx;LogFileName=test-results.trx" --results-directory ./TestResults -f xml -o coverage.xml --settings coverage.runsettings
+
+      - name: Publish projects
+        run: dotnet publish src/ServerPulse.Client/ServerPulse.Client/ServerPulse.Client.csproj --configuration Release --output ./publish/client-library
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ./TestResults
+
+      - name: Upload code coverage results
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage
+          path: coverage.xml
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: validated-build
+          path: ./output
+
+      - name: Upload publish artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish-build
+          path: ./publish
+
+  publish-nuget:
+    if: github.ref == 'refs/heads/main'
+    needs: run-ci
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: validated-build
+          path: ./validated-output
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache .NET packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Determine Changed Files
+        id: changes
+        run: |
+          git fetch origin ${{ github.ref_name }} --depth=1
+          git diff --name-only origin/${{ github.ref_name }} HEAD > changed-files.txt
+          echo "Changed files:"
+          cat changed-files.txt
+
+      - name: Check if ServerPulse.Client version changed
+        id: version_changed
+        run: |
+          if grep -q '^src/ServerPulse.Client/ServerPulse.Client/ServerPulse.Client.csproj' changed-files.txt; then
+            echo "version_changed=true" >> $GITHUB_ENV
+          else
+            echo "version_changed=false" >> $GITHUB_ENV
+          fi
+
+      - name: Publish ServerPulse.Client to NuGet
+        continue-on-error: true
+        if: env.version_changed == 'true'
+        run: |
+          dotnet nuget push ./validated-output/client-library/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
