@@ -65,13 +65,13 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: backend-test-results
           path: ./TestResults
 
       - name: Upload code coverage results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: backend-code-coverage
           path: coverage.xml
@@ -85,7 +85,7 @@ jobs:
           reportgenerator -reports:coverage.xml -targetdir:./coverage-report -reporttypes:Html
 
       - name: Upload coverage report artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: backend-coverage-report
           path: ./coverage-report
@@ -122,7 +122,7 @@ jobs:
 
       - name: Upload code coverage
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: frontend-coverage-report
           path: src/ServerPulse.Frontend/coverage

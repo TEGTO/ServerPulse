@@ -33,7 +33,7 @@ jobs:
         working-directory: docs/main-docs
 
       - name: Upload Main Documentation Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: main-docs
           path: docs/main-docs/output
@@ -80,7 +80,7 @@ jobs:
         working-directory: src/ServerPulse.Frontend
 
       - name: Upload Documentation Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: frontend-docs
           path: docs/frontend
