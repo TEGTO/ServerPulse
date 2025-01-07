@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/
 import { ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { catchError, of, Subject, takeUntil } from 'rxjs';
-import { confirmEmail, EmailConfirmationRequest } from '../..';
+import { confirmEmail, ConfirmEmailRequest } from '../..';
 import { RedirectorService } from '../../../shared';
 
 @Component({
@@ -34,7 +34,7 @@ export class EmailCallbackComponent implements OnInit, OnDestroy {
         const token = params['token'];
         const email = params['email'];
         if (email) {
-          const req: EmailConfirmationRequest =
+          const req: ConfirmEmailRequest =
           {
             email: email,
             token: token

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createReducer, on } from "@ngrx/store";
-import { AuthData, authFailure, copyAuthTokenToAuthData, copyUserUpdateRequestToUserAuth, getAuthDataFailure, getAuthDataSuccess, getDefaultAuthData, loginUser, loginUserSuccess, logOutUserSuccess, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerUser, updateUserData, updateUserDataSuccess } from "..";
+import { AuthData, authFailure, copyAccessTokenDataToAuthData, copyUserUpdateRequestToUserAuth, getAuthDataFailure, getAuthDataSuccess, getDefaultAuthData, loginUser, loginUserSuccess, logOutUserSuccess, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerUser, updateUserData, updateUserDataSuccess } from "..";
 
 export interface AuthState {
     isRefreshSuccessful: boolean,
@@ -53,10 +53,10 @@ export const authReducer = createReducer(
         isRefreshSuccessful: false,
         error: null
     })),
-    on(refreshAccessTokenSuccess, (state, { authToken }) => ({
+    on(refreshAccessTokenSuccess, (state, { accessTokenData }) => ({
         ...state,
         isRefreshSuccessful: true,
-        authData: copyAuthTokenToAuthData(state.authData, authToken),
+        authData: copyAccessTokenDataToAuthData(state.authData, accessTokenData),
         error: null
     })),
     on(refreshAccessTokenFailure, (state, { error }) => ({

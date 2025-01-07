@@ -1,6 +1,8 @@
-﻿using AuthenticationApi.Dtos;
+﻿using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.ConfirmEmail;
+using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.Register;
+using Hangfire.Common;
+using Hangfire.States;
 using Moq;
-using System.Linq.Expressions;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -25,7 +27,7 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
             // Arrange
             var email = "testuser@example.com";
 
-            await RegisterSampleUser(new UserRegistrationRequest
+            await RegisterSampleUser(new RegisterRequest
             {
                 Email = email,
                 Password = "Test@123",
@@ -34,7 +36,7 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
 
             mockBackgroundJobClient!.Verify
             (
-                x => x.Enqueue(It.IsAny<Expression<Func<Task>>>()),
+                x => x.Create(It.IsAny<Job>(), It.IsAny<IState>()),
                 Times.AtLeastOnce
             );
 
@@ -44,7 +46,7 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
 
             var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
 
-            var request = new EmailConfirmationRequest
+            var request = new ConfirmEmailRequest
             {
                 Email = email,
                 Token = token
@@ -60,20 +62,20 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
             Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
             var content = await httpResponse.Content.ReadAsStringAsync();
-            var authResponse = JsonSerializer.Deserialize<UserAuthenticationResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var authResponse = JsonSerializer.Deserialize<ConfirmEmailResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             Assert.NotNull(authResponse);
             Assert.That(authResponse.Email, Is.EqualTo(email));
 
-            Assert.NotNull(authResponse.AuthToken);
-            Assert.NotNull(authResponse.AuthToken.AccessToken);
+            Assert.NotNull(authResponse.AccessTokenData);
+            Assert.NotNull(authResponse.AccessTokenData.AccessToken);
         }
 
         [Test]
         public async Task ConfirmEmail_InvalidRequest_ReturnsBadRequest()
         {
             // Arrange
-            var request = new EmailConfirmationRequest
+            var request = new ConfirmEmailRequest
             {
                 Email = "",
                 Token = ""
@@ -95,7 +97,7 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
             // Arrange
             var email = "testuser1@example.com";
 
-            await RegisterSampleUser(new UserRegistrationRequest
+            await RegisterSampleUser(new RegisterRequest
             {
                 Email = email,
                 Password = "Test@123",
@@ -104,7 +106,7 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
 
             mockBackgroundJobClient!.Verify
            (
-               x => x.Enqueue(It.IsAny<Expression<Func<Task>>>()),
+               x => x.Create(It.IsAny<Job>(), It.IsAny<IState>()),
                Times.AtLeastOnce
            );
 
@@ -114,7 +116,7 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
 
             var token = "some-wrong-token";
 
-            var request = new EmailConfirmationRequest
+            var request = new ConfirmEmailRequest
             {
                 Email = email,
                 Token = token

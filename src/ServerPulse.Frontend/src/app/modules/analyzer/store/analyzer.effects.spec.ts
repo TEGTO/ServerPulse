@@ -26,7 +26,7 @@ describe('AnalyzerEffects', () => {
         signalStatisticsSpy = jasmine.createSpyObj<SignalStatisticsService>(['startConnection', 'startListen', 'stopListen', 'receiveStatistics']);
         jsonDownloaderSpy = jasmine.createSpyObj<JsonDownloader>(['downloadInJson']);
 
-        const authData = { authToken: { accessToken: token } };
+        const authData = { accessTokenData: { accessToken: token } };
         storeSpy.select.and.returnValue(of(authData));
 
         signalStatisticsSpy.startConnection.and.returnValue(of(undefined));

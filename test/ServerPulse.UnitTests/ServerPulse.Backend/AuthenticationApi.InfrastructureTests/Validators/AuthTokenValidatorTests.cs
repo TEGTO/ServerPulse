@@ -16,7 +16,7 @@ namespace AuthenticationApi.Validators.Tests
 
         private static IEnumerable<TestCaseData> TokenValidationTestCases()
         {
-            yield return new TestCaseData(null, "validRefreshToken", false, "AccessToken").SetDescription("AccessToke is null validation should fail.");
+            yield return new TestCaseData(null, "validRefreshToken", false, "AccessToken").SetDescription("AccessToken is null validation should fail.");
             yield return new TestCaseData("", "validRefreshToken", false, "AccessToken").SetDescription("AccessToken is empty validation should fail.");
             yield return new TestCaseData("validAccessToken", null, false, "RefreshToken").SetDescription("RefreshToken is null validation should fail.");
             yield return new TestCaseData("validAccessToken", "", false, "RefreshToken").SetDescription("Refresh token is empty validation should fail.");

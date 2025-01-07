@@ -1,4 +1,5 @@
 ﻿using AuthenticationApi.Dtos.OAuth;
+using AuthenticationApi.Infrastructure.Dtos.Endpoints.OAuth.GetOAuthUrl;
 using AuthenticationApi.IntegrationTests.Controllers.AuthController;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Net;
@@ -22,7 +23,7 @@ namespace AuthenticationApi.IntegrationTests.Controllers.OAuthController
         public async Task GetOAuthUrl_ValidRequest_ReturnsOkWithUrl()
         {
             // Arrange
-            var requestParams = new GetOAuthUrlQueryParams
+            var requestParams = new GetOAuthUrlParams
             {
                 OAuthLoginProvider = OAuthLoginProvider.Google,
                 RedirectUrl = "someurl",
@@ -56,7 +57,7 @@ namespace AuthenticationApi.IntegrationTests.Controllers.OAuthController
         public async Task GetOAuthUrl_InvalidRequest_ReturnsBadRequest()
         {
             // Arrange
-            var requestParams = new GetOAuthUrlQueryParams
+            var requestParams = new GetOAuthUrlParams
             {
                 OAuthLoginProvider = OAuthLoginProvider.Google,
                 RedirectUrl = "",

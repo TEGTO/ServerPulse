@@ -1,9 +1,9 @@
 ﻿using Authentication.Models;
 using Authentication.Token;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using ServerSlotApi.Dtos;
 using System.Net.Http.Headers;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 
@@ -31,14 +31,14 @@ namespace ServerSlotApi.IntegrationTests.Controllers.ServerSlotController
 
             var jwtHandler = new JwtHandler(options);
 
-            IdentityUser identity = new IdentityUser()
+            var claims = new List<Claim>
             {
-                UserName = userName,
-                Email = email,
-                Id = userName + email
+                new Claim(ClaimTypes.Email, email),
+                new Claim(ClaimTypes.Name, userName),
+                new Claim(ClaimTypes.NameIdentifier,  userName + email),
             };
 
-            return jwtHandler.CreateToken(identity);
+            return jwtHandler.CreateToken(claims);
         }
 
         protected async Task<List<ServerSlotResponse>> CreateSamplesSlotsAsync(string accessToken)

@@ -4,13 +4,13 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { jwtDecode, JwtPayload } from 'jwt-decode';
 import { BehaviorSubject, filter, Observable, Subscription, switchMap, take, throwError } from 'rxjs';
-import { AuthData, AuthToken, logOutUser, refreshAccessToken, selectAuthData, selectAuthErrors, selectIsRefreshSuccessful } from '..';
+import { AccessTokenData, AuthData, logOutUser, refreshAccessToken, selectAuthData, selectAuthErrors, selectIsRefreshSuccessful } from '..';
 import { ErrorHandler } from '../../shared';
 @Injectable({
   providedIn: 'root'
 })
 export class AuthInterceptor implements HttpInterceptor, OnDestroy {
-  private authToken: AuthToken | null = null;
+  private accessTokenData: AccessTokenData | null = null;
   private decodedToken: JwtPayload | null = null;
   private isRefreshing = false;
   private isAuthenticated = false;
@@ -31,7 +31,7 @@ export class AuthInterceptor implements HttpInterceptor, OnDestroy {
       this.store.select(selectAuthErrors).subscribe(errors => {
         if (errors !== null && this.isRefreshing) {
           this.isRefreshing = false;
-          this.authToken = null;
+          this.accessTokenData = null;
           this.decodedToken = null;
           this.logOutUserWithError(errors);
         }
@@ -50,8 +50,8 @@ export class AuthInterceptor implements HttpInterceptor, OnDestroy {
       return next.handle(authReq);
     }
 
-    if (this.authToken != null) {
-      authReq = this.addTokenHeader(req, this.authToken.accessToken);
+    if (this.accessTokenData != null) {
+      authReq = this.addTokenHeader(req, this.accessTokenData.accessToken);
     }
 
     if (this.isTokenExpired()) {
@@ -67,16 +67,16 @@ export class AuthInterceptor implements HttpInterceptor, OnDestroy {
 
       this.refreshTokenSubject$.next(null);
 
-      if (this.authToken) {
-        this.store.dispatch(refreshAccessToken({ authToken: this.authToken }));
+      if (this.accessTokenData) {
+        this.store.dispatch(refreshAccessToken({ accessTokenData: this.accessTokenData }));
 
         return this.store.select(selectIsRefreshSuccessful).pipe(
           filter(isSuccess => isSuccess === true),
           take(1),
           switchMap(() => {
             this.isRefreshing = false;
-            this.refreshTokenSubject$.next(this.authToken!.accessToken);
-            return next.handle(this.addTokenHeader(request, this.authToken!.accessToken));
+            this.refreshTokenSubject$.next(this.accessTokenData!.accessToken);
+            return next.handle(this.addTokenHeader(request, this.accessTokenData!.accessToken));
           })
         );
       }
@@ -121,11 +121,11 @@ export class AuthInterceptor implements HttpInterceptor, OnDestroy {
   }
 
   private processAuthData(data: AuthData): void {
-    this.authToken = data.authToken;
+    this.accessTokenData = data.accessTokenData;
     this.isAuthenticated = data.isAuthenticated;
 
     if (this.isAuthenticated) {
-      this.decodedToken = this.tryDecodeToken(this.authToken.accessToken);
+      this.decodedToken = this.tryDecodeToken(this.accessTokenData.accessToken);
     }
   }
 }

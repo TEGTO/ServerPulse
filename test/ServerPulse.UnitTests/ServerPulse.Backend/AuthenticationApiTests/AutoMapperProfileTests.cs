@@ -1,6 +1,9 @@
 ﻿using Authentication.Models;
 using AuthenticationApi.Dtos;
 using AuthenticationApi.Infrastructure;
+using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.RefreshToken;
+using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.Register;
+using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.UserUpdate;
 using AuthenticationApi.Infrastructure.Models;
 using AutoMapper;
 
@@ -20,7 +23,7 @@ namespace AuthenticationApi.Tests
         }
 
         [Test]
-        public void UserToUserRegistrationRequest_UserMappedCorrectly()
+        public void UserToRegisterRequest_UserMappedCorrectly()
         {
             //Arrange
             var user = new User
@@ -32,17 +35,17 @@ namespace AuthenticationApi.Tests
             };
 
             //Act
-            var result = mapper.Map<UserRegistrationRequest>(user);
+            var result = mapper.Map<RegisterRequest>(user);
 
             //Assert
             Assert.That(result.Email, Is.EqualTo(user.Email));
         }
 
         [Test]
-        public void UserRegistrationRequestToUser_UserRegistrationRequestMappedCorrectly()
+        public void RegisterRequestToUser_RegisterRequestMappedCorrectly()
         {
             //Arrange
-            var request = new UserRegistrationRequest
+            var request = new RegisterRequest
             {
                 Email = "testuser@example.com",
                 Password = "Password123",
@@ -57,13 +60,70 @@ namespace AuthenticationApi.Tests
         }
 
         [Test]
-        public void AccessTokenDataToAuthToken_AccessTokenDataMappedCorrectly()
+        public void AccessTokenDataToRefreshTokenResponse_AccessTokenDataMappedCorrectly()
         {
             //Arrange
             var accessTokenData = new AccessTokenData
             {
                 AccessToken = "access-token",
                 RefreshToken = "refresh-token"
+            };
+
+            //Act
+            var result = mapper.Map<RefreshTokenResponse>(accessTokenData);
+
+            //Assert
+            Assert.That(result.AccessToken, Is.EqualTo(accessTokenData.AccessToken));
+            Assert.That(result.RefreshToken, Is.EqualTo(accessTokenData.RefreshToken));
+        }
+
+        [Test]
+        public void AccessTokenDataToRefreshTokenResponse_RefreshTokenResponseMappedCorrectly()
+        {
+            //Arrange
+            var accessTokenData = new AccessTokenData
+            {
+                AccessToken = "access-token",
+                RefreshToken = "refresh-token",
+                RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(1)
+            };
+
+            //Act
+            var result = mapper.Map<RefreshTokenResponse>(accessTokenData);
+
+            //Assert
+            Assert.That(result.AccessToken, Is.EqualTo(accessTokenData.AccessToken));
+            Assert.That(result.RefreshToken, Is.EqualTo(accessTokenData.RefreshToken));
+        }
+
+        [Test]
+        public void RefreshTokenRequestToAccessTokenData_RefreshTokenRequestMappedCorrectly()
+        {
+            //Arrange
+            var request = new RefreshTokenRequest
+            {
+                AccessToken = "access-token",
+                RefreshToken = "refresh-token",
+                RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(1)
+            };
+
+            //Act
+            var result = mapper.Map<AccessTokenData>(request);
+
+            //Assert
+            Assert.That(result.AccessToken, Is.EqualTo(request.AccessToken));
+            Assert.That(result.RefreshToken, Is.EqualTo(request.RefreshToken));
+        }
+
+        [Test]
+        public void AccessTokenDataToAccessTokenDataDto_AccessTokenDataDtoMappedCorrectly()
+        {
+            //Arrange
+            var accessTokenData = new AccessTokenData
+            {
+                AccessToken = "access-token",
+                RefreshToken = "refresh-token",
+                RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(1)
             };
 
             //Act
@@ -75,10 +135,10 @@ namespace AuthenticationApi.Tests
         }
 
         [Test]
-        public void AuthTokenToAccessTokenData_AuthTokenMappedCorrectly()
+        public void AccessTokenDataDtoToAccessTokenData_AccessTokenDataDtoMappedCorrectly()
         {
             //Arrange
-            var authToken = new AccessTokenDataDto
+            var request = new AccessTokenDataDto
             {
                 AccessToken = "access-token",
                 RefreshToken = "refresh-token",
@@ -86,18 +146,18 @@ namespace AuthenticationApi.Tests
             };
 
             //Act
-            var result = mapper.Map<AccessTokenData>(authToken);
+            var result = mapper.Map<AccessTokenData>(request);
 
             //Assert
-            Assert.That(result.AccessToken, Is.EqualTo(authToken.AccessToken));
-            Assert.That(result.RefreshToken, Is.EqualTo(authToken.RefreshToken));
+            Assert.That(result.AccessToken, Is.EqualTo(request.AccessToken));
+            Assert.That(result.RefreshToken, Is.EqualTo(request.RefreshToken));
         }
 
         [Test]
-        public void UserUpdateDataRequestToUserUpdateData_UserUpdateDataRequestMappedCorrectly()
+        public void UserUpdateRequestToUserUpdateData_UserUpdateRequestMappedCorrectly()
         {
             //Arrange
-            var request = new UserUpdateDataRequest
+            var request = new UserUpdateRequest
             {
                 Email = "new@example.com",
                 OldPassword = "OldPassword123",
