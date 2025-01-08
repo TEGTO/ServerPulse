@@ -5,13 +5,13 @@ import { EffectsModule } from "@ngrx/effects";
 import { Store, StoreModule } from "@ngrx/store";
 import { BehaviorSubject } from "rxjs";
 import { MainViewComponent } from "../..";
-import { AuthData, getAuthData, getDefaultAuthToken, startLoginUser } from "../../../authentication";
+import { AuthData, getAuthData, getDefaultAccessTokenData, startLoginUser } from "../../../authentication";
 import { AuthenticationModule } from "../../../authentication/authentication.module";
 
 describe('MainViewComponent', () => {
   const authData: AuthData = {
     isAuthenticated: true,
-    authToken: getDefaultAuthToken(),
+    accessTokenData: getDefaultAccessTokenData(),
     email: "someemail@gmail.com"
   };
 
@@ -80,7 +80,7 @@ describe('MainViewComponent', () => {
   it('should display unauthenticated view when user is not authenticated', fakeAsync(() => {
     authDataBehabiourSubject.next({
       isAuthenticated: false,
-      authToken: getDefaultAuthToken(),
+      accessTokenData: getDefaultAccessTokenData(),
       email: ""
     });
 

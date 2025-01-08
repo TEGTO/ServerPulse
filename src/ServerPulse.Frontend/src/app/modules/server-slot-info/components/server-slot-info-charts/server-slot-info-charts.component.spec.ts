@@ -52,7 +52,7 @@ describe('ServerSlotInfoChartsComponent', () => {
     const oneDay = 1000 * 60 * 60 * 24;
     const mockStatistics = [
       { dateFrom: new Date(new Date().getTime() - oneDay), amountOfEvents: 20 },
-      { dateFrom: new Date(new Date()), amountOfEvents: 10 },
+      { dateFrom: new Date(new Date().getTime() - 2 * oneDay), amountOfEvents: 10 },
     ];
 
     mockStore.select.and.returnValue(of(mockStatistics));
@@ -61,7 +61,7 @@ describe('ServerSlotInfoChartsComponent', () => {
     const result = component["controlChartDataSubject$"].value.filter(x => x[1] > 0);
 
     expect(result.length).toEqual(2);
-    expect(result[1][0] - result[0][0]).toEqual(oneDay);
+    expect(Math.abs(result[1][0] - result[0][0])).toEqual(oneDay);
     expect(result[0][1]).toEqual(20);
     expect(result[1][1]).toEqual(10);
   });

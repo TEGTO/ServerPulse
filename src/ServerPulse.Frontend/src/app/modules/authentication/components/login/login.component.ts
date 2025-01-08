@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/
 import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { Subject } from 'rxjs';
-import { loginUser, OAuthLoginProvider, passwordValidator, startOAuthLogin, startRegisterUser, UserAuthenticationRequest } from '../..';
+import { LoginRequest, loginUser, OAuthLoginProvider, passwordValidator, startOAuthLogin, startRegisterUser } from '../..';
 import { noSpaces, notEmptyString, ValidationMessage } from '../../../shared';
 
 @Component({
@@ -55,7 +55,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   loginUser(): void {
     if (this.formGroup.valid) {
-      const req: UserAuthenticationRequest =
+      const req: LoginRequest =
       {
         login: this.loginInput.value,
         password: this.passwordInput.value,

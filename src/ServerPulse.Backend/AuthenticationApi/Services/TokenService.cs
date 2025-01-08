@@ -21,7 +21,7 @@ namespace AuthenticationApi.Services
 
         public async Task<AccessTokenData> GenerateTokenAsync(User user, CancellationToken cancellationToken)
         {
-            var tokenData = tokenHandler.CreateToken(user);
+            var tokenData = GetTokenDataForUser(user);
             tokenData.RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(refreshTokenExpiryDays);
 
             if (string.IsNullOrEmpty(user.RefreshToken) || user.RefreshTokenExpiryDate < DateTime.UtcNow)
@@ -62,6 +62,18 @@ namespace AuthenticationApi.Services
             }
 
             return await GenerateTokenAsync(user, cancellationToken);
+        }
+
+        private AccessTokenData GetTokenDataForUser(User user)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Email, user.Email ?? throw new ArgumentNullException(nameof(user), "Email could not be null!")),
+                new Claim(ClaimTypes.Name, user.UserName ?? throw new ArgumentNullException(nameof(user), "UserName could not be null!")),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+            };
+
+            return tokenHandler.CreateToken(claims);
         }
     }
 }

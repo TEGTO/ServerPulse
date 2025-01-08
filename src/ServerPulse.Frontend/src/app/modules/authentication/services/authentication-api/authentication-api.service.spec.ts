@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { AuthData, AuthToken, EmailConfirmationRequest, UserAuthenticationRequest, UserRegistrationRequest, UserUpdateRequest } from '../..';
+import { AccessTokenData, AuthData, ConfirmEmailRequest, LoginRequest, RegisterRequest, UserUpdateRequest } from '../..';
 import { URLDefiner } from '../../../shared';
 import { AuthenticationApiService } from './authentication-api.service';
 
@@ -37,10 +37,10 @@ describe('AuthenticationApiService', () => {
 
   it('should login user', () => {
     const expectedReq = `/api/auth/login`;
-    const request: UserAuthenticationRequest = { login: 'testuser', password: 'password123' };
+    const request: LoginRequest = { login: 'testuser', password: 'password123' };
     const response: AuthData = {
       isAuthenticated: true,
-      authToken: {
+      accessTokenData: {
         accessToken: 'accessToken123',
         refreshToken: 'refreshToken123',
         refreshTokenExpiryDate: new Date()
@@ -60,7 +60,7 @@ describe('AuthenticationApiService', () => {
 
   it('should register user', () => {
     const expectedReq = `/api/auth/register`;
-    const request: UserRegistrationRequest = {
+    const request: RegisterRequest = {
       redirectConfirmUrl: 'http://example.com/confirm',
       email: 'testuser@example.com',
       password: 'password123',
@@ -79,10 +79,10 @@ describe('AuthenticationApiService', () => {
 
   it('should confirm email', () => {
     const expectedReq = `/api/auth/confirmation`;
-    const request: EmailConfirmationRequest = { email: 'testuser@example.com', token: 'confirmationToken' };
+    const request: ConfirmEmailRequest = { email: 'testuser@example.com', token: 'confirmationToken' };
     const response: AuthData = {
       isAuthenticated: true,
-      authToken: {
+      accessTokenData: {
         accessToken: 'accessToken123',
         refreshToken: 'refreshToken123',
         refreshTokenExpiryDate: new Date()
@@ -102,12 +102,12 @@ describe('AuthenticationApiService', () => {
 
   it('should refresh token', () => {
     const expectedReq = `/api/auth/refresh`;
-    const request: AuthToken = {
+    const request: AccessTokenData = {
       accessToken: 'oldAccessToken',
       refreshToken: 'oldRefreshToken',
       refreshTokenExpiryDate: new Date()
     };
-    const response: AuthToken = {
+    const response: AccessTokenData = {
       accessToken: 'newAccessToken',
       refreshToken: 'newRefreshToken',
       refreshTokenExpiryDate: new Date()
@@ -143,7 +143,7 @@ describe('AuthenticationApiService', () => {
 
   it('should handle errors on login', () => {
     const expectedReq = `/api/auth/login`;
-    const request: UserAuthenticationRequest = { login: 'testuser', password: 'password123' };
+    const request: LoginRequest = { login: 'testuser', password: 'password123' };
 
     service.loginUser(request).subscribe({
       next: () => fail('Expected an error'),
@@ -158,7 +158,7 @@ describe('AuthenticationApiService', () => {
 
   it('should handle errors on confirmation email', () => {
     const expectedReq = `/api/auth/confirmation`;
-    const request: EmailConfirmationRequest = { email: 'testuser@example.com', token: 'invalidToken' };
+    const request: ConfirmEmailRequest = { email: 'testuser@example.com', token: 'invalidToken' };
 
     service.confirmEmail(request).subscribe({
       next: () => fail('Expected an error'),

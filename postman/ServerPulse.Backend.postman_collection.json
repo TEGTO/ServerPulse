@@ -79,7 +79,14 @@
 								"exec": [
 									"pm.test(\"Login status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
-									"});"
+									"});\r",
+									"\r",
+									"if (pm.response.code === 200) {\r",
+									"    var jsonResponse = pm.response.json();\r",
+									"    pm.environment.set(\"accessToken\", jsonResponse.authToken.accessToken);\r",
+									"    pm.environment.set(\"refreshToken\", jsonResponse.authToken.refreshToken);\r",
+									"    pm.environment.set(\"refreshTokenExpiryDate\", jsonResponse.authToken.refreshTokenExpiryDate);\r",
+									"}"
 								],
 								"type": "text/javascript",
 								"packages": {}

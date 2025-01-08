@@ -3,7 +3,7 @@ import { Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
 import { Store } from "@ngrx/store";
 import { catchError, map, of, switchMap, withLatestFrom } from "rxjs";
-import { AuthData, AuthenticationApiService, AuthenticationDialogManagerService, authFailure, confirmEmail, copyAuthTokenToAuthData, copyUserUpdateRequestToUserAuth, getAuthData, getAuthDataFailure, getAuthDataSuccess, getFullOAuthRedirectPath, GetOAuthUrlQueryParams, loginUser, loginUserSuccess, logOutUser, logOutUserSuccess, OauthApiService, oauthLogin, oauthLoginFailure, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerUser, registerUserSuccess, selectAuthState, startLoginUser, startOAuthLogin, startOAuthLoginFailure, startRegisterUser, updateUserData, updateUserDataSuccess, UserOAuthenticationRequest } from "..";
+import { AuthData, AuthenticationApiService, AuthenticationDialogManagerService, authFailure, confirmEmail, copyAccessTokenDataToAuthData, copyUserUpdateRequestToUserAuth, getAuthData, getAuthDataFailure, getAuthDataSuccess, getFullOAuthRedirectPath, GetOAuthUrlParams, LoginOAuthRequest, loginUser, loginUserSuccess, logOutUser, logOutUserSuccess, OauthApiService, oauthLogin, oauthLoginFailure, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerUser, registerUserSuccess, selectAuthState, startLoginUser, startOAuthLogin, startOAuthLoginFailure, startRegisterUser, updateUserData, updateUserDataSuccess } from "..";
 import { environment } from "../../../../environment/environment";
 import { LocalStorageService, RedirectorService, SnackbarManager } from "../../shared";
 
@@ -152,13 +152,13 @@ export class AuthEffects {
         this.actions$.pipe(
             ofType(refreshAccessToken),
             switchMap((action) =>
-                this.authApiService.refreshToken(action.authToken).pipe(
+                this.authApiService.refreshToken(action.accessTokenData).pipe(
                     map((response) => {
                         const json = this.localStorage.getItem(this.storageAuthDataKey);
                         let authData: AuthData = JSON.parse(json!);
-                        authData = copyAuthTokenToAuthData(authData, response);
+                        authData = copyAccessTokenDataToAuthData(authData, response);
                         this.localStorage.setItem(this.storageAuthDataKey, JSON.stringify(authData));
-                        return refreshAccessTokenSuccess({ authToken: response });
+                        return refreshAccessTokenSuccess({ accessTokenData: response });
                     }),
                     catchError(error => {
                         this.localStorage.removeItem(this.storageAuthDataKey);
@@ -209,9 +209,9 @@ export class AuthEffects {
             switchMap((action) => {
                 const json = this.localStorage.getItem(this.storageOAuthParamsKey);
                 if (json !== null) {
-                    const params: GetOAuthUrlQueryParams = JSON.parse(json);
+                    const params: GetOAuthUrlParams = JSON.parse(json);
 
-                    const req: UserOAuthenticationRequest = {
+                    const req: LoginOAuthRequest = {
                         code: action.code,
                         codeVerifier: params.codeVerifier,
                         redirectUrl: params.redirectUrl,
@@ -247,7 +247,7 @@ export class AuthEffects {
             switchMap((action) => {
                 const codeVerifier = crypto.randomUUID();
 
-                const req: GetOAuthUrlQueryParams = {
+                const req: GetOAuthUrlParams = {
                     codeVerifier: codeVerifier,
                     redirectUrl: getFullOAuthRedirectPath(),
                     oAuthLoginProvider: action.loginProvider

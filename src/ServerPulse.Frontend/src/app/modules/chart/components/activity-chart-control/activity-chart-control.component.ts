@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { ChartComponent } from 'ng-apexcharts';
 import { combineLatest, Observable, Subject, takeUntil } from 'rxjs';
 import { ChartOptions } from '../..';
@@ -12,7 +12,7 @@ type TimeRange = "1w" | "1m" | "3m" | "6m" | "all";
   styleUrl: './activity-chart-control.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ActivityChartControlComponent implements OnInit, AfterViewInit, OnDestroy {
+export class ActivityChartControlComponent implements OnInit, OnDestroy {
   @Input({ required: true }) uniqueId!: string;
   @Input({ required: true }) dateFrom$!: Observable<Date>;
   @Input({ required: true }) dateTo$!: Observable<Date>;
@@ -23,6 +23,7 @@ export class ActivityChartControlComponent implements OnInit, AfterViewInit, OnD
 
   chartOptions!: Partial<ChartOptions>;
   activeOptionButton: TimeRange = "1w";
+  private data: any[] = [];
   private readonly dateFrom: Date = new Date(this.currentTime.getTime() - this.week);
   private readonly dateTo: Date = this.currentTime;
   private readonly destroy$ = new Subject<void>();
@@ -46,20 +47,21 @@ export class ActivityChartControlComponent implements OnInit, AfterViewInit, OnD
 
   ngOnInit(): void {
     this.initChartOptions();
-  }
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
 
-  ngAfterViewInit(): void {
     this.data$
       .pipe(takeUntil(this.destroy$))
-      .subscribe((data) => this.updateChartData(this.chartOptions, data));
+      .subscribe((data) => {
+        this.data = data;
+        this.updateChartData(this.chartOptions, data);
+      });
     combineLatest([this.dateFrom$, this.dateTo$])
       .pipe(takeUntil(this.destroy$))
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       .subscribe(([dateFrom, dateTo]) => this.updateChartRange());
+  }
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   initChartOptions(): void {
@@ -140,12 +142,13 @@ export class ActivityChartControlComponent implements OnInit, AfterViewInit, OnD
   }
 
   private updateChartData(chartOptions: Partial<ChartOptions>, data: any): void {
+    const filteredData = this.filterDataByTimeRange(data, this.activeOptionButton);
     if (chartOptions?.series != null) {
       chartOptions.series =
         [
           {
             name: "Events",
-            data: data
+            data: filteredData
           }
         ];
       this.cdr.detectChanges();
@@ -155,21 +158,37 @@ export class ActivityChartControlComponent implements OnInit, AfterViewInit, OnD
   private updateChartRange(): void {
     if (this.chart && this.chartOptions.xaxis) {
       this.updateControlOptions(this.activeOptionButton);
+      this.updateChartData(this.chartOptions, this.data);
       this.cdr.detectChanges();
     }
   }
 
+  private filterDataByTimeRange(data: any[], timeRange: TimeRange): any[] {
+    const rangeLimits = this.updateOptionsData[timeRange];
+    if (!rangeLimits.xaxis.min || !rangeLimits.xaxis.max) {
+      return data
+    }
+
+    return data.filter(item => {
+      const timestamp = new Date(item[0]).getTime();
+      return timestamp >= rangeLimits.xaxis.min! && timestamp <= rangeLimits.xaxis.max!;
+    });
+  }
+
+
   updateControlOptions(option: TimeRange): void {
+    const rangeLimits = this.updateOptionsData[option];
     this.activeOptionButton = option;
     this.chartOptions.xaxis =
     {
       type: "datetime",
-      min: this.updateOptionsData[option].xaxis.min,
-      max: this.updateOptionsData[option].xaxis.max,
+      min: rangeLimits.xaxis.min,
+      max: rangeLimits.xaxis.max,
       tooltip: {
         enabled: false,
       }
     };
+    this.updateChartData(this.chartOptions, this.data);
     this.cdr.detectChanges();
   }
 }

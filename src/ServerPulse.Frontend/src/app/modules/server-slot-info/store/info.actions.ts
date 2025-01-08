@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createAction, props } from "@ngrx/store";
-import { CustomEvent, GetSomeMessagesRequest, LoadAmountStatistics, LoadEvent, MessageAmountInRangeRequest } from "../../analyzer";
+import { CustomEvent, GetLoadAmountStatisticsInRangeRequest, GetSomeCustomEventsRequest, GetSomeLoadEventsRequest, LoadAmountStatistics, LoadEvent } from "../../analyzer";
 
 export const setSelectedDate = createAction(
     '[Statistics] Set Selected Date ',
@@ -19,7 +19,7 @@ export const setCustomReadFromDate = createAction(
 
 export const getSomeLoadEvents = createAction(
     '[Statistics] Get Some Load Events',
-    props<{ req: GetSomeMessagesRequest }>()
+    props<{ req: GetSomeLoadEventsRequest }>()
 );
 
 export const getSomeLoadEventsSuccess = createAction(
@@ -34,7 +34,7 @@ export const getSomeLoadEventsFailure = createAction(
 
 export const getSomeCustomEvents = createAction(
     '[Statistics] Get Some Custom Events',
-    props<{ req: GetSomeMessagesRequest }>()
+    props<{ req: GetSomeCustomEventsRequest }>()
 );
 
 export const getSomeCustomEventsSuccess = createAction(
@@ -64,7 +64,7 @@ export const getDailyLoadAmountStatisticsFailure = createAction(
 
 export const getLoadAmountStatisticsInRange = createAction(
     '[Statistics] Get Load Amount Statistics In Range',
-    props<{ req: MessageAmountInRangeRequest }>()
+    props<{ req: GetLoadAmountStatisticsInRangeRequest }>()
 );
 
 export const getLoadAmountStatisticsInRangeSuccess = createAction(

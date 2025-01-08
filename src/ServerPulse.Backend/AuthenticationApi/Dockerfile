@@ -11,7 +11,6 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["Directory.Packages.props", "."]
 COPY ["AuthenticationApi/AuthenticationApi.csproj", "AuthenticationApi/"]
-COPY ["AuthenticationApi.Dtos/AuthenticationApi.Dtos.csproj", "AuthenticationApi.Dtos/"]
 COPY ["AuthenticationApi.Infrastructure/AuthenticationApi.Infrastructure.csproj", "AuthenticationApi.Infrastructure/"]
 COPY ["Authentication/Authentication.csproj", "Authentication/"]
 COPY ["Helper/Helper.csproj", "Helper/"]

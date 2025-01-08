@@ -1,9 +1,9 @@
 ﻿using Authentication.Token;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace AuthenticationTests.Token
 {
@@ -41,14 +41,14 @@ namespace AuthenticationTests.Token
         public void CreateToken_ValidData_ShouldReturnValidAccessToken(string email, string username)
         {
             // Arrange
-            var user = new IdentityUser
+            var claims = new List<Claim>
             {
-                Email = email,
-                UserName = username
+                new Claim(ClaimTypes.Email, email),
+                new Claim(ClaimTypes.Name, username),
             };
 
             // Act
-            var accessTokenData = jwtHandler.CreateToken(user);
+            var accessTokenData = jwtHandler.CreateToken(claims);
 
             // Assert
             Assert.IsFalse(string.IsNullOrEmpty(accessTokenData.AccessToken));
@@ -56,20 +56,6 @@ namespace AuthenticationTests.Token
 
             var tokenHandler = new JwtSecurityTokenHandler();
             Assert.IsTrue(tokenHandler.CanReadToken(accessTokenData.AccessToken));
-        }
-
-        [TestCase(null, null)]
-        public void CreateToken_NullData_ThrowsArgumentNullException(string? email, string? username)
-        {
-            // Arrange
-            var user = new IdentityUser
-            {
-                Email = email,
-                UserName = username
-            };
-
-            // Act + Assert
-            Assert.Throws<ArgumentNullException>(() => jwtHandler.CreateToken(user));
         }
 
         [Test]
@@ -82,12 +68,13 @@ namespace AuthenticationTests.Token
         public void GetPrincipalFromExpiredToken_ValidData_ValidPrincipal(string email, string username)
         {
             // Arrange
-            var user = new IdentityUser
+            var claims = new List<Claim>
             {
-                Email = email,
-                UserName = username
+                new Claim(ClaimTypes.Email, email),
+                new Claim(ClaimTypes.Name, username),
             };
-            var accessTokenData = jwtHandler.CreateToken(user);
+
+            var accessTokenData = jwtHandler.CreateToken(claims);
 
             // Act
             Assert.IsNotNull(accessTokenData.AccessToken);

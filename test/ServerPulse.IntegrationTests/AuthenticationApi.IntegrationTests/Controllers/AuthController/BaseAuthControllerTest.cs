@@ -1,8 +1,9 @@
 ﻿using Authentication.Models;
 using Authentication.Token;
-using AuthenticationApi.Dtos;
-using Microsoft.AspNetCore.Identity;
+using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.Login;
+using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.Register;
 using Microsoft.Extensions.Options;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 
@@ -30,25 +31,26 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
 
             var jwtHandler = new JwtHandler(options);
 
-            IdentityUser identity = new IdentityUser()
+            var claims = new List<Claim>
             {
-                UserName = "testuser",
-                Email = "test@example.com"
+                new Claim(ClaimTypes.Email, "test@example.com"),
+                new Claim(ClaimTypes.Name,  "testuser"),
             };
-            return jwtHandler.CreateToken(identity);
+
+            return jwtHandler.CreateToken(claims);
         }
 
-        protected async Task RegisterSampleUser(UserRegistrationRequest request, bool confirmEmail = true)
+        protected async Task RegisterSampleUser(RegisterRequest request, bool confirmEmail = true)
         {
-            using var registerHttpRequest = new HttpRequestMessage(HttpMethod.Post, "/auth/register");
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/auth/register");
 
-            registerHttpRequest.Content = new StringContent(
+            httpRequest.Content = new StringContent(
                 JsonSerializer.Serialize(request),
                 Encoding.UTF8,
                 "application/json"
             );
 
-            var httpResponse = await client.SendAsync(registerHttpRequest);
+            var httpResponse = await client.SendAsync(httpRequest);
             httpResponse.EnsureSuccessStatusCode();
 
             if (isConfirmEmailEnabled && confirmEmail)
@@ -63,18 +65,18 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
             }
         }
 
-        protected async Task<string?> GetAccessKeyForUserAsync(UserAuthenticationRequest loginRequest)
+        protected async Task<string?> GetAccessKeyForUserAsync(LoginRequest request)
         {
-            using var request = new HttpRequestMessage(HttpMethod.Post, "/auth/login");
-            request.Content = new StringContent(JsonSerializer.Serialize(loginRequest), Encoding.UTF8, "application/json");
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/auth/login");
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
-            var httpResponse = await client.SendAsync(request);
+            var httpResponse = await client.SendAsync(httpRequest);
             httpResponse.EnsureSuccessStatusCode();
 
             var content = await httpResponse.Content.ReadAsStringAsync();
-            var authResponse = JsonSerializer.Deserialize<UserAuthenticationResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var response = JsonSerializer.Deserialize<LoginResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            return authResponse?.AuthToken?.AccessToken;
+            return response?.AccessTokenData?.AccessToken;
         }
     }
 }

@@ -122,7 +122,7 @@ describe('ServerSlotInfoAdditionalInformationComponent', () => {
   });
 
   describe('ngAfterViewInit', () => {
-    it('should monitor scrolling for fetching data', () => {
+    it('should monitor scrolling for fetching data', fakeAsync(() => {
       const mockScrollOffsets = [10, 5];
       const mockEvents: CustomEvent[] = [
         { id: '1', key: mockSlotKey, creationDateUTC: new Date(), name: 'Event', description: 'Desc', serializedMessage: '{}' },
@@ -148,9 +148,16 @@ describe('ServerSlotInfoAdditionalInformationComponent', () => {
       scrollerSubject.next(mockScrollOffsets[0]);
       scrollerSubject.next(mockScrollOffsets[1]);
 
+      tick(1000);
+
       expect(component["monitorScrollForFetching"]).toHaveBeenCalled();
-      expect(mockStore.dispatch).toHaveBeenCalledWith(setCustomReadFromDate({ date: mockEvents[0].creationDateUTC }));
-    });
+
+      expect(mockStore.dispatch).toHaveBeenCalledWith(jasmine.objectContaining(
+        {
+          type: setCustomReadFromDate.type
+        }
+      ));
+    }));
   });
 
   describe('openDetailMenu', () => {

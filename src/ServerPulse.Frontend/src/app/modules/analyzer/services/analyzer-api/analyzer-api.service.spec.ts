@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { CustomEventResponse, GetSomeMessagesRequest, LoadAmountStatisticsResponse, LoadEventResponse, mapCustomEventResponseToCustomEvent, mapLoadAmountStatisticsResponseToLoadAmountStatistics, mapLoadEventResponseToLoadEvent, mapSlotStatisticsResponseToSlotStatistics, MessageAmountInRangeRequest, MessagesInRangeRangeRequest, SlotStatisticsResponse } from '../..';
+import { CustomEventResponse, GetLoadAmountStatisticsInRangeRequest, GetLoadEventsInDataRangeRequest, GetSlotStatisticsResponse, GetSomeCustomEventsRequest, GetSomeLoadEventsRequest, LoadAmountStatisticsResponse, LoadEventResponse, mapCustomEventResponseToCustomEvent, mapGetSlotStatisticsResponseToSlotStatistics, mapLoadAmountStatisticsResponseToLoadAmountStatistics, mapLoadEventResponseToLoadEvent } from '../..';
 import { ErrorHandler, URLDefiner } from '../../../shared';
 import { AnalyzerApiService } from './analyzer-api.service';
 
@@ -40,7 +40,7 @@ describe('AnalyzerApiService', () => {
   });
 
   it('should fetch load events in data range', () => {
-    const request: MessagesInRangeRangeRequest = {
+    const request: GetLoadEventsInDataRangeRequest = {
       key: 'slotKey',
       from: new Date('2023-01-01T00:00:00Z'),
       to: new Date('2023-01-02T00:00:00Z'),
@@ -74,7 +74,7 @@ describe('AnalyzerApiService', () => {
 
   it('should handle error on getLoadEventsInDataRange', () => {
     const expectedReq = `/api/analyze/daterange`;
-    const request: MessagesInRangeRangeRequest = {
+    const request: GetLoadEventsInDataRangeRequest = {
       key: 'slotKey',
       from: new Date('2023-01-01T00:00:00Z'),
       to: new Date('2023-01-02T00:00:00Z'),
@@ -133,7 +133,7 @@ describe('AnalyzerApiService', () => {
   });
 
   it('should fetch load amount statistics in range', () => {
-    const request: MessageAmountInRangeRequest = {
+    const request: GetLoadAmountStatisticsInRangeRequest = {
       key: 'slotKey',
       from: new Date('2023-01-01T00:00:00Z'),
       to: new Date('2023-01-02T00:00:00Z'),
@@ -165,7 +165,7 @@ describe('AnalyzerApiService', () => {
 
   it('should handle error on getLoadAmountStatisticsInRange', () => {
     const expectedReq = `/api/analyze/amountrange`;
-    const request: MessageAmountInRangeRequest = {
+    const request: GetLoadAmountStatisticsInRangeRequest = {
       key: 'slotKey',
       from: new Date('2023-01-01T00:00:00Z'),
       to: new Date('2023-01-02T00:00:00Z'),
@@ -185,7 +185,7 @@ describe('AnalyzerApiService', () => {
   });
 
   it('should fetch some load events', () => {
-    const request: GetSomeMessagesRequest = {
+    const request: GetSomeCustomEventsRequest = {
       key: 'slotKey',
       numberOfMessages: 5,
       startDate: new Date('2023-01-01T00:00:00Z'),
@@ -220,7 +220,7 @@ describe('AnalyzerApiService', () => {
 
   it('should handle error on getSomeLoadEvents', () => {
     const expectedReq = `/api/analyze/someevents`;
-    const request: GetSomeMessagesRequest = {
+    const request: GetSomeCustomEventsRequest = {
       key: 'slotKey',
       numberOfMessages: 5,
       startDate: new Date('2023-01-01T00:00:00Z'),
@@ -240,7 +240,7 @@ describe('AnalyzerApiService', () => {
   });
 
   it('should fetch some custom events', () => {
-    const request: GetSomeMessagesRequest = {
+    const request: GetSomeLoadEventsRequest = {
       key: 'slotKey',
       numberOfMessages: 5,
       startDate: new Date('2023-01-01T00:00:00Z'),
@@ -273,7 +273,7 @@ describe('AnalyzerApiService', () => {
 
   it('should handle error on getSomeCustomEvents', () => {
     const expectedReq = `/api/analyze/somecustomevents`;
-    const request: GetSomeMessagesRequest = {
+    const request: GetSomeLoadEventsRequest = {
       key: 'slotKey',
       numberOfMessages: 5,
       startDate: new Date('2023-01-01T00:00:00Z'),
@@ -294,7 +294,7 @@ describe('AnalyzerApiService', () => {
 
   it('should fetch slot statistics', () => {
     const key = 'slotKey';
-    const response: SlotStatisticsResponse = {
+    const response: GetSlotStatisticsResponse = {
       collectedDateUTC: new Date('2023-01-01T00:00:00Z'),
       generalStatistics: null,
       loadStatistics: null,
@@ -303,7 +303,7 @@ describe('AnalyzerApiService', () => {
       lastCustomEvents: []
     };
 
-    const expectedResult = mapSlotStatisticsResponseToSlotStatistics(response);
+    const expectedResult = mapGetSlotStatisticsResponseToSlotStatistics(response);
 
     service.getSlotStatistics(key).subscribe(res => {
       expect(res).toEqual(expectedResult);

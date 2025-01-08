@@ -83,7 +83,7 @@ describe('ActivityChartComponent', () => {
     component.dateTo$ = mockDateTo$;
     component.data$ = mockData$;
 
-    component.ngAfterViewInit();
+    component.ngOnInit();
     tick();
 
     expect(updateChartRange).toHaveBeenCalled();

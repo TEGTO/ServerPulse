@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ChartComponent, ChartType } from 'ng-apexcharts';
 import { Observable, Subject, combineLatest, takeUntil } from 'rxjs';
 import { ChartOptions } from '../..';
@@ -15,7 +15,7 @@ export enum ActivityChartType {
   styleUrl: './activity-chart.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ActivityChartComponent implements OnInit, AfterViewInit, OnDestroy {
+export class ActivityChartComponent implements OnInit, OnDestroy {
   @Input({ required: true }) uniqueId!: string;
   @Input({ required: true }) dateFrom$!: Observable<Date>;
   @Input({ required: true }) dateTo$!: Observable<Date>;
@@ -35,14 +35,7 @@ export class ActivityChartComponent implements OnInit, AfterViewInit, OnDestroy 
 
   ngOnInit(): void {
     this.initChartOptions();
-  }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  ngAfterViewInit(): void {
     combineLatest([this.dateFrom$, this.dateTo$])
       .pipe(takeUntil(this.destroy$))
       .subscribe(([dateFrom, dateTo]) => this.updateChartRange(dateFrom, dateTo));
@@ -50,6 +43,11 @@ export class ActivityChartComponent implements OnInit, AfterViewInit, OnDestroy 
     this.data$
       .pipe(takeUntil(this.destroy$))
       .subscribe((data) => this.updateChartData(data));
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private initChartOptions(): void {

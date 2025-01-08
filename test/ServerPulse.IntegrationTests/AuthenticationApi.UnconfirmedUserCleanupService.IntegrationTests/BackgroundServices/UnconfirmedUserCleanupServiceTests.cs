@@ -1,4 +1,4 @@
-﻿using AuthenticationApi.Dtos;
+﻿using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.Register;
 using System.Text;
 using System.Text.Json;
 
@@ -15,14 +15,14 @@ namespace AuthenticationApi.UnconfirmedUserCleanupService.IntegrationTests.Backg
             var unConfirmedEmail = "unconfirmed@example.com";
 
             // Act
-            await RegisterSampleUser(new UserRegistrationRequest
+            await RegisterSampleUser(new RegisterRequest
             {
                 Email = confirmedEmail,
                 Password = "Test@123",
                 ConfirmPassword = "Test@123"
             }, true);
 
-            await RegisterSampleUser(new UserRegistrationRequest
+            await RegisterSampleUser(new RegisterRequest
             {
                 Email = unConfirmedEmail,
                 Password = "Test@123",
@@ -61,17 +61,17 @@ namespace AuthenticationApi.UnconfirmedUserCleanupService.IntegrationTests.Backg
             }
         }
 
-        private async Task RegisterSampleUser(UserRegistrationRequest request, bool confirmEmail)
+        private async Task RegisterSampleUser(RegisterRequest request, bool confirmEmail)
         {
-            using var registerHttpRequest = new HttpRequestMessage(HttpMethod.Post, "/auth/register");
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/auth/register");
 
-            registerHttpRequest.Content = new StringContent(
+            httpRequest.Content = new StringContent(
                 JsonSerializer.Serialize(request),
                 Encoding.UTF8,
                 "application/json"
             );
 
-            var httpResponse = await client.SendAsync(registerHttpRequest);
+            var httpResponse = await client.SendAsync(httpRequest);
             httpResponse.EnsureSuccessStatusCode();
 
             if (isConfirmEmailEnabled && confirmEmail)

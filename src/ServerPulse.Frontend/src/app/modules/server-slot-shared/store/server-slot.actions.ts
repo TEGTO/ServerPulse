@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createAction, props } from "@ngrx/store";
-import { CreateServerSlotRequest, ServerSlot, UpdateServerSlotRequest } from "..";
+import { CreateSlotRequest, ServerSlot, UpdateSlotRequest } from "..";
 
 export const getServerSlotById = createAction(
     '[Server Slot] Get Server Slot By Id',
@@ -30,7 +30,7 @@ export const getUserServerSlotsFailure = createAction(
 
 export const createServerSlot = createAction(
     '[Server Slot] Create A New Server Slot',
-    props<{ req: CreateServerSlotRequest }>()
+    props<{ req: CreateSlotRequest }>()
 );
 export const createServerSlotSuccess = createAction(
     '[Server Slot] Create A New Server Slot Success',
@@ -43,11 +43,11 @@ export const createServerSlotFailure = createAction(
 
 export const updateServerSlot = createAction(
     '[Server Slot] Update A Server Slot',
-    props<{ req: UpdateServerSlotRequest }>()
+    props<{ req: UpdateSlotRequest }>()
 );
 export const updateServerSlotSuccess = createAction(
     '[Server Slot] Update A Server Slot Success',
-    props<{ req: UpdateServerSlotRequest }>()
+    props<{ req: UpdateSlotRequest }>()
 );
 export const updateServerSlotFailure = createAction(
     '[Server Slot] Update A Server Slot Failure',

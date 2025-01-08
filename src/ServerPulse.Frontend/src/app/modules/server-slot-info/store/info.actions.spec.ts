@@ -1,4 +1,4 @@
-import { CustomEvent, getLoadAmountStatisticsInRange, getLoadAmountStatisticsInRangeFailure, getLoadAmountStatisticsInRangeSuccess, GetSomeMessagesRequest, LoadAmountStatistics, LoadEvent, MessageAmountInRangeRequest } from "../../analyzer";
+import { CustomEvent, getLoadAmountStatisticsInRange, getLoadAmountStatisticsInRangeFailure, GetLoadAmountStatisticsInRangeRequest, getLoadAmountStatisticsInRangeSuccess, GetSomeLoadEventsRequest, LoadAmountStatistics, LoadEvent } from "../../analyzer";
 import { TimeSpan } from "../../shared";
 import { addNewCustomEvent, addNewLoadEvent, getDailyLoadAmountStatistics, getDailyLoadAmountStatisticsFailure, getDailyLoadAmountStatisticsSuccess, getSomeCustomEvents, getSomeCustomEventsFailure, getSomeCustomEventsSuccess, getSomeLoadEvents, getSomeLoadEventsFailure, getSomeLoadEventsSuccess, setCustomReadFromDate, setReadFromDate, setSelectedDate, showCustomDetailsEvent } from "./info.actions";
 
@@ -26,13 +26,13 @@ describe('Statistics Actions', () => {
     const testStatistics: LoadAmountStatistics[] = [
         { id: '3', collectedDateUTC: testDate, amountOfEvents: 10, dateFrom: testDate, dateTo: testDate },
     ];
-    const testRequest: GetSomeMessagesRequest = {
+    const testRequest: GetSomeLoadEventsRequest = {
         key: 'key3',
         numberOfMessages: 5,
         startDate: testDate,
         readNew: true,
     };
-    const testAmountRequest: MessageAmountInRangeRequest = {
+    const testAmountRequest: GetLoadAmountStatisticsInRangeRequest = {
         key: 'key4',
         from: testDate,
         to: testDate,
