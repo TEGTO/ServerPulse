@@ -3,7 +3,7 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnDestroy, On
 import { Store } from '@ngrx/store';
 import { filter, map, Observable, pairwise, Subject, switchMap, takeUntil, tap, throttleTime, withLatestFrom } from 'rxjs';
 import { addNewLoadEvent, getSomeLoadEvents, isSelectedDateToday, selectLoadEvents, selectReadFromDate, selectSelectedDate, setReadFromDate } from '../..';
-import { GetSomeMessagesRequest, LoadEvent, selectLastLifecycleStatisticsByKey, selectLastLoadEventByKey, selectLastLoadStatisticsByKey, ServerLifecycleStatistics, ServerLoadStatistics } from '../../../analyzer';
+import { GetSomeLoadEventsRequest, LoadEvent, selectLastLifecycleStatisticsByKey, selectLastLoadEventByKey, selectLastLoadStatisticsByKey, ServerLifecycleStatistics, ServerLoadStatistics } from '../../../analyzer';
 import { ServerStatus } from '../../../server-slot-shared';
 
 @Component({
@@ -55,7 +55,7 @@ export class ServerSlotInfoStatsComponent implements OnInit, AfterViewInit, OnDe
 
     this.loadEvents$ = this.store.select(selectReadFromDate).pipe(
       switchMap((date) => {
-        const req: GetSomeMessagesRequest = {
+        const req: GetSomeLoadEventsRequest = {
           key: this.slotKey,
           numberOfMessages: this.tablePageAmount,
           startDate: date,

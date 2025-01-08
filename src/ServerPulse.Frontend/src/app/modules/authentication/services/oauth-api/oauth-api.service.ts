@@ -1,7 +1,7 @@
 import { HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, map, Observable } from 'rxjs';
-import { AuthData, GetOAuthUrl, GetOAuthUrlQueryParams, GetOAuthUrlResponse, mapGetOAuthUrlResponseToGetOAuthUrl, mapUserAuthenticationResponseToAuthData, UserAuthenticationResponse, UserOAuthenticationRequest } from '../..';
+import { AuthData, GetOAuthUrl, GetOAuthUrlParams, GetOAuthUrlResponse, LoginOAuthRequest, LoginOAuthResponse, mapGetOAuthUrlResponseToGetOAuthUrl, mapUserAuthenticationResponseToAuthData } from '../..';
 import { BaseApiService } from '../../../shared';
 
 @Injectable({
@@ -9,7 +9,7 @@ import { BaseApiService } from '../../../shared';
 })
 export class OauthApiService extends BaseApiService {
 
-  getOAuthUrl(req: GetOAuthUrlQueryParams): Observable<GetOAuthUrl> {
+  getOAuthUrl(req: GetOAuthUrlParams): Observable<GetOAuthUrl> {
     const params = new HttpParams()
       .set('OAuthLoginProvider', req.oAuthLoginProvider)
       .set('redirectUrl', req.redirectUrl)
@@ -22,8 +22,8 @@ export class OauthApiService extends BaseApiService {
       );
   }
 
-  loginUserOAuth(req: UserOAuthenticationRequest): Observable<AuthData> {
-    return this.httpClient.post<UserAuthenticationResponse>(this.combinePathWithOAuthApiUrl(``), req).pipe(
+  loginUserOAuth(req: LoginOAuthRequest): Observable<AuthData> {
+    return this.httpClient.post<LoginOAuthResponse>(this.combinePathWithOAuthApiUrl(``), req).pipe(
       map((response) => mapUserAuthenticationResponseToAuthData(response)),
       catchError((resp) => this.handleError(resp))
     );

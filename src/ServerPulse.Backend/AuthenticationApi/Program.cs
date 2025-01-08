@@ -17,7 +17,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.FeatureManagement;
 using Shared;
-using IBackgroundJobClient = BackgroundTask.IBackgroundJobClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,6 +68,7 @@ builder.Services.ConfigureHangfireWthPostgreSql(connectionString);
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IEmailJobService, EmailJobService>();
 
 if (isOAuthEnabled)
 {
@@ -84,8 +84,6 @@ else
     builder.Services.AddScoped(provider => new Dictionary<OAuthLoginProvider, IOAuthService>());
 }
 
-builder.Services.AddSingleton<IBackgroundJobClient, HangfireBackgroundJobClient>();
-
 #endregion
 
 builder.Services.AddRepositoryWithResilience<AuthIdentityDbContext>(builder.Configuration);
@@ -94,12 +92,7 @@ builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 builder.Services.AddEmailService(builder.Configuration);
 
-builder.Services.AddMediatR(conf =>
-{
-    conf.RegisterServicesFromAssembly(typeof(Program).Assembly);
-});
-
-builder.Services.AddSharedFluentValidation(typeof(Program), typeof(AccessTokenDataDtoValidator));
+builder.Services.AddSharedFluentValidation(typeof(Program), typeof(ConfirmEmailRequestValidator));
 
 builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
 builder.Services.AddEndpointsApiExplorer();

@@ -1,4 +1,4 @@
-﻿using AnalyzerApi.Infrastructure.Dtos.Responses.Statistics;
+﻿using AnalyzerApi.Infrastructure.Dtos.Endpoints.Analyze.GetSlotStatistics;
 using EventCommunication;
 using System.Net;
 using System.Text.Json;
@@ -57,7 +57,7 @@ namespace AnalyzerApi.IntegrationTests.Controllers.AnalyzeController
 
             var content = await httpResponse.Content.ReadAsStringAsync();
 
-            var statistics = JsonSerializer.Deserialize<SlotStatisticsResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var statistics = JsonSerializer.Deserialize<GetSlotStatisticsResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             Assert.NotNull(statistics);
             Assert.That(statistics.CollectedDateUTC.Date, Is.Not.EqualTo(default(DateTime)));
@@ -104,8 +104,8 @@ namespace AnalyzerApi.IntegrationTests.Controllers.AnalyzeController
             var content = await httpResponse.Content.ReadAsStringAsync();
             var content2 = await httpResponse2.Content.ReadAsStringAsync();
 
-            var statistics = JsonSerializer.Deserialize<SlotStatisticsResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            var statistics2 = JsonSerializer.Deserialize<SlotStatisticsResponse>(content2, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var statistics = JsonSerializer.Deserialize<GetSlotStatisticsResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var statistics2 = JsonSerializer.Deserialize<GetSlotStatisticsResponse>(content2, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             Assert.NotNull(statistics);
             Assert.NotNull(statistics2);
@@ -186,7 +186,7 @@ namespace AnalyzerApi.IntegrationTests.Controllers.AnalyzeController
             Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
             var content = await httpResponse.Content.ReadAsStringAsync();
-            var statistics = JsonSerializer.Deserialize<SlotStatisticsResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var statistics = JsonSerializer.Deserialize<GetSlotStatisticsResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             Assert.NotNull(statistics);
             Assert.That(statistics.CollectedDateUTC.Date, Is.Not.EqualTo(default(DateTime)));

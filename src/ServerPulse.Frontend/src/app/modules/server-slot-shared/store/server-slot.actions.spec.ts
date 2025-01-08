@@ -1,4 +1,4 @@
-import { CreateServerSlotRequest, ServerSlot, UpdateServerSlotRequest } from "..";
+import { CreateSlotRequest, ServerSlot, UpdateSlotRequest } from "..";
 import { createServerSlot, createServerSlotFailure, createServerSlotSuccess, deleteServerSlot, deleteServerSlotFailure, deleteServerSlotSuccess, getServerSlotById, getServerSlotByIdFailure, getServerSlotByIdSuccess, getUserServerSlots, getUserServerSlotsFailure, getUserServerSlotsSuccess, showSlotInfo, showSlotKey, updateServerSlot, updateServerSlotFailure, updateServerSlotSuccess } from "./server-slot.actions";
 
 describe('Server Slot Actions', () => {
@@ -55,7 +55,7 @@ describe('Server Slot Actions', () => {
 
     describe('Create Server Slot Actions', () => {
         it('should create createServerSlot action', () => {
-            const req: CreateServerSlotRequest = { name: 'New Slot' };
+            const req: CreateSlotRequest = { name: 'New Slot' };
             const action = createServerSlot({ req });
             expect(action.type).toBe('[Server Slot] Create A New Server Slot');
             expect(action.req).toEqual(req);
@@ -82,14 +82,14 @@ describe('Server Slot Actions', () => {
 
     describe('Update Server Slot Actions', () => {
         it('should create updateServerSlot action', () => {
-            const req: UpdateServerSlotRequest = { id: '1', name: 'Updated Slot' };
+            const req: UpdateSlotRequest = { id: '1', name: 'Updated Slot' };
             const action = updateServerSlot({ req });
             expect(action.type).toBe('[Server Slot] Update A Server Slot');
             expect(action.req).toEqual(req);
         });
 
         it('should create updateServerSlotSuccess action', () => {
-            const req: UpdateServerSlotRequest = { id: '1', name: 'Updated Slot' };
+            const req: UpdateSlotRequest = { id: '1', name: 'Updated Slot' };
             const action = updateServerSlotSuccess({ req });
             expect(action.type).toBe('[Server Slot] Update A Server Slot Success');
             expect(action.req).toEqual(req);

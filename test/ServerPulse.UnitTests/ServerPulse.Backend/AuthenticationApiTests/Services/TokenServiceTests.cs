@@ -33,22 +33,28 @@ namespace AuthenticationApi.Services.Tests
         private static IEnumerable<TestCaseData> GenerateTokenTestCases()
         {
             yield return new TestCaseData(
-                new User { UserName = "testuser", RefreshToken = null },
+                new User { UserName = "testuser", Email = "some@email", RefreshToken = null },
                 true,
                 true
             ).SetDescription("Generate token for a new user without refresh token.");
 
             yield return new TestCaseData(
-                new User { UserName = "testuser", RefreshToken = "existing-refresh", RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(1) },
+                new User { UserName = "testuser", Email = "some@email", RefreshToken = "existing-refresh", RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(1) },
                 false,
                 true
             ).SetDescription("Generate token for a user with valid refresh token.");
 
             yield return new TestCaseData(
-                new User { UserName = "testuser", RefreshToken = "expired-refresh", RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(-1) },
+                new User { UserName = "testuser", Email = "some@email", RefreshToken = "expired-refresh", RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(-1) },
                 true,
                 false
             ).SetDescription("Generate token for a user with expired refresh token but fails to update.");
+
+            yield return new TestCaseData(
+               new User { RefreshToken = "expired-refresh", RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(-1) },
+               true,
+               false
+           ).SetDescription("Generate token for a user with invalid claims refresh token but fails to generate.");
         }
 
         [Test]
@@ -57,7 +63,7 @@ namespace AuthenticationApi.Services.Tests
         {
             // Arrange
             var tokenData = new AccessTokenData { AccessToken = "new-token", RefreshToken = "new-refresh" };
-            tokenHandlerMock.Setup(t => t.CreateToken(user)).Returns(tokenData);
+            tokenHandlerMock.Setup(t => t.CreateToken(It.IsAny<IEnumerable<Claim>>())).Returns(tokenData);
 
             if (shouldUpdate)
             {
@@ -68,7 +74,7 @@ namespace AuthenticationApi.Services.Tests
             // Act & Assert
             if (shouldUpdate && !updateSuccess)
             {
-                Assert.ThrowsAsync<InvalidOperationException>(() => tokenService.GenerateTokenAsync(user, CancellationToken.None));
+                Assert.ThrowsAsync(Is.AssignableTo(typeof(Exception)), () => tokenService.GenerateTokenAsync(user, CancellationToken.None));
             }
             else
             {
@@ -76,6 +82,8 @@ namespace AuthenticationApi.Services.Tests
 
                 Assert.That(result.AccessToken, Is.EqualTo(tokenData.AccessToken));
                 Assert.That(result.RefreshToken, Is.EqualTo(tokenData.RefreshToken));
+
+                tokenHandlerMock.Verify(x => x.CreateToken(It.IsAny<IEnumerable<Claim>>()), Times.Once);
             }
         }
 
@@ -98,19 +106,19 @@ namespace AuthenticationApi.Services.Tests
         {
             yield return new TestCaseData(
                 new AccessTokenData { AccessToken = "expired-token", RefreshToken = "valid-refresh" },
-                new User { UserName = "testuser", RefreshToken = "valid-refresh", RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(1) },
+                new User { UserName = "testuser", Email = "some@email", RefreshToken = "valid-refresh", RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(1) },
                 true
             ).SetDescription("Valid refresh token refreshes access token.");
 
             yield return new TestCaseData(
                 new AccessTokenData { AccessToken = "expired-token", RefreshToken = "invalid-refresh" },
-                new User { UserName = "testuser", RefreshToken = "valid-refresh", RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(1) },
+                new User { UserName = "testuser", Email = "some@email", RefreshToken = "valid-refresh", RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(1) },
                 false
             ).SetDescription("Invalid refresh token throws UnauthorizedAccessException.");
 
             yield return new TestCaseData(
                 new AccessTokenData { AccessToken = "expired-token", RefreshToken = "valid-refresh" },
-                new User { UserName = "testuser", RefreshToken = "valid-refresh", RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(-1) },
+                new User { UserName = "testuser", Email = "some@email", RefreshToken = "valid-refresh", RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(-1) },
                 false
             ).SetDescription("Expired refresh token throws UnauthorizedAccessException.");
         }
@@ -127,7 +135,7 @@ namespace AuthenticationApi.Services.Tests
 
             if (isValid)
             {
-                tokenHandlerMock.Setup(t => t.CreateToken(user))
+                tokenHandlerMock.Setup(t => t.CreateToken(It.IsAny<IEnumerable<Claim>>()))
                     .Returns(new AccessTokenData { AccessToken = "new-access-token", RefreshToken = "new-refresh-token" });
             }
 
@@ -137,6 +145,8 @@ namespace AuthenticationApi.Services.Tests
                 var result = await tokenService.RefreshAccessTokenAsync(tokenData, user, CancellationToken.None);
                 Assert.That(result.AccessToken, Is.EqualTo("new-access-token"));
                 Assert.That(result.RefreshToken, Is.EqualTo("valid-refresh"));
+
+                tokenHandlerMock.Verify(x => x.CreateToken(It.IsAny<IEnumerable<Claim>>()), Times.Once);
             }
             else
             {

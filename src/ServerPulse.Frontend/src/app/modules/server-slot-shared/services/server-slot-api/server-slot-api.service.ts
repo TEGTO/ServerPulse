@@ -1,45 +1,44 @@
-/* eslint-disable @typescript-eslint/no-wrapper-object-types */
-import { HttpParams } from '@angular/common/http';
+
+import { HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, map, Observable } from 'rxjs';
-import { CreateServerSlotRequest, mapServerSlotResponseToServerSlot, ServerSlotResponse, UpdateServerSlotRequest } from '../..';
+import { CreateSlotRequest, CreateSlotResponse, GetSlotByIdResponse, GetSlotsByEmailResponse, mapCreateSlotResponseToServerSlot, mapGetSlotByIdResponseToServerSlot, mapGetSlotsByEmailResponseToServerSlot, ServerSlot, UpdateSlotRequest } from '../..';
 import { BaseApiService } from '../../../shared';
-
 @Injectable({
   providedIn: 'root'
 })
 export class ServerSlotApiService extends BaseApiService {
-  getUserServerSlots(containsStr = ""): Observable<ServerSlotResponse[]> {
+  getUserServerSlots(containsStr = ""): Observable<ServerSlot[]> {
     const params = new HttpParams().set('contains', containsStr);
 
-    return this.httpClient.get<ServerSlotResponse[]>(this.combinePathWithServerSlotApiUrl(``), { params }).pipe(
-      map((response) => response.map(mapServerSlotResponseToServerSlot)),
+    return this.httpClient.get<GetSlotsByEmailResponse[]>(this.combinePathWithServerSlotApiUrl(``), { params }).pipe(
+      map((response) => response.map(mapGetSlotsByEmailResponseToServerSlot)),
       catchError((resp) => this.handleError(resp))
     );
   }
 
-  getServerSlotById(id: string): Observable<ServerSlotResponse> {
-    return this.httpClient.get<ServerSlotResponse>(this.combinePathWithServerSlotApiUrl(`/${id}`)).pipe(
-      map((response) => mapServerSlotResponseToServerSlot(response)),
+  getServerSlotById(id: string): Observable<ServerSlot> {
+    return this.httpClient.get<GetSlotByIdResponse>(this.combinePathWithServerSlotApiUrl(`/${id}`)).pipe(
+      map((response) => mapGetSlotByIdResponseToServerSlot(response)),
       catchError((resp) => this.handleError(resp))
     );
   }
 
-  createServerSlot(request: CreateServerSlotRequest): Observable<ServerSlotResponse> {
-    return this.httpClient.post<ServerSlotResponse>(this.combinePathWithServerSlotApiUrl(``), request).pipe(
-      map((response) => mapServerSlotResponseToServerSlot(response)),
+  createServerSlot(request: CreateSlotRequest): Observable<ServerSlot> {
+    return this.httpClient.post<CreateSlotResponse>(this.combinePathWithServerSlotApiUrl(``), request).pipe(
+      map((response) => mapCreateSlotResponseToServerSlot(response)),
       catchError((resp) => this.handleError(resp))
     );
   }
 
-  updateServerSlot(request: UpdateServerSlotRequest): Observable<Object> {
-    return this.httpClient.put(this.combinePathWithServerSlotApiUrl(``), request).pipe(
+  updateServerSlot(request: UpdateSlotRequest): Observable<HttpResponse<void>> {
+    return this.httpClient.put<void>(this.combinePathWithServerSlotApiUrl(``), request, { observe: 'response' }).pipe(
       catchError((resp) => this.handleError(resp))
     );
   }
 
-  deleteServerSlot(id: string): Observable<Object> {
-    return this.httpClient.delete(this.combinePathWithServerSlotApiUrl(`/${id}`)).pipe(
+  deleteServerSlot(id: string): Observable<HttpResponse<void>> {
+    return this.httpClient.delete<void>(this.combinePathWithServerSlotApiUrl(`/${id}`), { observe: 'response' }).pipe(
       catchError((resp) => this.handleError(resp))
     );
   }

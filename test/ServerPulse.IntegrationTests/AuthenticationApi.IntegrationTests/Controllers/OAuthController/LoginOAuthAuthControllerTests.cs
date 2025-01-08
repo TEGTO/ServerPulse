@@ -1,5 +1,5 @@
-﻿using AuthenticationApi.Dtos;
-using AuthenticationApi.Dtos.OAuth;
+﻿using AuthenticationApi.Dtos.OAuth;
+using AuthenticationApi.Infrastructure.Dtos.Endpoints.OAuth.LoginOAuth;
 using AuthenticationApi.IntegrationTests.Controllers.AuthController;
 using System.Net;
 using System.Text;
@@ -23,7 +23,7 @@ namespace AuthenticationApi.IntegrationTests.Controllers.OAuthController
         public async Task LoginOAuthRequest_ValidRequest_ReturnsOk()
         {
             //Arrange
-            var request = new UserOAuthenticationRequest
+            var request = new LoginOAuthRequest
             {
                 Code = "somecode",
                 CodeVerifier = "someverifier",
@@ -41,7 +41,7 @@ namespace AuthenticationApi.IntegrationTests.Controllers.OAuthController
             Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
             var content = await httpResponse.Content.ReadAsStringAsync();
-            var response = JsonSerializer.Deserialize<UserAuthenticationResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var response = JsonSerializer.Deserialize<LoginOAuthResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             Assert.That(response, Is.Not.Null);
             Assert.That(response.Email, Is.EqualTo("someemail@gmail.com"));
@@ -51,7 +51,7 @@ namespace AuthenticationApi.IntegrationTests.Controllers.OAuthController
         public async Task LoginOAuthRequest_WrongRequestData_ReturnsBadRequest()
         {
             //Arrange
-            var request = new UserOAuthenticationRequest
+            var request = new LoginOAuthRequest
             {
                 Code = "someinvalidcode",
                 CodeVerifier = "someinvalidverifier",
@@ -73,7 +73,7 @@ namespace AuthenticationApi.IntegrationTests.Controllers.OAuthController
         public async Task LoginOAuthRequest_InvalidRequest_ReturnsBadRequest()
         {
             //Arrange
-            var request = new UserOAuthenticationRequest
+            var request = new LoginOAuthRequest
             {
                 Code = "",
                 CodeVerifier = "",

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { authFailure, authReducer, AuthState, copyUserUpdateRequestToUserAuth, getAuthData, getAuthDataFailure, getAuthDataSuccess, getDefaultAuthData, getDefaultAuthToken, loginUser, loginUserSuccess, logOutUserSuccess, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerUser, startLoginUser, startRegisterUser, updateUserData, updateUserDataSuccess } from "..";
+import { AuthData, authFailure, authReducer, AuthState, copyUserUpdateRequestToUserAuth, getAuthData, getAuthDataFailure, getAuthDataSuccess, getDefaultAccessTokenData, getDefaultAuthData, loginUser, loginUserSuccess, logOutUserSuccess, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerUser, startLoginUser, startRegisterUser, updateUserData, updateUserDataSuccess } from "..";
 
 describe('Auth Reducer', () => {
     const initialState: AuthState = {
@@ -55,7 +55,7 @@ describe('Auth Reducer', () => {
         });
 
         it('should update authData on loginUserSuccess', () => {
-            const authData = { isAuthenticated: true, authToken: getDefaultAuthToken(), email: 'test@example.com' };
+            const authData: AuthData = { isAuthenticated: true, accessTokenData: getDefaultAccessTokenData(), email: 'test@example.com' };
             const action = loginUserSuccess({ authData });
             const state = authReducer(initialState, action);
 
@@ -73,7 +73,7 @@ describe('Auth Reducer', () => {
         });
 
         it('should update authData on getAuthDataSuccess', () => {
-            const authData = { isAuthenticated: true, authToken: getDefaultAuthToken(), email: 'test@example.com' };
+            const authData: AuthData = { isAuthenticated: true, accessTokenData: getDefaultAccessTokenData(), email: 'test@example.com' };
             const action = getAuthDataSuccess({ authData });
             const state = authReducer(initialState, action);
 
@@ -100,8 +100,8 @@ describe('Auth Reducer', () => {
 
     describe('Refresh Token Actions', () => {
         it('should set refresh flag on refreshAccessToken', () => {
-            const authToken = { accessToken: 'token', refreshToken: 'refreshToken', refreshTokenExpiryDate: new Date() };
-            const action = refreshAccessToken({ authToken });
+            const accessTokenData = { accessToken: 'token', refreshToken: 'refreshToken', refreshTokenExpiryDate: new Date() };
+            const action = refreshAccessToken({ accessTokenData });
             const state = authReducer(initialState, action);
 
             expect(state.isRefreshSuccessful).toBe(false);
@@ -109,12 +109,12 @@ describe('Auth Reducer', () => {
         });
 
         it('should update authData and set refresh flag on refreshAccessTokenSuccess', () => {
-            const authToken = { accessToken: 'token', refreshToken: 'refreshToken', refreshTokenExpiryDate: new Date() };
-            const action = refreshAccessTokenSuccess({ authToken });
+            const accessTokenData = { accessToken: 'token', refreshToken: 'refreshToken', refreshTokenExpiryDate: new Date() };
+            const action = refreshAccessTokenSuccess({ accessTokenData });
             const state = authReducer(initialState, action);
 
             expect(state.isRefreshSuccessful).toBe(true);
-            expect(state.authData.authToken).toEqual(authToken);
+            expect(state.authData.accessTokenData).toEqual(accessTokenData);
             expect(state.error).toBeNull();
         });
 

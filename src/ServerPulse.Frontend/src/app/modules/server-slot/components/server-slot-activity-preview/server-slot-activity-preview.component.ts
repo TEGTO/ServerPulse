@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { BehaviorSubject, interval, map, Observable, of, Subject, takeUntil } from 'rxjs';
-import { addLoadEventToLoadAmountStatistics, getLoadAmountStatisticsInRange, LoadAmountStatistics, MessageAmountInRangeRequest, selectLastLoadEventByKey, selectLoadAmountStatisticsByKey, startLoadStatisticsReceiving, stopLoadKeyListening } from '../../../analyzer';
+import { addLoadEventToLoadAmountStatistics, getLoadAmountStatisticsInRange, GetLoadAmountStatisticsInRangeRequest, LoadAmountStatistics, selectLastLoadEventByKey, selectLoadAmountStatisticsByKey, startLoadStatisticsReceiving, stopLoadKeyListening } from '../../../analyzer';
 import { ActivityChartType } from '../../../chart';
 import { ServerSlot } from '../../../server-slot-shared';
 import { TimeSpan } from '../../../shared';
@@ -38,7 +38,7 @@ export class ServerSlotActivityPreviewComponent implements OnInit, OnDestroy {
     this.setChartDataObservable();
 
     const timeSpan = new TimeSpan(0, 0, 0, this.fiveMinutes);
-    const req: MessageAmountInRangeRequest = {
+    const req: GetLoadAmountStatisticsInRangeRequest = {
       key: this.serverSlot.slotKey,
       from: this.dateFromSubject$.value,
       to: this.dateToSubject$.value,

@@ -1,21 +1,21 @@
-import { AuthToken, getDefaultAuthToken } from "../..";
+import { AccessTokenData, getDefaultAccessTokenData } from "../..";
 
 export interface AuthData {
     isAuthenticated: boolean,
-    authToken: AuthToken;
+    accessTokenData: AccessTokenData;
     email: string;
 }
 
-export function copyAuthTokenToAuthData(authData: AuthData, authToken: AuthToken): AuthData {
+export function copyAccessTokenDataToAuthData(authData: AuthData, accessTokenData: AccessTokenData): AuthData {
     return {
         ...authData,
-        authToken: authToken
+        accessTokenData: accessTokenData
     };
 }
 export function getDefaultAuthData(): AuthData {
     return {
         isAuthenticated: false,
-        authToken: getDefaultAuthToken(),
+        accessTokenData: getDefaultAccessTokenData(),
         email: "",
     }
 }

@@ -19,7 +19,7 @@ namespace AuthenticationApi.Services
         {
             this.httpClient = httpClient;
             this.googleTokenValidator = googleTokenValidator;
-            this.oAuthSettings = options.Value;
+            oAuthSettings = options.Value;
         }
 
         public async Task<ProviderLoginModel> GetProviderModelOnCodeAsync(OAuthAccessCodeParams requestParams, CancellationToken cancellationToken)

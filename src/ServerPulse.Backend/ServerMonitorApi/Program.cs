@@ -57,11 +57,6 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
-builder.Services.AddMediatR(conf =>
-{
-    conf.RegisterServicesFromAssembly(typeof(Program).Assembly);
-});
-
 builder.Services.AddSharedFluentValidation(typeof(Program), typeof(LoadEvent));
 
 if (builder.Environment.IsDevelopment())

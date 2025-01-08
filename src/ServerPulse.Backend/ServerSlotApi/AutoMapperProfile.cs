@@ -1,5 +1,8 @@
 ﻿using AutoMapper;
-using ServerSlotApi.Dtos;
+using ServerSlotApi.Dtos.Endpoints.ServerSlot.CreateSlot;
+using ServerSlotApi.Dtos.Endpoints.ServerSlot.GetSlotsByEmail;
+using ServerSlotApi.Dtos.Endpoints.Slot.GetSlotById;
+using ServerSlotApi.Dtos.Endpoints.Slot.UpdateSlot;
 using ServerSlotApi.Infrastructure.Entities;
 
 namespace ServerSlotApi
@@ -8,11 +11,14 @@ namespace ServerSlotApi
     {
         public AutoMapperProfile()
         {
-            CreateMap<ServerSlot, ServerSlotResponse>();
+            CreateMap<CreateSlotRequest, ServerSlot>();
+            CreateMap<ServerSlot, CreateSlotResponse>();
 
-            CreateMap<CreateServerSlotRequest, ServerSlot>();
+            CreateMap<ServerSlot, GetSlotsByEmailResponse>();
 
-            CreateMap<UpdateServerSlotRequest, ServerSlot>();
+            CreateMap<ServerSlot, GetSlotByIdResponse>();
+
+            CreateMap<UpdateSlotRequest, ServerSlot>();
         }
     }
 }

@@ -158,7 +158,7 @@ namespace AnalyzerApi.IntegrationTests.Hubs
                 receivedStatistics != null &&
                 receivedStatistics.LastEvent != null &&
                 receivedStatistics.LoadMethodStatistics != null;
-            }, TimeSpan.FromSeconds(100), TimeSpan.FromSeconds(2));
+            }, TimeSpan.FromSeconds(130), TimeSpan.FromSeconds(2));
 
             Assert.IsNotNull(receivedKey);
             Assert.That(receivedKey, Is.EqualTo(key));

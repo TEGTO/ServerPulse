@@ -1,4 +1,4 @@
-import { AuthData, authFailure, AuthToken, confirmEmail, EmailConfirmationRequest, getAuthData, getAuthDataFailure, getAuthDataSuccess, loginUser, loginUserSuccess, logOutUser, logOutUserSuccess, oauthLogin, oauthLoginFailure, OAuthLoginProvider, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerUser, startLoginUser, startOAuthLogin, startOAuthLoginFailure, startRegisterUser, updateUserData, updateUserDataSuccess, UserAuthenticationRequest, UserRegistrationRequest, UserUpdateRequest } from "..";
+import { AccessTokenData, AuthData, authFailure, confirmEmail, ConfirmEmailRequest, getAuthData, getAuthDataFailure, getAuthDataSuccess, LoginRequest, loginUser, loginUserSuccess, logOutUser, logOutUserSuccess, oauthLogin, oauthLoginFailure, OAuthLoginProvider, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, RegisterRequest, registerUser, startLoginUser, startOAuthLogin, startOAuthLoginFailure, startRegisterUser, updateUserData, updateUserDataSuccess, UserUpdateRequest } from "..";
 
 describe('Authentication Actions', () => {
     const error = { message: 'An error occurred' };
@@ -16,7 +16,7 @@ describe('Authentication Actions', () => {
         });
 
         it('should create registerUser action', () => {
-            const req: UserRegistrationRequest = {
+            const req: RegisterRequest = {
                 redirectConfirmUrl: 'some-url',
                 email: 'email@example.com',
                 password: 'password123',
@@ -30,7 +30,7 @@ describe('Authentication Actions', () => {
 
     describe('Confirm Email User Actions', () => {
         it('should create confirmEmail action', () => {
-            const req: EmailConfirmationRequest = { email: 'email@example.com', token: 'some-token' };
+            const req: ConfirmEmailRequest = { email: 'email@example.com', token: 'some-token' };
             const action = confirmEmail({ req });
             expect(action.type).toBe('[Auth] Cofirm User Email');
             expect(action.req).toBe(req);
@@ -44,7 +44,7 @@ describe('Authentication Actions', () => {
         });
 
         it('should create loginUser action', () => {
-            const req: UserAuthenticationRequest = { login: 'email@example.com', password: 'password123' };
+            const req: LoginRequest = { login: 'email@example.com', password: 'password123' };
             const action = loginUser({ req });
             expect(action.type).toBe('[Auth] Login By User');
             expect(action.req).toBe(req);
@@ -53,7 +53,7 @@ describe('Authentication Actions', () => {
         it('should create loginUserSuccess action', () => {
             const authData: AuthData = {
                 isAuthenticated: true,
-                authToken: { accessToken: 'token', refreshToken: 'refreshToken', refreshTokenExpiryDate: new Date() },
+                accessTokenData: { accessToken: 'token', refreshToken: 'refreshToken', refreshTokenExpiryDate: new Date() },
                 email: 'email@example.com',
             };
             const action = loginUserSuccess({ authData });
@@ -71,7 +71,7 @@ describe('Authentication Actions', () => {
         it('should create getAuthDataSuccess action', () => {
             const authData: AuthData = {
                 isAuthenticated: true,
-                authToken: { accessToken: 'token', refreshToken: 'refreshToken', refreshTokenExpiryDate: new Date() },
+                accessTokenData: { accessToken: 'token', refreshToken: 'refreshToken', refreshTokenExpiryDate: new Date() },
                 email: 'email@example.com',
             };
             const action = getAuthDataSuccess({ authData });
@@ -99,25 +99,25 @@ describe('Authentication Actions', () => {
 
     describe('Refresh Access Token Actions', () => {
         it('should create refreshAccessToken action', () => {
-            const authToken: AuthToken = {
+            const accessTokenData: AccessTokenData = {
                 accessToken: 'accessToken123',
                 refreshToken: 'refreshToken123',
                 refreshTokenExpiryDate: new Date(),
             };
-            const action = refreshAccessToken({ authToken });
+            const action = refreshAccessToken({ accessTokenData });
             expect(action.type).toBe('[Auth] Refresh Access Token');
-            expect(action.authToken).toBe(authToken);
+            expect(action.accessTokenData).toBe(accessTokenData);
         });
 
         it('should create refreshAccessTokenSuccess action', () => {
-            const authToken: AuthToken = {
+            const accessTokenData: AccessTokenData = {
                 accessToken: 'accessToken123',
                 refreshToken: 'refreshToken123',
                 refreshTokenExpiryDate: new Date(),
             };
-            const action = refreshAccessTokenSuccess({ authToken });
+            const action = refreshAccessTokenSuccess({ accessTokenData });
             expect(action.type).toBe('[Auth] Refresh Access Token Success');
-            expect(action.authToken).toBe(authToken);
+            expect(action.accessTokenData).toBe(accessTokenData);
         });
 
         it('should create refreshAccessTokenFailure action', () => {
