@@ -2,7 +2,7 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, O
 import { FormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { BehaviorSubject, debounceTime, Subject, takeUntil } from 'rxjs';
-import { ServerSlot, updateServerSlot, UpdateServerSlotRequest } from '../..';
+import { ServerSlot, updateServerSlot, UpdateSlotRequest } from '../..';
 
 @Component({
   selector: 'app-server-slot-name-changer',
@@ -80,7 +80,7 @@ export class ServerSlotNameChangerComponent implements OnInit, OnDestroy, AfterV
   }
 
   private updateServerSlot(): void {
-    const request: UpdateServerSlotRequest = {
+    const request: UpdateSlotRequest = {
       id: this.serverSlot.id,
       name: this.inputControl.value ?? '',
     };

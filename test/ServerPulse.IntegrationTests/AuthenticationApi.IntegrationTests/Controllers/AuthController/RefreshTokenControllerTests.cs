@@ -1,5 +1,4 @@
-﻿using AuthenticationApi.Dtos;
-using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.Login;
+﻿using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.Login;
 using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.RefreshToken;
 using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.Register;
 using System.Net;
@@ -72,7 +71,7 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
         public async Task RefreshToken_InvalidRequest_ReturnsBadRequest()
         {
             // Arrange
-            var refreshRequest = new AccessTokenDataDto
+            var refreshRequest = new RefreshTokenRequest
             {
                 AccessToken = "",
                 RefreshToken = "validRefreshToken"

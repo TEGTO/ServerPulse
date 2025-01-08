@@ -92,12 +92,7 @@ builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 builder.Services.AddEmailService(builder.Configuration);
 
-builder.Services.AddMediatR(conf =>
-{
-    conf.RegisterServicesFromAssembly(typeof(Program).Assembly);
-});
-
-builder.Services.AddSharedFluentValidation(typeof(Program), typeof(AccessTokenDataDtoValidator));
+builder.Services.AddSharedFluentValidation(typeof(Program), typeof(ConfirmEmailRequestValidator));
 
 builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
 builder.Services.AddEndpointsApiExplorer();

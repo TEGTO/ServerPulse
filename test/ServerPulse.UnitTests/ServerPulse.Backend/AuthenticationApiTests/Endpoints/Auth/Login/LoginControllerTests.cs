@@ -1,5 +1,4 @@
 ﻿using Authentication.Models;
-using AuthenticationApi.Dtos;
 using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.Login;
 using AuthenticationApi.Infrastructure.Models;
 using AuthenticationApi.Services;
@@ -31,7 +30,7 @@ namespace AuthenticationApi.Endpoints.Auth.Login.Tests
         private static IEnumerable<TestCaseData> LoginUserTestCases()
         {
             var validRequest = new LoginRequest { Login = "validuser", Password = "validpassword" };
-            var validToken = new AccessTokenDataDto { AccessToken = "valid_token", RefreshToken = "valid_refresh_token" };
+            var validToken = new LoginAccessTokenData { AccessToken = "valid_token", RefreshToken = "valid_refresh_token" };
             var validResponse = new LoginResponse
             {
                 AccessTokenData = validToken,
@@ -67,7 +66,7 @@ namespace AuthenticationApi.Endpoints.Auth.Login.Tests
         [TestCaseSource(nameof(LoginUserTestCases))]
         public async Task Login_TestCases(
             LoginRequest request,
-            AccessTokenDataDto? token,
+            LoginAccessTokenData? token,
             LoginResponse? expectedResponse,
             bool emailConfirmationEnabled,
             bool isValid)
@@ -89,7 +88,7 @@ namespace AuthenticationApi.Endpoints.Auth.Login.Tests
                     It.IsAny<CancellationToken>()))
                     .ReturnsAsync(new AccessTokenData { AccessToken = token?.AccessToken!, RefreshToken = token?.RefreshToken! });
 
-                mockMapper.Setup(m => m.Map<AccessTokenDataDto>(It.IsAny<AccessTokenData>()))
+                mockMapper.Setup(m => m.Map<LoginAccessTokenData>(It.IsAny<AccessTokenData>()))
                     .Returns(token!);
             }
 

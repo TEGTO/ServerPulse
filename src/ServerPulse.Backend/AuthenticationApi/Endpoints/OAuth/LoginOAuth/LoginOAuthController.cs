@@ -1,5 +1,4 @@
-﻿using AuthenticationApi.Dtos;
-using AuthenticationApi.Dtos.OAuth;
+﻿using AuthenticationApi.Dtos.OAuth;
 using AuthenticationApi.Infrastructure.Dtos.Endpoints.OAuth.LoginOAuth;
 using AuthenticationApi.Services;
 using AutoMapper;
@@ -37,7 +36,7 @@ namespace AuthenticationApi.Endpoints.OAuth.LoginOAuth
 
             var tokenData = await authService.LoginUserWithProviderAsync(loginModel, cancellationToken);
 
-            var tokenDataDto = mapper.Map<AccessTokenDataDto>(tokenData);
+            var tokenDataDto = mapper.Map<LoginOAuthAccessTokenData>(tokenData);
 
             return Ok(new LoginOAuthResponse
             {

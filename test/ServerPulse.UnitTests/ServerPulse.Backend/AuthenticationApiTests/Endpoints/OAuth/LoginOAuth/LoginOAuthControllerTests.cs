@@ -1,5 +1,4 @@
 ﻿using Authentication.Models;
-using AuthenticationApi.Dtos;
 using AuthenticationApi.Dtos.OAuth;
 using AuthenticationApi.Infrastructure.Dtos.Endpoints.OAuth.LoginOAuth;
 using AuthenticationApi.Infrastructure.Models;
@@ -60,7 +59,7 @@ namespace AuthenticationApi.Endpoints.OAuth.LoginOAuth.Tests
                 RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(1)
             };
 
-            var accessTokenDataDto = new AccessTokenDataDto
+            var accessTokenDataDto = new LoginOAuthAccessTokenData
             {
                 AccessToken = "access-token",
                 RefreshToken = "refresh-token",
@@ -73,7 +72,7 @@ namespace AuthenticationApi.Endpoints.OAuth.LoginOAuth.Tests
             mockAuthService.Setup(x => x.LoginUserWithProviderAsync(providerLoginModel, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(accessTokenData);
 
-            mockMapper.Setup(x => x.Map<AccessTokenDataDto>(accessTokenData))
+            mockMapper.Setup(x => x.Map<LoginOAuthAccessTokenData>(accessTokenData))
                 .Returns(accessTokenDataDto);
 
             // Act

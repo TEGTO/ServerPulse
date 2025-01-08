@@ -1,9 +1,11 @@
 ﻿using Authentication.Models;
-using AuthenticationApi.Dtos;
 using AuthenticationApi.Infrastructure;
+using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.ConfirmEmail;
+using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.Login;
 using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.RefreshToken;
 using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.Register;
 using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.UserUpdate;
+using AuthenticationApi.Infrastructure.Dtos.Endpoints.OAuth.LoginOAuth;
 using AuthenticationApi.Infrastructure.Models;
 using AutoMapper;
 
@@ -78,6 +80,42 @@ namespace AuthenticationApi.Tests
         }
 
         [Test]
+        public void AccessTokenDataToLoginAccessTokenData_AccessTokenDataMappedCorrectly()
+        {
+            //Arrange
+            var accessTokenData = new AccessTokenData
+            {
+                AccessToken = "access-token",
+                RefreshToken = "refresh-token"
+            };
+
+            //Act
+            var result = mapper.Map<LoginAccessTokenData>(accessTokenData);
+
+            //Assert
+            Assert.That(result.AccessToken, Is.EqualTo(accessTokenData.AccessToken));
+            Assert.That(result.RefreshToken, Is.EqualTo(accessTokenData.RefreshToken));
+        }
+
+        [Test]
+        public void AccessTokenDataToLoginOAuthAccessTokenData_AccessTokenDataMappedCorrectly()
+        {
+            //Arrange
+            var accessTokenData = new AccessTokenData
+            {
+                AccessToken = "access-token",
+                RefreshToken = "refresh-token"
+            };
+
+            //Act
+            var result = mapper.Map<LoginOAuthAccessTokenData>(accessTokenData);
+
+            //Assert
+            Assert.That(result.AccessToken, Is.EqualTo(accessTokenData.AccessToken));
+            Assert.That(result.RefreshToken, Is.EqualTo(accessTokenData.RefreshToken));
+        }
+
+        [Test]
         public void AccessTokenDataToRefreshTokenResponse_RefreshTokenResponseMappedCorrectly()
         {
             //Arrange
@@ -97,37 +135,17 @@ namespace AuthenticationApi.Tests
         }
 
         [Test]
-        public void RefreshTokenRequestToAccessTokenData_RefreshTokenRequestMappedCorrectly()
-        {
-            //Arrange
-            var request = new RefreshTokenRequest
-            {
-                AccessToken = "access-token",
-                RefreshToken = "refresh-token",
-                RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(1)
-            };
-
-            //Act
-            var result = mapper.Map<AccessTokenData>(request);
-
-            //Assert
-            Assert.That(result.AccessToken, Is.EqualTo(request.AccessToken));
-            Assert.That(result.RefreshToken, Is.EqualTo(request.RefreshToken));
-        }
-
-        [Test]
-        public void AccessTokenDataToAccessTokenDataDto_AccessTokenDataDtoMappedCorrectly()
+        public void AccessTokenDataToConfirmEmailAccessTokenData_AccessTokenDataMappedCorrectly()
         {
             //Arrange
             var accessTokenData = new AccessTokenData
             {
                 AccessToken = "access-token",
-                RefreshToken = "refresh-token",
-                RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(1)
+                RefreshToken = "refresh-token"
             };
 
             //Act
-            var result = mapper.Map<AccessTokenDataDto>(accessTokenData);
+            var result = mapper.Map<ConfirmEmailAccessTokenData>(accessTokenData);
 
             //Assert
             Assert.That(result.AccessToken, Is.EqualTo(accessTokenData.AccessToken));
@@ -135,10 +153,10 @@ namespace AuthenticationApi.Tests
         }
 
         [Test]
-        public void AccessTokenDataDtoToAccessTokenData_AccessTokenDataDtoMappedCorrectly()
+        public void RefreshTokenRequestToAccessTokenData_RefreshTokenRequestMappedCorrectly()
         {
             //Arrange
-            var request = new AccessTokenDataDto
+            var request = new RefreshTokenRequest
             {
                 AccessToken = "access-token",
                 RefreshToken = "refresh-token",

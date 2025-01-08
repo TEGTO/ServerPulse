@@ -1,14 +1,14 @@
-import { AccessTokenDataDto, AuthData, mapAuthTokenResponseToAuthToken } from "../..";
+import { AuthData, ConfirmEmailAccessTokenData, mapConfirmEmailAccessTokenDataToAuthToken } from "../..";
 
 export interface ConfirmEmailResponse {
-    accessTokenData: AccessTokenDataDto;
+    accessTokenData: ConfirmEmailAccessTokenData;
     email: string;
 }
 
 export function mapConfirmEmailResponseToAuthData(response: ConfirmEmailResponse): AuthData {
     return {
         isAuthenticated: true,
-        accessTokenData: mapAuthTokenResponseToAuthToken(response?.accessTokenData),
+        accessTokenData: mapConfirmEmailAccessTokenDataToAuthToken(response?.accessTokenData),
         email: response?.email,
     }
 }

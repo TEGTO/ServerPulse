@@ -1,9 +1,11 @@
 ﻿using Authentication.Models;
-using AuthenticationApi.Dtos;
 using AuthenticationApi.Infrastructure;
+using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.ConfirmEmail;
+using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.Login;
 using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.RefreshToken;
 using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.Register;
 using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.UserUpdate;
+using AuthenticationApi.Infrastructure.Dtos.Endpoints.OAuth.LoginOAuth;
 using AuthenticationApi.Infrastructure.Models;
 using AutoMapper;
 
@@ -25,8 +27,11 @@ namespace AuthenticationApi
             CreateMap<AccessTokenData, RefreshTokenResponse>();
             CreateMap<RefreshTokenRequest, AccessTokenData>();
 
-            CreateMap<AccessTokenData, AccessTokenDataDto>();
-            CreateMap<AccessTokenDataDto, AccessTokenData>();
+            CreateMap<AccessTokenData, ConfirmEmailAccessTokenData>();
+
+            CreateMap<AccessTokenData, LoginAccessTokenData>();
+
+            CreateMap<AccessTokenData, LoginOAuthAccessTokenData>();
         }
     }
 }

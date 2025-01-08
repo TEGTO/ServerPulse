@@ -2,7 +2,7 @@
 import { fakeAsync, TestBed, tick } from "@angular/core/testing";
 import { provideMockActions } from "@ngrx/effects/testing";
 import { Observable, of, throwError } from "rxjs";
-import { CreateServerSlotRequest, ServerSlot, ServerSlotApiService, ServerSlotDialogManagerService, UpdateServerSlotRequest } from "..";
+import { CreateSlotRequest, ServerSlot, ServerSlotApiService, ServerSlotDialogManagerService, UpdateSlotRequest } from "..";
 import { RedirectorService, SnackbarManager } from "../../shared";
 import { createServerSlot, createServerSlotFailure, createServerSlotSuccess, deleteServerSlot, deleteServerSlotSuccess, getServerSlotById, getServerSlotByIdFailure, getServerSlotByIdSuccess, getUserServerSlots, getUserServerSlotsFailure, getUserServerSlotsSuccess, showSlotInfo, showSlotKey, updateServerSlot, updateServerSlotFailure, updateServerSlotSuccess } from "./server-slot.actions";
 import { ServerSlotEffects } from "./server-slot.effects";
@@ -121,7 +121,7 @@ describe('ServerSlotEffects', () => {
 
     describe('createServerSlot$', () => {
         it('should dispatch createServerSlotSuccess on success', () => {
-            const request: CreateServerSlotRequest = { name: 'New Slot' };
+            const request: CreateSlotRequest = { name: 'New Slot' };
             const serverSlot: ServerSlot = { id: '1', userEmail: 'test@example.com', name: 'New Slot', slotKey: 'key' };
             const action = createServerSlot({ req: request });
             const outcome = createServerSlotSuccess({ serverSlot });
@@ -137,7 +137,7 @@ describe('ServerSlotEffects', () => {
         });
 
         it('should dispatch createServerSlotFailure on failure', () => {
-            const request: CreateServerSlotRequest = { name: 'New Slot' };
+            const request: CreateSlotRequest = { name: 'New Slot' };
             const error = { message: 'Failed to create' };
             const action = createServerSlot({ req: request });
             const outcome = createServerSlotFailure({ error: error.message });
@@ -155,7 +155,7 @@ describe('ServerSlotEffects', () => {
 
     describe('updateServerSlot$', () => {
         it('should dispatch updateServerSlotSuccess on success', fakeAsync(() => {
-            const request: UpdateServerSlotRequest = { id: '1', name: 'Updated Slot' };
+            const request: UpdateSlotRequest = { id: '1', name: 'Updated Slot' };
             const action = updateServerSlot({ req: request });
             const outcome = updateServerSlotSuccess({ req: request });
 
@@ -173,7 +173,7 @@ describe('ServerSlotEffects', () => {
         }));
 
         it('should dispatch updateServerSlotFailure on failure', () => {
-            const request: UpdateServerSlotRequest = { id: '1', name: 'Updated Slot' };
+            const request: UpdateSlotRequest = { id: '1', name: 'Updated Slot' };
             const error = { message: 'Failed to update' };
             const action = updateServerSlot({ req: request });
             const outcome = updateServerSlotFailure({ error: error.message });

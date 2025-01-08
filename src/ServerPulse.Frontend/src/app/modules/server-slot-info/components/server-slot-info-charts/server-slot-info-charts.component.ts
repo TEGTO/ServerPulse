@@ -3,7 +3,7 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnDestroy } f
 import { Store } from '@ngrx/store';
 import { BehaviorSubject, filter, interval, Subject, takeUntil, tap } from 'rxjs';
 import { checkIfLoadEventAlreadyExistsById, getDailyLoadAmountStatistics, getLoadAmountStatisticsInRange, isSelectedDateToday, selectLoadAmountStatistics, selectSecondaryLoadAmountStatistics, selectSelectedDate, setSelectedDate } from '../..';
-import { LoadAmountStatistics, MessageAmountInRangeRequest, selectLastLoadEventByKey } from '../../../analyzer';
+import { GetLoadAmountStatisticsInRangeRequest, LoadAmountStatistics, selectLastLoadEventByKey } from '../../../analyzer';
 import { ActivityChartType } from '../../../chart';
 import { TimeSpan } from '../../../shared';
 
@@ -92,7 +92,7 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
 
             this.updateSecondaryTime();
 
-            const req: MessageAmountInRangeRequest =
+            const req: GetLoadAmountStatisticsInRangeRequest =
             {
               key: this.slotKey,
               from: this.secondaryDateFromSubject$.value,

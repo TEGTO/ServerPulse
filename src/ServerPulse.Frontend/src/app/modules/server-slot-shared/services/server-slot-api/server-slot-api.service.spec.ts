@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { CreateServerSlotRequest, mapServerSlotResponseToServerSlot, ServerSlot, ServerSlotApiService, ServerSlotResponse, UpdateServerSlotRequest } from '../..';
+import { CreateSlotRequest, CreateSlotResponse, mapCreateSlotResponseToServerSlot, ServerSlot, ServerSlotApiService, UpdateSlotRequest } from '../..';
 import { URLDefiner } from '../../../shared';
 
 describe('ServerSlotApiService', () => {
@@ -36,10 +36,10 @@ describe('ServerSlotApiService', () => {
 
   it('should get user server slots', () => {
     const expectedReq = `/api/serverslot?contains=`;
-    const response: ServerSlotResponse[] = [
+    const response: CreateSlotResponse[] = [
       { id: '1', userEmail: 'user@example.com', name: 'Slot 1', slotKey: 'key1' },
     ];
-    const mappedResponse: ServerSlot[] = response.map(mapServerSlotResponseToServerSlot);
+    const mappedResponse: ServerSlot[] = response.map(mapCreateSlotResponseToServerSlot);
 
     service.getUserServerSlots().subscribe((res) => {
       expect(res).toEqual(mappedResponse);
@@ -53,8 +53,8 @@ describe('ServerSlotApiService', () => {
 
   it('should get server slot by ID', () => {
     const expectedReq = `/api/serverslot/1`;
-    const response: ServerSlotResponse = { id: '1', userEmail: 'user@example.com', name: 'Slot 1', slotKey: 'key1' };
-    const mappedResponse = mapServerSlotResponseToServerSlot(response);
+    const response: CreateSlotResponse = { id: '1', userEmail: 'user@example.com', name: 'Slot 1', slotKey: 'key1' };
+    const mappedResponse = mapCreateSlotResponseToServerSlot(response);
 
     service.getServerSlotById('1').subscribe((res) => {
       expect(res).toEqual(mappedResponse);
@@ -68,9 +68,9 @@ describe('ServerSlotApiService', () => {
 
   it('should create a server slot', () => {
     const expectedReq = `/api/serverslot`;
-    const request: CreateServerSlotRequest = { name: 'New Slot' };
-    const response: ServerSlotResponse = { id: '1', userEmail: 'user@example.com', name: 'New Slot', slotKey: 'key1' };
-    const mappedResponse = mapServerSlotResponseToServerSlot(response);
+    const request: CreateSlotRequest = { name: 'New Slot' };
+    const response: CreateSlotResponse = { id: '1', userEmail: 'user@example.com', name: 'New Slot', slotKey: 'key1' };
+    const mappedResponse = mapCreateSlotResponseToServerSlot(response);
 
     service.createServerSlot(request).subscribe((res) => {
       expect(res).toEqual(mappedResponse);
@@ -84,7 +84,7 @@ describe('ServerSlotApiService', () => {
 
   it('should update a server slot', () => {
     const expectedReq = `/api/serverslot`;
-    const request: UpdateServerSlotRequest = { id: '1', name: 'Updated Slot' };
+    const request: UpdateSlotRequest = { id: '1', name: 'Updated Slot' };
 
     service.updateServerSlot(request).subscribe({
       next: () => {

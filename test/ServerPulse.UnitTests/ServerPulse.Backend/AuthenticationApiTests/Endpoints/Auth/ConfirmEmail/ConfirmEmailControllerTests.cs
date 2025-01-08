@@ -1,5 +1,4 @@
 ﻿using Authentication.Models;
-using AuthenticationApi.Dtos;
 using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.ConfirmEmail;
 using AuthenticationApi.Services;
 using AutoMapper;
@@ -40,7 +39,7 @@ namespace AuthenticationApi.Endpoints.Auth.ConfirmEmail.Tests
                 RefreshTokenExpiryDate = DateTime.UtcNow.AddMinutes(60)
             };
 
-            var validAccessTokenDto = new AccessTokenDataDto
+            var validAccessTokenDto = new ConfirmEmailAccessTokenData
             {
                 AccessToken = validAccessTokenData.AccessToken,
                 RefreshToken = validAccessTokenData.RefreshToken,
@@ -78,7 +77,7 @@ namespace AuthenticationApi.Endpoints.Auth.ConfirmEmail.Tests
             ConfirmEmailRequest request,
             IdentityResult confirmResult,
             AccessTokenData? accessTokenData,
-            AccessTokenDataDto? accessTokenDto,
+            ConfirmEmailAccessTokenData? accessTokenDto,
             ConfirmEmailResponse? expectedResponse,
             bool isValid)
         {
@@ -91,7 +90,7 @@ namespace AuthenticationApi.Endpoints.Auth.ConfirmEmail.Tests
                 mockAuthService.Setup(x => x.LoginUserAfterConfirmationAsync(request.Email, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(accessTokenData!);
 
-                mockMapper.Setup(x => x.Map<AccessTokenDataDto>(accessTokenData!))
+                mockMapper.Setup(x => x.Map<ConfirmEmailAccessTokenData>(accessTokenData!))
                     .Returns(accessTokenDto!);
             }
 
@@ -118,7 +117,7 @@ namespace AuthenticationApi.Endpoints.Auth.ConfirmEmail.Tests
 
                 mockAuthService.Verify(x => x.ConfirmEmailAsync(request.Email, request.Token), Times.Once);
                 mockAuthService.Verify(x => x.LoginUserAfterConfirmationAsync(request.Email, It.IsAny<CancellationToken>()), Times.Once);
-                mockMapper.Verify(x => x.Map<AccessTokenDataDto>(It.IsAny<AccessTokenData>()), Times.Once);
+                mockMapper.Verify(x => x.Map<ConfirmEmailAccessTokenData>(It.IsAny<AccessTokenData>()), Times.Once);
             }
         }
     }

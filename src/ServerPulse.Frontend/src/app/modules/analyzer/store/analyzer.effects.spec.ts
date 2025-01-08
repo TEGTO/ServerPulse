@@ -3,7 +3,7 @@ import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Store } from "@ngrx/store";
 import { Observable, of, Subject, throwError } from "rxjs";
-import { AnalyzerApiService, BaseStatisticsResponse, downloadSlotStatistics, downLoadSlotStatisticsFailure, getDefaultCustomStatisticsResponse, getDefaultLoadAmountStatistics, getDefaultLoadStatisticsResponse, getDefaultServerLifecycleStatisticsResponse, getDefaultSlotStatistics, getLoadAmountStatisticsInRange, getLoadAmountStatisticsInRangeFailure, getLoadAmountStatisticsInRangeSuccess, LoadAmountStatistics, mapServerCustomStatisticsResponseToServerCustomStatistics, mapServerLifecycleStatisticsResponseToServerLifecycleStatistics, mapServerLoadStatisticsResponseToServerLoadStatistics, MessageAmountInRangeRequest, receiveCustomStatisticsFailure, receiveCustomStatisticsSuccess, receiveLifecycleStatisticsFailure, receiveLifecycleStatisticsSuccess, receiveLoadStatisticsFailure, receiveLoadStatisticsSuccess, SignalStatisticsService, startCustomStatisticsReceiving, startLifecycleStatisticsReceiving, startLoadStatisticsReceiving, stopCustomStatisticsReceiving, stopLifecycleStatisticsReceiving, stopLoadKeyListening } from "..";
+import { AnalyzerApiService, BaseStatisticsResponse, downloadSlotStatistics, downLoadSlotStatisticsFailure, getDefaultCustomStatisticsResponse, getDefaultLoadAmountStatistics, getDefaultLoadStatisticsResponse, getDefaultServerLifecycleStatisticsResponse, getDefaultSlotStatistics, getLoadAmountStatisticsInRange, getLoadAmountStatisticsInRangeFailure, GetLoadAmountStatisticsInRangeRequest, getLoadAmountStatisticsInRangeSuccess, LoadAmountStatistics, mapServerCustomStatisticsResponseToServerCustomStatistics, mapServerLifecycleStatisticsResponseToServerLifecycleStatistics, mapServerLoadStatisticsResponseToServerLoadStatistics, receiveCustomStatisticsFailure, receiveCustomStatisticsSuccess, receiveLifecycleStatisticsFailure, receiveLifecycleStatisticsSuccess, receiveLoadStatisticsFailure, receiveLoadStatisticsSuccess, SignalStatisticsService, startCustomStatisticsReceiving, startLifecycleStatisticsReceiving, startLoadStatisticsReceiving, stopCustomStatisticsReceiving, stopLifecycleStatisticsReceiving, stopLoadKeyListening } from "..";
 import { JsonDownloader, SnackbarManager, TimeSpan } from "../../shared";
 import { AnalyzerEffects } from "./analyzer.effects";
 
@@ -339,7 +339,7 @@ describe('AnalyzerEffects', () => {
 
     describe('getLoadAmountStatisticsInRange$', () => {
         it('should dispatch getLoadAmountStatisticsInRangeSuccess on successful API call', () => {
-            const req: MessageAmountInRangeRequest = {
+            const req: GetLoadAmountStatisticsInRangeRequest = {
                 key: 'test-key',
                 timeSpan: '00:05:00',
                 from: new Date(),
@@ -365,7 +365,7 @@ describe('AnalyzerEffects', () => {
         });
 
         it('should dispatch getLoadAmountStatisticsInRangeFailure on API error', () => {
-            const req: MessageAmountInRangeRequest = {
+            const req: GetLoadAmountStatisticsInRangeRequest = {
                 key: 'test-key',
                 timeSpan: '00:05:00',
                 from: new Date(),

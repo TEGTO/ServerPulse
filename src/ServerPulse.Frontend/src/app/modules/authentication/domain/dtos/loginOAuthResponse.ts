@@ -1,14 +1,14 @@
-import { AccessTokenDataDto, AuthData, mapAuthTokenResponseToAuthToken } from "../..";
+import { AuthData, LoginOAuthAccessTokenData, mapLoginOAuthAccessTokenDataToAuthToken } from "../..";
 
 export interface LoginOAuthResponse {
-    accessTokenData: AccessTokenDataDto;
+    accessTokenData: LoginOAuthAccessTokenData;
     email: string;
 }
 
 export function mapUserAuthenticationResponseToAuthData(response: LoginOAuthResponse): AuthData {
     return {
         isAuthenticated: true,
-        accessTokenData: mapAuthTokenResponseToAuthToken(response?.accessTokenData),
+        accessTokenData: mapLoginOAuthAccessTokenDataToAuthToken(response?.accessTokenData),
         email: response?.email,
     }
 }

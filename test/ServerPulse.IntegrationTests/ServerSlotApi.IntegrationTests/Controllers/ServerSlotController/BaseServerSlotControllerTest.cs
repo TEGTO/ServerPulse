@@ -1,7 +1,7 @@
 ﻿using Authentication.Models;
 using Authentication.Token;
 using Microsoft.Extensions.Options;
-using ServerSlotApi.Dtos;
+using ServerSlotApi.Dtos.Endpoints.ServerSlot.CreateSlot;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
@@ -41,15 +41,15 @@ namespace ServerSlotApi.IntegrationTests.Controllers.ServerSlotController
             return jwtHandler.CreateToken(claims);
         }
 
-        protected async Task<List<ServerSlotResponse>> CreateSamplesSlotsAsync(string accessToken)
+        protected async Task<List<CreateSlotResponse>> CreateSamplesSlotsAsync(string accessToken)
         {
-            var requests = new List<CreateServerSlotRequest>
+            var requests = new List<CreateSlotRequest>
             {
-                new CreateServerSlotRequest { Name = "Slot1" },
-                new CreateServerSlotRequest { Name = "Slot2" }
+                new CreateSlotRequest { Name = "Slot1" },
+                new CreateSlotRequest { Name = "Slot2" }
             };
 
-            var responseSlots = new List<ServerSlotResponse>
+            var responseSlots = new List<CreateSlotResponse>
             {
                 await CreateSampleSlot(requests[0], accessToken),
                 await CreateSampleSlot(requests[1], accessToken)
@@ -58,7 +58,7 @@ namespace ServerSlotApi.IntegrationTests.Controllers.ServerSlotController
             return responseSlots;
         }
 
-        protected async Task<ServerSlotResponse> CreateSampleSlot(CreateServerSlotRequest request, string accessToken)
+        protected async Task<CreateSlotResponse> CreateSampleSlot(CreateSlotRequest request, string accessToken)
         {
             using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/serverslot");
 
@@ -75,7 +75,7 @@ namespace ServerSlotApi.IntegrationTests.Controllers.ServerSlotController
 
             var content = await httpResponse.Content.ReadAsStringAsync();
 
-            var response = JsonSerializer.Deserialize<ServerSlotResponse?>(content, new JsonSerializerOptions
+            var response = JsonSerializer.Deserialize<CreateSlotResponse?>(content, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });

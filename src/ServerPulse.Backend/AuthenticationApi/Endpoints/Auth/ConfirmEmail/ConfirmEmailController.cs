@@ -1,5 +1,4 @@
-﻿using AuthenticationApi.Dtos;
-using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.ConfirmEmail;
+﻿using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.ConfirmEmail;
 using AuthenticationApi.Services;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
@@ -33,7 +32,7 @@ namespace AuthenticationApi.Endpoints.Auth.ConfirmEmail
 
             var tokenData = await authService.LoginUserAfterConfirmationAsync(request.Email, cancellationToken);
 
-            var tokenDataDto = mapper.Map<AccessTokenDataDto>(tokenData);
+            var tokenDataDto = mapper.Map<ConfirmEmailAccessTokenData>(tokenData);
 
             return Ok(new ConfirmEmailResponse
             {

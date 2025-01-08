@@ -3,7 +3,7 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnDestroy, On
 import { Store } from '@ngrx/store';
 import { filter, map, Observable, of, pairwise, Subject, switchMap, takeUntil, tap, throttleTime, withLatestFrom } from 'rxjs';
 import { addNewCustomEvent, getSomeCustomEvents, selectCustomEvents, selectCustomReadFromDate, selectSelectedDate, setCustomReadFromDate, showCustomDetailsEvent } from '../..';
-import { CustomEvent, GetSomeMessagesRequest, selectLastCustomEventByKey, selectLastLoadStatisticsByKey, ServerLoadStatistics } from '../../../analyzer';
+import { CustomEvent, GetSomeCustomEventsRequest, selectLastCustomEventByKey, selectLastLoadStatisticsByKey, ServerLoadStatistics } from '../../../analyzer';
 import { isSelectedDateToday } from '../../utils';
 
 @Component({
@@ -53,7 +53,7 @@ export class ServerSlotInfoAdditionalInformationComponent implements OnInit, Aft
 
     this.customEvents$ = this.store.select(selectCustomReadFromDate).pipe(
       switchMap((date) => {
-        const req: GetSomeMessagesRequest = {
+        const req: GetSomeCustomEventsRequest = {
           key: this.slotKey,
           numberOfMessages: this.tablePageAmount,
           startDate: date,

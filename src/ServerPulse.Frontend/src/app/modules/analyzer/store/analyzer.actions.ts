@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createAction, props } from "@ngrx/store";
-import { LoadAmountStatisticsResponse, LoadEvent, MessageAmountInRangeRequest, ServerCustomStatistics, ServerLifecycleStatistics, ServerLoadStatistics } from "..";
+import { GetLoadAmountStatisticsInRangeRequest, LoadAmountStatisticsResponse, LoadEvent, ServerCustomStatistics, ServerLifecycleStatistics, ServerLoadStatistics } from "..";
 import { TimeSpan } from "../../shared";
 
 //#region Lifecycle Statistics
@@ -73,7 +73,7 @@ export const receiveCustomStatisticsFailure = createAction(
 
 export const getLoadAmountStatisticsInRange = createAction(
     '[Statistics] Get Load Amount Statistics In Range',
-    props<{ req: MessageAmountInRangeRequest }>()
+    props<{ req: GetLoadAmountStatisticsInRangeRequest }>()
 );
 export const getLoadAmountStatisticsInRangeSuccess = createAction(
     '[Statistics] Get Load Amount Statistics In Range Success',

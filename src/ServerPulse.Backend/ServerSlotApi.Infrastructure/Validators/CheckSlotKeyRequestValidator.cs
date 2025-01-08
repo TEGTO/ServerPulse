@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using ServerSlotApi.Dtos;
+using ServerSlotApi.Dtos.Endpoints.Slot.CheckSlotKey;
 
 namespace ServerSlotApi.Infrastructure.Validators
 {

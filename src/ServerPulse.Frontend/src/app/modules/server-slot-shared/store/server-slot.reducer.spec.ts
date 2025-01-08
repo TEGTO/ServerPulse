@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createServerSlotSuccess, deleteServerSlotSuccess, getServerSlotByIdSuccess, getUserServerSlotsSuccess, ServerSlot, serverSlotReducer, ServerSlotState, UpdateServerSlotRequest, updateServerSlotSuccess } from "..";
+import { createServerSlotSuccess, deleteServerSlotSuccess, getServerSlotByIdSuccess, getUserServerSlotsSuccess, ServerSlot, serverSlotReducer, ServerSlotState, updateServerSlotSuccess, UpdateSlotRequest } from "..";
 
 describe('ServerSlot Reducer', () => {
     const initialState: ServerSlotState = {
@@ -83,7 +83,7 @@ describe('ServerSlot Reducer', () => {
     describe('updateServerSlotSuccess', () => {
         it('should update the server slot in the state', () => {
             const existingSlot: ServerSlot = { id: '1', userEmail: 'test@example.com', name: 'Old Slot', slotKey: 'key' };
-            const updateRequest: UpdateServerSlotRequest = { id: '1', name: 'Updated Slot' };
+            const updateRequest: UpdateSlotRequest = { id: '1', name: 'Updated Slot' };
             const initialStateWithSlot: ServerSlotState = {
                 serverSlots: [existingSlot],
             };
@@ -97,7 +97,7 @@ describe('ServerSlot Reducer', () => {
         it('should leave other server slots unchanged', () => {
             const existingSlot: ServerSlot = { id: '1', userEmail: 'test@example.com', name: 'Old Slot', slotKey: 'key' };
             const otherSlot: ServerSlot = { id: '2', userEmail: 'other@example.com', name: 'Other Slot', slotKey: 'otherKey' };
-            const updateRequest: UpdateServerSlotRequest = { id: '1', name: 'Updated Slot' };
+            const updateRequest: UpdateSlotRequest = { id: '1', name: 'Updated Slot' };
             const initialStateWithSlots: ServerSlotState = {
                 serverSlots: [existingSlot, otherSlot],
             };
