@@ -1,7 +1,7 @@
 ﻿using Helper.Services;
 using Microsoft.Extensions.Configuration;
 using Moq;
-using ServerSlotApi.Dtos;
+using ServerSlotApi.Dtos.Endpoints.Slot.CheckSlotKey;
 using System.Text.Json;
 
 namespace ServerMonitorApi.Services.Tests

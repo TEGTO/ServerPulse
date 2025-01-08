@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createAction, props } from "@ngrx/store";
-import { AuthData, AuthToken, EmailConfirmationRequest, OAuthLoginProvider, UserAuthenticationRequest, UserRegistrationRequest, UserUpdateRequest } from "..";
+import { AccessTokenData, AuthData, ConfirmEmailRequest, LoginRequest, OAuthLoginProvider, RegisterRequest, UserUpdateRequest } from "..";
 
 export const authFailure = createAction(
     '[Auth] Auth Operation Failure',
@@ -13,7 +13,7 @@ export const startRegisterUser = createAction(
 
 export const registerUser = createAction(
     '[Auth] Register New User',
-    props<{ req: UserRegistrationRequest }>()
+    props<{ req: RegisterRequest }>()
 );
 export const registerUserSuccess = createAction(
     '[Auth] Register New User Success'
@@ -21,7 +21,7 @@ export const registerUserSuccess = createAction(
 
 export const confirmEmail = createAction(
     '[Auth] Cofirm User Email',
-    props<{ req: EmailConfirmationRequest }>()
+    props<{ req: ConfirmEmailRequest }>()
 );
 
 export const startLoginUser = createAction(
@@ -30,7 +30,7 @@ export const startLoginUser = createAction(
 
 export const loginUser = createAction(
     '[Auth] Login By User',
-    props<{ req: UserAuthenticationRequest }>()
+    props<{ req: LoginRequest }>()
 );
 export const loginUserSuccess = createAction(
     '[Auth] Login By User Success',
@@ -57,11 +57,11 @@ export const logOutUserSuccess = createAction(
 
 export const refreshAccessToken = createAction(
     '[Auth] Refresh Access Token',
-    props<{ authToken: AuthToken }>()
+    props<{ accessTokenData: AccessTokenData }>()
 );
 export const refreshAccessTokenSuccess = createAction(
     '[Auth] Refresh Access Token Success',
-    props<{ authToken: AuthToken }>()
+    props<{ accessTokenData: AccessTokenData }>()
 );
 export const refreshAccessTokenFailure = createAction(
     '[Auth] Refresh Access Token Failure',

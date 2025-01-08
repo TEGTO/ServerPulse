@@ -43,7 +43,7 @@ namespace ServerMonitorApi.IntegrationTests.Controllers.ServerInteractionControl
         }
 
         [Test]
-        public async Task SendLoadEvents_InvalidSlotKey_ReturnsConflictAndDoesNotAddEvents()
+        public async Task SendLoadEvents_InvalidSlotKey_ReturnsBadRequestAndDoesNotAddEvents()
         {
             // Arrange
             var loadEvents = new[]
@@ -60,13 +60,11 @@ namespace ServerMonitorApi.IntegrationTests.Controllers.ServerInteractionControl
             var httpResponse = await client.SendAsync(httpRequest);
 
             // Assert
-            Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.Conflict));
+            Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
 
             var content = await httpResponse.Content.ReadAsStringAsync();
 
-            var jsonResponse = JsonSerializer.Deserialize<JsonElement>(content);
-            var messages = jsonResponse.GetProperty("messages").EnumerateArray().Select(m => m.GetString()).ToList();
-            Assert.That(messages, Contains.Item($"Server slot with key '{loadEvents[0].Key}' is not found!"));
+            Assert.That(content, Is.EqualTo($"Server slot with key '{loadEvents[0].Key}' is not found!"));
 
             mockSlotKeyChecker?.Verify(x => x.CheckSlotKeyAsync(loadEvents[0].Key, It.IsAny<CancellationToken>()), Times.Once);
         }
@@ -108,13 +106,11 @@ namespace ServerMonitorApi.IntegrationTests.Controllers.ServerInteractionControl
 
             var content = await httpResponse.Content.ReadAsStringAsync();
 
-            var jsonResponse = JsonSerializer.Deserialize<JsonElement>(content);
-            var messages = jsonResponse.GetProperty("messages").EnumerateArray().Select(m => m.GetString()).ToList();
-            Assert.That(messages, Contains.Item("Event array could not be null or empty!"));
+            Assert.That(content, Is.EqualTo("Event array could not be null or empty!"));
         }
 
         [Test]
-        public async Task SendLoadEvents_MismatchedKeys_ReturnsConflictAndDoesNotAddEvents()
+        public async Task SendLoadEvents_MismatchedKeys_ReturnsBadRequestAndDoesNotAddEvents()
         {
             // Arrange
             var loadEvents = new[]
@@ -130,13 +126,11 @@ namespace ServerMonitorApi.IntegrationTests.Controllers.ServerInteractionControl
             var httpResponse = await client.SendAsync(httpRequest);
 
             // Assert
-            Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.Conflict));
+            Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
 
             var content = await httpResponse.Content.ReadAsStringAsync();
 
-            var jsonResponse = JsonSerializer.Deserialize<JsonElement>(content);
-            var messages = jsonResponse.GetProperty("messages").EnumerateArray().Select(m => m.GetString()).ToList();
-            Assert.That(messages, Contains.Item("All events must have the same key per request!"));
+            Assert.That(content, Is.EqualTo("All events must have the same key per request!"));
         }
     }
 }

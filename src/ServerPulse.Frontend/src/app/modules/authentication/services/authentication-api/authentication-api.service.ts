@@ -1,7 +1,7 @@
 import { HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, map, Observable } from 'rxjs';
-import { AuthData, AuthToken, AuthTokenResponse, EmailConfirmationRequest, mapAuthTokenResponseToAuthToken, mapUserAuthenticationResponseToAuthData, UserAuthenticationRequest, UserAuthenticationResponse, UserRegistrationRequest, UserUpdateRequest } from '../..';
+import { AccessTokenData, AuthData, ConfirmEmailRequest, ConfirmEmailResponse, LoginRequest, LoginResponse, mapConfirmEmailResponseToAuthData, mapLoginResponseToAuthData, mapRefreshTokenResponseToAuthToken, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest, UserUpdateRequest } from '../..';
 import { BaseApiService } from '../../../shared';
 
 @Injectable({
@@ -9,29 +9,29 @@ import { BaseApiService } from '../../../shared';
 })
 export class AuthenticationApiService extends BaseApiService {
 
-  loginUser(req: UserAuthenticationRequest): Observable<AuthData> {
-    return this.httpClient.post<UserAuthenticationResponse>(this.combinePathWithAuthApiUrl(`/login`), req).pipe(
-      map((response) => mapUserAuthenticationResponseToAuthData(response)),
+  loginUser(req: LoginRequest): Observable<AuthData> {
+    return this.httpClient.post<LoginResponse>(this.combinePathWithAuthApiUrl(`/login`), req).pipe(
+      map((response) => mapLoginResponseToAuthData(response)),
       catchError((resp) => this.handleError(resp))
     );
   }
 
-  registerUser(req: UserRegistrationRequest): Observable<HttpResponse<void>> {
+  registerUser(req: RegisterRequest): Observable<HttpResponse<void>> {
     return this.httpClient.post<void>(this.combinePathWithAuthApiUrl(`/register`), req, { observe: 'response' }).pipe(
       catchError((resp) => this.handleError(resp))
     );
   }
 
-  confirmEmail(req: EmailConfirmationRequest): Observable<AuthData> {
-    return this.httpClient.post<UserAuthenticationResponse>(this.combinePathWithAuthApiUrl(`/confirmation`), req).pipe(
-      map((response) => mapUserAuthenticationResponseToAuthData(response)),
+  confirmEmail(req: ConfirmEmailRequest): Observable<AuthData> {
+    return this.httpClient.post<ConfirmEmailResponse>(this.combinePathWithAuthApiUrl(`/confirmation`), req).pipe(
+      map((response) => mapConfirmEmailResponseToAuthData(response)),
       catchError((resp) => this.handleError(resp))
     );
   }
 
-  refreshToken(tokenData: AuthToken): Observable<AuthToken> {
-    return this.httpClient.post<AuthTokenResponse>(this.combinePathWithAuthApiUrl(`/refresh`), tokenData).pipe(
-      map((response) => mapAuthTokenResponseToAuthToken(response)),
+  refreshToken(req: RefreshTokenRequest): Observable<AccessTokenData> {
+    return this.httpClient.post<RefreshTokenResponse>(this.combinePathWithAuthApiUrl(`/refresh`), req).pipe(
+      map((response) => mapRefreshTokenResponseToAuthToken(response)),
       catchError((resp) => this.handleError(resp))
     );
   }

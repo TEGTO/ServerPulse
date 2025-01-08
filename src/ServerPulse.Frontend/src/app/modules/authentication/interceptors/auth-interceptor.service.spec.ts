@@ -5,7 +5,7 @@ import { ErrorHandler } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { BehaviorSubject, of } from 'rxjs';
-import { AuthInterceptor, AuthToken, logOutUser, refreshAccessToken, selectAuthData, selectAuthErrors, selectIsRefreshSuccessful } from '..';
+import { AccessTokenData, AuthInterceptor, logOutUser, refreshAccessToken, selectAuthData, selectAuthErrors, selectIsRefreshSuccessful } from '..';
 
 describe('AuthInterceptor', () => {
     const validAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjk5OTk5OTk5OTl9.fK3V4NMCKO2ozn8K18sRv9XUcDC2N2hvGTuXMuRcn5Y';
@@ -16,13 +16,13 @@ describe('AuthInterceptor', () => {
     let interceptor: AuthInterceptor;
     let storeSpy: jasmine.SpyObj<Store>;
 
-    const mockAuthToken: AuthToken = {
+    const mockAuthToken: AccessTokenData = {
         accessToken: validAccessToken,
         refreshToken: 'valid-refresh-token',
         refreshTokenExpiryDate: new Date()
     };
 
-    const expiredAuthToken: AuthToken = {
+    const expiredAuthToken: AccessTokenData = {
         accessToken: expiredAccessToken,
         refreshToken: 'valid-refresh-token',
         refreshTokenExpiryDate: new Date(0)
@@ -33,7 +33,7 @@ describe('AuthInterceptor', () => {
 
     beforeEach(() => {
         authDataSubject = new BehaviorSubject({
-            authToken: mockAuthToken,
+            accessTokenData: mockAuthToken,
             isAuthenticated: true,
         });
         authErrorSubject = new BehaviorSubject(null);
@@ -110,14 +110,14 @@ describe('AuthInterceptor', () => {
 
     it('should refresh token if access token is expired', () => {
         authDataSubject.next({
-            authToken: expiredAuthToken,
+            accessTokenData: expiredAuthToken,
             isAuthenticated: true,
         });
 
         httpClient.get('/test').subscribe();
 
         const httpRequest = httpMock.expectOne('/test');
-        expect(storeSpy.dispatch).toHaveBeenCalledWith(refreshAccessToken({ authToken: expiredAuthToken }));
+        expect(storeSpy.dispatch).toHaveBeenCalledWith(refreshAccessToken({ accessTokenData: expiredAuthToken }));
         expect(httpRequest.request.headers.has('Authorization')).toBe(true);
 
         httpRequest.flush({});

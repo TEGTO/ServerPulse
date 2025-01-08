@@ -53,7 +53,7 @@ export class AnalyzerEffects {
                 return true;
             }),
             mergeMap(([action, authData]) =>
-                this.signalStatistics.startConnection(hubUrl, authData.authToken.accessToken ?? "").pipe(
+                this.signalStatistics.startConnection(hubUrl, authData.accessTokenData.accessToken ?? "").pipe(
                     mergeMap(() => {
                         this.signalStatistics.startListen(hubUrl, action.key, action.getInitial ?? true);
                         activeListeners.add(action.key);

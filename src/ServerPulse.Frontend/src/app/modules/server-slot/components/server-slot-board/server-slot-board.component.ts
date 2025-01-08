@@ -3,7 +3,7 @@ import { FormControl } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { BehaviorSubject, debounceTime, Observable, of, startWith, switchMap, tap } from 'rxjs';
 import { environment } from '../../../../../environment/environment';
-import { createServerSlot, CreateServerSlotRequest, getUserServerSlots, selectServerSlots, ServerSlot } from '../../../server-slot-shared';
+import { createServerSlot, CreateSlotRequest, getUserServerSlots, selectServerSlots, ServerSlot } from '../../../server-slot-shared';
 
 @Component({
   selector: 'app-server-slot-board',
@@ -42,7 +42,7 @@ export class ServerSlotBoardComponent implements OnInit {
 
   addServerSlot(): void {
     if (this.slotAmountSubject$.value < this.maxAmountOfSlots) {
-      const request: CreateServerSlotRequest = {
+      const request: CreateSlotRequest = {
         name: 'New Slot'
       };
       this.store.dispatch(createServerSlot({ req: request }));

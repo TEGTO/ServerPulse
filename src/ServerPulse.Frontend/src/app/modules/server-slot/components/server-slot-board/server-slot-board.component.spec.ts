@@ -4,7 +4,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
 import { environment } from '../../../../../environment/environment';
-import { createServerSlot, CreateServerSlotRequest, getUserServerSlots, ServerSlot } from '../../../server-slot-shared';
+import { createServerSlot, CreateSlotRequest, getUserServerSlots, ServerSlot } from '../../../server-slot-shared';
 import { ServerSlotBoardComponent } from './server-slot-board.component';
 
 describe('ServerSlotBoardComponent', () => {
@@ -84,7 +84,7 @@ describe('ServerSlotBoardComponent', () => {
       spyOnProperty(component, 'maxAmountOfSlots', 'get').and.returnValue(10);
       component["slotAmountSubject$"].next(5);
 
-      const expectedRequest: CreateServerSlotRequest = { name: 'New Slot' };
+      const expectedRequest: CreateSlotRequest = { name: 'New Slot' };
       component.addServerSlot();
 
       expect(storeSpy.dispatch).toHaveBeenCalledWith(createServerSlot({ req: expectedRequest }));

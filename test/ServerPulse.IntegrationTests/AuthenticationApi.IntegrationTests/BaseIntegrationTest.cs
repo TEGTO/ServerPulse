@@ -1,7 +1,7 @@
 ﻿using Authentication.OAuth.Google;
 using Authentication.Token;
 using AuthenticationApi.Infrastructure;
-using BackgroundTask;
+using Hangfire;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;

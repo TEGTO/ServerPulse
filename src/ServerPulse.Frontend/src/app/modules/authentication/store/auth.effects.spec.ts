@@ -4,7 +4,7 @@ import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Store } from '@ngrx/store';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { AuthData, AuthenticationApiService, AuthenticationDialogManagerService, authFailure, AuthToken, confirmEmail, EmailConfirmationRequest, getAuthData, getAuthDataFailure, getAuthDataSuccess, loginUser, loginUserSuccess, logOutUser, logOutUserSuccess, OauthApiService, oauthLogin, oauthLoginFailure, OAuthLoginProvider, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, registerUser, registerUserSuccess, startLoginUser, startOAuthLogin, startOAuthLoginFailure, startRegisterUser, updateUserData, updateUserDataSuccess, UserAuthenticationRequest, UserRegistrationRequest } from '..';
+import { AccessTokenData, AuthData, AuthenticationApiService, AuthenticationDialogManagerService, authFailure, confirmEmail, ConfirmEmailRequest, getAuthData, getAuthDataFailure, getAuthDataSuccess, LoginRequest, loginUser, loginUserSuccess, logOutUser, logOutUserSuccess, OauthApiService, oauthLogin, oauthLoginFailure, OAuthLoginProvider, refreshAccessToken, refreshAccessTokenFailure, refreshAccessTokenSuccess, RegisterRequest, registerUser, registerUserSuccess, startLoginUser, startOAuthLogin, startOAuthLoginFailure, startRegisterUser, updateUserData, updateUserDataSuccess } from '..';
 import { LocalStorageService, RedirectorService, SnackbarManager } from '../../shared';
 import { AuthEffects } from './auth.effects';
 
@@ -64,7 +64,7 @@ describe('AuthEffects', () => {
         }));
 
         it('should call registerUser API and after success call registerUserSuccess', fakeAsync(() => {
-            const req: UserRegistrationRequest = {
+            const req: RegisterRequest = {
                 email: 'test@example.com',
                 password: 'password',
                 confirmPassword: 'password',
@@ -100,7 +100,7 @@ describe('AuthEffects', () => {
         }));
 
         it('should call registerUser API and handle error', () => {
-            const req: UserRegistrationRequest = {
+            const req: RegisterRequest = {
                 email: 'test@example.com',
                 password: 'password',
                 confirmPassword: 'password',
@@ -122,13 +122,13 @@ describe('AuthEffects', () => {
 
     describe('Confirmation', () => {
         it('should dispatch loginUserSuccess on successful confirmEmail', () => {
-            const req: EmailConfirmationRequest = {
+            const req: ConfirmEmailRequest = {
                 email: 'test@example.com',
                 token: 'confirmationToken'
             };
             const authData: AuthData = {
                 isAuthenticated: true,
-                authToken: { accessToken: 'accessToken', refreshToken: 'refreshToken', refreshTokenExpiryDate: new Date() },
+                accessTokenData: { accessToken: 'accessToken', refreshToken: 'refreshToken', refreshTokenExpiryDate: new Date() },
                 email: 'test@example.com'
             };
 
@@ -145,7 +145,7 @@ describe('AuthEffects', () => {
         });
 
         it('should dispatch authFailure on confirmEmail error', () => {
-            const req: EmailConfirmationRequest = {
+            const req: ConfirmEmailRequest = {
                 email: 'test@example.com',
                 token: 'invalidToken'
             };
@@ -190,10 +190,10 @@ describe('AuthEffects', () => {
 
     describe('Login', () => {
         it('should call loginUser API and handle success', () => {
-            const req: UserAuthenticationRequest = { login: 'test@example.com', password: 'password' };
+            const req: LoginRequest = { login: 'test@example.com', password: 'password' };
             const authData: AuthData = {
                 isAuthenticated: true,
-                authToken: { accessToken: 'access', refreshToken: 'refresh', refreshTokenExpiryDate: new Date() },
+                accessTokenData: { accessToken: 'access', refreshToken: 'refresh', refreshTokenExpiryDate: new Date() },
                 email: 'test@example.com',
             };
 
@@ -211,7 +211,7 @@ describe('AuthEffects', () => {
         });
 
         it('should handle loginUser$ error', () => {
-            const req: UserAuthenticationRequest = { login: 'test@example.com', password: 'password' };
+            const req: LoginRequest = { login: 'test@example.com', password: 'password' };
             const error = { message: 'Login failed' };
 
             authApiServiceSpy.loginUser.and.returnValue(throwError(() => error));
@@ -227,26 +227,26 @@ describe('AuthEffects', () => {
 
     describe('Refresh Token', () => {
         it('should refresh token and update auth data', () => {
-            const authToken: AuthToken = {
+            const accessTokenData: AccessTokenData = {
                 accessToken: 'newAccessToken',
                 refreshToken: 'newRefreshToken',
                 refreshTokenExpiryDate: new Date(),
             };
 
-            authApiServiceSpy.refreshToken.and.returnValue(of(authToken));
+            authApiServiceSpy.refreshToken.and.returnValue(of(accessTokenData));
             localStorageSpy.getItem.and.returnValue(
                 JSON.stringify({
                     isAuthenticated: true,
-                    authToken: { accessToken: 'oldAccessToken', refreshToken: 'oldRefreshToken' },
+                    accessTokenData: { accessToken: 'oldAccessToken', refreshToken: 'oldRefreshToken' },
                     email: 'test@example.com',
                 })
             );
 
-            actions$ = of(refreshAccessToken({ authToken }));
+            actions$ = of(refreshAccessToken({ accessTokenData }));
 
             effects.refreshToken$.subscribe((action) => {
-                expect(action).toEqual(refreshAccessTokenSuccess({ authToken }));
-                expect(authApiServiceSpy.refreshToken).toHaveBeenCalledWith(authToken);
+                expect(action).toEqual(refreshAccessTokenSuccess({ accessTokenData }));
+                expect(authApiServiceSpy.refreshToken).toHaveBeenCalledWith(accessTokenData);
                 expect(localStorageSpy.setItem).toHaveBeenCalledWith(
                     'authData',
                     jasmine.any(String)
@@ -255,7 +255,7 @@ describe('AuthEffects', () => {
         });
 
         it('should handle refreshToken$ error and clear auth data', () => {
-            const authToken: AuthToken = {
+            const accessTokenData: AccessTokenData = {
                 accessToken: 'newAccessToken',
                 refreshToken: 'newRefreshToken',
                 refreshTokenExpiryDate: new Date(),
@@ -264,7 +264,7 @@ describe('AuthEffects', () => {
 
             authApiServiceSpy.refreshToken.and.returnValue(throwError(() => error));
 
-            actions$ = of(refreshAccessToken({ authToken }));
+            actions$ = of(refreshAccessToken({ accessTokenData }));
 
             effects.refreshToken$.subscribe((action) => {
                 expect(action).toEqual(refreshAccessTokenFailure({ error: error.message }));
@@ -289,7 +289,7 @@ describe('AuthEffects', () => {
         it('should handle getAuthData with success', () => {
             const authData: AuthData = {
                 isAuthenticated: true,
-                authToken: { accessToken: 'access', refreshToken: 'refresh', refreshTokenExpiryDate: new Date(0) },
+                accessTokenData: { accessToken: 'access', refreshToken: 'refresh', refreshTokenExpiryDate: new Date(0) },
                 email: 'test@example.com',
             };
 
@@ -322,7 +322,7 @@ describe('AuthEffects', () => {
             const req = { email: 'test@example.com', password: 'newpassword', oldPassword: 'oldpassword' };
             const authData: AuthData = {
                 isAuthenticated: true,
-                authToken: { accessToken: 'token', refreshToken: 'refreshToken', refreshTokenExpiryDate: new Date() },
+                accessTokenData: { accessToken: 'token', refreshToken: 'refreshToken', refreshTokenExpiryDate: new Date() },
                 email: 'test@example.com',
             };
 
@@ -362,7 +362,7 @@ describe('AuthEffects', () => {
             };
             const authData: AuthData = {
                 isAuthenticated: true,
-                authToken: { accessToken: 'token', refreshToken: 'refreshToken', refreshTokenExpiryDate: new Date() },
+                accessTokenData: { accessToken: 'token', refreshToken: 'refreshToken', refreshTokenExpiryDate: new Date() },
                 email: 'test@example.com',
             };
 

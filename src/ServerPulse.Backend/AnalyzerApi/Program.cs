@@ -1,9 +1,10 @@
 using AnalyzerApi.BackgroundServices;
 using AnalyzerApi.Hubs;
 using AnalyzerApi.Infrastructure.Configuration;
+using AnalyzerApi.Infrastructure.Dtos.Endpoints.Analyze.GetLoadAmountStatisticsInRange;
+using AnalyzerApi.Infrastructure.Dtos.Endpoints.Analyze.GetLoadEventsInDataRange;
 using AnalyzerApi.Infrastructure.Models.Statistics;
 using AnalyzerApi.Infrastructure.Models.Wrappers;
-using AnalyzerApi.Infrastructure.Requests;
 using AnalyzerApi.Infrastructure.TopicMapping;
 using AnalyzerApi.Infrastructure.Validators;
 using AnalyzerApi.Services.Receivers.Event;
@@ -90,9 +91,9 @@ builder.Services.AddOutputCache((options) =>
 
     var expiryTime = cacheSettings.ExpiryInMinutes;
 
-    options.SetOutputCachePolicy("GetLoadEventsInDataRangePolicy", duration: TimeSpan.FromMinutes(expiryTime), types: typeof(MessagesInRangeRequest));
+    options.SetOutputCachePolicy("GetLoadEventsInDataRangePolicy", duration: TimeSpan.FromMinutes(expiryTime), types: typeof(GetLoadEventsInDataRangeRequest));
     options.SetOutputCachePolicy("GetDailyLoadAmountStatisticsPolicy", duration: TimeSpan.FromMinutes(expiryTime));
-    options.SetOutputCachePolicy("GetLoadAmountStatisticsInRangePolicy", duration: TimeSpan.FromMinutes(expiryTime), types: typeof(MessageAmountInRangeRequest));
+    options.SetOutputCachePolicy("GetLoadAmountStatisticsInRangePolicy", duration: TimeSpan.FromMinutes(expiryTime), types: typeof(GetLoadAmountStatisticsInRangeRequest));
     options.SetOutputCachePolicy("GetSlotStatisticsPolicy", duration: TimeSpan.FromMinutes(expiryTime));
 });
 
@@ -189,7 +190,7 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
 });
 
-builder.Services.AddSharedFluentValidation(typeof(Program), typeof(GetSomeMessagesRequestValidator), typeof(ConfigurationEventValidator));
+builder.Services.AddSharedFluentValidation(typeof(Program), typeof(GetSomeLoadEventsRequestValidator), typeof(ConfigurationEventValidator));
 
 builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
 builder.Services.AddEndpointsApiExplorer();

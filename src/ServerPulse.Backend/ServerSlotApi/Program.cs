@@ -4,7 +4,7 @@ using DatabaseControl;
 using ExceptionHandling;
 using Logging;
 using Microsoft.EntityFrameworkCore;
-using ServerSlotApi.Dtos;
+using ServerSlotApi.Dtos.Endpoints.Slot.CheckSlotKey;
 using ServerSlotApi.Infrastructure.Configuration;
 using ServerSlotApi.Infrastructure.Data;
 using ServerSlotApi.Infrastructure.Repositories;
@@ -66,12 +66,7 @@ builder.Services.ConfigureIdentityServices(builder.Configuration);
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
-builder.Services.AddMediatR(conf =>
-{
-    conf.RegisterServicesFromAssembly(typeof(Program).Assembly);
-});
-
-builder.Services.AddSharedFluentValidation(typeof(Program), typeof(CheckServerSlotRequestValidator));
+builder.Services.AddSharedFluentValidation(typeof(Program), typeof(CheckSlotKeyRequestValidator));
 
 builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
 builder.Services.AddEndpointsApiExplorer();

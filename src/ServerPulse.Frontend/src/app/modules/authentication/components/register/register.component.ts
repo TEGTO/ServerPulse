@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { noSpaces, notEmptyString, ValidationMessage } from '../../../shared';
-import { confirmPasswordValidator, getFullEmailConfirmRedirectPath, passwordValidator, registerUser, startLoginUser, UserRegistrationRequest } from '../../index';
+import { confirmPasswordValidator, getFullEmailConfirmRedirectPath, passwordValidator, RegisterRequest, registerUser, startLoginUser } from '../../index';
 
 @Component({
   selector: 'app-register',
@@ -50,7 +50,7 @@ export class RegisterComponent implements OnInit {
 
   registerUser(): void {
     if (this.formGroup.valid) {
-      const req: UserRegistrationRequest =
+      const req: RegisterRequest =
       {
         redirectConfirmUrl: getFullEmailConfirmRedirectPath(),
         email: this.emailInput.value,

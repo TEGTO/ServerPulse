@@ -1,6 +1,9 @@
 ﻿using AutoMapper;
 using ServerSlotApi;
-using ServerSlotApi.Dtos;
+using ServerSlotApi.Dtos.Endpoints.ServerSlot.CreateSlot;
+using ServerSlotApi.Dtos.Endpoints.ServerSlot.GetSlotsByEmail;
+using ServerSlotApi.Dtos.Endpoints.Slot.GetSlotById;
+using ServerSlotApi.Dtos.Endpoints.Slot.UpdateSlot;
 using ServerSlotApi.Infrastructure.Entities;
 
 namespace ServerSlotApiTests
@@ -21,31 +24,10 @@ namespace ServerSlotApiTests
         }
 
         [Test]
-        public void Map_ServerSlot_To_ServerSlotResponse()
+        public void Map_CreateSlotRequest_To_ServerSlot()
         {
             // Arrange
-            var serverSlot = new ServerSlot
-            {
-                Id = "1",
-                UserEmail = "test@example.com",
-                Name = "SlotName",
-            };
-
-            // Act
-            var result = mapper.Map<ServerSlotResponse>(serverSlot);
-
-            // Assert
-            Assert.That(result.Id, Is.EqualTo(serverSlot.Id));
-            Assert.That(result.UserEmail, Is.EqualTo(serverSlot.UserEmail));
-            Assert.That(result.Name, Is.EqualTo(serverSlot.Name));
-            Assert.That(result.SlotKey, Is.EqualTo(serverSlot.SlotKey));
-        }
-
-        [Test]
-        public void Map_CreateServerSlotRequest_To_ServerSlot()
-        {
-            // Arrange
-            var createRequest = new CreateServerSlotRequest
+            var createRequest = new CreateSlotRequest
             {
                 Name = "NewSlot"
             };
@@ -61,10 +43,73 @@ namespace ServerSlotApiTests
         }
 
         [Test]
-        public void Map_UpdateServerSlotRequest_To_ServerSlot()
+        public void Map_ServerSlot_To_CreateSlotResponse()
         {
             // Arrange
-            var updateRequest = new UpdateServerSlotRequest
+            var serverSlot = new ServerSlot
+            {
+                Id = "1",
+                UserEmail = "test@example.com",
+                Name = "SlotName",
+            };
+
+            // Act
+            var result = mapper.Map<CreateSlotResponse>(serverSlot);
+
+            // Assert
+            Assert.That(result.Id, Is.EqualTo(serverSlot.Id));
+            Assert.That(result.UserEmail, Is.EqualTo(serverSlot.UserEmail));
+            Assert.That(result.Name, Is.EqualTo(serverSlot.Name));
+            Assert.That(result.SlotKey, Is.EqualTo(serverSlot.SlotKey));
+        }
+
+        [Test]
+        public void Map_ServerSlot_To_GetSlotsByEmailResponse()
+        {
+            // Arrange
+            var serverSlot = new ServerSlot
+            {
+                Id = "1",
+                UserEmail = "test@example.com",
+                Name = "SlotName",
+            };
+
+            // Act
+            var result = mapper.Map<GetSlotsByEmailResponse>(serverSlot);
+
+            // Assert
+            Assert.That(result.Id, Is.EqualTo(serverSlot.Id));
+            Assert.That(result.UserEmail, Is.EqualTo(serverSlot.UserEmail));
+            Assert.That(result.Name, Is.EqualTo(serverSlot.Name));
+            Assert.That(result.SlotKey, Is.EqualTo(serverSlot.SlotKey));
+        }
+
+        [Test]
+        public void Map_ServerSlot_To_GetSlotByIdResponse()
+        {
+            // Arrange
+            var serverSlot = new ServerSlot
+            {
+                Id = "1",
+                UserEmail = "test@example.com",
+                Name = "SlotName",
+            };
+
+            // Act
+            var result = mapper.Map<GetSlotByIdResponse>(serverSlot);
+
+            // Assert
+            Assert.That(result.Id, Is.EqualTo(serverSlot.Id));
+            Assert.That(result.UserEmail, Is.EqualTo(serverSlot.UserEmail));
+            Assert.That(result.Name, Is.EqualTo(serverSlot.Name));
+            Assert.That(result.SlotKey, Is.EqualTo(serverSlot.SlotKey));
+        }
+
+        [Test]
+        public void Map_UpdateSlotRequest_To_ServerSlot()
+        {
+            // Arrange
+            var updateRequest = new UpdateSlotRequest
             {
                 Id = "1",
                 Name = "UpdatedSlot",

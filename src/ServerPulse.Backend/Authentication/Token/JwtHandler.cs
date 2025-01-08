@@ -1,5 +1,4 @@
 ﻿using Authentication.Models;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -16,19 +15,18 @@ namespace Authentication.Token
 
         public JwtHandler(IOptions<JwtSettings> options)
         {
-            this.jwtSettings = options.Value;
+            jwtSettings = options.Value;
 
-            rsaPublicKey = this.jwtSettings.GetRsaPublicKeyFromSettings();
-            rsaPrivateKey = this.jwtSettings.GetRsaPrivateKeyFromSettings();
+            rsaPublicKey = jwtSettings.GetRsaPublicKeyFromSettings();
+            rsaPrivateKey = jwtSettings.GetRsaPrivateKeyFromSettings();
         }
 
         #region ITokenHandler Members
 
-        public AccessTokenData CreateToken<TKey>(IdentityUser<TKey> user) where TKey : IEquatable<TKey>
+        public AccessTokenData CreateToken(IEnumerable<Claim> claims)
         {
             var signingCredentials = GetSigningCredentials();
 
-            var claims = GetClaims(user);
             var tokenOptions = GenerateTokenOptions(signingCredentials, claims);
 
             var token = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
@@ -68,19 +66,7 @@ namespace Authentication.Token
 
         #region Private Helpers
 
-        private static List<Claim> GetClaims<TKey>(IdentityUser<TKey> user) where TKey : IEquatable<TKey>
-        {
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Email, user.Email ?? throw new ArgumentNullException(nameof(user), "Email could not be null!")),
-                new Claim(ClaimTypes.Name, user.UserName ?? throw new ArgumentNullException(nameof(user), "UserName could not be null!")),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString() ?? throw new ArgumentNullException(nameof(user), "Id could not be null!"))
-            };
-
-            return claims;
-        }
-
-        private JwtSecurityToken GenerateTokenOptions(SigningCredentials signingCredentials, List<Claim> claims)
+        private JwtSecurityToken GenerateTokenOptions(SigningCredentials signingCredentials, IEnumerable<Claim> claims)
         {
             var tokenOptions = new JwtSecurityToken(
                 issuer: jwtSettings.Issuer,
