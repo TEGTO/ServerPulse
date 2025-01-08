@@ -22,7 +22,7 @@ namespace AuthenticationApi.Endpoints.Auth.UserUpdate
 
         [Authorize]
         [HttpPut("update")]
-        public async Task<ActionResult> UserUpdate(UserUpdateRequest request, CancellationToken cancellationToken)
+        public async Task<IActionResult> UserUpdate(UserUpdateRequest request, CancellationToken cancellationToken)
         {
             var updateModel = mapper.Map<UserUpdateModel>(request);
 

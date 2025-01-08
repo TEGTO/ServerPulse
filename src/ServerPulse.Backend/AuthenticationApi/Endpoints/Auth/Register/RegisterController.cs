@@ -34,7 +34,7 @@ namespace AuthenticationApi.Endpoints.Auth.Register
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult> Register(RegisterRequest request, CancellationToken cancellationToken)
+        public async Task<IActionResult> Register(RegisterRequest request, CancellationToken cancellationToken)
         {
             var user = mapper.Map<User>(request);
 
