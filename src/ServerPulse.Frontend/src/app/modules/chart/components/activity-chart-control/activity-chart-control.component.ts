@@ -94,7 +94,12 @@ export class ActivityChartControlComponent implements OnInit, OnDestroy {
         },
         events: {
           dataPointSelection: (event, chartContext, opts) => {
-            this.controlSelect.emit(opts);
+            const seriesIndex = opts.seriesIndex;
+            const dataPointIndex = opts.dataPointIndex;
+
+            const seriesData = chartContext?.w?.config.series[seriesIndex]?.data[dataPointIndex];
+
+            this.controlSelect.emit(seriesData[0]);
           }
         }
       },

@@ -40,7 +40,7 @@ namespace AnalyzerApi.IntegrationTests.Controllers.AnalyzeController
             Assert.NotNull(events);
             Assert.That(events.Count, Is.GreaterThanOrEqualTo(1));
             Assert.That(events[0].CollectedDateUTC.Date, Is.EqualTo(DateTime.Now.Date));
-            Assert.That(events[0].DateFrom.Date, Is.EqualTo(DateTime.Now.Date.AddDays(-1)));
+            Assert.That(events[0].DateFrom.Date, Is.EqualTo(DateTime.Now.Date));
             Assert.That(events[0].AmountOfEvents, Is.GreaterThanOrEqualTo(2));
         }
 
@@ -75,8 +75,8 @@ namespace AnalyzerApi.IntegrationTests.Controllers.AnalyzeController
             Assert.That(events[0].CollectedDateUTC.Date, Is.EqualTo(DateTime.Now.Date));
             Assert.That(events2[0].CollectedDateUTC.Date, Is.EqualTo(DateTime.Now.Date));
 
-            Assert.That(events[0].DateFrom.Date, Is.EqualTo(DateTime.Now.Date.AddDays(-1)));
-            Assert.That(events2[0].DateFrom.Date, Is.EqualTo(DateTime.Now.Date.AddDays(-1)));
+            Assert.That(events[0].DateFrom.Date, Is.EqualTo(DateTime.Now.Date));
+            Assert.That(events2[0].DateFrom.Date, Is.EqualTo(DateTime.Now.Date));
 
             Assert.That(events[0].AmountOfEvents, Is.GreaterThanOrEqualTo(2));
             Assert.That(events2[0].AmountOfEvents, Is.GreaterThanOrEqualTo(2));

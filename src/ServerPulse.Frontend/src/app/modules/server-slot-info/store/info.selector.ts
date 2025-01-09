@@ -23,13 +23,6 @@ export const selectReadFromDate = createSelector(
     (state: SlotInfoState) => state.readFromDate
 );
 
-export const checkIfLoadEventAlreadyExistsById = (id: string) => createSelector(
-    selectSlotInfoState,
-    (state: SlotInfoState) => {
-        return state.loadEvents.filter(x => x.id === id).length > 0
-    }
-);
-
 export const selectCustomReadFromDate = createSelector(
     selectSlotInfoState,
     (state: SlotInfoState) => state.customReadFromDate

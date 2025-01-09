@@ -72,7 +72,10 @@ namespace AnalyzerApi.LoadEventStatisticsProcessor.IntegrationTests
                  { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.LoadTopicProcess)}", "LoadEventProcessTopic" },
                  { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.LoadMethodStatisticsTopic)}", "LoadMethodStatisticsTopic_" },
                  { $"ConnectionStrings:{CacheSettings.REDIS_SERVER_CONNECTION_STRING}",  "" },
-                 { $"{CacheSettings.SETTINGS_SECTION}:{nameof(CacheSettings.ExpiryInMinutes)}", "5" },
+                 { $"{CacheSettings.SETTINGS_SECTION}:{nameof(CacheSettings.GetDailyLoadAmountStatisticsExpiryInMinutes)}", "5" },
+                 { $"{CacheSettings.SETTINGS_SECTION}:{nameof(CacheSettings.GetLoadAmountStatisticsInRangeExpiryInMinutes)}", "5" },
+                 { $"{CacheSettings.SETTINGS_SECTION}:{nameof(CacheSettings.GetLoadEventsInDataRangeExpiryInMinutes)}", "5" },
+                 { $"{CacheSettings.SETTINGS_SECTION}:{nameof(CacheSettings.GetSlotStatisticsExpiryInMinutes)}", "5" },
                  { $"{LoadProcessingSettings.SETTINGS_SECTION}:{nameof(LoadProcessingSettings.BatchSize)}", "20" },
                  { $"{LoadProcessingSettings.SETTINGS_SECTION}:{nameof(LoadProcessingSettings.BatchIntervalInMilliseconds)}", "1000" },
             });

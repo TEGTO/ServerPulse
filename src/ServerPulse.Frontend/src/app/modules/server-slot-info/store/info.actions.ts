@@ -91,3 +91,13 @@ export const showCustomDetailsEvent = createAction(
     '[Statistics] Show Custom Event Details',
     props<{ event: CustomEvent }>()
 );
+
+export const setLoadStatisticsInterval = createAction(
+    '[Statistics] Set Load Statistics Interval',
+    props<{ interval: number }>()
+);
+
+export const setSecondaryLoadStatisticsInterval = createAction(
+    '[Statistics] Set Secondary Load Statistics Interval',
+    props<{ interval: number }>()
+);

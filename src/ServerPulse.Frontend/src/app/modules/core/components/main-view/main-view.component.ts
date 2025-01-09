@@ -13,6 +13,7 @@ import { getAuthData, selectAuthData, startLoginUser } from '../../../authentica
 export class MainViewComponent implements OnInit {
   isAuthenticated$!: Observable<boolean>;
   projectUrl = environment.projectUrl;
+  docUrl = environment.documentationUrl;
 
   constructor(
     private readonly store: Store,

@@ -1,6 +1,6 @@
 import { CustomEvent, getLoadAmountStatisticsInRange, getLoadAmountStatisticsInRangeFailure, GetLoadAmountStatisticsInRangeRequest, getLoadAmountStatisticsInRangeSuccess, GetSomeLoadEventsRequest, LoadAmountStatistics, LoadEvent } from "../../analyzer";
 import { TimeSpan } from "../../shared";
-import { addNewCustomEvent, addNewLoadEvent, getDailyLoadAmountStatistics, getDailyLoadAmountStatisticsFailure, getDailyLoadAmountStatisticsSuccess, getSomeCustomEvents, getSomeCustomEventsFailure, getSomeCustomEventsSuccess, getSomeLoadEvents, getSomeLoadEventsFailure, getSomeLoadEventsSuccess, setCustomReadFromDate, setReadFromDate, setSelectedDate, showCustomDetailsEvent } from "./info.actions";
+import { addNewCustomEvent, addNewLoadEvent, getDailyLoadAmountStatistics, getDailyLoadAmountStatisticsFailure, getDailyLoadAmountStatisticsSuccess, getSomeCustomEvents, getSomeCustomEventsFailure, getSomeCustomEventsSuccess, getSomeLoadEvents, getSomeLoadEventsFailure, getSomeLoadEventsSuccess, setCustomReadFromDate, setLoadStatisticsInterval, setReadFromDate, setSecondaryLoadStatisticsInterval, setSelectedDate, showCustomDetailsEvent } from "./info.actions";
 
 describe('Statistics Actions', () => {
     const testDate = new Date();
@@ -154,6 +154,18 @@ describe('Statistics Actions', () => {
             const action = getLoadAmountStatisticsInRangeFailure({ error: testError });
             expect(action.type).toBe('[Statistics] Get Load Amount Statistics In Range Failure');
             expect(action.error).toEqual(testError);
+        });
+
+        it('should create setLoadStatisticsInterval action', () => {
+            const action = setLoadStatisticsInterval({ interval: 0 });
+            expect(action.type).toBe('[Statistics] Set Load Statistics Interval');
+            expect(action.interval).toBe(0);
+        });
+
+        it('should create setSecondaryLoadStatisticsInterval action', () => {
+            const action = setSecondaryLoadStatisticsInterval({ interval: 0 });
+            expect(action.type).toBe('[Statistics] Set Secondary Load Statistics Interval');
+            expect(action.interval).toBe(0);
         });
     });
 });

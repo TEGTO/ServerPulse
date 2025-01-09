@@ -1,11 +1,13 @@
 import { createReducer, on } from "@ngrx/store";
-import { addNewCustomEvent, addNewLoadEvent, getDailyLoadAmountStatisticsSuccess, getLoadAmountStatisticsInRangeSuccess, getSomeCustomEventsSuccess, getSomeLoadEventsSuccess, setCustomReadFromDate, setReadFromDate, setSelectedDate } from "..";
+import { addNewCustomEvent, addNewLoadEvent, getDailyLoadAmountStatisticsSuccess, getLoadAmountStatisticsInRangeSuccess, getSomeCustomEventsSuccess, getSomeLoadEventsSuccess, setCustomReadFromDate, setLoadStatisticsInterval, setReadFromDate, setSecondaryLoadStatisticsInterval, setSelectedDate } from "..";
 import { CustomEvent, LoadAmountStatistics, LoadEvent } from "../../analyzer";
 
 export interface SlotInfoState {
     selectedDate: Date,
     readFromDate: Date,
     customReadFromDate: Date,
+    loadStatisticsInterval: number,
+    secondaryLoadStatisticsInterval: number,
     loadEvents: LoadEvent[],
     customEvents: CustomEvent[],
     loadAmountStatistics: LoadAmountStatistics[],
@@ -15,6 +17,8 @@ const initialSlotInfoState: SlotInfoState = {
     selectedDate: new Date(),
     readFromDate: new Date(),
     customReadFromDate: new Date(),
+    loadStatisticsInterval: 0,
+    secondaryLoadStatisticsInterval: 0,
     loadEvents: [],
     customEvents: [],
     loadAmountStatistics: [],
@@ -38,6 +42,16 @@ export const slotInfoStateReducer = createReducer(
     on(setCustomReadFromDate, (state, { date }) => ({
         ...state,
         customReadFromDate: date
+    })),
+
+    on(setLoadStatisticsInterval, (state, { interval }) => ({
+        ...state,
+        loadStatisticsInterval: interval
+    })),
+
+    on(setSecondaryLoadStatisticsInterval, (state, { interval }) => ({
+        ...state,
+        secondaryLoadStatisticsInterval: interval
     })),
 
     on(getSomeLoadEventsSuccess, (state, { events }) => {
@@ -79,9 +93,14 @@ export const slotInfoStateReducer = createReducer(
             };
         }
 
+        const statistics = addEventToLoadAmountStatistics(event, state.loadAmountStatistics, state.loadStatisticsInterval);
+        const secondaryStatistics = addEventToLoadAmountStatistics(event, state.secondaryLoadAmountStatistics, state.secondaryLoadStatisticsInterval);
+
         return {
             ...state,
             loadEvents: [event, ...state.loadEvents],
+            loadAmountStatistics: statistics,
+            secondaryLoadAmountStatistics: secondaryStatistics,
         };
     }),
 
@@ -100,3 +119,36 @@ export const slotInfoStateReducer = createReducer(
         };
     }),
 );
+
+function addEventToLoadAmountStatistics(
+    loadEvent: LoadEvent,
+    statistics: LoadAmountStatistics[],
+    intervalTime: number
+): LoadAmountStatistics[] {
+    const eventTime = new Date(loadEvent.timestampUTC).getTime();
+
+    let isUpdated = false;
+
+    const updatedStatistics = statistics.map(stat => {
+        if (stat.dateFrom.getTime() <= eventTime && stat.dateTo.getTime() >= eventTime) {
+            isUpdated = true;
+            return {
+                ...stat,
+                amountOfEvents: stat.amountOfEvents + 1,
+            };
+        }
+        return stat;
+    });
+
+    if (!isUpdated) {
+        updatedStatistics.push({
+            id: crypto.randomUUID(),
+            collectedDateUTC: new Date(),
+            dateFrom: new Date(),
+            dateTo: new Date(new Date().getTime() + intervalTime),
+            amountOfEvents: 1,
+        });
+    }
+
+    return updatedStatistics;
+}

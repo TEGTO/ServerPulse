@@ -8,8 +8,8 @@ builder.Services.AddControllers();
 
 var configuration = new SendingSettings
 {
-    EventServer = builder.Configuration["ServerPulse:EventServer"]!, // Server Pulse API URL
     Key = builder.Configuration["ServerPulse:Key"]!, // Server slot key
+    EventServer = builder.Configuration["ServerPulse:EventServer"]!, // Server Pulse API URL
 };
 builder.Services.AddServerPulseClient(configuration);
 

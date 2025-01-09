@@ -1,4 +1,4 @@
-import { checkIfLoadEventAlreadyExistsById, selectCustomEvents, selectCustomReadFromDate, selectLoadAmountStatistics, selectLoadEvents, selectReadFromDate, selectSecondaryLoadAmountStatistics, selectSelectedDate, selectSlotInfoState, SlotInfoState } from "..";
+import { selectCustomEvents, selectCustomReadFromDate, selectLoadAmountStatistics, selectLoadEvents, selectReadFromDate, selectSecondaryLoadAmountStatistics, selectSelectedDate, selectSlotInfoState, SlotInfoState } from "..";
 import { TimeSpan } from "../../shared";
 
 describe('SlotInfo Selectors', () => {
@@ -6,6 +6,8 @@ describe('SlotInfo Selectors', () => {
         selectedDate: new Date('2024-01-01T00:00:00.000Z'),
         readFromDate: new Date('2024-01-01T00:00:00.000Z'),
         customReadFromDate: new Date('2024-01-01T00:00:00.000Z'),
+        loadStatisticsInterval: 0,
+        secondaryLoadStatisticsInterval: 0,
         loadEvents: [],
         customEvents: [],
         loadAmountStatistics: [],
@@ -53,14 +55,6 @@ describe('SlotInfo Selectors', () => {
     it('should select read from date', () => {
         const result = selectReadFromDate.projector(initialState);
         expect(result).toEqual(initialState.readFromDate);
-    });
-
-    it('should check if load event already exists by id', () => {
-        const result = checkIfLoadEventAlreadyExistsById('1').projector(populatedState);
-        expect(result).toBe(true);
-
-        const resultForNonExistingId = checkIfLoadEventAlreadyExistsById('999').projector(populatedState);
-        expect(resultForNonExistingId).toBe(false);
     });
 
     it('should select custom read from date', () => {
