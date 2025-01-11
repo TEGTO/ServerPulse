@@ -95,16 +95,24 @@ describe('ActivityChartControlComponent', () => {
     expect(component.activeOptionButton).toBe('3m');
   }));
 
-  it('should emit onControlSelect when a data point is selected', () => {
+  it('should emit the selected data point timestamp when a data point is selected', () => {
     spyOn(component.controlSelect, 'emit');
 
     const mockEvent = new Event('click');
-    const chartContext = {};
-    const opts = { dataPointIndex: 0 };
+    const mockChartContext = {
+      w: {
+        config: {
+          series: [
+            { data: [[1672531200000, 5], [1672617600000, 10]] },
+          ],
+        },
+      },
+    };
+    const mockOpts = { seriesIndex: 0, dataPointIndex: 1 };
 
-    component.chartOptions.chart?.events?.dataPointSelection?.(mockEvent, chartContext, opts);
+    component.chartOptions.chart?.events?.dataPointSelection?.(mockEvent, mockChartContext, mockOpts);
 
-    expect(component.controlSelect.emit).toHaveBeenCalledWith(opts);
+    expect(component.controlSelect.emit).toHaveBeenCalledWith(1672617600000);
   });
 
   it('should clean up on destroy', () => {

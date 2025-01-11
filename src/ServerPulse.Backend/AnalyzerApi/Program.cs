@@ -89,12 +89,10 @@ builder.Services.AddOutputCache((options) =>
 {
     options.AddPolicy("BasePolicy", new OutputCachePolicy());
 
-    var expiryTime = cacheSettings.ExpiryInMinutes;
-
-    options.SetOutputCachePolicy("GetLoadEventsInDataRangePolicy", duration: TimeSpan.FromMinutes(expiryTime), types: typeof(GetLoadEventsInDataRangeRequest));
-    options.SetOutputCachePolicy("GetDailyLoadAmountStatisticsPolicy", duration: TimeSpan.FromMinutes(expiryTime));
-    options.SetOutputCachePolicy("GetLoadAmountStatisticsInRangePolicy", duration: TimeSpan.FromMinutes(expiryTime), types: typeof(GetLoadAmountStatisticsInRangeRequest));
-    options.SetOutputCachePolicy("GetSlotStatisticsPolicy", duration: TimeSpan.FromMinutes(expiryTime));
+    options.SetOutputCachePolicy("GetLoadEventsInDataRangePolicy", duration: TimeSpan.FromMinutes(cacheSettings.GetLoadEventsInDataRangeExpiryInMinutes), types: typeof(GetLoadEventsInDataRangeRequest));
+    options.SetOutputCachePolicy("GetDailyLoadAmountStatisticsPolicy", duration: TimeSpan.FromMinutes(cacheSettings.GetDailyLoadAmountStatisticsExpiryInMinutes));
+    options.SetOutputCachePolicy("GetLoadAmountStatisticsInRangePolicy", duration: TimeSpan.FromMinutes(cacheSettings.GetLoadAmountStatisticsInRangeExpiryInMinutes), types: typeof(GetLoadAmountStatisticsInRangeRequest));
+    options.SetOutputCachePolicy("GetSlotStatisticsPolicy", duration: TimeSpan.FromMinutes(cacheSettings.GetSlotStatisticsExpiryInMinutes));
 });
 
 #endregion

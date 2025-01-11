@@ -5,6 +5,7 @@ export const environment =
     maxAmountOfSlotsPerUser: 5,
     ecryptionSecretKey: "encryption-secret-key",
     projectUrl: "https://github.com/TEGTO/ServerPulse",
+    documentationUrl: "https://mango-plant-0330b6603.4.azurestaticapps.net/docs/introduction.html",
     lifecycleStatisticsHub: "/api/lifecyclestatisticshub",
     loadStatisticsHub: "/api/loadstatisticshub",
     customStatisticsHub: "/api/customstatisticshub",

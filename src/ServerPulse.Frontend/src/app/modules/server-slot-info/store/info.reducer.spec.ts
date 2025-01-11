@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { addNewCustomEvent, addNewLoadEvent, getDailyLoadAmountStatisticsSuccess, getLoadAmountStatisticsInRangeSuccess, getSomeCustomEventsSuccess, getSomeLoadEventsSuccess, setCustomReadFromDate, setReadFromDate, setSelectedDate } from "..";
-import { getDefaultCustomEvent, getDefaultLoadAmountStatistics, getDefaultLoadEvent } from "../../analyzer";
-import { slotInfoStateReducer } from "./info.reducer";
+import { addNewCustomEvent, addNewLoadEvent, getDailyLoadAmountStatisticsSuccess, getLoadAmountStatisticsInRangeSuccess, getSomeCustomEventsSuccess, setCustomReadFromDate, setLoadStatisticsInterval, setReadFromDate, setSecondaryLoadStatisticsInterval, setSelectedDate } from "..";
+import { getDefaultCustomEvent, getDefaultLoadAmountStatistics, getDefaultLoadEvent, LoadEvent } from "../../analyzer";
+import { SlotInfoState, slotInfoStateReducer } from "./info.reducer";
 
 describe('Slot Info Reducer', () => {
-    const initialState = {
+    const initialState: SlotInfoState = {
         selectedDate: new Date(),
         readFromDate: new Date(),
+        loadStatisticsInterval: 0,
+        secondaryLoadStatisticsInterval: 0,
         customReadFromDate: new Date(),
         loadEvents: [],
         customEvents: [],
@@ -50,51 +52,61 @@ describe('Slot Info Reducer', () => {
     });
 
     describe('Load Events Actions', () => {
-        it('should add unique load events on getSomeLoadEventsSuccess', () => {
-            const loadEvents = [
-                { ...getDefaultLoadEvent(), id: "1" },
-                { ...getDefaultLoadEvent(), id: "2" },
-            ];
-            const action = getSomeLoadEventsSuccess({ events: loadEvents });
-            const state = slotInfoStateReducer(initialState, action);
+        it('should add a new LoadEvent when addNewLoadEvent is dispatched', () => {
+            const newLoadEvent: LoadEvent = {
+                ...getDefaultLoadEvent(),
+                timestampUTC: new Date(),
+            };
 
-            expect(state.loadEvents).toEqual(loadEvents);
+            const interval = 24 * 60 * 60 * 1000; // 1 day in milliseconds
+            const initialStateWithInterval: SlotInfoState = {
+                ...initialState,
+                loadStatisticsInterval: interval,
+                secondaryLoadStatisticsInterval: interval,
+            };
+
+            const action = addNewLoadEvent({ event: newLoadEvent });
+
+            const updatedState = slotInfoStateReducer(initialStateWithInterval, action);
+
+            // Check loadEvents
+            expect(updatedState.loadEvents.length).toEqual(1);
+            expect(updatedState.loadEvents[0]).toEqual(newLoadEvent);
+
+            // Check loadAmountStatistics
+            expect(updatedState.loadAmountStatistics.length).toEqual(1);
+            expect(updatedState.loadAmountStatistics[0].amountOfEvents).toBe(1);
+
+            // Check secondaryLoadAmountStatistics
+            expect(updatedState.secondaryLoadAmountStatistics.length).toEqual(1);
+            expect(updatedState.secondaryLoadAmountStatistics[0].amountOfEvents).toBe(1);
         });
 
-        it('should filter out duplicate load events on getSomeLoadEventsSuccess', () => {
-            const initialLoadEvents = [
-                { ...getDefaultLoadEvent(), id: "1" },
-            ];
-            const newLoadEvents = [
-                { ...getDefaultLoadEvent(), id: "2" },
-                { ...getDefaultLoadEvent(), id: "2" },
-            ];
-            const initialStateWithEvents = { ...initialState, loadEvents: initialLoadEvents };
-            const action = getSomeLoadEventsSuccess({ events: newLoadEvents });
-            const state = slotInfoStateReducer(initialStateWithEvents, action);
+        it('should not add duplicate LoadEvent when addNewLoadEvent is dispatched', () => {
+            const existingLoadEvent: LoadEvent = {
+                ...getDefaultLoadEvent(),
+                timestampUTC: new Date(),
+            };
 
-            expect(state.loadEvents.length).toBe(2);
-            expect(state.loadEvents[1].id).toBe('2');
-        });
+            const interval = 24 * 60 * 60 * 1000; // 1 day in milliseconds
+            const stateWithExistingEvent: SlotInfoState = {
+                ...initialState,
+                loadStatisticsInterval: interval,
+                secondaryLoadStatisticsInterval: interval,
+                loadEvents: [existingLoadEvent],
+            };
 
-        it('should add a new load event on addNewLoadEvent', () => {
-            const loadEvent = { ...getDefaultLoadEvent(), id: "2" };
-            const action = addNewLoadEvent({ event: loadEvent });
-            const state = slotInfoStateReducer(initialState, action);
+            const action = addNewLoadEvent({ event: existingLoadEvent });
 
-            expect(state.loadEvents[0]).toEqual(loadEvent);
-        });
+            const updatedState = slotInfoStateReducer(stateWithExistingEvent, action);
 
-        it('should not add duplicate load event on addNewLoadEvent', () => {
-            const initialLoadEvents = [
-                { ...getDefaultLoadEvent(), id: "1" }
-            ];
-            const initialStateWithEvents = { ...initialState, loadEvents: initialLoadEvents };
-            const loadEvent = { ...getDefaultLoadEvent(), id: "1" };
-            const action = addNewLoadEvent({ event: loadEvent });
-            const state = slotInfoStateReducer(initialStateWithEvents, action);
+            // Check that loadEvents remain unchanged
+            expect(updatedState.loadEvents.length).toEqual(1);
+            expect(updatedState.loadEvents[0]).toEqual(existingLoadEvent);
 
-            expect(state.loadEvents.length).toBe(1);
+            // Check that statistics are unchanged
+            expect(updatedState.loadAmountStatistics.length).toEqual(0);
+            expect(updatedState.secondaryLoadAmountStatistics.length).toEqual(0);
         });
     });
 
@@ -120,6 +132,24 @@ describe('Slot Info Reducer', () => {
     });
 
     describe('Load Amount Statistics Actions', () => {
+        it('should update loadStatisticsInterval when setLoadStatisticsInterval is dispatched', () => {
+            const interval = 3600000; // 1 hour in milliseconds
+            const action = setLoadStatisticsInterval({ interval });
+
+            const updatedState = slotInfoStateReducer(initialState, action);
+
+            expect(updatedState.loadStatisticsInterval).toBe(interval);
+        });
+
+        it('should update secondaryLoadStatisticsInterval when setSecondaryLoadStatisticsInterval is dispatched', () => {
+            const interval = 7200000; // 2 hours in milliseconds
+            const action = setSecondaryLoadStatisticsInterval({ interval });
+
+            const updatedState = slotInfoStateReducer(initialState, action);
+
+            expect(updatedState.secondaryLoadStatisticsInterval).toBe(interval);
+        });
+
         it('should set loadAmountStatistics on getDailyLoadAmountStatisticsSuccess', () => {
             const statistics = [
                 { ...getDefaultLoadAmountStatistics(), id: "1" }

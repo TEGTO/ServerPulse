@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { BehaviorSubject, filter, interval, Subject, takeUntil, tap } from 'rxjs';
-import { checkIfLoadEventAlreadyExistsById, getDailyLoadAmountStatistics, getLoadAmountStatisticsInRange, isSelectedDateToday, selectLoadAmountStatistics, selectSecondaryLoadAmountStatistics, selectSelectedDate, setSelectedDate } from '../..';
+import { BehaviorSubject, interval, Subject, takeUntil, tap } from 'rxjs';
+import { addNewLoadEvent, getDailyLoadAmountStatistics, getLoadAmountStatisticsInRange, isSelectedDateToday, selectLoadAmountStatistics, selectSecondaryLoadAmountStatistics, selectSelectedDate, setLoadStatisticsInterval, setSecondaryLoadStatisticsInterval, setSelectedDate } from '../..';
 import { GetLoadAmountStatisticsInRangeRequest, LoadAmountStatistics, selectLastLoadEventByKey } from '../../../analyzer';
 import { ActivityChartType } from '../../../chart';
 import { TimeSpan } from '../../../shared';
@@ -47,11 +47,13 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
     this.setUpdateTimeIntervals();
 
     this.store.dispatch(getDailyLoadAmountStatistics({ key: this.slotKey }));
+    this.store.dispatch(setLoadStatisticsInterval({ interval: this.controlIntervalTime }));
+    this.store.dispatch(setSecondaryLoadStatisticsInterval({ interval: this.secondaryIntervalTime }));
     this.fetchControlStatistics();
 
     this.handleSelectedDateUpdates();
 
-    this.handleLastServerLoadStatistics();
+    this.handleNewEvent();
   }
 
   ngOnDestroy(): void {
@@ -69,14 +71,12 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
       .pipe(
         takeUntil(this.destroy$),
         tap(statistics => {
-          const set = this.getStatisticsSet(statistics);
-          const series = this.generateTimeSeriesForControl(
-            this.controlDateFromSubject$.value,
-            this.controlDateToSubject$.value,
-            this.controlIntervalTime,
-            set
-          );
-          this.controlChartDataSubject$.next(series)
+          const fromDate = this.controlDateFromSubject$.value;
+          const toDate = this.controlDateToSubject$.value;
+
+          const fullYearSeries = this.generateTimeSeries(fromDate, toDate, statistics, this.controlIntervalTime);
+
+          this.controlChartDataSubject$.next(fullYearSeries);
         })
       )
       .subscribe();
@@ -110,34 +110,25 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
       .pipe(
         takeUntil(this.destroy$),
         tap(statistics => {
-          const statisticsSet = this.getStatisticsSet(statistics);
-          this.secondaryChartDataSubject$.next(
-            this.generateTimeSeries(
-              this.secondaryDateFromSubject$.value,
-              this.secondaryDateToSubject$.value,
-              this.secondaryIntervalTime,
-              statisticsSet
-            ));
+          const fromDate = this.secondaryDateFromSubject$.value;
+          const toDate = this.secondaryDateToSubject$.value;
+
+          const secondaryTimSeries = this.generateTimeSeries(fromDate, toDate, statistics, this.secondaryIntervalTime);
+          this.secondaryChartDataSubject$.next(secondaryTimSeries);
         }))
       .subscribe();
   }
 
-  private handleLastServerLoadStatistics(): void {
+  private handleNewEvent(): void {
     this.store.select(selectLastLoadEventByKey(this.slotKey))
       .pipe(
         takeUntil(this.destroy$),
-        filter(event => {
-          return event !== null && !checkIfLoadEventAlreadyExistsById(event?.id)
-        }),
-        tap(event => {
+        tap((event) => {
           if (event) {
-            this.updateControlTime();
-            this.updateSecondaryTime();
-            const loadTime = new Date(event.creationDateUTC).getTime();
-            this.controlChartDataSubject$.next(this.addEventToChartData(loadTime, this.controlChartDataSubject$.value, this.controlIntervalTime));
-            this.secondaryChartDataSubject$.next(this.addEventToChartData(loadTime, this.secondaryChartDataSubject$.value, this.secondaryIntervalTime));
+            this.store.dispatch(addNewLoadEvent({ event }));
           }
-        }))
+        })
+      )
       .subscribe();
   }
 
@@ -157,15 +148,28 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  private generateTimeSeries(fromDate: Date, toDate: Date, intervalTime: number, statistics: Map<number, number>): [number, number][] {
+  private generateTimeSeries(
+    fromDate: Date,
+    toDate: Date,
+    statistics: LoadAmountStatistics[],
+    intervalTime: number
+  ): [number, number][] {
+    const set: Map<number, number> = new Map<number, number>();
+
+    statistics.forEach(stat => {
+      const timestamp = stat.dateFrom.getTime();
+      if (!set.has(timestamp)) {
+        set.set(timestamp, stat.amountOfEvents);
+      }
+    });
+
     const periods = Math.ceil((toDate.getTime() - fromDate.getTime()) / intervalTime);
 
-    // Generate the series atomically
-    const series = Array.from({ length: periods + 1 }, (_, i) => {
+    return Array.from({ length: periods + 1 }, (_, i) => {
       const localFrom = fromDate.getTime() + i * intervalTime;
       let count = 0;
 
-      for (const [timestamp, amount] of statistics) {
+      for (const [timestamp, amount] of set) {
         if (timestamp >= localFrom && timestamp < localFrom + intervalTime) {
           count += amount;
         }
@@ -173,32 +177,6 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
 
       return [localFrom, count] as [number, number];
     });
-
-    return series;
-  }
-
-  private generateTimeSeriesForControl(fromDate: Date, toDate: Date, intervalTime: number, statistics: Map<number, number>): [number, number][] {
-    const periods = Math.ceil((toDate.getTime() - fromDate.getTime()) / intervalTime);
-
-    // Generate the series atomically
-    const series = Array.from({ length: periods + 1 }, (_, i) => {
-      const index = periods - i;
-      const localTo = fromDate.getTime() + index * intervalTime;
-      let count = 0;
-
-      for (const [timestamp, amount] of statistics) {
-        if (timestamp >= localTo - intervalTime && timestamp <= localTo) {
-          count += amount;
-          console.log("timestamp: " + new Date(timestamp));
-          console.log("Local from: " + new Date(localTo - intervalTime));
-          console.log("Local to: " + new Date(localTo));
-        }
-      }
-
-      return [localTo, count] as [number, number];
-    });
-
-    return series;
   }
 
   controlFormatter(val: number): string {
@@ -218,11 +196,8 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
     return `${localHour}:00 - ${localHour + 1}:00`;
   }
 
-  controlOnSelect($event: any): void {
-    const chartData = this.controlChartDataSubject$.value;
-    const dataPointIndex = $event?.dataPointIndex ?? chartData.length - 1;
-
-    const selectedDate = new Date(chartData[dataPointIndex][0]);
+  controlOnSelect(value: any): void {
+    const selectedDate = new Date(value);
 
     let readFromDate = new Date(selectedDate);
     if (isSelectedDateToday(selectedDate)) {
@@ -233,38 +208,6 @@ export class ServerSlotInfoChartsComponent implements AfterViewInit, OnDestroy {
     }
 
     this.store.dispatch(setSelectedDate({ date: selectedDate, readFromDate: readFromDate }));
-  }
-
-  private addEventToChartData(loadTime: number, chartData: [number, number][], intervalTime: number): [number, number][] {
-    let isPlaceFound = false;
-
-    for (const item of chartData) {
-      const localFrom = item[0];
-      if (loadTime >= localFrom && loadTime < localFrom + intervalTime) {
-        item[1]++;
-        isPlaceFound = true;
-        break;
-      }
-    }
-
-    if (!isPlaceFound) {
-      chartData.push([loadTime, 1]);
-    }
-
-    return chartData;
-  }
-
-  private getStatisticsSet(statistics: LoadAmountStatistics[]): Map<number, number> {
-    const set: Map<number, number> = new Map<number, number>();
-
-    statistics.forEach(stat => {
-      const timestamp = stat.dateFrom.getTime();
-      if (!set.has(timestamp)) {
-        set.set(timestamp, stat.amountOfEvents);
-      }
-    });
-
-    return set;
   }
 
   private getAdjustedDateForSecondaryFrom(): Date {
