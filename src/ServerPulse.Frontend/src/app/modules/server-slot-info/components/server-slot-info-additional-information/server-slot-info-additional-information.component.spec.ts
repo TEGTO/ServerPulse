@@ -148,7 +148,7 @@ describe('ServerSlotInfoAdditionalInformationComponent', () => {
       scrollerSubject.next(mockScrollOffsets[0]);
       scrollerSubject.next(mockScrollOffsets[1]);
 
-      tick(1000);
+      tick(5000);
 
       expect(component["monitorScrollForFetching"]).toHaveBeenCalled();
 

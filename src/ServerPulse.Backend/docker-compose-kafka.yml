@@ -14,7 +14,7 @@ services:
     volumes:
         - kafka-controller-1:/var/lib/kafka/data
     networks:
-      - backend-net
+        - backend-net
 
   broker-1:
     image: confluentinc/cp-kafka:7.5.0
@@ -35,7 +35,7 @@ services:
     volumes:
         - kafka-broker-1:/var/lib/kafka/data
     networks:
-      - backend-net
+        - backend-net
 
 volumes:
   kafka-controller-1:
