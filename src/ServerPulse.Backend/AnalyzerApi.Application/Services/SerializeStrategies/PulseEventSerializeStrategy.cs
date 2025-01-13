@@ -5,7 +5,7 @@ using MessageBus.Models;
 
 namespace AnalyzerApi.Application.Services.SerializeStrategies
 {
-    internal class PulseEventSerializeStrategy : IEventSerializeStrategy<PulseEventWrapper>
+    public sealed class PulseEventSerializeStrategy : IEventSerializeStrategy<PulseEventWrapper>
     {
         private readonly IMapper mapper;
 

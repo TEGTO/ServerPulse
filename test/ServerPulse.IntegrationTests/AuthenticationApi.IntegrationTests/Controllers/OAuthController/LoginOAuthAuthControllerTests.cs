@@ -1,5 +1,5 @@
-﻿using AuthenticationApi.Dtos.OAuth;
-using AuthenticationApi.Infrastructure.Dtos.Endpoints.OAuth.LoginOAuth;
+﻿using AuthenticationApi.Core.Dtos.Endpoints.OAuth.LoginOAuth;
+using AuthenticationApi.Core.Enums;
 using AuthenticationApi.IntegrationTests.Controllers.AuthController;
 using System.Net;
 using System.Text;

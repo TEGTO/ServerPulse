@@ -1,7 +1,7 @@
 ﻿using Authentication.Models;
 using Authentication.Token;
-using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.Login;
-using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.Register;
+using AuthenticationApi.Core.Dtos.Endpoints.Auth.Login;
+using AuthenticationApi.Core.Dtos.Endpoints.Auth.Register;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using System.Text;

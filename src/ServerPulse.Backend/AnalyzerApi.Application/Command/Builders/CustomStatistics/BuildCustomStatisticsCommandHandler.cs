@@ -5,7 +5,7 @@ using MediatR;
 
 namespace AnalyzerApi.Application.Command.Builders.CustomStatistics
 {
-    internal class BuildCustomStatisticsCommandHandler : IRequestHandler<BuildStatisticsCommand<ServerCustomStatistics>, ServerCustomStatistics>
+    public sealed class BuildCustomStatisticsCommandHandler : IRequestHandler<BuildStatisticsCommand<ServerCustomStatistics>, ServerCustomStatistics>
     {
         private readonly IEventReceiver<CustomEventWrapper> eventReceiver;
 

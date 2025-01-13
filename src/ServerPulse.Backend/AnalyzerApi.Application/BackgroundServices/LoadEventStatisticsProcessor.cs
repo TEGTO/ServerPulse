@@ -17,7 +17,7 @@ using System.Text.Json.Serialization;
 
 namespace AnalyzerApi.Application.BackgroundServices
 {
-    internal class LoadEventStatisticsProcessor : BackgroundService
+    public sealed class LoadEventStatisticsProcessor : BackgroundService
     {
         private readonly IMessageConsumer messageConsumer;
         private readonly IMediator mediator;

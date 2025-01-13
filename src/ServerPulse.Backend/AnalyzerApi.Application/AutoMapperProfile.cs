@@ -7,7 +7,7 @@ using EventCommunication;
 
 namespace AnalyzerApi.Application
 {
-    internal class AutoMapperProfile : Profile
+    public class AutoMapperProfile : Profile
     {
         public AutoMapperProfile()
         {

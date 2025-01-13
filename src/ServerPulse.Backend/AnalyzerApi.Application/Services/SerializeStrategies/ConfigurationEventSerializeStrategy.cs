@@ -5,7 +5,7 @@ using MessageBus.Models;
 
 namespace AnalyzerApi.Application.Services.SerializeStrategies
 {
-    internal class ConfigurationEventSerializeStrategy : IEventSerializeStrategy<ConfigurationEventWrapper>
+    public sealed class ConfigurationEventSerializeStrategy : IEventSerializeStrategy<ConfigurationEventWrapper>
     {
         private readonly IMapper mapper;
 

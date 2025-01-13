@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using ServerSlotApi.Dtos.Endpoints.Slot.UpdateSlot;
-using ServerSlotApi.Infrastructure.Entities;
-using ServerSlotApi.Infrastructure.Models;
+using ServerSlotApi.Core.Dtos.Endpoints.Slot.UpdateSlot;
+using ServerSlotApi.Core.Entities;
+using ServerSlotApi.Core.Models;
 using ServerSlotApi.Infrastructure.Repositories;
 using System.Security.Claims;
 
@@ -48,7 +48,7 @@ namespace ServerSlotApi.Endpoints.Slot.UpdateSlot.Tests
 
             mapperMock.Setup(m => m.Map<ServerSlot>(request))
                 .Returns(new ServerSlot());
-            repositoryMock.Setup(r => r.GetSlotAsync(It.IsAny<SlotModel>(), It.IsAny<CancellationToken>()))
+            repositoryMock.Setup(r => r.GetSlotAsync(It.IsAny<GetSlot>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ServerSlot());
 
             // Act
@@ -80,7 +80,7 @@ namespace ServerSlotApi.Endpoints.Slot.UpdateSlot.Tests
                 HttpContext = new DefaultHttpContext() { User = user }
             };
 
-            repositoryMock.Setup(r => r.GetSlotAsync(It.IsAny<SlotModel>(), It.IsAny<CancellationToken>()))
+            repositoryMock.Setup(r => r.GetSlotAsync(It.IsAny<GetSlot>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((ServerSlot?)null);
 
             // Act & Assert
@@ -89,7 +89,7 @@ namespace ServerSlotApi.Endpoints.Slot.UpdateSlot.Tests
             // Assert
             Assert.That(result, Is.InstanceOf<ConflictObjectResult>());
 
-            repositoryMock.Verify(r => r.GetSlotAsync(It.IsAny<SlotModel>(), It.IsAny<CancellationToken>()), Times.Once);
+            repositoryMock.Verify(r => r.GetSlotAsync(It.IsAny<GetSlot>(), It.IsAny<CancellationToken>()), Times.Once);
             repositoryMock.Verify(r => r.UpdateSlotAsync(It.IsAny<ServerSlot>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
@@ -126,7 +126,7 @@ namespace ServerSlotApi.Endpoints.Slot.UpdateSlot.Tests
                 Name = request.Name
             };
 
-            repositoryMock.Setup(r => r.GetSlotAsync(It.IsAny<SlotModel>(), It.IsAny<CancellationToken>()))
+            repositoryMock.Setup(r => r.GetSlotAsync(It.IsAny<GetSlot>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(existingSlot);
 
             mapperMock.Setup(m => m.Map<ServerSlot>(request))
@@ -141,7 +141,7 @@ namespace ServerSlotApi.Endpoints.Slot.UpdateSlot.Tests
             // Assert
             Assert.That(result, Is.InstanceOf<OkResult>());
 
-            repositoryMock.Verify(r => r.GetSlotAsync(It.IsAny<SlotModel>(), It.IsAny<CancellationToken>()), Times.Once);
+            repositoryMock.Verify(r => r.GetSlotAsync(It.IsAny<GetSlot>(), It.IsAny<CancellationToken>()), Times.Once);
             repositoryMock.Verify(r => r.UpdateSlotAsync(It.IsAny<ServerSlot>(), It.IsAny<CancellationToken>()), Times.Once);
             mapperMock.Verify(m => m.Map<ServerSlot>(request), Times.Once);
         }

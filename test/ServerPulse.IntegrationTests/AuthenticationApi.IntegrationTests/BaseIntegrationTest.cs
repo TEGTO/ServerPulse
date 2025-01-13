@@ -1,6 +1,7 @@
 ﻿using Authentication.OAuth.Google;
 using Authentication.Token;
-using AuthenticationApi.Infrastructure;
+using AuthenticationApi.Application;
+using AuthenticationApi.Core.Entities;
 using Hangfire;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;

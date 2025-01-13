@@ -1,6 +1,6 @@
-﻿using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.Login;
-using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.RefreshToken;
-using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.Register;
+﻿using AuthenticationApi.Core.Dtos.Endpoints.Auth.Login;
+using AuthenticationApi.Core.Dtos.Endpoints.Auth.RefreshToken;
+using AuthenticationApi.Core.Dtos.Endpoints.Auth.Register;
 using System.Net;
 using System.Text;
 using System.Text.Json;

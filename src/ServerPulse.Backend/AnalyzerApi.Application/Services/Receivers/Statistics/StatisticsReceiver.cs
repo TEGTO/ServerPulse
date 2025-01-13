@@ -7,7 +7,7 @@ using Shared;
 
 namespace AnalyzerApi.Application.Services.Receivers.Statistics
 {
-    internal class StatisticsReceiver<TStatistics> : BaseReceiver, IStatisticsReceiver<TStatistics> where TStatistics : BaseStatistics
+    public class StatisticsReceiver<TStatistics> : BaseReceiver, IStatisticsReceiver<TStatistics> where TStatistics : BaseStatistics
     {
         protected readonly StatisticsTopicMapping<TStatistics> topicData;
 

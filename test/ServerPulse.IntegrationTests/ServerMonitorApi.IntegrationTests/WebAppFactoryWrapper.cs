@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
-using ServerMonitorApi.Options;
+using ServerMonitorApi.Infrastructure;
+using ServerMonitorApi.Infrastructure.Settings;
+using ServerMonitorApi.Settings;
 using Testcontainers.Kafka;
 
 namespace ServerMonitorApi.IntegrationTests

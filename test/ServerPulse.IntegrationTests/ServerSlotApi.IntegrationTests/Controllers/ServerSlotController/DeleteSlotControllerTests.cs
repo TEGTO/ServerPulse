@@ -1,4 +1,4 @@
-﻿using ServerSlotApi.Dtos.Endpoints.ServerSlot.CreateSlot;
+﻿using ServerSlotApi.Core.Dtos.Endpoints.ServerSlot.CreateSlot;
 using System.Net;
 using System.Net.Http.Headers;
 

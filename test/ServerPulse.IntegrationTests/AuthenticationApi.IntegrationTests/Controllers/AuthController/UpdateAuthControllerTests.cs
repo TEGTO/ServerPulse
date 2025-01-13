@@ -1,6 +1,6 @@
-﻿using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.Login;
-using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.Register;
-using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.UserUpdate;
+﻿using AuthenticationApi.Core.Dtos.Endpoints.Auth.Login;
+using AuthenticationApi.Core.Dtos.Endpoints.Auth.Register;
+using AuthenticationApi.Core.Dtos.Endpoints.Auth.UserUpdate;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;

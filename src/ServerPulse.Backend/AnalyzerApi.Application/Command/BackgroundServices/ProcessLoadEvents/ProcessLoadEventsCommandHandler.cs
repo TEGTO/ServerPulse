@@ -10,7 +10,7 @@ using System.Text.Json;
 
 namespace AnalyzerApi.Application.Command.BackgroundServices.ProcessLoadEvents
 {
-    internal class ProcessLoadEventsCommandHandler : IRequestHandler<ProcessLoadEventsCommand, Unit>
+    public sealed class ProcessLoadEventsCommandHandler : IRequestHandler<ProcessLoadEventsCommand, Unit>
     {
         private static readonly ConcurrentDictionary<string, SemaphoreSlim> keyLocks = new();
 

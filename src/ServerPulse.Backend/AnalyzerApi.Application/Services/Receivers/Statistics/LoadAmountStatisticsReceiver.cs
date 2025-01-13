@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace AnalyzerApi.Application.Services.Receivers.Statistics
 {
-    internal sealed class LoadAmountStatisticsReceiver : StatisticsReceiver<LoadAmountStatistics>, ILoadAmountStatisticsReceiver
+    public sealed class LoadAmountStatisticsReceiver : StatisticsReceiver<LoadAmountStatistics>, ILoadAmountStatisticsReceiver
     {
         private readonly int statisticsSaveDataInDays;
 

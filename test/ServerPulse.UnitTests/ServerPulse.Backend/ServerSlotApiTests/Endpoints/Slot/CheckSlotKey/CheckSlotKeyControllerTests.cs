@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Moq;
-using ServerSlotApi.Dtos.Endpoints.Slot.CheckSlotKey;
-using ServerSlotApi.Infrastructure.Entities;
+using ServerSlotApi.Core.Dtos.Endpoints.Slot.CheckSlotKey;
+using ServerSlotApi.Core.Entities;
 using ServerSlotApi.Infrastructure.Repositories;
 
 namespace ServerSlotApi.Endpoints.Slot.CheckSlotKey.Tests

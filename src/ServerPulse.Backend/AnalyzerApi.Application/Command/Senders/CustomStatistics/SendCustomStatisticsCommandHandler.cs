@@ -6,7 +6,7 @@ using MediatR;
 
 namespace AnalyzerApi.Application.Command.Senders.CustomStatistics
 {
-    internal class SendCustomStatisticsCommandHandler : IRequestHandler<SendStatisticsCommand<ServerCustomStatistics>, Unit>
+    public sealed class SendCustomStatisticsCommandHandler : IRequestHandler<SendStatisticsCommand<ServerCustomStatistics>, Unit>
     {
         private readonly IStatisticsNotifier<ServerCustomStatistics, ServerCustomStatisticsResponse> notifier;
         private readonly IMapper mapper;

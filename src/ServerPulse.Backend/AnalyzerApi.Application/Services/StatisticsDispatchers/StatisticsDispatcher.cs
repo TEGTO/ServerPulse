@@ -9,7 +9,7 @@ using System.Collections.Concurrent;
 
 namespace AnalyzerApi.Application.Services.StatisticsDispatchers
 {
-    internal class StatisticsDispatcher<TStatistics, TEventWrapper> : IStatisticsDispatcher<TStatistics>, IAsyncDisposable
+    public class StatisticsDispatcher<TStatistics, TEventWrapper> : IStatisticsDispatcher<TStatistics>, IAsyncDisposable
         where TStatistics : BaseStatistics
         where TEventWrapper : BaseEventWrapper
     {

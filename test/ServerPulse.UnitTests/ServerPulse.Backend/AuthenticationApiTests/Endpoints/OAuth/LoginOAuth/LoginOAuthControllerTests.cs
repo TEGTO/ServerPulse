@@ -1,8 +1,8 @@
 ﻿using Authentication.Models;
-using AuthenticationApi.Dtos.OAuth;
-using AuthenticationApi.Infrastructure.Dtos.Endpoints.OAuth.LoginOAuth;
-using AuthenticationApi.Infrastructure.Models;
-using AuthenticationApi.Services;
+using AuthenticationApi.Application.Services;
+using AuthenticationApi.Core.Dtos.Endpoints.OAuth.LoginOAuth;
+using AuthenticationApi.Core.Enums;
+using AuthenticationApi.Core.Models;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Moq;

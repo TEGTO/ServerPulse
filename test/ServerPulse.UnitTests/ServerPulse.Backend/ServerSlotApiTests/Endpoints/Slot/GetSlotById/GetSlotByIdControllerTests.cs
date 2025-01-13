@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using ServerSlotApi.Dtos.Endpoints.Slot.GetSlotById;
-using ServerSlotApi.Infrastructure.Entities;
-using ServerSlotApi.Infrastructure.Models;
+using ServerSlotApi.Core.Dtos.Endpoints.Slot.GetSlotById;
+using ServerSlotApi.Core.Entities;
+using ServerSlotApi.Core.Models;
 using ServerSlotApi.Infrastructure.Repositories;
 using System.Security.Claims;
 
@@ -81,7 +81,7 @@ namespace ServerSlotApi.Endpoints.Slot.GetSlotById.Tests
             } : null;
 
             repositoryMock
-                .Setup(r => r.GetSlotAsync(It.Is<SlotModel>(m => m.SlotId == slotId && m.UserEmail == email), It.IsAny<CancellationToken>()))
+                .Setup(r => r.GetSlotAsync(It.Is<GetSlot>(m => m.SlotId == slotId && m.UserEmail == email), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(slot);
 
             mapperMock
@@ -102,7 +102,7 @@ namespace ServerSlotApi.Endpoints.Slot.GetSlotById.Tests
                 Assert.That(response.Name, Is.EqualTo(expectedResponse!.Name));
                 Assert.That(response.UserEmail, Is.EqualTo(expectedResponse!.UserEmail));
 
-                repositoryMock.Verify(r => r.GetSlotAsync(It.IsAny<SlotModel>(), It.IsAny<CancellationToken>()), Times.Once);
+                repositoryMock.Verify(r => r.GetSlotAsync(It.IsAny<GetSlot>(), It.IsAny<CancellationToken>()), Times.Once);
                 mapperMock.Verify(m => m.Map<GetSlotByIdResponse>(slot), Times.Once);
             }
             else

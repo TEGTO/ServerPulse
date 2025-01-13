@@ -10,7 +10,7 @@ using System.Text.Json;
 
 namespace AnalyzerApi.Application.Command.Senders.LifecycleStatistics
 {
-    internal class SendServerStatisticsSenderCommandHandler : IRequestHandler<SendStatisticsCommand<ServerLifecycleStatistics>, Unit>
+    public sealed class SendServerStatisticsSenderCommandHandler : IRequestHandler<SendStatisticsCommand<ServerLifecycleStatistics>, Unit>
     {
         private readonly IMessageProducer producer;
         private readonly IStatisticsNotifier<ServerLifecycleStatistics, ServerLifecycleStatisticsResponse> notifier;

@@ -6,7 +6,7 @@ using MediatR;
 
 namespace AnalyzerApi.Application.Command.Builders.LifecycleStatistics
 {
-    internal class BuildLifecycleStatisticsCommandHandler : IRequestHandler<BuildStatisticsCommand<ServerLifecycleStatistics>, ServerLifecycleStatistics>
+    public sealed class BuildLifecycleStatisticsCommandHandler : IRequestHandler<BuildStatisticsCommand<ServerLifecycleStatistics>, ServerLifecycleStatistics>
     {
         private readonly IEventReceiver<PulseEventWrapper> pulseReceiver;
         private readonly IEventReceiver<ConfigurationEventWrapper> confReceiver;

@@ -1,4 +1,4 @@
-﻿using ServerSlotApi.Dtos.Endpoints.Slot.GetSlotById;
+﻿using ServerSlotApi.Core.Dtos.Endpoints.Slot.GetSlotById;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;

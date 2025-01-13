@@ -1,10 +1,9 @@
 ﻿using DatabaseControl.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using ServerSlotApi.Infrastructure.Configuration;
+using ServerSlotApi.Core.Entities;
+using ServerSlotApi.Core.Models;
 using ServerSlotApi.Infrastructure.Data;
-using ServerSlotApi.Infrastructure.Entities;
-using ServerSlotApi.Infrastructure.Models;
 using System.Data;
 
 namespace ServerSlotApi.Infrastructure.Repositories
@@ -20,7 +19,7 @@ namespace ServerSlotApi.Infrastructure.Repositories
             maxSlotsPerUser = int.Parse(configuration[ConfigurationKeys.SERVER_SLOTS_PER_USER]!);
         }
 
-        public async Task<ServerSlot?> GetSlotAsync(SlotModel model, CancellationToken cancellationToken)
+        public async Task<ServerSlot?> GetSlotAsync(GetSlot model, CancellationToken cancellationToken)
         {
             using var dbContext = await repository.GetDbContextAsync(cancellationToken);
             var slotQueryable = repository.Query<ServerSlot>(dbContext);

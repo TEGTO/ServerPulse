@@ -1,7 +1,8 @@
 ﻿using Authentication.Models;
-using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.Login;
-using AuthenticationApi.Infrastructure.Models;
-using AuthenticationApi.Services;
+using AuthenticationApi.Application;
+using AuthenticationApi.Application.Services;
+using AuthenticationApi.Core.Dtos.Endpoints.Auth.Login;
+using AuthenticationApi.Core.Models;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement;

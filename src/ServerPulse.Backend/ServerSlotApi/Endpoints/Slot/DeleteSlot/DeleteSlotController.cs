@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ServerSlotApi.Infrastructure.Models;
+using ServerSlotApi.Core.Models;
 using ServerSlotApi.Infrastructure.Repositories;
 using System.Security.Claims;
 
@@ -28,7 +28,7 @@ namespace ServerSlotApi.Endpoints.Slot.DeleteSlot
                 return Conflict("No user email found!");
             }
 
-            var model = new SlotModel() { SlotId = id, UserEmail = email };
+            var model = new GetSlot() { SlotId = id, UserEmail = email };
 
             var slot = await repository.GetSlotAsync(model, cancellationToken);
 

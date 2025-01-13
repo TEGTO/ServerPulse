@@ -1,5 +1,4 @@
-using AnalyzerApi.Application;
-using AnalyzerApi.Infrastructure;
+using AnalyzerApi;
 using ExceptionHandling;
 using Logging;
 using Shared;
@@ -11,8 +10,8 @@ builder.Host.AddLogging();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-builder.AddInfrastructureServices();
 builder.AddApplicationServices();
+builder.AddInfrastructureServices();
 
 builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
 

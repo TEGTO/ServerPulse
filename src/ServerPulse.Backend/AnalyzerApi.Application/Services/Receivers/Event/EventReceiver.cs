@@ -11,7 +11,7 @@ using System.Runtime.CompilerServices;
 
 namespace AnalyzerApi.Application.Services.Receivers.Event
 {
-    internal class EventReceiver<TWrapper> : BaseReceiver, IEventReceiver<TWrapper> where TWrapper : BaseEventWrapper
+    public class EventReceiver<TWrapper> : BaseReceiver, IEventReceiver<TWrapper> where TWrapper : BaseEventWrapper
     {
         protected readonly IEventSerializeStrategy<TWrapper> eventSerializeStrategy;
         protected readonly EventTopicMapping<TWrapper> topicData;

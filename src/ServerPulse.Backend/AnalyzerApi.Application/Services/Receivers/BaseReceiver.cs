@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace AnalyzerApi.Application.Services.Receivers
 {
-    internal abstract class BaseReceiver
+    public abstract class BaseReceiver
     {
         protected readonly IMessageConsumer messageConsumer;
         protected readonly int timeoutInMilliseconds;

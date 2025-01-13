@@ -7,7 +7,7 @@ using System.Collections.Concurrent;
 
 namespace AnalyzerApi.Infrastructure.Hubs
 {
-    internal sealed class StatisticsHub<T, Y> : Hub<IStatisticsHubClient<Y>> where T : BaseStatistics where Y : BaseStatisticsResponse
+    public sealed class StatisticsHub<T, Y> : Hub<IStatisticsHubClient<Y>> where T : BaseStatistics where Y : BaseStatisticsResponse
     {
         private readonly ConcurrentDictionary<string, List<string>> connectedClients = new();
         private readonly ConcurrentDictionary<string, int> listenerAmount = new();

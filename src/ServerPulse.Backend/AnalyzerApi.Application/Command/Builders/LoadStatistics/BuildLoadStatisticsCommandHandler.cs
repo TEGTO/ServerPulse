@@ -6,7 +6,7 @@ using MediatR;
 
 namespace AnalyzerApi.Application.Command.Builders.LoadStatistics
 {
-    internal class BuildLoadStatisticsCommandHandler : IRequestHandler<BuildStatisticsCommand<ServerLoadStatistics>, ServerLoadStatistics>
+    public sealed class BuildLoadStatisticsCommandHandler : IRequestHandler<BuildStatisticsCommand<ServerLoadStatistics>, ServerLoadStatistics>
     {
         private readonly IEventReceiver<LoadEventWrapper> eventReceiver;
         private readonly IStatisticsReceiver<LoadMethodStatistics> methodStatsReceiver;

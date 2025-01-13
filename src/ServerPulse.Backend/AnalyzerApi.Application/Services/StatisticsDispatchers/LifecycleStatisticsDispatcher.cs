@@ -10,7 +10,7 @@ using System.Collections.Concurrent;
 
 namespace AnalyzerApi.Application.Services.StatisticsDispatchers
 {
-    internal sealed class LifecycleStatisticsDispatcher : StatisticsDispatcher<ServerLifecycleStatistics, PulseEventWrapper>
+    public sealed class LifecycleStatisticsDispatcher : StatisticsDispatcher<ServerLifecycleStatistics, PulseEventWrapper>
     {
         internal sealed record ListenerState(PeriodicTimer Timer, bool IsAlive);
 

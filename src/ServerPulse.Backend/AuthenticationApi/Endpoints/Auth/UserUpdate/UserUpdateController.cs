@@ -1,6 +1,7 @@
-﻿using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.UserUpdate;
-using AuthenticationApi.Infrastructure.Models;
-using AuthenticationApi.Services;
+﻿using AuthenticationApi.Application;
+using AuthenticationApi.Application.Services;
+using AuthenticationApi.Core.Dtos.Endpoints.Auth.UserUpdate;
+using AuthenticationApi.Core.Models;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

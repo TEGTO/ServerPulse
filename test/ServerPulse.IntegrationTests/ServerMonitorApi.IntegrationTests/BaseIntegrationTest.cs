@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Moq;
-using ServerMonitorApi.Services;
+using ServerMonitorApi.Infrastructure.Services;
 using Shared;
 
 namespace ServerMonitorApi.IntegrationTests

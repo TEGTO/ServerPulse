@@ -1,4 +1,4 @@
-﻿using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.Register;
+﻿using AuthenticationApi.Core.Dtos.Endpoints.Auth.Register;
 using Hangfire.Common;
 using Hangfire.States;
 using Moq;

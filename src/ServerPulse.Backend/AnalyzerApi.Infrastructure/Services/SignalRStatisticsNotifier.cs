@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace AnalyzerApi.Infrastructure.Services
 {
-    internal class SignalRStatisticsNotifier<T, Y> : IStatisticsNotifier<T, Y> where T : BaseStatistics where Y : BaseStatisticsResponse
+    public sealed class SignalRStatisticsNotifier<T, Y> : IStatisticsNotifier<T, Y> where T : BaseStatistics where Y : BaseStatisticsResponse
     {
         private readonly IHubContext<StatisticsHub<T, Y>, IStatisticsHubClient<Y>> hubStatistics;
 
