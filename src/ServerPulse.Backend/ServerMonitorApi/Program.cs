@@ -27,19 +27,25 @@ ArgumentNullException.ThrowIfNull(messageBusSettings);
 
 builder.Services.Configure<MessageBusSettings>(builder.Configuration.GetSection(MessageBusSettings.SETTINGS_SECTION));
 
+var kafkaSettings = builder.Configuration.GetSection(KafkaSettings.SETTINGS_SECTION).Get<KafkaSettings>();
+
+ArgumentNullException.ThrowIfNull(kafkaSettings);
+
+builder.Services.Configure<KafkaSettings>(builder.Configuration.GetSection(KafkaSettings.SETTINGS_SECTION));
+
 #endregion
 
 #region Kafka
 
 var producerConfig = new ProducerConfig
 {
-    BootstrapServers = messageBusSettings.BootstrapServers,
-    ClientId = messageBusSettings.ClientId,
+    BootstrapServers = kafkaSettings.BootstrapServers,
+    ClientId = kafkaSettings.ClientId,
     EnableIdempotence = true,
 };
 var adminConfig = new AdminClientConfig
 {
-    BootstrapServers = messageBusSettings.BootstrapServers,
+    BootstrapServers = kafkaSettings.BootstrapServers,
     AllowAutoCreateTopics = true
 };
 builder.Services.AddKafkaProducer(producerConfig, adminConfig);

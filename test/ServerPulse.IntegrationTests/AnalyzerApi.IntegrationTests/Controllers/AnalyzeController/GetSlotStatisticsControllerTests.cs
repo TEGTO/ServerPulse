@@ -1,4 +1,4 @@
-﻿using AnalyzerApi.Infrastructure.Dtos.Endpoints.Analyze.GetSlotStatistics;
+﻿using AnalyzerApi.Core.Dtos.Endpoints.Analyze.GetSlotStatistics;
 using EventCommunication;
 using System.Net;
 using System.Text.Json;

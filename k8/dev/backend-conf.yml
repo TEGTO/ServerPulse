@@ -7,19 +7,21 @@ metadata:
 data:
   ASPNETCORE_ENVIRONMENT: "Development"
 
-  Kafka__BootstrapServers: "kafka-svc:9092"
-  Kafka__ClientId__Analyzer: "analyzer"
-  Kafka__ClientId__MonitorApi: "server-interaction"
-  Kafka__GroupId: "analyzer-group"
-  Kafka__ReceiveTimeoutInMilliseconds: "5000"
-  Kafka__AliveTopic: "AliveTopic_"
-  Kafka__ConfigurationTopic: "ConfigurationTopic_"
-  Kafka__LoadTopic: "LoadTopic_"
-  Kafka__LoadTopicProcess: "LoadEventProcessTopic"
-  Kafka__ServerStatisticsTopic: "ServerStatisticsTopic_"
-  Kafka__LoadMethodStatisticsTopic: "LoadMethodStatisticsTopic_"
-  Kafka__CustomTopic: "CustomEventTopic_"
-  Kafka__TopicDataSaveInDays: "365"
+  Kafka__BootstrapServers: broker-1:9092
+  Kafka__ClientId__Analyzer: nalyzer
+  Kafka__ClientId__MonitorApi: server-interaction
+  Kafka__GroupId: analyzer-group
+  Kafka__PartitionsAmount: 3
+
+  MessageBus__ReceiveTimeoutInMilliseconds: 5000
+  MessageBus__AliveTopic: AliveTopic_
+  MessageBus__ConfigurationTopic: ConfigurationTopic_
+  MessageBus__LoadTopic: LoadTopic_
+  MessageBus__LoadTopicProcess: LoadEventProcessTopic
+  MessageBus__ServerStatisticsTopic: ServerStatisticsTopic_
+  MessageBus__LoadMethodStatisticsTopic: LoadMethodStatisticsTopic_
+  MessageBus__CustomTopic: CustomEventTopic_
+  MessageBus__TopicDataSaveInDays: 365
 
   Cache__GetServerSlotByEmailExpiryInSeconds: "1"
   Cache__ServerSlotCheckExpiryInSeconds: "3"

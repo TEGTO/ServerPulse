@@ -2,10 +2,8 @@
 {
     public class MessageBusSettings
     {
-        public const string SETTINGS_SECTION = "Kafka";
+        public const string SETTINGS_SECTION = "MessageBus";
 
-        public string BootstrapServers { get; set; } = string.Empty;
-        public string ClientId { get; set; } = string.Empty;
         public string AliveTopic { get; set; } = string.Empty;
         public string ConfigurationTopic { get; set; } = string.Empty;
         public string LoadTopic { get; set; } = string.Empty;

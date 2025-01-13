@@ -1,8 +1,8 @@
-﻿using AnalyzerApi.Infrastructure.Dtos.Endpoints.Analyze.GetSomeLoadEvents;
-using AnalyzerApi.Infrastructure.Dtos.Responses.Events;
-using AnalyzerApi.Infrastructure.Models;
-using AnalyzerApi.Infrastructure.Models.Wrappers;
-using AnalyzerApi.Services.Receivers.Event;
+﻿using AnalyzerApi.Application.Services.Receivers.Event;
+using AnalyzerApi.Core.Dtos.Endpoints.Analyze.GetSomeLoadEvents;
+using AnalyzerApi.Core.Dtos.Responses.Events;
+using AnalyzerApi.Core.Models;
+using AnalyzerApi.Core.Models.Wrappers;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Moq;

@@ -8,7 +8,22 @@
   </PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="FluentValidation.AspNetCore" />
+		<PackageReference Include="Microsoft.AspNetCore.OutputCaching.StackExchangeRedis" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
 	</ItemGroup>
-	
+
+	<ItemGroup>
+		<ProjectReference Include="..\Caching\Caching.csproj" />
+		<ProjectReference Include="..\AnalyzerApi.Application\AnalyzerApi.Application.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+			<_Parameter1>AnalyzerApi.InfrastructureTests</_Parameter1>
+		</AssemblyAttribute>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+			<_Parameter1>DynamicProxyGenAssembly2</_Parameter1>
+		</AssemblyAttribute>
+	</ItemGroup>
+
 </Project>

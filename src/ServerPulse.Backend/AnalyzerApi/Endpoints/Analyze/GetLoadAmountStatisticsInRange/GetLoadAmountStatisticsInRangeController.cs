@@ -1,7 +1,7 @@
-﻿using AnalyzerApi.Infrastructure.Dtos.Endpoints.Analyze.GetLoadAmountStatisticsInRange;
-using AnalyzerApi.Infrastructure.Dtos.Responses.Statistics;
-using AnalyzerApi.Infrastructure.Models;
-using AnalyzerApi.Services.Receivers.Statistics;
+﻿using AnalyzerApi.Application.Services.Receivers.Statistics;
+using AnalyzerApi.Core.Dtos.Endpoints.Analyze.GetLoadAmountStatisticsInRange;
+using AnalyzerApi.Core.Dtos.Responses.Statistics;
+using AnalyzerApi.Core.Models;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;

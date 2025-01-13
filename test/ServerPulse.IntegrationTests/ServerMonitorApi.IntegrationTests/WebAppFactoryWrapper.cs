@@ -82,8 +82,8 @@ namespace ServerMonitorApi.IntegrationTests
 
             configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.BootstrapServers)}", KafkaContainer?.GetBootstrapAddress() },
-                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.ClientId)}", "server-interaction" },
+                 { $"{KafkaSettings.SETTINGS_SECTION}:{nameof(KafkaSettings.BootstrapServers)}", KafkaContainer?.GetBootstrapAddress() },
+                 { $"{KafkaSettings.SETTINGS_SECTION}:{nameof(KafkaSettings.ClientId)}", "server-interaction" },
                  { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.AliveTopic)}", "AliveTopic_" },
                  { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.ConfigurationTopic)}", "ConfigurationTopic_" },
                  { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.LoadTopic)}", "LoadTopic_" },
