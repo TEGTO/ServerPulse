@@ -12,6 +12,10 @@
     align-items: flex-start;
     gap: utils.pxToRem(32);
 
+    @media (max-width: utils.pxToRem(1000)) {
+        flex-direction: column;
+    }
+
     .content__left {
         @include background-shadow-box();
         padding: utils.pxToRem(0);
@@ -32,12 +36,50 @@
     }
 }
 
-th,
-td {
-    max-width: utils.pxToRem(100);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: utils.pxToRem(14);
+    color: var(--text-color, #333);
+
+    thead {
+        background-color: var(--primary-bg, #f9f9f9);
+        text-transform: uppercase;
+        font-weight: bold;
+        color: var(--header-text-color, #555);
+
+        th {
+            padding: utils.pxToRem(12) utils.pxToRem(8);
+            border-bottom: 2px solid var(--border-color, #ddd);
+        }
+    }
+
+    tbody {
+        tr {
+            transition: background-color 0.3s ease;
+
+            &:hover {
+                background-color: var(--hover-bg, #f1f5f9);
+            }
+        }
+
+        td {
+            max-width: utils.pxToRem(100);
+            padding: utils.pxToRem(12) utils.pxToRem(8);
+            border-bottom: 1px solid var(--border-color, #eee);
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+    }
+
+    th,
+    td {
+        &:last-child {
+            border-right: 4px solid var(--highlight-color, #3b82f6);
+        }
+    }
 }
 
 ::-webkit-scrollbar {

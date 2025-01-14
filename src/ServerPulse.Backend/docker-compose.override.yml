@@ -53,7 +53,7 @@ services:
       - Kafka__BootstrapServers=${Kafka__BootstrapServers}
       - Kafka__ClientId=${Kafka__ClientId__MonitorApi}
       - MessageBus__AliveTopic=${MessageBus__AliveTopic}
-      - MessageBus__ConfigurationTopic=$MessageBus__ConfigurationTopic}
+      - MessageBus__ConfigurationTopic=${MessageBus__ConfigurationTopic}
       - MessageBus__LoadTopic=${MessageBus__LoadTopic}
       - MessageBus__LoadTopicProcess=${MessageBus__LoadTopicProcess}
       - MessageBus__CustomTopic=${MessageBus__CustomTopic}

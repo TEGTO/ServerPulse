@@ -27,7 +27,7 @@ namespace AuthenticationApi.Endpoints.Auth.UserUpdate
         {
             var updateModel = mapper.Map<UserUpdateModel>(request);
 
-            var errors = await authService.UpdateUserAsync(User, updateModel, false, cancellationToken);
+            var errors = await authService.UpdateUserAsync(User, updateModel, cancellationToken);
             if (Utilities.HasErrors(errors, out var errorResponse))
             {
                 return Unauthorized(errorResponse);

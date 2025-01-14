@@ -180,7 +180,7 @@ namespace AuthenticationApi.Application.Services.Tests
         public async Task UpdateUserAsync_UserFoundAndValidUpdate_UpdatesSuccessfully()
         {
             // Arrange
-            var user = new User { UserName = "testuser", Email = "test@example.com" };
+            var user = new User { UserName = "testuser", Email = "test@example.com", PasswordHash = "somepasswordhash" };
             var updateModel = new UserUpdateModel
             {
                 UserName = "newuser",
@@ -197,10 +197,41 @@ namespace AuthenticationApi.Application.Services.Tests
             userManagerMock.Setup(x => x.ChangePasswordAsync(user, updateModel.OldPassword, updateModel.Password)).ReturnsAsync(IdentityResult.Success);
 
             // Act
-            var result = await authService.UpdateUserAsync(claimsPrincipal, updateModel, false, CancellationToken.None);
+            var result = await authService.UpdateUserAsync(claimsPrincipal, updateModel, CancellationToken.None);
 
             // Assert
             Assert.That(result, Is.Empty);
+        }
+
+        [Test]
+        public async Task UpdateUserAsync_UserHasNoRegistredPassword_AddsNewPasswordSuccessfully()
+        {
+            // Arrange
+            var user = new User { UserName = "testuser", Email = "test@example.com", PasswordHash = "" };
+            var newPassword = "newpassword";
+            var resetToken = "resetToken";
+            var updateModel = new UserUpdateModel
+            {
+                UserName = "testuser",
+                Email = "test@example.com",
+                OldPassword = "doesntmatterwhatpasswordishere",
+                Password = newPassword
+            };
+
+            var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, user.Id)]));
+
+            userManagerMock.Setup(x => x.GeneratePasswordResetTokenAsync(user)).ReturnsAsync(resetToken);
+            userManagerMock.Setup(x => x.ResetPasswordAsync(user, "resetToken", newPassword)).ReturnsAsync(IdentityResult.Success);
+            userManagerMock.Setup(x => x.Users).Returns(new[] { user }.AsQueryable().BuildMockDbSet().Object);
+
+            // Act
+            var result = await authService.UpdateUserAsync(claimsPrincipal, updateModel, CancellationToken.None);
+
+            // Assert
+            Assert.That(result, Is.Empty);
+
+            userManagerMock.Verify(x => x.GeneratePasswordResetTokenAsync(user), Times.Once);
+            userManagerMock.Verify(x => x.ResetPasswordAsync(user, resetToken, newPassword), Times.Once);
         }
 
         [Test]
@@ -223,7 +254,7 @@ namespace AuthenticationApi.Application.Services.Tests
                 .ReturnsAsync(IdentityResult.Failed(identityErrors.ToArray()));
 
             // Act
-            var result = await authService.UpdateUserAsync(claimsPrincipal, updateModel, false, CancellationToken.None);
+            var result = await authService.UpdateUserAsync(claimsPrincipal, updateModel, CancellationToken.None);
 
             // Assert
             Assert.That(result, Is.Not.Empty);
@@ -251,7 +282,7 @@ namespace AuthenticationApi.Application.Services.Tests
             userManagerMock.Setup(x => x.ChangeEmailAsync(user, updateModel.Email, "emailToken")).ReturnsAsync(IdentityResult.Failed(identityErrors.ToArray()));
 
             // Act
-            var result = await authService.UpdateUserAsync(claimsPrincipal, updateModel, false, CancellationToken.None);
+            var result = await authService.UpdateUserAsync(claimsPrincipal, updateModel, CancellationToken.None);
 
             // Assert
             Assert.That(result, Is.Not.Empty);
@@ -259,17 +290,15 @@ namespace AuthenticationApi.Application.Services.Tests
         }
 
         [Test]
-        [TestCase(false, null, "newpassword", "Password update failed due to missing old password.", Description = "Old password missing, update fails.")]
-        [TestCase(false, "oldpassword", "newpassword", "Password too weak", Description = "Weak password rejected during ChangePasswordAsync.")]
-        [TestCase(true, null, "newpassword", "Reset token expired.", Description = "Invalid reset token during ResetPasswordAsync.")]
+        [TestCase(null, "newpassword", "Password update failed due to missing old password.", Description = "Old password missing, update fails.")]
+        [TestCase("oldpassword", "newpassword", "Password too weak", Description = "Weak password rejected during ChangePasswordAsync.")]
         public async Task UpdateUserAsync_PasswordUpdate_InvalidScenarios(
-               bool resetPassword,
                string? oldPassword,
                string newPassword,
                string? expectedError)
         {
             // Arrange
-            var user = new User { UserName = "testuser", Email = "test@example.com" };
+            var user = new User { UserName = "testuser", Email = "test@example.com", PasswordHash = "somepasswordhash" };
             var updateModel = new UserUpdateModel
             {
                 UserName = "",
@@ -281,20 +310,14 @@ namespace AuthenticationApi.Application.Services.Tests
 
             userManagerMock.Setup(x => x.Users).Returns(new[] { user }.AsQueryable().BuildMockDbSet().Object);
 
-            if (resetPassword)
-            {
-                userManagerMock.Setup(x => x.GeneratePasswordResetTokenAsync(user)).ReturnsAsync("resetToken");
-                userManagerMock.Setup(x => x.ResetPasswordAsync(user, "resetToken", newPassword))
-                    .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = expectedError! }));
-            }
-            else if (!string.IsNullOrEmpty(oldPassword))
+            if (!string.IsNullOrEmpty(oldPassword))
             {
                 userManagerMock.Setup(x => x.ChangePasswordAsync(user, oldPassword, newPassword))
                     .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = expectedError! }));
             }
 
             // Act
-            var result = await authService.UpdateUserAsync(claimsPrincipal, updateModel, resetPassword, CancellationToken.None);
+            var result = await authService.UpdateUserAsync(claimsPrincipal, updateModel, CancellationToken.None);
 
             // Assert
             Assert.That(result, Is.Not.Empty);
@@ -316,7 +339,7 @@ namespace AuthenticationApi.Application.Services.Tests
 
             // Act & Assert
             Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
-                authService.UpdateUserAsync(new ClaimsPrincipal(), updateModel, false, CancellationToken.None));
+                authService.UpdateUserAsync(new ClaimsPrincipal(), updateModel, CancellationToken.None));
         }
 
         private static IEnumerable<TestCaseData> LoginUserWithProviderTestCases()

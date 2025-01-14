@@ -2,7 +2,6 @@
 @use 'utils' as utils;
 
 @mixin background-shadow-box() {
-    padding: 2rem;
     box-shadow: 2px 2px 7px 1px rgba(0, 0, 0, 0.1);
 }
 
@@ -11,11 +10,10 @@
 
     .slot-info-wrapper__content {
         height: 100%;
-        @include background-shadow-box();
         padding: utils.pxToRem(32) utils.pxToRem(48) utils.pxToRem(32) utils.pxToRem(48);
         overflow-x: hidden;
         display: flex;
-        gap: utils.pxToRem(32);
+        gap: utils.pxToRem(16);
         flex-direction: column;
         justify-items: center;
         justify-content: space-between;
@@ -34,21 +32,26 @@
                 justify-content: space-between;
                 align-items: center;
 
-                .header__center-group {
+                .header__group {
                     display: flex;
                     flex-direction: row;
                     align-items: center;
 
-                    .center-group__name {
+                    .group__name {
                         font-size: utils.pxToRem(30);
                         font-weight: 900;
-                        max-width: utils.pxToRem(400);
+                        max-width: utils.pxToRem(900);
                         overflow: hidden;
                         text-overflow: ellipsis;
                         text-wrap: nowrap;
                     }
                 }
             }
+        }
+
+        .content__additional-info {
+            width: 100%;
+            height: 100%;
         }
 
         .content__charts {

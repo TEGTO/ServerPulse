@@ -48,7 +48,7 @@ namespace AuthenticationApi.Application.Services
             return await tokenService.RefreshAccessTokenAsync(accessData, user, cancellationToken);
         }
 
-        public async Task<IEnumerable<IdentityError>> UpdateUserAsync(ClaimsPrincipal principal, UserUpdateModel updateModel, bool resetPassword, CancellationToken cancellationToken)
+        public async Task<IEnumerable<IdentityError>> UpdateUserAsync(ClaimsPrincipal principal, UserUpdateModel updateModel, CancellationToken cancellationToken)
         {
             var user = await GetUserFromPrincipalAsync(principal)
                 ?? throw new UnauthorizedAccessException("User not found!");
@@ -67,7 +67,14 @@ namespace AuthenticationApi.Application.Services
 
             if (!string.IsNullOrEmpty(updateModel.Password))
             {
-                errors.AddRange(await UpdatePasswordAsync(user, updateModel.OldPassword, updateModel.Password, resetPassword));
+                if (string.IsNullOrEmpty(user.PasswordHash))
+                {
+                    errors.AddRange(await UpdatePasswordAsync(user, updateModel.OldPassword, updateModel.Password, resetPassword: true));
+                }
+                else
+                {
+                    errors.AddRange(await UpdatePasswordAsync(user, updateModel.OldPassword, updateModel.Password, resetPassword: false));
+                }
             }
 
             return errors.DistinctBy(e => e.Description).ToList();
