@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using ServerSlotApi.Infrastructure.Entities;
+using ServerSlotApi.Core.Entities;
 
 namespace ServerSlotApi.Infrastructure.Data
 {

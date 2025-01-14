@@ -1,4 +1,4 @@
-﻿using AnalyzerApi.Infrastructure.Dtos.Responses.Statistics;
+﻿using AnalyzerApi.Core.Dtos.Responses.Statistics;
 using EventCommunication;
 using System.Net;
 using System.Text.Json;
@@ -35,7 +35,7 @@ namespace AnalyzerApi.IntegrationTests.Controllers.AnalyzeController
 
             var content = await httpResponse.Content.ReadAsStringAsync();
 
-            var events = JsonSerializer.Deserialize<List<LoadAmountStatisticsResponse>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var events = JsonSerializer.Deserialize<List<Core.Dtos.Responses.Statistics.LoadAmountStatisticsResponse>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             Assert.NotNull(events);
             Assert.That(events.Count, Is.GreaterThanOrEqualTo(1));

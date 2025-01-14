@@ -1,6 +1,7 @@
-﻿using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.UserUpdate;
-using AuthenticationApi.Infrastructure.Models;
-using AuthenticationApi.Services;
+﻿using AuthenticationApi.Application;
+using AuthenticationApi.Application.Services;
+using AuthenticationApi.Core.Dtos.Endpoints.Auth.UserUpdate;
+using AuthenticationApi.Core.Models;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,7 +27,7 @@ namespace AuthenticationApi.Endpoints.Auth.UserUpdate
         {
             var updateModel = mapper.Map<UserUpdateModel>(request);
 
-            var errors = await authService.UpdateUserAsync(User, updateModel, false, cancellationToken);
+            var errors = await authService.UpdateUserAsync(User, updateModel, cancellationToken);
             if (Utilities.HasErrors(errors, out var errorResponse))
             {
                 return Unauthorized(errorResponse);

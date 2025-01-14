@@ -15,7 +15,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\DatabaseControl\DatabaseControl.csproj" />
-	  <ProjectReference Include="..\ServerSlotApi.Dtos\ServerSlotApi.Dtos.csproj" />
+	  <ProjectReference Include="..\ServerSlotApi.Core\ServerSlotApi.Core.csproj" />
 	</ItemGroup>
 
 </Project>

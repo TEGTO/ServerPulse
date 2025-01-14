@@ -1,7 +1,8 @@
-﻿using AuthenticationApi.Infrastructure;
-using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.Register;
-using AuthenticationApi.Infrastructure.Models;
-using AuthenticationApi.Services;
+﻿using AuthenticationApi.Application;
+using AuthenticationApi.Application.Services;
+using AuthenticationApi.Core.Dtos.Endpoints.Auth.Register;
+using AuthenticationApi.Core.Entities;
+using AuthenticationApi.Core.Models;
 using AutoMapper;
 using Hangfire;
 using Hangfire.Common;

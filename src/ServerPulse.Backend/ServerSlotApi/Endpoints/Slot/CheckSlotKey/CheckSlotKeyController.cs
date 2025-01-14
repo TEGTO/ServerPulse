@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
-using ServerSlotApi.Dtos.Endpoints.Slot.CheckSlotKey;
+using ServerSlotApi.Core.Dtos.Endpoints.Slot.CheckSlotKey;
 using ServerSlotApi.Infrastructure.Repositories;
 
 namespace ServerSlotApi.Endpoints.Slot.CheckSlotKey

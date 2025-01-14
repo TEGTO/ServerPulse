@@ -1,4 +1,5 @@
-﻿using AnalyzerApi.Infrastructure.Configuration;
+﻿using AnalyzerApi.Application.Configuration;
+using AnalyzerApi.Infrastructure.Settings;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
@@ -64,9 +65,9 @@ namespace AnalyzerApi.LoadEventStatisticsProcessor.IntegrationTests
 
             configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.BootstrapServers)}", KafkaContainer?.GetBootstrapAddress() },
-                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.ClientId)}", "analyzer" },
-                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.GroupId)}", "analyzer-group" },
+                 { $"{KafkaSettings.SETTINGS_SECTION}:{nameof(KafkaSettings.BootstrapServers)}", KafkaContainer?.GetBootstrapAddress() },
+                 { $"{KafkaSettings.SETTINGS_SECTION}:{nameof(KafkaSettings.ClientId)}", "analyzer" },
+                 { $"{KafkaSettings.SETTINGS_SECTION}:{nameof(KafkaSettings.GroupId)}", "analyzer-group" },
                  { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.ReceiveTimeoutInMilliseconds)}", "10000" },
                  { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.LoadTopic)}", "LoadTopic_" },
                  { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.LoadTopicProcess)}", "LoadEventProcessTopic" },

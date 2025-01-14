@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using ServerSlotApi.Infrastructure.Entities;
-using ServerSlotApi.Infrastructure.Models;
+using ServerSlotApi.Core.Entities;
+using ServerSlotApi.Core.Models;
 using ServerSlotApi.Infrastructure.Repositories;
 using System.Security.Claims;
 
@@ -67,7 +67,7 @@ namespace ServerSlotApi.Endpoints.Slot.DeleteSlot.Tests
             };
 
             repositoryMock
-                .Setup(r => r.GetSlotAsync(It.Is<SlotModel>(m => m.SlotId == slotId && m.UserEmail == email), It.IsAny<CancellationToken>()))
+                .Setup(r => r.GetSlotAsync(It.Is<GetSlot>(m => m.SlotId == slotId && m.UserEmail == email), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(slot);
 
             repositoryMock
@@ -99,7 +99,7 @@ namespace ServerSlotApi.Endpoints.Slot.DeleteSlot.Tests
             };
 
             repositoryMock
-                .Setup(r => r.GetSlotAsync(It.Is<SlotModel>(m => m.SlotId == slotId && m.UserEmail == email), It.IsAny<CancellationToken>()))
+                .Setup(r => r.GetSlotAsync(It.Is<GetSlot>(m => m.SlotId == slotId && m.UserEmail == email), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((ServerSlot?)null);
 
             // Act

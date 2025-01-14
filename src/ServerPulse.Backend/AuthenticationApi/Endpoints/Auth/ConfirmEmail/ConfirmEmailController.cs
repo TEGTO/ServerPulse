@@ -1,5 +1,6 @@
-﻿using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.ConfirmEmail;
-using AuthenticationApi.Services;
+﻿using AuthenticationApi.Application;
+using AuthenticationApi.Application.Services;
+using AuthenticationApi.Core.Dtos.Endpoints.Auth.ConfirmEmail;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;

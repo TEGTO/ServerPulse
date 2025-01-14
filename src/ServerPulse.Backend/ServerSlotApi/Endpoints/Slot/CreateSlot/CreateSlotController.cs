@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ServerSlotApi.Dtos.Endpoints.ServerSlot.CreateSlot;
-using ServerSlotApi.Infrastructure.Entities;
+using ServerSlotApi.Core.Dtos.Endpoints.ServerSlot.CreateSlot;
+using ServerSlotApi.Core.Entities;
 using ServerSlotApi.Infrastructure.Repositories;
 using System.Security.Claims;
 

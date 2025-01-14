@@ -11,21 +11,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-	<PackageReference Include="MediatR" />
-	<PackageReference Include="Microsoft.AspNetCore.OutputCaching.StackExchangeRedis" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
-	<PackageReference Include="AutoMapper" />
-	<PackageReference Include="TEGTO.ServerPulse.EventCommunication" />
-	<PackageReference Include="TEGTO.ServerPulse.EventCommunication.Validators" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AnalyzerApi.Application\AnalyzerApi.Application.csproj" />
     <ProjectReference Include="..\AnalyzerApi.Infrastructure\AnalyzerApi.Infrastructure.csproj" />
-    <ProjectReference Include="..\Caching\Caching.csproj" />
-    <ProjectReference Include="..\MessageBus\MessageBus.csproj" />
-    <ProjectReference Include="..\Resilience\Resilience.csproj" />
-    <ProjectReference Include="..\Shared\Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Settings\" />
   </ItemGroup>
 
 </Project>

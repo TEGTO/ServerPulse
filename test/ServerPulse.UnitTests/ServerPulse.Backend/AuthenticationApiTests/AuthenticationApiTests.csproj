@@ -16,7 +16,6 @@
     <PackageReference Include="NUnit.Analyzers" />
     <PackageReference Include="NUnit3TestAdapter" />
 	<PackageReference Include="Moq" />
-	<PackageReference Include="MockQueryable.Moq" />
   </ItemGroup>
 
   <ItemGroup>

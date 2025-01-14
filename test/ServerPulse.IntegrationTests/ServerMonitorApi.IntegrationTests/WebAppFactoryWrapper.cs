@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
-using ServerMonitorApi.Options;
+using ServerMonitorApi.Infrastructure;
+using ServerMonitorApi.Infrastructure.Settings;
+using ServerMonitorApi.Settings;
 using Testcontainers.Kafka;
 
 namespace ServerMonitorApi.IntegrationTests
@@ -82,8 +84,8 @@ namespace ServerMonitorApi.IntegrationTests
 
             configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.BootstrapServers)}", KafkaContainer?.GetBootstrapAddress() },
-                 { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.ClientId)}", "server-interaction" },
+                 { $"{KafkaSettings.SETTINGS_SECTION}:{nameof(KafkaSettings.BootstrapServers)}", KafkaContainer?.GetBootstrapAddress() },
+                 { $"{KafkaSettings.SETTINGS_SECTION}:{nameof(KafkaSettings.ClientId)}", "server-interaction" },
                  { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.AliveTopic)}", "AliveTopic_" },
                  { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.ConfigurationTopic)}", "ConfigurationTopic_" },
                  { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.LoadTopic)}", "LoadTopic_" },

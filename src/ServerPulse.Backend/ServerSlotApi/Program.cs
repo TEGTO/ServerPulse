@@ -1,72 +1,26 @@
 using Authentication;
-using Caching;
 using DatabaseControl;
 using ExceptionHandling;
 using Logging;
-using Microsoft.EntityFrameworkCore;
-using ServerSlotApi.Dtos.Endpoints.Slot.CheckSlotKey;
-using ServerSlotApi.Infrastructure.Configuration;
+using ServerSlotApi;
+using ServerSlotApi.Application;
+using ServerSlotApi.Infrastructure;
 using ServerSlotApi.Infrastructure.Data;
-using ServerSlotApi.Infrastructure.Repositories;
-using ServerSlotApi.Infrastructure.Validators;
 using Shared;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.AddLogging();
 
-builder.Services.AddDbContextFactory<ServerSlotDbContext>(
-    builder.Configuration.GetConnectionString(ConfigurationKeys.SERVER_SLOT_DATABASE_CONNECTION_STRING)!,
-    "ServerSlotApi"
-);
+builder.AddInfrastructureServices();
 
 builder.Services.AddHttpClientHelperServiceWithResilience(builder.Configuration);
 
-#region Options
-
-var cacheSettings = builder.Configuration.GetSection(CacheSettings.SETTINGS_SECTION).Get<CacheSettings>();
-
-ArgumentNullException.ThrowIfNull(cacheSettings);
-
-builder.Services.Configure<CacheSettings>(builder.Configuration.GetSection(CacheSettings.SETTINGS_SECTION));
-
-#endregion
-
-#region Project Services
-
-builder.Services.AddSingleton<IServerSlotRepository, ServerSlotRepository>();
-
-#endregion
-
-#region Caching
-
-builder.Services.AddStackExchangeRedisOutputCache(options =>
-{
-    options.Configuration = builder.Configuration.GetConnectionString(CacheSettings.REDIS_SERVER_CONNECTION_STRING);
-});
-
-builder.Services.AddOutputCache((options) =>
-{
-    options.AddPolicy("BasePolicy", new OutputCachePolicy());
-
-    var expiryTime = cacheSettings.GetServerSlotByEmailExpiryInSeconds;
-
-    options.SetOutputCachePolicy("GetSlotsByEmailPolicy", duration: TimeSpan.FromSeconds(expiryTime), useAuthId: true);
-
-    expiryTime = cacheSettings.ServerSlotCheckExpiryInSeconds;
-
-    options.SetOutputCachePolicy("CheckSlotKeyPolicy", duration: TimeSpan.FromSeconds(expiryTime), types: typeof(CheckSlotKeyRequest));
-});
-
-#endregion
-
-builder.Services.AddRepositoryWithResilience<ServerSlotDbContext>(builder.Configuration);
-
 builder.Services.ConfigureIdentityServices(builder.Configuration);
 
-builder.Services.AddAutoMapper(typeof(Program).Assembly);
+builder.Services.AddAutoMapper(AssemblyReference.Assembly);
 
-builder.Services.AddSharedFluentValidation(typeof(Program), typeof(CheckSlotKeyRequestValidator));
+builder.Services.AddSharedFluentValidation(typeof(Program), typeof(AssemblyReference));
 
 builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
 builder.Services.AddEndpointsApiExplorer();

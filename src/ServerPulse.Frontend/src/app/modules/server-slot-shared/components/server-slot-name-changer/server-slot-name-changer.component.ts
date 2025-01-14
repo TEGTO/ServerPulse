@@ -48,7 +48,7 @@ export class ServerSlotNameChangerComponent implements OnInit, OnDestroy, AfterV
   private adjustInputWidth(): void {
     if (this.textSizer) {
       const sizer = this.textSizer.nativeElement;
-      const newWidth = Math.min(sizer.scrollWidth + 1, 400);
+      const newWidth = sizer.scrollWidth;
       setTimeout(() => {
         this.inputWidth$.next(newWidth);
       });

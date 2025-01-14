@@ -1,23 +1,21 @@
-using Confluent.Kafka;
 using EventCommunication;
 using ExceptionHandling;
 using Logging;
-using MessageBus;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using ServerMonitorApi.Options;
-using ServerMonitorApi.Services;
+using ServerMonitorApi;
+using ServerMonitorApi.Settings;
 using Shared;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.AddLogging();
 
+builder.AddInfrastructureServices();
+
 builder.Services.Configure<KestrelServerOptions>(options =>
 {
     options.Limits.MaxRequestBodySize = 1 * 1024 * 1024; //1 MB
 });
-
-builder.Services.AddHttpClientHelperServiceWithResilience(builder.Configuration);
 
 #region Options
 
@@ -26,29 +24,6 @@ var messageBusSettings = builder.Configuration.GetSection(MessageBusSettings.SET
 ArgumentNullException.ThrowIfNull(messageBusSettings);
 
 builder.Services.Configure<MessageBusSettings>(builder.Configuration.GetSection(MessageBusSettings.SETTINGS_SECTION));
-
-#endregion
-
-#region Kafka
-
-var producerConfig = new ProducerConfig
-{
-    BootstrapServers = messageBusSettings.BootstrapServers,
-    ClientId = messageBusSettings.ClientId,
-    EnableIdempotence = true,
-};
-var adminConfig = new AdminClientConfig
-{
-    BootstrapServers = messageBusSettings.BootstrapServers,
-    AllowAutoCreateTopics = true
-};
-builder.Services.AddKafkaProducer(producerConfig, adminConfig);
-
-#endregion
-
-#region Project Services
-
-builder.Services.AddSingleton<ISlotKeyChecker, SlotKeyChecker>();
 
 #endregion
 

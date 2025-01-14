@@ -11,14 +11,16 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["Directory.Packages.props", "."]
 COPY ["AnalyzerApi/AnalyzerApi.csproj", "AnalyzerApi/"]
-COPY ["AnalyzerApi.Infrastructure/AnalyzerApi.Infrastructure.csproj", "AnalyzerApi.Infrastructure/"]
-COPY ["Caching/Caching.csproj", "Caching/"]
+COPY ["AnalyzerApi.Application/AnalyzerApi.Application.csproj", "AnalyzerApi.Application/"]
+COPY ["AnalyzerApi.Core/AnalyzerApi.Core.csproj", "AnalyzerApi.Core/"]
 COPY ["MessageBus/MessageBus.csproj", "MessageBus/"]
 COPY ["Resilience/Resilience.csproj", "Resilience/"]
 COPY ["Shared/Shared.csproj", "Shared/"]
 COPY ["ExceptionHandling/ExceptionHandling.csproj", "ExceptionHandling/"]
 COPY ["Helper/Helper.csproj", "Helper/"]
 COPY ["Logging/Logging.csproj", "Logging/"]
+COPY ["AnalyzerApi.Infrastructure/AnalyzerApi.Infrastructure.csproj", "AnalyzerApi.Infrastructure/"]
+COPY ["Caching/Caching.csproj", "Caching/"]
 RUN dotnet restore "./AnalyzerApi/AnalyzerApi.csproj"
 COPY . .
 WORKDIR "/src/AnalyzerApi"

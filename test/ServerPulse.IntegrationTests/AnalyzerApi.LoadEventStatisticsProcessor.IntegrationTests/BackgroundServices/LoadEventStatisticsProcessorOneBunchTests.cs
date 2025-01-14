@@ -1,4 +1,4 @@
-﻿using AnalyzerApi.Infrastructure.Models.Statistics;
+﻿using AnalyzerApi.Core.Models.Statistics;
 using AnalyzerApi.LoadEventStatisticsProcessor.IntegrationTests;
 using EventCommunication;
 

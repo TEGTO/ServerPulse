@@ -1,6 +1,7 @@
-﻿using AuthenticationApi.Dtos.OAuth;
-using AuthenticationApi.Infrastructure.Dtos.Endpoints.OAuth.LoginOAuth;
-using AuthenticationApi.Services;
+﻿using AuthenticationApi.Application;
+using AuthenticationApi.Application.Services;
+using AuthenticationApi.Core.Dtos.Endpoints.OAuth.LoginOAuth;
+using AuthenticationApi.Core.Enums;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;

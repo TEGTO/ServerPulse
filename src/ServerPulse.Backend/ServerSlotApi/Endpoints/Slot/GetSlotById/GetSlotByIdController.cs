@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ServerSlotApi.Dtos.Endpoints.Slot.GetSlotById;
-using ServerSlotApi.Infrastructure.Models;
+using ServerSlotApi.Core.Dtos.Endpoints.Slot.GetSlotById;
+using ServerSlotApi.Core.Models;
 using ServerSlotApi.Infrastructure.Repositories;
 using System.Security.Claims;
 
@@ -33,7 +33,7 @@ namespace ServerSlotApi.Endpoints.Slot.GetSlotById
                 return Conflict("No user email found!");
             }
 
-            var model = new SlotModel() { SlotId = id, UserEmail = email };
+            var model = new GetSlot() { SlotId = id, UserEmail = email };
 
             var slot = await repository.GetSlotAsync(model, cancellationToken);
 

@@ -1,4 +1,5 @@
 ﻿using Authentication.Token;
+using AuthenticationApi.Application;
 using AuthenticationApi.Infrastructure.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -8,6 +9,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Testcontainers.PostgreSql;
+using ApplicationKeys = AuthenticationApi.Application.ConfigurationKeys;
+using InfrastructureKeys = AuthenticationApi.Infrastructure.ConfigurationKeys;
 
 namespace AuthenticationApi.IntegrationTests
 {
@@ -76,14 +79,14 @@ namespace AuthenticationApi.IntegrationTests
 
             var configuration = new Dictionary<string, string?>
             {
-                { $"ConnectionStrings:{ConfigurationKeys.AUTH_DATABASE_CONNECTION_STRING}", DbContainer?.GetConnectionString() },
+                { $"ConnectionStrings:{InfrastructureKeys.AUTH_DATABASE_CONNECTION_STRING}", DbContainer?.GetConnectionString() },
                 { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.PrivateKey)}", TestRsaKeys.PRIVATE_KEY },
                 { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.PublicKey)}", TestRsaKeys.PUBLIC_KEY },
                 { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.Audience)}", "https://api.example.com" },
                 { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.Issuer)}", "https://token.issuer.example.com" },
                 { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.ExpiryInMinutes)}", "30" },
-                { ConfigurationKeys.AUTH_REFRESH_TOKEN_EXPIRY_IN_DAYS, "7" },
-                { ConfigurationKeys.EF_CREATE_DATABASE, "true" },
+                { ApplicationKeys.AUTH_REFRESH_TOKEN_EXPIRY_IN_DAYS, "7" },
+                { InfrastructureKeys.EF_CREATE_DATABASE, "true" },
                 {$"FeatureManagement:{Features.EMAIL_CONFIRMATION}", "true" },
                 {$"FeatureManagement:{Features.OAUTH}", "true" },
             };

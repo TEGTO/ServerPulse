@@ -1,12 +1,9 @@
 using Authentication;
-using Authentication.OAuth.Google;
 using Authentication.Token;
 using AuthenticationApi;
-using AuthenticationApi.Dtos.OAuth;
-using AuthenticationApi.Infrastructure;
+using AuthenticationApi.Application;
+using AuthenticationApi.Core.Entities;
 using AuthenticationApi.Infrastructure.Data;
-using AuthenticationApi.Infrastructure.Validators;
-using AuthenticationApi.Services;
 using BackgroundTask;
 using DatabaseControl;
 using EmailControl;
@@ -17,17 +14,20 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.FeatureManagement;
 using Shared;
+using InfrastructureKeys = AuthenticationApi.Infrastructure.ConfigurationKeys;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.AddLogging();
 builder.Services.AddDbContextFactory<AuthIdentityDbContext>(
-    builder.Configuration.GetConnectionString(ConfigurationKeys.AUTH_DATABASE_CONNECTION_STRING)!,
+    builder.Configuration.GetConnectionString(InfrastructureKeys.AUTH_DATABASE_CONNECTION_STRING)!,
     "AuthenticationApi"
 );
 
 builder.Services.AddHttpClientHelperServiceWithResilience(builder.Configuration);
 builder.Services.AddFeatureManagement();
+
+builder.AddApplicationServices();
 
 #region Identity 
 
@@ -43,8 +43,8 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
     options.User.RequireUniqueEmail = true;
     options.SignIn.RequireConfirmedEmail = requireConfirmedEmail;
 })
-.AddEntityFrameworkStores<AuthIdentityDbContext>()
-.AddDefaultTokenProviders();
+    .AddEntityFrameworkStores<AuthIdentityDbContext>()
+    .AddDefaultTokenProviders();
 
 var isOAuthEnabled = bool.Parse(builder.Configuration[$"FeatureManagement:{Features.OAUTH}"]! ?? "false");
 if (isOAuthEnabled)
@@ -59,40 +59,18 @@ builder.Services.AddScoped<ITokenHandler, JwtHandler>();
 
 #region Hanffire
 
-var connectionString = builder.Configuration.GetConnectionString(ConfigurationKeys.AUTH_DATABASE_CONNECTION_STRING);
+var connectionString = builder.Configuration.GetConnectionString(InfrastructureKeys.AUTH_DATABASE_CONNECTION_STRING);
 builder.Services.ConfigureHangfireWthPostgreSql(connectionString);
-
-#endregion
-
-#region Project Services 
-
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<IEmailJobService, EmailJobService>();
-
-if (isOAuthEnabled)
-{
-    builder.Services.AddScoped<GoogleOAuthService>();
-    builder.Services.AddScoped<IGoogleOAuthHttpClient, GoogleOAuthHttpClient>();
-    builder.Services.AddScoped(provider => new Dictionary<OAuthLoginProvider, IOAuthService>
-    {
-        { OAuthLoginProvider.Google, provider.GetService<GoogleOAuthService>()! },
-    });
-}
-else
-{
-    builder.Services.AddScoped(provider => new Dictionary<OAuthLoginProvider, IOAuthService>());
-}
 
 #endregion
 
 builder.Services.AddRepositoryWithResilience<AuthIdentityDbContext>(builder.Configuration);
 
-builder.Services.AddAutoMapper(typeof(Program).Assembly);
+builder.Services.AddAutoMapper(AssemblyReference.Assembly);
 
 builder.Services.AddEmailService(builder.Configuration);
 
-builder.Services.AddSharedFluentValidation(typeof(Program), typeof(ConfirmEmailRequestValidator));
+builder.Services.AddSharedFluentValidation(typeof(Program), typeof(AssemblyReference));
 
 builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -104,7 +82,7 @@ if (builder.Environment.IsDevelopment())
 
 var app = builder.Build();
 
-if (app.Configuration[ConfigurationKeys.EF_CREATE_DATABASE] == "true")
+if (app.Configuration[InfrastructureKeys.EF_CREATE_DATABASE] == "true")
 {
     await app.ConfigureDatabaseAsync<AuthIdentityDbContext>(CancellationToken.None);
 }

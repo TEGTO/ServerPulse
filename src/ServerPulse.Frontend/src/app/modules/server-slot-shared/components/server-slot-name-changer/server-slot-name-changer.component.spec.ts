@@ -95,6 +95,6 @@ describe('ServerSlotNameChangerComponent', () => {
 
     tick();
 
-    expect(component.inputWidth$.value).toBe(151);
+    expect(component.inputWidth$.value).toBe(150);
   }));
 });
