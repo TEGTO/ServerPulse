@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ServerSlotApi.Dtos.Endpoints.Slot.UpdateSlot;
-using ServerSlotApi.Infrastructure.Entities;
-using ServerSlotApi.Infrastructure.Models;
+using ServerSlotApi.Core.Dtos.Endpoints.Slot.UpdateSlot;
+using ServerSlotApi.Core.Entities;
+using ServerSlotApi.Core.Models;
 using ServerSlotApi.Infrastructure.Repositories;
 using System.Security.Claims;
 
@@ -33,7 +33,7 @@ namespace ServerSlotApi.Endpoints.Slot.UpdateSlot
                 return Conflict("No user email found!");
             }
 
-            var model = new SlotModel() { SlotId = request.Id, UserEmail = email };
+            var model = new GetSlot() { SlotId = request.Id, UserEmail = email };
             var slotInDb = await repository.GetSlotAsync(model, cancellationToken);
 
             if (slotInDb == null)

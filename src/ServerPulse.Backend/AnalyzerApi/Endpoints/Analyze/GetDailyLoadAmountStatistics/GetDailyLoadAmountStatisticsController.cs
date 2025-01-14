@@ -1,5 +1,5 @@
-﻿using AnalyzerApi.Infrastructure.Dtos.Responses.Statistics;
-using AnalyzerApi.Services.Receivers.Statistics;
+﻿using AnalyzerApi.Application.Services.Receivers.Statistics;
+using AnalyzerApi.Core.Dtos.Responses.Statistics;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;

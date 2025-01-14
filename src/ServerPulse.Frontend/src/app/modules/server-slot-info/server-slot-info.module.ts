@@ -3,6 +3,7 @@ import { CdkTableModule } from '@angular/cdk/table';
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatMenuModule } from '@angular/material/menu';
@@ -40,6 +41,7 @@ const routes: Routes = [
     MatMenuModule,
     ChartModule,
     MatProgressSpinnerModule,
+    MatButtonModule,
     LocalizedDatePipe,
     MatFormFieldModule,
     ReactiveFormsModule,

@@ -1,38 +1,39 @@
 <div class="statistics__content">
-    <section class="content__left child:border-b border-gray-200 dark:border-gray-600">
+    <section class="content__left rounded-lg">
         <ng-container *ngIf="lifecycleStatistics$ | async as lifecycleStatistics; else loading">
             <div class="left__status">
-                Status:
-                {{ serverStatus }}
+                <span>Status:</span>
                 <div class="status__illumination">
+                    {{ serverStatus }}
                     <span [ngClass]="{
-                        'green': serverStatus === 'Online',
-                        'red': serverStatus === 'Offline',
-                        'grey': serverStatus === 'No Data'
-                      }" class="illumination__indicator"></span>
+                    'green': serverStatus === 'Online',
+                    'red': serverStatus === 'Offline',
+                    'grey': serverStatus === 'No Data'
+                  }" class="illumination__indicator"></span>
                 </div>
             </div>
             <div class="left__uptime">
-                Last start:
-                {{ (lifecycleStatistics.serverLastStartDateTimeUTC ) ? (lifecycleStatistics.serverLastStartDateTimeUTC |
-                localizedDate ) : '—' }}
+                <span>Last start:</span>
+                <span>{{ lifecycleStatistics.serverLastStartDateTimeUTC ?
+                    (lifecycleStatistics.serverLastStartDateTimeUTC |
+                    localizedDate) : '—' }}</span>
             </div>
             <div class="left__uptime">
-                Uptime:
-                {{ lifecycleStatistics.serverUptime ?? "—" }}
+                <span>Uptime:</span>
+                <span>{{ lifecycleStatistics.serverUptime ?? "—" }}</span>
             </div>
             <div class="left__last-uptime">
-                Last uptime:
-                {{ lifecycleStatistics.lastServerUptime ?? "—" }}
+                <span>Last uptime:</span>
+                <span>{{ lifecycleStatistics.lastServerUptime ?? "—" }}</span>
             </div>
             <div class="left__last-uptime">
-                Last pulse:
-                {{ (lifecycleStatistics.lastPulseDateTimeUTC) ? (lifecycleStatistics.lastPulseDateTimeUTC |
-                localizedDate ) : '—' }}
+                <span>Last pulse:</span>
+                <span>{{ lifecycleStatistics.lastPulseDateTimeUTC ? (lifecycleStatistics.lastPulseDateTimeUTC |
+                    localizedDate) : '—' }}</span>
             </div>
             <div class="left__last-load-amount">
-                Load amount:
-                {{ (loadStatistics$ | async)?.amountOfEvents ?? "—" }}
+                <span>Load amount:</span>
+                <span>{{ (loadStatistics$ | async)?.amountOfEvents ?? "—" }}</span>
             </div>
         </ng-container>
         <ng-template #loading>
@@ -42,11 +43,11 @@
         </ng-template>
     </section>
 
-    <cdk-virtual-scroll-viewport #scroller class="content__right" [itemSize]="tableItemHeight">
+    <cdk-virtual-scroll-viewport #scroller class="content__right rounded-lg" [itemSize]="tableItemHeight">
         <ng-container *ngIf="loadEvents$ | async as loadEvents; else eventLoading">
             @if (loadEvents.length > 0) {
-            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <table class="w-full text-sm text-left rtl:text-right text-gray-500">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                     <tr>
                         <th scope="col" class="px-4 py-4">Endpoint</th>
                         <th scope="col" class="px-4 py-4">Method</th>
@@ -57,9 +58,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *cdkVirtualFor="let event of loadEvents; trackBy:trackById"
-                        class="border-b dark:bg-gray-800 dark:border-gray-700 px-4 py-4">
-                        <th scope="row" class="px-4 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                    <tr *cdkVirtualFor="let event of loadEvents; trackBy:trackById" class="border-b">
+                        <th scope="row" class="px-4 py-4 font-medium text-gray-900 whitespace-nowrap">
                             {{event.endpoint}}
                         </th>
                         <td class="px-4 py-3">

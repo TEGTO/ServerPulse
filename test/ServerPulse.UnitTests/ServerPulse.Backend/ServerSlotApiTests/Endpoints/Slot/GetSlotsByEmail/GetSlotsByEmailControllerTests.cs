@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using ServerSlotApi.Dtos.Endpoints.ServerSlot.GetSlotsByEmail;
-using ServerSlotApi.Infrastructure.Entities;
+using ServerSlotApi.Core.Dtos.Endpoints.ServerSlot.GetSlotsByEmail;
+using ServerSlotApi.Core.Entities;
 using ServerSlotApi.Infrastructure.Repositories;
 using System.Security.Claims;
 

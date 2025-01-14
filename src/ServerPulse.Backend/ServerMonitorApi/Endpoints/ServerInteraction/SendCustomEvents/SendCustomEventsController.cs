@@ -2,8 +2,8 @@
 using MessageBus.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using ServerMonitorApi.Options;
-using ServerMonitorApi.Services;
+using ServerMonitorApi.Infrastructure.Services;
+using ServerMonitorApi.Settings;
 using System.Text.Json;
 
 namespace ServerMonitorApi.Endpoints.ServerInteraction.SendCustomEvents

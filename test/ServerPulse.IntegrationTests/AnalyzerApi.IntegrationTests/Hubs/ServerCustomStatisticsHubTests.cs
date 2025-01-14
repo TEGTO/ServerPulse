@@ -1,4 +1,4 @@
-﻿using AnalyzerApi.Infrastructure.Dtos.Responses.Statistics;
+﻿using AnalyzerApi.Core.Dtos.Responses.Statistics;
 using EventCommunication;
 using Microsoft.AspNetCore.SignalR.Client;
 

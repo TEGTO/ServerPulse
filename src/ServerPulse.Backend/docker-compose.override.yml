@@ -50,13 +50,13 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
-      - Kafka__ClientId=${Kafka__ClientId__MonitorApi}
       - Kafka__BootstrapServers=${Kafka__BootstrapServers}
-      - Kafka__AliveTopic=${Kafka__AliveTopic}
-      - Kafka__ConfigurationTopic=${Kafka__ConfigurationTopic}
-      - Kafka__LoadTopic=${Kafka__LoadTopic}
-      - Kafka__LoadTopicProcess=${Kafka__LoadTopicProcess}
-      - Kafka__CustomTopic=${Kafka__CustomTopic}
+      - Kafka__ClientId=${Kafka__ClientId__MonitorApi}
+      - MessageBus__AliveTopic=${MessageBus__AliveTopic}
+      - MessageBus__ConfigurationTopic=${MessageBus__ConfigurationTopic}
+      - MessageBus__LoadTopic=${MessageBus__LoadTopic}
+      - MessageBus__LoadTopicProcess=${MessageBus__LoadTopicProcess}
+      - MessageBus__CustomTopic=${MessageBus__CustomTopic}
       - ServerSlotApi__Url=${ServerSlotApi__Url}
       - ServerSlotApi__Check=${ServerSlotApi__Check}
     volumes:
@@ -70,15 +70,15 @@ services:
       - Kafka__BootstrapServers=${Kafka__BootstrapServers}
       - Kafka__ClientId=${Kafka__ClientId__Analyzer}
       - Kafka__GroupId=${Kafka__GroupId}
-      - Kafka__ReceiveTimeoutInMilliseconds=${Kafka__ReceiveTimeoutInMilliseconds}
-      - Kafka__AliveTopic=${Kafka__AliveTopic}
-      - Kafka__ConfigurationTopic=${Kafka__ConfigurationTopic}
-      - Kafka__LoadTopic=${Kafka__LoadTopic}
-      - Kafka__CustomTopic=${Kafka__CustomTopic}
-      - Kafka__LoadMethodStatisticsTopic=${Kafka__LoadMethodStatisticsTopic}
-      - Kafka__LoadTopicProcess=${Kafka__LoadTopicProcess}
-      - Kafka__ServerStatisticsTopic=${Kafka__ServerStatisticsTopic}
-      - Kafka__TopicDataSaveInDays=${Kafka__TopicDataSaveInDays}
+      - MessageBus__ReceiveTimeoutInMilliseconds=${MessageBus__ReceiveTimeoutInMilliseconds}
+      - MessageBus__AliveTopic=${MessageBus__AliveTopic}
+      - MessageBus__ConfigurationTopic=${MessageBus__ConfigurationTopic}
+      - MessageBus__LoadTopic=${MessageBus__LoadTopic}
+      - MessageBus__CustomTopic=${MessageBus__CustomTopic}
+      - MessageBus__LoadMethodStatisticsTopic=${MessageBus__LoadMethodStatisticsTopic}
+      - MessageBus__LoadTopicProcess=${MessageBus__LoadTopicProcess}
+      - MessageBus__ServerStatisticsTopic=${MessageBus__ServerStatisticsTopic}
+      - MessageBus__TopicDataSaveInDays=${MessageBus__TopicDataSaveInDays}
       - PulseEventIntervalInMilliseconds=${PulseEventIntervalInMilliseconds}
       - StatisticsCollectIntervalInMilliseconds=${StatisticsCollectIntervalInMilliseconds}
       - ConnectionStrings__RedisServer=${ConnectionStrings__RedisServer}

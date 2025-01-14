@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
-using ServerSlotApi.Dtos.Endpoints.ServerSlot.GetSlotsByEmail;
+using ServerSlotApi.Core.Dtos.Endpoints.ServerSlot.GetSlotsByEmail;
 using ServerSlotApi.Infrastructure.Repositories;
 using System.Security.Claims;
 

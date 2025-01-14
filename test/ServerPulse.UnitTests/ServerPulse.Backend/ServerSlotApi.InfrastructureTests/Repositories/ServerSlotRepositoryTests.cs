@@ -4,10 +4,9 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Configuration;
 using MockQueryable.Moq;
 using Moq;
-using ServerSlotApi.Infrastructure.Configuration;
+using ServerSlotApi.Core.Entities;
+using ServerSlotApi.Core.Models;
 using ServerSlotApi.Infrastructure.Data;
-using ServerSlotApi.Infrastructure.Entities;
-using ServerSlotApi.Infrastructure.Models;
 using System.Data;
 
 namespace ServerSlotApi.Infrastructure.Repositories.Tests
@@ -44,22 +43,22 @@ namespace ServerSlotApi.Infrastructure.Repositories.Tests
 
         private static IEnumerable<TestCaseData> GetSlotTestCases()
         {
-            yield return new TestCaseData(new SlotModel { UserEmail = "user1@example.com", SlotId = "1" }, "Slot1", true)
+            yield return new TestCaseData(new GetSlot { UserEmail = "user1@example.com", SlotId = "1" }, "Slot1", true)
                 .SetDescription("Slot exists with matching UserEmail and SlotId.");
 
-            yield return new TestCaseData(new SlotModel { UserEmail = "user1@example.com", SlotId = "99" }, null, false)
+            yield return new TestCaseData(new GetSlot { UserEmail = "user1@example.com", SlotId = "99" }, null, false)
                 .SetDescription("Slot does not exist with this id.");
 
-            yield return new TestCaseData(new SlotModel { UserEmail = "user2@example.com", SlotId = "1" }, null, false)
+            yield return new TestCaseData(new GetSlot { UserEmail = "user2@example.com", SlotId = "1" }, null, false)
                 .SetDescription("Slot does not exist with this user email.");
 
-            yield return new TestCaseData(new SlotModel { UserEmail = "user2@example.com", SlotId = "99" }, null, false)
+            yield return new TestCaseData(new GetSlot { UserEmail = "user2@example.com", SlotId = "99" }, null, false)
                 .SetDescription("Slot does not exist.");
         }
 
         [Test]
         [TestCaseSource(nameof(GetSlotTestCases))]
-        public async Task GetSlotAsync_TestCases(SlotModel model, string? expectedSlotName, bool shouldExist)
+        public async Task GetSlotAsync_TestCases(GetSlot model, string? expectedSlotName, bool shouldExist)
         {
             // Arrange
             var slots = new List<ServerSlot>

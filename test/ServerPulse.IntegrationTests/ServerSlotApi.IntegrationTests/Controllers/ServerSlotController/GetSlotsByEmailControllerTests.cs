@@ -1,5 +1,5 @@
-﻿using ServerSlotApi.Dtos.Endpoints.ServerSlot.CreateSlot;
-using ServerSlotApi.Dtos.Endpoints.ServerSlot.GetSlotsByEmail;
+﻿using ServerSlotApi.Core.Dtos.Endpoints.ServerSlot.CreateSlot;
+using ServerSlotApi.Core.Dtos.Endpoints.ServerSlot.GetSlotsByEmail;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;

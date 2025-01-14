@@ -10,11 +10,19 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
-		<PackageReference Include="FluentValidation.AspNetCore" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Authentication\Authentication.csproj" />
+		<ProjectReference Include="..\AuthenticationApi.Core\AuthenticationApi.Core.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+			<_Parameter1>AuthenticationApi.InfrastructureTests</_Parameter1>
+		</AssemblyAttribute>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+			<_Parameter1>DynamicProxyGenAssembly2</_Parameter1>
+		</AssemblyAttribute>
 	</ItemGroup>
 
 </Project>

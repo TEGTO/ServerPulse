@@ -1,5 +1,5 @@
-﻿using AnalyzerApi.Infrastructure.Dtos.Endpoints.Analyze.GetLoadAmountStatisticsInRange;
-using AnalyzerApi.Infrastructure.Dtos.Responses.Statistics;
+﻿using AnalyzerApi.Core.Dtos.Endpoints.Analyze.GetLoadAmountStatisticsInRange;
+using AnalyzerApi.Core.Dtos.Responses.Statistics;
 using EventCommunication;
 using System.Net;
 using System.Text;

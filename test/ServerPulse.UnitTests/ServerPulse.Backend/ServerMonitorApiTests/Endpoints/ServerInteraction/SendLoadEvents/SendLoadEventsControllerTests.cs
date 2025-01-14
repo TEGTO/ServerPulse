@@ -3,8 +3,8 @@ using MessageBus.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Moq;
-using ServerMonitorApi.Options;
-using ServerMonitorApi.Services;
+using ServerMonitorApi.Infrastructure.Services;
+using ServerMonitorApi.Settings;
 
 namespace ServerMonitorApi.Endpoints.ServerInteraction.SendLoadEvents.Tests
 {

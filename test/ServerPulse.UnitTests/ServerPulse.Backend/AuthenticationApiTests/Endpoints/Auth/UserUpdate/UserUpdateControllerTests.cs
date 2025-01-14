@@ -1,6 +1,6 @@
-﻿using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.UserUpdate;
-using AuthenticationApi.Infrastructure.Models;
-using AuthenticationApi.Services;
+﻿using AuthenticationApi.Application.Services;
+using AuthenticationApi.Core.Dtos.Endpoints.Auth.UserUpdate;
+using AuthenticationApi.Core.Models;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -68,7 +68,7 @@ namespace AuthenticationApi.Endpoints.Auth.UserUpdate.Tests
             // Arrange
             mockMapper.Setup(m => m.Map<UserUpdateModel>(request)).Returns(updateModel);
 
-            mockAuthService.Setup(m => m.UpdateUserAsync(It.IsAny<ClaimsPrincipal>(), updateModel, false, It.IsAny<CancellationToken>()))
+            mockAuthService.Setup(m => m.UpdateUserAsync(It.IsAny<ClaimsPrincipal>(), updateModel, It.IsAny<CancellationToken>()))
                   .ReturnsAsync(identityErrors ?? new List<IdentityError>());
 
             if (!isValid)
@@ -87,7 +87,7 @@ namespace AuthenticationApi.Endpoints.Auth.UserUpdate.Tests
                 // Assert
                 Assert.That(result, Is.InstanceOf<OkResult>());
 
-                mockAuthService.Verify(m => m.UpdateUserAsync(It.IsAny<ClaimsPrincipal>(), updateModel, false, It.IsAny<CancellationToken>()), Times.Once);
+                mockAuthService.Verify(m => m.UpdateUserAsync(It.IsAny<ClaimsPrincipal>(), updateModel, It.IsAny<CancellationToken>()), Times.Once);
             }
         }
     }

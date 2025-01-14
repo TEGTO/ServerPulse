@@ -1,5 +1,5 @@
-﻿using AuthenticationApi.Dtos.OAuth;
-using AuthenticationApi.Infrastructure.Dtos.Endpoints.OAuth.GetOAuthUrl;
+﻿using AuthenticationApi.Core.Dtos.Endpoints.OAuth.GetOAuthUrl;
+using AuthenticationApi.Core.Enums;
 using AuthenticationApi.IntegrationTests.Controllers.AuthController;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Net;

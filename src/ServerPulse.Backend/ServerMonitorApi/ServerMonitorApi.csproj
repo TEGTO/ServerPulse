@@ -19,9 +19,8 @@
 	<PackageReference Include="TEGTO.ServerPulse.EventCommunication" />
 	<PackageReference Include="TEGTO.ServerPulse.EventCommunication.Validators" />
     <ProjectReference Include="..\Authentication\Authentication.csproj" />
-    <ProjectReference Include="..\Helper\Helper.csproj" />
     <ProjectReference Include="..\MessageBus\MessageBus.csproj" />
-    <ProjectReference Include="..\ServerSlotApi.Dtos\ServerSlotApi.Dtos.csproj" />
+    <ProjectReference Include="..\ServerMonitorApi.Infrastructure\ServerMonitorApi.Infrastructure.csproj" />
     <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 

@@ -1,7 +1,7 @@
 ﻿using Authentication.Models;
 using Authentication.Token;
 using Microsoft.Extensions.Options;
-using ServerSlotApi.Dtos.Endpoints.ServerSlot.CreateSlot;
+using ServerSlotApi.Core.Dtos.Endpoints.ServerSlot.CreateSlot;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;

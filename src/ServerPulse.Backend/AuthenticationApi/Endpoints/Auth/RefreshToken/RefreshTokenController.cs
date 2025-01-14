@@ -1,6 +1,6 @@
 ﻿using Authentication.Models;
-using AuthenticationApi.Infrastructure.Dtos.Endpoints.Auth.RefreshToken;
-using AuthenticationApi.Services;
+using AuthenticationApi.Application.Services;
+using AuthenticationApi.Core.Dtos.Endpoints.Auth.RefreshToken;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 

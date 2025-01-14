@@ -1,5 +1,5 @@
-﻿using AnalyzerApi.Infrastructure.Dtos.Endpoints.Analyze.GetSomeCustomEvents;
-using AnalyzerApi.Infrastructure.Models.Wrappers;
+﻿using AnalyzerApi.Core.Dtos.Endpoints.Analyze.GetSomeCustomEvents;
+using AnalyzerApi.Core.Models.Wrappers;
 using EventCommunication;
 using System.Net;
 using System.Text;
