@@ -1,8 +1,10 @@
-﻿using Confluent.Kafka;
+﻿using Castle.DynamicProxy;
+using Confluent.Kafka;
 using MessageBus.Interfaces;
 using MessageBus.Kafka;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Polly;
 using Resilience;
 
@@ -14,6 +16,7 @@ namespace MessageBus
         {
             services.AddSingleton(consumerConfig);
             services.AddSingleton(new AdminClientBuilder(adminConfig).Build());
+            services.TryAddSingleton<IProxyGenerator, ProxyGenerator>();
             services.AddSingleton<IKafkaConsumerFactory, KafkaConsumerFactory>();
             services.AddSingleton<IMessageConsumer, KafkaConsumer>();
             services.AddMessageBusResilience();
@@ -24,6 +27,7 @@ namespace MessageBus
         {
             services.AddSingleton(producerConfig);
             services.AddSingleton(new AdminClientBuilder(adminConfig).Build());
+            services.TryAddSingleton<IProxyGenerator, ProxyGenerator>();
             services.AddSingleton<IKafkaProducerFactory, KafkaProducerFactory>();
             services.AddSingleton<IMessageProducer, KafkaProducer>();
             services.AddSingleton<ITopicManager, KafkaTopicManager>();

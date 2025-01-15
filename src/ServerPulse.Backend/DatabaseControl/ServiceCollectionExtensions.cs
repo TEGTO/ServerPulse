@@ -4,9 +4,11 @@ using EntityFramework.Exceptions.PostgreSQL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure;
 using Polly;
 using Polly.Registry;
+using Proxies.Interceptors;
 using Resilience;
 
 namespace DatabaseControl
@@ -15,8 +17,9 @@ namespace DatabaseControl
     {
         public static IServiceCollection AddRepositoryWithResilience<Context>(this IServiceCollection services, IConfiguration configuration) where Context : DbContext
         {
-            var pipelineConfiguration = configuration.GetSection(DatabaseConfigurationKeys.REPOSITORY_RESILIENCE_PIPELINE)
-                                        .Get<ResiliencePipelineSettings>() ?? new ResiliencePipelineSettings();
+            var pipelineConfiguration = configuration
+                .GetSection(DatabaseConfigurationKeys.REPOSITORY_RESILIENCE_PIPELINE)
+                .Get<ResiliencePipelineSettings>() ?? new ResiliencePipelineSettings();
 
             services.AddResiliencePipeline(DatabaseConfigurationKeys.REPOSITORY_RESILIENCE_PIPELINE, (builder, context) =>
             {
@@ -24,6 +27,7 @@ namespace DatabaseControl
             });
 
             services.AddSingleton<DatabaseRepository<Context>>();
+            services.TryAddSingleton<IProxyGenerator, ProxyGenerator>();
 
             services.AddSingleton(sp =>
             {
@@ -32,7 +36,7 @@ namespace DatabaseControl
 
                 var repository = sp.GetRequiredService<DatabaseRepository<Context>>();
 
-                var generator = new ProxyGenerator();
+                var generator = sp.GetRequiredService<IProxyGenerator>();
 
                 return generator.CreateInterfaceProxyWithTarget<IDatabaseRepository<Context>>(
                     repository,
