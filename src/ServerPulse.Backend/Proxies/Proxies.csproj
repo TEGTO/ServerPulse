@@ -4,16 +4,16 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-	<WarningsAsErrors>CS8618;CS8601;CS8602;CS8603;CS8604</WarningsAsErrors>
+    <WarningsAsErrors>CS8618;CS8602;CS8603;CS8604</WarningsAsErrors>
   </PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Confluent.Kafka" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+		<PackageReference Include="Castle.Core" />
+		<PackageReference Include="Castle.Core.AsyncInterceptor" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Proxies\Proxies.csproj" />
 	  <ProjectReference Include="..\Resilience\Resilience.csproj" />
 	</ItemGroup>
+
 </Project>

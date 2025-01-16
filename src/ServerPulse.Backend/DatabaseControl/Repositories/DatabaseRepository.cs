@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using Resilience;
+using Proxies.Attributes;
 using System.Data;
 
 namespace DatabaseControl.Repositories

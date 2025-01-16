@@ -1,20 +1,23 @@
 ﻿using Castle.DynamicProxy;
 using Polly;
+using Proxies.Attributes;
 
-namespace Resilience
+namespace Proxies.Interceptors
 {
     public class ResilienceInterceptor : IAsyncInterceptor
     {
         private readonly ResiliencePipeline resiliencePipeline;
+        private readonly bool interceptAll;
 
-        public ResilienceInterceptor(ResiliencePipeline resiliencePipeline)
+        public ResilienceInterceptor(ResiliencePipeline resiliencePipeline, bool interceptAll = false)
         {
             this.resiliencePipeline = resiliencePipeline;
+            this.interceptAll = interceptAll;
         }
 
         public void InterceptSynchronous(IInvocation invocation)
         {
-            if (HasResilienceAttribute(invocation))
+            if (interceptAll || HasResilienceAttribute(invocation))
             {
                 resiliencePipeline.Execute(() =>
                 {
@@ -29,7 +32,7 @@ namespace Resilience
 
         public void InterceptAsynchronous(IInvocation invocation)
         {
-            if (HasResilienceAttribute(invocation))
+            if (interceptAll || HasResilienceAttribute(invocation))
             {
                 invocation.ReturnValue = InterceptAsync(invocation);
             }
@@ -41,7 +44,7 @@ namespace Resilience
 
         public void InterceptAsynchronous<TResult>(IInvocation invocation)
         {
-            if (HasResilienceAttribute(invocation))
+            if (interceptAll || HasResilienceAttribute(invocation))
             {
                 invocation.ReturnValue = InterceptAsync<TResult>(invocation);
             }
