@@ -2,6 +2,7 @@
 using AuthenticationApi.Application;
 using AuthenticationApi.Application.Services;
 using AuthenticationApi.Core.Enums;
+using AuthenticationApi.Infrastructure.Services;
 
 namespace AuthenticationApi
 {
@@ -18,7 +19,7 @@ namespace AuthenticationApi
             if (isOAuthEnabled)
             {
                 builder.Services.AddScoped<GoogleOAuthService>();
-                builder.Services.AddScoped<IGoogleOAuthHttpClient, GoogleOAuthHttpClient>();
+                builder.Services.AddScoped<IGoogleOAuthClient, GoogleOAuthClient>();
                 builder.Services.AddScoped(provider => new Dictionary<OAuthLoginProvider, IOAuthService>
                 {
                     { OAuthLoginProvider.Google, provider.GetService<GoogleOAuthService>()! },
@@ -28,6 +29,13 @@ namespace AuthenticationApi
             {
                 builder.Services.AddScoped(provider => new Dictionary<OAuthLoginProvider, IOAuthService>());
             }
+
+            return builder;
+        }
+
+        public static IHostApplicationBuilder AddInfrastructureServices(this IHostApplicationBuilder builder)
+        {
+            builder.Services.AddScoped<IStringVerifierService, StringVerifierService>();
 
             return builder;
         }

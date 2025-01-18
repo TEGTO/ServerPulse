@@ -74,7 +74,7 @@ namespace Authentication.Tests
             //Act
             var serviceProvider = services.BuildServiceProvider();
             var googleOAuthSettings = serviceProvider.GetRequiredService<IOptions<GoogleOAuthSettings>>().Value;
-            var googleOAuthHttpClient = serviceProvider.GetRequiredService<IGoogleOAuthHttpClient>();
+            var googleOAuthHttpClient = serviceProvider.GetRequiredService<IGoogleOAuthClient>();
             var googleTokenValidator = serviceProvider.GetRequiredService<IGoogleTokenValidator>();
 
             // Assert

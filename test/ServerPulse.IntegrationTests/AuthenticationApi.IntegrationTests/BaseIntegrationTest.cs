@@ -26,7 +26,7 @@ namespace AuthenticationApi.IntegrationTests
         private WebAppFactoryWrapper wrapper;
         private WebApplicationFactory<Program> factory;
         private IServiceScope scope;
-        protected Mock<IGoogleOAuthHttpClient>? mockGoogleOAuthHttpClient;
+        protected Mock<IGoogleOAuthClient>? mockGoogleOAuthHttpClient;
         protected Mock<IGoogleTokenValidator>? mockGoogleTokenValidator;
         protected Mock<IBackgroundJobClient>? mockBackgroundJobClient;
 
@@ -38,15 +38,15 @@ namespace AuthenticationApi.IntegrationTests
             {
                 builder.ConfigureTestServices(services =>
                 {
-                    services.RemoveAll(typeof(IGoogleOAuthHttpClient));
+                    services.RemoveAll(typeof(IGoogleOAuthClient));
                     services.RemoveAll(typeof(IGoogleTokenValidator));
                     services.RemoveAll(typeof(IEmailSender));
                     services.RemoveAll(typeof(IBackgroundJobClient));
 
-                    mockGoogleOAuthHttpClient = new Mock<IGoogleOAuthHttpClient>();
+                    mockGoogleOAuthHttpClient = new Mock<IGoogleOAuthClient>();
                     mockGoogleOAuthHttpClient.Setup(x => x.ExchangeAuthorizationCodeAsync(
                         "somecode",
-                        "someverifier",
+                        It.IsAny<string>(),
                         "someurl",
                         It.IsAny<CancellationToken>()
                     ))
@@ -54,7 +54,7 @@ namespace AuthenticationApi.IntegrationTests
 
                     mockGoogleOAuthHttpClient.Setup(x => x.ExchangeAuthorizationCodeAsync(
                         It.Is<string>(x => x != "somecode"),
-                        It.Is<string>(x => x != "someverifier"),
+                        It.IsAny<string>(),
                         It.Is<string>(x => x != "someurl"),
                         It.IsAny<CancellationToken>()
                     ))
@@ -65,7 +65,7 @@ namespace AuthenticationApi.IntegrationTests
                     mockGoogleOAuthHttpClient.Setup(x => x.GenerateOAuthRequestUrl(
                         It.IsAny<string>(),
                         "someurl",
-                        "someverifier"
+                        It.IsAny<string>()
                     )).Returns(expectedUrl);
 
                     mockGoogleTokenValidator = new Mock<IGoogleTokenValidator>();

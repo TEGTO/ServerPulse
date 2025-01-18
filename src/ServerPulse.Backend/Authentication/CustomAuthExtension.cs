@@ -16,7 +16,7 @@ namespace Authentication
             services.Configure<GoogleOAuthSettings>(configuration.GetSection(GoogleOAuthSettings.SETTINGS_SECTION));
 
             services.AddScoped<IGoogleTokenValidator, GoogleTokenValidator>();
-            services.AddScoped<IGoogleOAuthHttpClient, GoogleOAuthHttpClient>();
+            services.AddScoped<IGoogleOAuthClient, GoogleOAuthClient>();
 
             return services;
         }

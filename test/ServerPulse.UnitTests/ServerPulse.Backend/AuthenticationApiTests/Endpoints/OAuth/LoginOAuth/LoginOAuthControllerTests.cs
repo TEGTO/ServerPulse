@@ -40,7 +40,6 @@ namespace AuthenticationApi.Endpoints.OAuth.LoginOAuth.Tests
             var request = new LoginOAuthRequest
             {
                 Code = "test-code",
-                CodeVerifier = "test-code-verifier",
                 RedirectUrl = "https://example.com/callback",
                 OAuthLoginProvider = OAuthLoginProvider.Google
             };
@@ -66,7 +65,7 @@ namespace AuthenticationApi.Endpoints.OAuth.LoginOAuth.Tests
                 RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(1)
             };
 
-            mockOAuthService.Setup(x => x.GetProviderModelOnCodeAsync(It.IsAny<OAuthAccessCodeParams>(), It.IsAny<CancellationToken>()))
+            mockOAuthService.Setup(x => x.GetProviderModelOnCodeAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(providerLoginModel);
 
             mockAuthService.Setup(x => x.LoginUserWithProviderAsync(providerLoginModel, It.IsAny<CancellationToken>()))
@@ -95,7 +94,6 @@ namespace AuthenticationApi.Endpoints.OAuth.LoginOAuth.Tests
             var request = new LoginOAuthRequest
             {
                 Code = "test-code",
-                CodeVerifier = "test-code-verifier",
                 RedirectUrl = "https://example.com/callback",
                 OAuthLoginProvider = (OAuthLoginProvider)999
             };
@@ -114,12 +112,11 @@ namespace AuthenticationApi.Endpoints.OAuth.LoginOAuth.Tests
             var request = new LoginOAuthRequest
             {
                 Code = "test-code",
-                CodeVerifier = "test-code-verifier",
                 RedirectUrl = "https://example.com/callback",
                 OAuthLoginProvider = OAuthLoginProvider.Google
             };
 
-            mockOAuthService.Setup(x => x.GetProviderModelOnCodeAsync(It.IsAny<OAuthAccessCodeParams>(), It.IsAny<CancellationToken>()))
+            mockOAuthService.Setup(x => x.GetProviderModelOnCodeAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((ProviderLoginModel?)null!);
 
             // Act

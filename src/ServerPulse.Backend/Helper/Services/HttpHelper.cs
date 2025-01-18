@@ -56,6 +56,8 @@ namespace Helper.Services
 
             var request = new HttpRequestMessage(httpMethod, url);
 
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
             if (accessToken != null)
             {
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);

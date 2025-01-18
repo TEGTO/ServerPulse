@@ -18,6 +18,7 @@
 	  <PackageReference Include="NUnit.Analyzers" />
 	  <PackageReference Include="NUnit3TestAdapter" />
 	  <PackageReference Include="Testcontainers.PostgreSql" />
+	  <PackageReference Include="Testcontainers.Redis" />
   </ItemGroup>
 
   <ItemGroup>

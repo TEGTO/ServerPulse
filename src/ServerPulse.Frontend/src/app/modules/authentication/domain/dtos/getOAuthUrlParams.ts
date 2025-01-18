@@ -5,5 +5,4 @@ export enum OAuthLoginProvider {
 export interface GetOAuthUrlParams {
     oAuthLoginProvider: OAuthLoginProvider;
     redirectUrl: string;
-    codeVerifier: string;
 }

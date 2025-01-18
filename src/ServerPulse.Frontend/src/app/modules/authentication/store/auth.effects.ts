@@ -213,7 +213,6 @@ export class AuthEffects {
 
                     const req: LoginOAuthRequest = {
                         code: action.code,
-                        codeVerifier: params.codeVerifier,
                         redirectUrl: params.redirectUrl,
                         oAuthLoginProvider: params.oAuthLoginProvider
                     };
@@ -245,10 +244,8 @@ export class AuthEffects {
         this.actions$.pipe(
             ofType(startOAuthLogin),
             switchMap((action) => {
-                const codeVerifier = crypto.randomUUID();
 
                 const req: GetOAuthUrlParams = {
-                    codeVerifier: codeVerifier,
                     redirectUrl: getFullOAuthRedirectPath(),
                     oAuthLoginProvider: action.loginProvider
                 };

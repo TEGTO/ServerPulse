@@ -8,24 +8,29 @@ namespace AuthenticationApi.Application.Services
 {
     public class GoogleOAuthService : IOAuthService
     {
-        private readonly IGoogleOAuthHttpClient httpClient;
+        private readonly IGoogleOAuthClient httpClient;
         private readonly IGoogleTokenValidator googleTokenValidator;
+        private readonly IStringVerifierService codeVerifierService;
         private readonly GoogleOAuthSettings oAuthSettings;
 
         public GoogleOAuthService(
-            IGoogleOAuthHttpClient httpClient,
+            IGoogleOAuthClient httpClient,
             IGoogleTokenValidator googleTokenValidator,
+            IStringVerifierService codeVerifierService,
             IOptions<GoogleOAuthSettings> options)
         {
             this.httpClient = httpClient;
             this.googleTokenValidator = googleTokenValidator;
+            this.codeVerifierService = codeVerifierService;
             oAuthSettings = options.Value;
         }
 
-        public async Task<ProviderLoginModel> GetProviderModelOnCodeAsync(OAuthAccessCodeParams requestParams, CancellationToken cancellationToken)
+        public async Task<ProviderLoginModel> GetProviderModelOnCodeAsync(string code, string redirectUrl, CancellationToken cancellationToken)
         {
-            var tokenResult = await httpClient.ExchangeAuthorizationCodeAsync
-                (requestParams.Code, requestParams.CodeVerifier, requestParams.RedirectUrl, cancellationToken);
+            var codeVerifier = await codeVerifierService.GetStringVerifierAsync(cancellationToken);
+
+            var tokenResult = await httpClient.ExchangeAuthorizationCodeAsync(
+                code, codeVerifier, redirectUrl, cancellationToken);
 
             var payload = new Payload();
 
@@ -42,9 +47,10 @@ namespace AuthenticationApi.Application.Services
             };
         }
 
-        public string GenerateOAuthRequestUrl(OAuthRequestUrlParams requestParams)
+        public async Task<string> GenerateOAuthRequestUrlAsync(string redirectUrl, CancellationToken cancellationToken)
         {
-            return httpClient.GenerateOAuthRequestUrl(oAuthSettings.Scope, requestParams.RedirectUrl, requestParams.CodeVerifier);
+            var codeVerifier = await codeVerifierService.GetStringVerifierAsync(cancellationToken);
+            return httpClient.GenerateOAuthRequestUrl(oAuthSettings.Scope, redirectUrl, codeVerifier);
         }
     }
 }

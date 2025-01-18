@@ -12,6 +12,7 @@
 	  <PackageReference Include="Microsoft.AspNetCore.HttpOverrides" />
 	  <PackageReference Include="Microsoft.AspNetCore.OutputCaching.StackExchangeRedis" />
 	  <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
+	  <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
 	  <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 

@@ -40,30 +40,6 @@ namespace AuthenticationApi.Application.Validators.Tests
         }
 
         [Test]
-        public void Should_HaveError_When_CodeVerifierIsNull()
-        {
-            var model = new LoginOAuthRequest { CodeVerifier = null! };
-            var result = validator.TestValidate(model);
-            result.ShouldHaveValidationErrorFor(x => x.CodeVerifier);
-        }
-
-        [Test]
-        public void Should_HaveError_When_CodeVerifierIsEmpty()
-        {
-            var model = new LoginOAuthRequest { CodeVerifier = "" };
-            var result = validator.TestValidate(model);
-            result.ShouldHaveValidationErrorFor(x => x.CodeVerifier);
-        }
-
-        [Test]
-        public void Should_HaveError_When_CodeVerifierExceedsMaxLength()
-        {
-            var model = new LoginOAuthRequest { CodeVerifier = new string('b', 1025) };
-            var result = validator.TestValidate(model);
-            result.ShouldHaveValidationErrorFor(x => x.CodeVerifier);
-        }
-
-        [Test]
         public void Should_HaveError_When_RedirectUrlIsNull()
         {
             var model = new LoginOAuthRequest { RedirectUrl = null! };
@@ -93,7 +69,6 @@ namespace AuthenticationApi.Application.Validators.Tests
             var model = new LoginOAuthRequest
             {
                 Code = "validCode",
-                CodeVerifier = "validCodeVerifier",
                 RedirectUrl = "http://valid-redirect-url.com",
                 OAuthLoginProvider = OAuthLoginProvider.Google
             };
@@ -101,7 +76,6 @@ namespace AuthenticationApi.Application.Validators.Tests
             var result = validator.TestValidate(model);
 
             result.ShouldNotHaveValidationErrorFor(x => x.Code);
-            result.ShouldNotHaveValidationErrorFor(x => x.CodeVerifier);
             result.ShouldNotHaveValidationErrorFor(x => x.RedirectUrl);
         }
     }

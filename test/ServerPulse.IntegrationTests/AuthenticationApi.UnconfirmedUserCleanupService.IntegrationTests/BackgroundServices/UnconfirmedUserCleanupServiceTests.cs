@@ -30,7 +30,6 @@ namespace AuthenticationApi.UnconfirmedUserCleanupService.IntegrationTests.Backg
             }, false);
 
             // Assert
-
             await Utility.WaitUntil(async () =>
             {
                 var confirmedUser = await userManager.FindByEmailAsync(confirmedEmail);
