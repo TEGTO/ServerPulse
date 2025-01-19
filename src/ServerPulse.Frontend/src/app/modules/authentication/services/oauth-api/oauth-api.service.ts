@@ -12,8 +12,7 @@ export class OauthApiService extends BaseApiService {
   getOAuthUrl(req: GetOAuthUrlParams): Observable<GetOAuthUrl> {
     const params = new HttpParams()
       .set('OAuthLoginProvider', req.oAuthLoginProvider)
-      .set('redirectUrl', req.redirectUrl)
-      .set('codeVerifier', req.codeVerifier);
+      .set('redirectUrl', req.redirectUrl);
 
     return this.httpClient.get<GetOAuthUrlResponse>(this.combinePathWithOAuthApiUrl(``), { params })
       .pipe(

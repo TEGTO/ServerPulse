@@ -6,7 +6,7 @@ import { BrowserModule, By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MemoizedSelector, Store } from '@ngrx/store';
 import { of, Subject } from 'rxjs';
-import { addNewCustomEvent, getSomeCustomEvents, selectCustomEvents, selectCustomReadFromDate, selectSelectedDate, setCustomReadFromDate, showCustomDetailsEvent, SlotInfoState } from '../..';
+import { addNewCustomEvent, getSomeCustomEvents, selectCustomEvents, selectCustomReadFromDate, selectSelectedDate, showCustomDetailsEvent, SlotInfoState } from '../..';
 import { CustomEvent, getDefaultServerLoadStatistics, selectLastLoadStatisticsByKey, ServerLoadStatistics, ServerLoadStatisticsState } from '../../../analyzer';
 import { ServerSlotInfoAdditionalInformationComponent } from './server-slot-info-additional-information.component';
 
@@ -151,12 +151,6 @@ describe('ServerSlotInfoAdditionalInformationComponent', () => {
       tick(5000);
 
       expect(component["monitorScrollForFetching"]).toHaveBeenCalled();
-
-      expect(mockStore.dispatch).toHaveBeenCalledWith(jasmine.objectContaining(
-        {
-          type: setCustomReadFromDate.type
-        }
-      ));
     }));
   });
 

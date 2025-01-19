@@ -2,12 +2,9 @@
 
 namespace AuthenticationApi.Application.Services
 {
-    public record OAuthAccessCodeParams(string Code, string CodeVerifier, string RedirectUrl);
-    public record OAuthRequestUrlParams(string RedirectUrl, string CodeVerifier);
-
     public interface IOAuthService
     {
-        public string GenerateOAuthRequestUrl(OAuthRequestUrlParams requestParams);
-        public Task<ProviderLoginModel> GetProviderModelOnCodeAsync(OAuthAccessCodeParams requestParams, CancellationToken cancellationToken);
+        public Task<string> GenerateOAuthRequestUrlAsync(string redirectUrl, CancellationToken cancellationToken);
+        public Task<ProviderLoginModel> GetProviderModelOnCodeAsync(string code, string redirectUrl, CancellationToken cancellationToken);
     }
 }

@@ -13,7 +13,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\AuthenticationApi.Application\AuthenticationApi.Application.csproj" />
 		<ProjectReference Include="..\AuthenticationApi.Core\AuthenticationApi.Core.csproj" />
+		<ProjectReference Include="..\Caching\Caching.csproj" />
+		<ProjectReference Include="..\DatabaseControl\DatabaseControl.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

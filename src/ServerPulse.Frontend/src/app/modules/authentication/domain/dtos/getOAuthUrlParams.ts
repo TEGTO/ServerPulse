@@ -1,9 +1,9 @@
 export enum OAuthLoginProvider {
-    Google
+    Google,
+    GitHub
 }
 
 export interface GetOAuthUrlParams {
     oAuthLoginProvider: OAuthLoginProvider;
     redirectUrl: string;
-    codeVerifier: string;
 }

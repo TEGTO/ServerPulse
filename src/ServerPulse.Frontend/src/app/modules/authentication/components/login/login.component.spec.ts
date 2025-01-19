@@ -131,4 +131,12 @@ describe('LoginComponent', () => {
       startOAuthLogin({ loginProvider: OAuthLoginProvider.Google })
     );
   });
+
+  it('should dispatch startOAuthLogin on github login button click', () => {
+    fixture.debugElement.query(By.css('button#github-oath-button')).nativeElement.click();
+
+    expect(storeSpy.dispatch).toHaveBeenCalledWith(
+      startOAuthLogin({ loginProvider: OAuthLoginProvider.GitHub })
+    );
+  });
 });

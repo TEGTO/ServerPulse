@@ -26,7 +26,6 @@ namespace AuthenticationApi.IntegrationTests.Controllers.OAuthController
             var request = new LoginOAuthRequest
             {
                 Code = "somecode",
-                CodeVerifier = "someverifier",
                 RedirectUrl = "someurl",
                 OAuthLoginProvider = OAuthLoginProvider.Google,
             };
@@ -54,7 +53,6 @@ namespace AuthenticationApi.IntegrationTests.Controllers.OAuthController
             var request = new LoginOAuthRequest
             {
                 Code = "someinvalidcode",
-                CodeVerifier = "someinvalidverifier",
                 RedirectUrl = "someinvalidurl",
                 OAuthLoginProvider = OAuthLoginProvider.Google,
             };
@@ -76,7 +74,6 @@ namespace AuthenticationApi.IntegrationTests.Controllers.OAuthController
             var request = new LoginOAuthRequest
             {
                 Code = "",
-                CodeVerifier = "",
                 RedirectUrl = "",
             };
 

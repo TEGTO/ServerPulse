@@ -28,6 +28,18 @@ builder.Services.AddHttpClientHelperServiceWithResilience(builder.Configuration)
 builder.Services.AddFeatureManagement();
 
 builder.AddApplicationServices();
+builder.AddInfrastructureServices();
+
+#region Caching
+
+builder.Services.AddStackExchangeRedisCache(
+    options =>
+    {
+        options.Configuration =
+            builder.Configuration.GetConnectionString(InfrastructureKeys.REDIS_SERVER_CONNECTION_STRING);
+    });
+
+#endregion
 
 #region Identity 
 

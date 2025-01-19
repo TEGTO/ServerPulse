@@ -25,7 +25,6 @@
   <ItemGroup>
     <ProjectReference Include="..\AuthenticationApi.Application\AuthenticationApi.Application.csproj" />
     <ProjectReference Include="..\AuthenticationApi.Infrastructure\AuthenticationApi.Infrastructure.csproj" />
-    <ProjectReference Include="..\DatabaseControl\DatabaseControl.csproj" />
   </ItemGroup>
 
 </Project>

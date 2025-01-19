@@ -9,8 +9,6 @@ namespace Caching
     {
         public static async ValueTask<T?> TryGetAsync<T>(this ICacheService service, string key, CancellationToken cancellationToken)
         {
-            ArgumentNullException.ThrowIfNull(service);
-
             var value = await service.GetAsync(key, cancellationToken);
             if (string.IsNullOrEmpty(value))
             {
@@ -26,10 +24,9 @@ namespace Caching
                 return default;
             }
         }
+
         public static async Task<bool> TrySetAsync<T>(this ICacheService service, string key, T value, TimeSpan duration, CancellationToken cancellationToken)
         {
-            ArgumentNullException.ThrowIfNull(service);
-
             string serializedValue;
             try
             {

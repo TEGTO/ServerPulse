@@ -67,6 +67,10 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
   }
 
+  gitHubOAuthLogin(): void {
+    this.store.dispatch(startOAuthLogin({ loginProvider: OAuthLoginProvider.GitHub }));
+  }
+
   googleOAuthLogin(): void {
     this.store.dispatch(startOAuthLogin({ loginProvider: OAuthLoginProvider.Google }));
   }

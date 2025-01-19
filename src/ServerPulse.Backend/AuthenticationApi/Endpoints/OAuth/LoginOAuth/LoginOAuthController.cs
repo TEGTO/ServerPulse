@@ -17,7 +17,9 @@ namespace AuthenticationApi.Endpoints.OAuth.LoginOAuth
         private readonly IAuthService authService;
         private readonly IMapper mapper;
 
-        public LoginOAuthController(Dictionary<OAuthLoginProvider, IOAuthService> oAuthServices, IAuthService authService, IMapper mapper)
+        public LoginOAuthController(Dictionary<OAuthLoginProvider, IOAuthService> oAuthServices,
+            IAuthService authService,
+            IMapper mapper)
         {
             this.oAuthServices = oAuthServices;
             this.authService = authService;
@@ -28,7 +30,7 @@ namespace AuthenticationApi.Endpoints.OAuth.LoginOAuth
         public async Task<ActionResult<LoginOAuthResponse>> LoginOAuth(LoginOAuthRequest request, CancellationToken cancellationToken)
         {
             var loginModel = await oAuthServices[request.OAuthLoginProvider].GetProviderModelOnCodeAsync(
-                new OAuthAccessCodeParams(request.Code, request.CodeVerifier, request.RedirectUrl), cancellationToken);
+                request.Code, request.RedirectUrl, cancellationToken);
 
             if (loginModel == null)
             {

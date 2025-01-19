@@ -3,7 +3,7 @@ using static Google.Apis.Auth.GoogleJsonWebSignature;
 
 namespace Authentication.OAuth.Google
 {
-    public class GoogleTokenValidator : IGoogleTokenValidator
+    public sealed class GoogleTokenValidator : IGoogleTokenValidator
     {
         public async Task<Payload> ValidateAsync(string idToken, ValidationSettings settings)
         {

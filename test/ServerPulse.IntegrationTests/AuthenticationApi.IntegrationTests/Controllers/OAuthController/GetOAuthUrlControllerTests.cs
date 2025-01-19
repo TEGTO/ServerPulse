@@ -27,15 +27,13 @@ namespace AuthenticationApi.IntegrationTests.Controllers.OAuthController
             {
                 OAuthLoginProvider = OAuthLoginProvider.Google,
                 RedirectUrl = "someurl",
-                CodeVerifier = "someverifier"
             };
 
             using var httpRequest = new HttpRequestMessage(HttpMethod.Get, QueryHelpers.AddQueryString("/oauth",
                 new Dictionary<string, string?>
                 {
-                    {"OAuthLoginProvider", requestParams.OAuthLoginProvider.ToString() },
-                    {"RedirectUrl", requestParams.RedirectUrl },
-                    {"CodeVerifier", requestParams.CodeVerifier }
+                    { "OAuthLoginProvider", requestParams.OAuthLoginProvider.ToString() },
+                    { "RedirectUrl", requestParams.RedirectUrl },
                 }
             ));
 
@@ -61,15 +59,13 @@ namespace AuthenticationApi.IntegrationTests.Controllers.OAuthController
             {
                 OAuthLoginProvider = OAuthLoginProvider.Google,
                 RedirectUrl = "",
-                CodeVerifier = ""
             };
 
             using var httpRequest = new HttpRequestMessage(HttpMethod.Get, QueryHelpers.AddQueryString("/oauth",
                 new Dictionary<string, string?>
                 {
-                    {"OAuthLoginProvider", requestParams.OAuthLoginProvider.ToString() },
-                    {"RedirectUrl", requestParams.RedirectUrl },
-                    {"CodeVerifier", requestParams.CodeVerifier }
+                    { "OAuthLoginProvider", requestParams.OAuthLoginProvider.ToString() },
+                    { "RedirectUrl", requestParams.RedirectUrl },
                 }
             ));
 

@@ -27,7 +27,7 @@ namespace AuthenticationApi.Endpoints.OAuth.GetOAuthUrl.Tests
         }
 
         [Test]
-        public void GetOAuthUrl_ValidRequest_ReturnsOkWithCorrectUrl()
+        public async Task GetOAuthUrlAsync_ValidRequest_ReturnsOkWithCorrectUrl()
         {
             // Arrange
             var expectedUrl = "https://accounts.google.com/o/oauth2/v2/auth?client_id=test-client-id";
@@ -36,14 +36,13 @@ namespace AuthenticationApi.Endpoints.OAuth.GetOAuthUrl.Tests
             {
                 OAuthLoginProvider = OAuthLoginProvider.Google,
                 RedirectUrl = "https://example.com/callback",
-                CodeVerifier = "google-code-verifier"
             };
 
-            mockGoogleOAuthService.Setup(service => service.GenerateOAuthRequestUrl(It.IsAny<OAuthRequestUrlParams>()))
-                .Returns(expectedUrl);
+            mockGoogleOAuthService.Setup(service => service.GenerateOAuthRequestUrlAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedUrl);
 
             // Act
-            var result = controller.GetOAuthUrl(request);
+            var result = await controller.GetOAuthUrlAsync(request, CancellationToken.None);
 
             // Assert
             Assert.That(result.Result, Is.InstanceOf<OkObjectResult>());
@@ -55,20 +54,19 @@ namespace AuthenticationApi.Endpoints.OAuth.GetOAuthUrl.Tests
         }
 
         [Test]
-        public void GetOAuthUrl_InvalidOAuthProvider_ThrowsKeyNotFoundException()
+        public void GetOAuthUrlAsync_InvalidOAuthProvider_ThrowsKeyNotFoundException()
         {
             // Arrange
             var request = new GetOAuthUrlParams
             {
                 OAuthLoginProvider = (OAuthLoginProvider)999,
                 RedirectUrl = "https://example.com/callback",
-                CodeVerifier = "invalid-provider-verifier"
             };
 
             // Act & Assert
-            Assert.Throws<KeyNotFoundException>(() =>
+            Assert.ThrowsAsync<KeyNotFoundException>(async () =>
             {
-                controller.GetOAuthUrl(request);
+                await controller.GetOAuthUrlAsync(request, CancellationToken.None);
             });
         }
     }

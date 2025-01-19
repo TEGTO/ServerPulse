@@ -20,12 +20,12 @@ namespace AuthenticationApi.Endpoints.OAuth.GetOAuthUrl
         }
 
         [HttpGet]
-        public ActionResult<GetOAuthUrlResponse> GetOAuthUrl([FromQuery] GetOAuthUrlParams queryParams)
+        public async Task<ActionResult<GetOAuthUrlResponse>> GetOAuthUrlAsync([FromQuery] GetOAuthUrlParams queryParams, CancellationToken cancellationToken)
         {
             var oathProvider = queryParams.OAuthLoginProvider;
 
-            var url = oAuthServices[oathProvider].GenerateOAuthRequestUrl(
-                new OAuthRequestUrlParams(queryParams.RedirectUrl!, queryParams.CodeVerifier!));
+            var url = await oAuthServices[oathProvider]
+                .GenerateOAuthRequestUrlAsync(queryParams.RedirectUrl, cancellationToken);
 
             return Ok(new GetOAuthUrlResponse { Url = url });
         }

@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Testcontainers.PostgreSql;
+using Testcontainers.Redis;
 using ApplicationKeys = AuthenticationApi.Application.ConfigurationKeys;
 using InfrastructureKeys = AuthenticationApi.Infrastructure.ConfigurationKeys;
 
@@ -16,6 +17,7 @@ namespace AuthenticationApi.UnconfirmedUserCleanupService.IntegrationTests
 {
     internal sealed class WebAppFactoryWrapper : IAsyncDisposable
     {
+        private RedisContainer? RedisContainer { get; set; }
         private PostgreSqlContainer? DbContainer { get; set; }
         private WebApplicationFactory<Program>? WebApplicationFactory { get; set; }
 
@@ -31,6 +33,12 @@ namespace AuthenticationApi.UnconfirmedUserCleanupService.IntegrationTests
 
         public async ValueTask DisposeAsync()
         {
+            if (RedisContainer != null)
+            {
+                await RedisContainer.StopAsync();
+                await RedisContainer.DisposeAsync();
+            }
+
             if (DbContainer != null)
             {
                 await DbContainer.StopAsync();
@@ -46,6 +54,10 @@ namespace AuthenticationApi.UnconfirmedUserCleanupService.IntegrationTests
 
         private async Task InitializeContainersAsync()
         {
+            RedisContainer = new RedisBuilder()
+               .WithImage("redis:7.4")
+               .Build();
+
             DbContainer = new PostgreSqlBuilder()
                 .WithImage("postgres:17")
                 .WithDatabase($"authbackgroundservice-db")
@@ -53,6 +65,7 @@ namespace AuthenticationApi.UnconfirmedUserCleanupService.IntegrationTests
                 .WithPassword("postgres")
                 .Build();
 
+            await RedisContainer.StartAsync();
             await DbContainer.StartAsync();
         }
 
@@ -80,6 +93,7 @@ namespace AuthenticationApi.UnconfirmedUserCleanupService.IntegrationTests
             var configuration = new Dictionary<string, string?>
             {
                 { $"ConnectionStrings:{InfrastructureKeys.AUTH_DATABASE_CONNECTION_STRING}", DbContainer?.GetConnectionString() },
+                { $"ConnectionStrings:{InfrastructureKeys.REDIS_SERVER_CONNECTION_STRING}",  RedisContainer?.GetConnectionString() },
                 { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.PrivateKey)}", TestRsaKeys.PRIVATE_KEY },
                 { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.PublicKey)}", TestRsaKeys.PUBLIC_KEY },
                 { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.Audience)}", "https://api.example.com" },
