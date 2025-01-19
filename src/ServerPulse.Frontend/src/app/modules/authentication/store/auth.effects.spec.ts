@@ -356,7 +356,6 @@ describe('AuthEffects', () => {
         it('should dispatch loginUserSuccess on successful OAuth login', () => {
             const code = 'sampleCode';
             const oauthParams = {
-                codeVerifier: 'codeVerifier',
                 redirectUrl: 'redirectUrl',
                 oAuthLoginProvider: OAuthLoginProvider.Google,
             };
@@ -374,7 +373,6 @@ describe('AuthEffects', () => {
                 expect(action).toEqual(loginUserSuccess({ authData }));
                 expect(oauthApiServiceSpy.loginUserOAuth).toHaveBeenCalledWith({
                     code,
-                    codeVerifier: oauthParams.codeVerifier,
                     redirectUrl: oauthParams.redirectUrl,
                     oAuthLoginProvider: oauthParams.oAuthLoginProvider,
                 });
@@ -394,7 +392,6 @@ describe('AuthEffects', () => {
         it('should dispatch authFailure on API error', () => {
             const code = 'sampleCode';
             const oauthParams = {
-                codeVerifier: 'codeVerifier',
                 redirectUrl: 'redirectUrl',
                 oAuthLoginProvider: 'Google',
             };

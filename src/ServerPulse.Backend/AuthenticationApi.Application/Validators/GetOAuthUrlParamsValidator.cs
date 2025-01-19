@@ -8,7 +8,6 @@ namespace AuthenticationApi.Application.Validators
         public GetOAuthUrlParamsValidator()
         {
             RuleFor(x => x.RedirectUrl).NotNull().NotEmpty().MaximumLength(1024);
-            RuleFor(x => x.CodeVerifier).NotNull().NotEmpty().MaximumLength(1024);
         }
     }
 }

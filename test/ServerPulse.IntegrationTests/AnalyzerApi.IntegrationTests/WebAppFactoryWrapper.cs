@@ -90,7 +90,7 @@ namespace AnalyzerApi.IntegrationTests
                  { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.CustomTopic)}", "CustomEventTopic_" },
                  { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.LoadMethodStatisticsTopic)}", "LoadMethodStatisticsTopic_" },
                  { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.TopicDataSaveInDays)}", "365" },
-                 { $"ConnectionStrings:{CacheSettings.REDIS_SERVER_CONNECTION_STRING}",  RedisContainer?.GetConnectionString()},
+                 { $"ConnectionStrings:{CacheSettings.REDIS_SERVER_CONNECTION_STRING}",  RedisContainer?.GetConnectionString() },
                  { $"{CacheSettings.SETTINGS_SECTION}:{nameof(CacheSettings.GetDailyLoadAmountStatisticsExpiryInMinutes)}", "5" },
                  { $"{CacheSettings.SETTINGS_SECTION}:{nameof(CacheSettings.GetLoadAmountStatisticsInRangeExpiryInMinutes)}", "5" },
                  { $"{CacheSettings.SETTINGS_SECTION}:{nameof(CacheSettings.GetLoadEventsInDataRangeExpiryInMinutes)}", "5" },

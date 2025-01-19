@@ -40,7 +40,6 @@ describe('OauthApiService', () => {
     const requestParams: GetOAuthUrlParams = {
       oAuthLoginProvider: OAuthLoginProvider.Google,
       redirectUrl: 'https://redirect-url.com',
-      codeVerifier: 'code-verifier',
     };
     const response = { url: 'https://oauth-login-url.com' };
 
@@ -51,8 +50,7 @@ describe('OauthApiService', () => {
     const req = httpTestingController.expectOne((req) =>
       req.url === expectedUrl &&
       req.params.get('OAuthLoginProvider') === OAuthLoginProvider.Google.toString() &&
-      req.params.get('redirectUrl') === requestParams.redirectUrl &&
-      req.params.get('codeVerifier') === requestParams.codeVerifier
+      req.params.get('redirectUrl') === requestParams.redirectUrl
     );
 
     expect(req.request.method).toBe('GET');
@@ -64,7 +62,6 @@ describe('OauthApiService', () => {
     const expectedUrl = `/api/oauth`;
     const request: LoginOAuthRequest = {
       code: 'auth-code',
-      codeVerifier: 'code-verifier',
       redirectUrl: 'https://redirect-url.com',
       oAuthLoginProvider: OAuthLoginProvider.Google,
     };
@@ -89,11 +86,10 @@ describe('OauthApiService', () => {
   });
 
   it('should handle error on fetch OAuth URL', () => {
-    const expectedUrl = `/api/oauth?OAuthLoginProvider=0&redirectUrl=https://redirect-url.com&codeVerifier=code-verifier`;
+    const expectedUrl = `/api/oauth?OAuthLoginProvider=0&redirectUrl=https://redirect-url.com`;
     const requestParams: GetOAuthUrlParams = {
       oAuthLoginProvider: OAuthLoginProvider.Google,
       redirectUrl: 'https://redirect-url.com',
-      codeVerifier: 'code-verifier',
     };
 
     service.getOAuthUrl(requestParams).subscribe({
@@ -111,7 +107,6 @@ describe('OauthApiService', () => {
     const expectedUrl = `/api/oauth`;
     const request: LoginOAuthRequest = {
       code: 'auth-code',
-      codeVerifier: 'code-verifier',
       redirectUrl: 'https://redirect-url.com',
       oAuthLoginProvider: OAuthLoginProvider.Google,
     };
