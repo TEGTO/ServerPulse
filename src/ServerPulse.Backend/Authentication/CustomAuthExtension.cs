@@ -1,4 +1,5 @@
-﻿using Authentication.OAuth.Google;
+﻿using Authentication.OAuth.GitHub;
+using Authentication.OAuth.Google;
 using Authentication.Token;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -14,9 +15,13 @@ namespace Authentication
         public static IServiceCollection AddOAuthServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.Configure<GoogleOAuthSettings>(configuration.GetSection(GoogleOAuthSettings.SETTINGS_SECTION));
+            services.Configure<GitHubOAuthSettings>(configuration.GetSection(GitHubOAuthSettings.SETTINGS_SECTION));
 
             services.AddScoped<IGoogleTokenValidator, GoogleTokenValidator>();
             services.AddScoped<IGoogleOAuthClient, GoogleOAuthClient>();
+
+            services.AddScoped<IGitHubOAuthClient, GitHubOAuthClient>();
+            services.AddScoped<IGitHubApiClient, GitHubApiClient>();
 
             return services;
         }

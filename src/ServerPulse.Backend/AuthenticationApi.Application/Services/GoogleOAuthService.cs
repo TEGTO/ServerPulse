@@ -8,33 +8,39 @@ namespace AuthenticationApi.Application.Services
 {
     public class GoogleOAuthService : IOAuthService
     {
-        private readonly IGoogleOAuthClient httpClient;
-        private readonly IGoogleTokenValidator googleTokenValidator;
-        private readonly IStringVerifierService codeVerifierService;
+        private readonly IGoogleOAuthClient oauthClient;
+        private readonly IGoogleTokenValidator tokenValidator;
+        private readonly IStringVerifierService stringVerifier;
         private readonly GoogleOAuthSettings oAuthSettings;
 
         public GoogleOAuthService(
-            IGoogleOAuthClient httpClient,
-            IGoogleTokenValidator googleTokenValidator,
-            IStringVerifierService codeVerifierService,
+            IGoogleOAuthClient oauthClient,
+            IGoogleTokenValidator tokenValidator,
+            IStringVerifierService stringVerifier,
             IOptions<GoogleOAuthSettings> options)
         {
-            this.httpClient = httpClient;
-            this.googleTokenValidator = googleTokenValidator;
-            this.codeVerifierService = codeVerifierService;
+            this.oauthClient = oauthClient;
+            this.tokenValidator = tokenValidator;
+            this.stringVerifier = stringVerifier;
             oAuthSettings = options.Value;
+        }
+
+        public async Task<string> GenerateOAuthRequestUrlAsync(string redirectUrl, CancellationToken cancellationToken)
+        {
+            var codeVerifier = await stringVerifier.GetStringVerifierAsync(cancellationToken);
+            return oauthClient.GenerateOAuthRequestUrl(oAuthSettings.Scope, redirectUrl, codeVerifier);
         }
 
         public async Task<ProviderLoginModel> GetProviderModelOnCodeAsync(string code, string redirectUrl, CancellationToken cancellationToken)
         {
-            var codeVerifier = await codeVerifierService.GetStringVerifierAsync(cancellationToken);
+            var codeVerifier = await stringVerifier.GetStringVerifierAsync(cancellationToken);
 
-            var tokenResult = await httpClient.ExchangeAuthorizationCodeAsync(
+            var tokenResult = await oauthClient.ExchangeAuthorizationCodeAsync(
                 code, codeVerifier, redirectUrl, cancellationToken);
 
             var payload = new Payload();
 
-            payload = await googleTokenValidator.ValidateAsync(tokenResult?.IdToken ?? "", new ValidationSettings
+            payload = await tokenValidator.ValidateAsync(tokenResult?.IdToken ?? "", new ValidationSettings
             {
                 Audience = [oAuthSettings.ClientId],
             });
@@ -45,12 +51,6 @@ namespace AuthenticationApi.Application.Services
                 ProviderLogin = nameof(OAuthLoginProvider.Google),
                 ProviderKey = payload.Subject
             };
-        }
-
-        public async Task<string> GenerateOAuthRequestUrlAsync(string redirectUrl, CancellationToken cancellationToken)
-        {
-            var codeVerifier = await codeVerifierService.GetStringVerifierAsync(cancellationToken);
-            return httpClient.GenerateOAuthRequestUrl(oAuthSettings.Scope, redirectUrl, codeVerifier);
         }
     }
 }

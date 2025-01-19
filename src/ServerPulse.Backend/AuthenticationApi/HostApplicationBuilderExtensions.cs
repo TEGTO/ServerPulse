@@ -1,5 +1,4 @@
-﻿using Authentication.OAuth.Google;
-using AuthenticationApi.Application;
+﻿using AuthenticationApi.Application;
 using AuthenticationApi.Application.Services;
 using AuthenticationApi.Core.Enums;
 using AuthenticationApi.Infrastructure.Services;
@@ -19,10 +18,12 @@ namespace AuthenticationApi
             if (isOAuthEnabled)
             {
                 builder.Services.AddScoped<GoogleOAuthService>();
-                builder.Services.AddScoped<IGoogleOAuthClient, GoogleOAuthClient>();
+                builder.Services.AddScoped<GitHubOAuthService>();
+
                 builder.Services.AddScoped(provider => new Dictionary<OAuthLoginProvider, IOAuthService>
                 {
                     { OAuthLoginProvider.Google, provider.GetService<GoogleOAuthService>()! },
+                    { OAuthLoginProvider.GitHub, provider.GetService<GitHubOAuthService>()! },
                 });
             }
             else

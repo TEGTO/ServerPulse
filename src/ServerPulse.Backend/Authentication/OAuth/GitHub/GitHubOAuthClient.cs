@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 
 namespace Authentication.OAuth.GitHub
 {
-    public class GitHubOAuthClient
+    public sealed class GitHubOAuthClient : IGitHubOAuthClient
     {
         private const string TOKEN_SERVER_ENDPOINT = "https://github.com/login/oauth/access_token";
         private const string OAUTH_SERVER_ENDPOINT = "https://github.com/login/oauth/authorize";

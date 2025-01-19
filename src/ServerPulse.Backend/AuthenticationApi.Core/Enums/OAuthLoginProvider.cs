@@ -2,6 +2,6 @@
 {
     public enum OAuthLoginProvider
     {
-        Google
+        Google, GitHub
     }
 }

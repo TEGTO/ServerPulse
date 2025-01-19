@@ -1,5 +1,6 @@
 export enum OAuthLoginProvider {
-    Google
+    Google,
+    GitHub
 }
 
 export interface GetOAuthUrlParams {

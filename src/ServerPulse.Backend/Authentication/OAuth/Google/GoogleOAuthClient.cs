@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 
 namespace Authentication.OAuth.Google
 {
-    public class GoogleOAuthClient : IGoogleOAuthClient
+    public sealed class GoogleOAuthClient : IGoogleOAuthClient
     {
         private const string TOKEN_SERVER_ENDPOINT = "https://oauth2.googleapis.com/token";
         private const string OAUTH_SERVER_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
