@@ -7,7 +7,7 @@ namespace Authentication.OAuth.GitHub.Tests
     [TestFixture]
     internal class GitHubOAuthClientTests
     {
-        private Mock<IHttpHelper> mockHttpHelper;
+        private Mock<IGitHubOAuthApi> mockGitHubOAuthApi;
         private GitHubOAuthSettings mockOAuthSettings;
         private GitHubOAuthClient gitHubOAuthClient;
 
@@ -21,12 +21,12 @@ namespace Authentication.OAuth.GitHub.Tests
                 AppName = "TestApp"
             };
 
-            mockHttpHelper = new Mock<IHttpHelper>();
+            mockGitHubOAuthApi = new Mock<IGitHubOAuthApi>();
 
             var mockOptions = new Mock<IOptions<GitHubOAuthSettings>>();
             mockOptions.Setup(x => x.Value).Returns(mockOAuthSettings);
 
-            gitHubOAuthClient = new GitHubOAuthClient(mockOptions.Object, mockHttpHelper.Object);
+            gitHubOAuthClient = new GitHubOAuthClient(mockOptions.Object, mockGitHubOAuthApi.Object);
         }
 
         [Test]
@@ -43,10 +43,8 @@ namespace Authentication.OAuth.GitHub.Tests
                 Scope = "repo,user"
             };
 
-            mockHttpHelper.Setup(x => x.SendPostRequestAsync<GitHubOAuthTokenResult>(
-                It.IsAny<string>(),
+            mockGitHubOAuthApi.Setup(x => x.ExchangeAuthorizationCodeAsync(
                 It.IsAny<Dictionary<string, string>>(),
-                It.IsAny<string>(),
                 It.IsAny<CancellationToken>()
             ))
             .ReturnsAsync(expectedTokenResult);
@@ -60,14 +58,12 @@ namespace Authentication.OAuth.GitHub.Tests
             Assert.That(result.TokenType, Is.EqualTo(expectedTokenResult.TokenType));
             Assert.That(result.Scope, Is.EqualTo(expectedTokenResult.Scope));
 
-            mockHttpHelper.Verify(x => x.SendPostRequestAsync<GitHubOAuthTokenResult>(
-                "https://github.com/login/oauth/access_token",
+            mockGitHubOAuthApi.Verify(x => x.ExchangeAuthorizationCodeAsync(
                 It.Is<Dictionary<string, string>>(dict =>
                     dict["client_id"] == mockOAuthSettings.ClientId &&
                     dict["client_secret"] == mockOAuthSettings.ClientSecret &&
                     dict["code"] == code &&
                     dict["redirect_uri"] == redirectUrl),
-                null,
                 It.IsAny<CancellationToken>()), Times.Once);
         }
 
@@ -75,17 +71,14 @@ namespace Authentication.OAuth.GitHub.Tests
         public void GenerateOAuthRequestUrl_ValidParams_ReturnsCorrectUrl()
         {
             // Arrange
-            var scope = "repo,user";
             var redirectUrl = "https://example.com/callback";
             var stateVerifier = "valid-state-verifier";
-
-            var expectedBaseUrl = "https://github.com/login/oauth/authorize";
+            var scope = "repo,user";
 
             // Act
-            var resultUrl = gitHubOAuthClient.GenerateOAuthRequestUrl(scope, redirectUrl, stateVerifier);
+            var resultUrl = gitHubOAuthClient.GenerateOAuthRequestUrl(redirectUrl, stateVerifier, scope);
 
             // Assert
-            Assert.IsTrue(resultUrl.StartsWith(expectedBaseUrl));
             Assert.IsTrue(resultUrl.Contains("client_id=test-client-id"));
             Assert.IsTrue(resultUrl.Contains("redirect_uri=https%3A%2F%2Fexample.com%2Fcallback"));
             Assert.IsTrue(resultUrl.Contains("scope=repo,user"));

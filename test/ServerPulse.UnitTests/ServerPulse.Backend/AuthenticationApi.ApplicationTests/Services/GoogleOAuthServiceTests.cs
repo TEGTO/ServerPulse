@@ -1,6 +1,5 @@
 ﻿using Authentication.OAuth.Google;
 using AuthenticationApi.Core.Enums;
-using Microsoft.Extensions.Options;
 using Moq;
 using System.ComponentModel.DataAnnotations;
 using static Google.Apis.Auth.GoogleJsonWebSignature;
@@ -13,31 +12,19 @@ namespace AuthenticationApi.Application.Services.Tests
         private Mock<IGoogleOAuthClient> httpClientMock;
         private Mock<IGoogleTokenValidator> googleTokenValidatorMock;
         private Mock<IStringVerifierService> stringVerifierMock;
-        private GoogleOAuthSettings googleOAuthSettings;
         private GoogleOAuthService googleOAuthService;
 
         [SetUp]
         public void SetUp()
         {
-            googleOAuthSettings = new GoogleOAuthSettings
-            {
-                ClientId = "test-client-id",
-                ClientSecret = "some-secret",
-                Scope = "test-scope"
-            };
-
             httpClientMock = new Mock<IGoogleOAuthClient>();
             googleTokenValidatorMock = new Mock<IGoogleTokenValidator>();
             stringVerifierMock = new Mock<IStringVerifierService>();
-            var optionsMock = new Mock<IOptions<GoogleOAuthSettings>>();
-
-            optionsMock.Setup(x => x.Value).Returns(googleOAuthSettings);
 
             googleOAuthService = new GoogleOAuthService(
                 httpClientMock.Object,
                 googleTokenValidatorMock.Object,
-                stringVerifierMock.Object,
-                optionsMock.Object
+                stringVerifierMock.Object
             );
         }
 
@@ -62,7 +49,7 @@ namespace AuthenticationApi.Application.Services.Tests
                 .ReturnsAsync(tokenResult);
 
             googleTokenValidatorMock
-                .Setup(x => x.ValidateAsync(tokenResult.IdToken, It.IsAny<ValidationSettings>()))
+                .Setup(x => x.ValidateAsync(tokenResult.IdToken))
                 .ReturnsAsync(payload);
 
             // Act
@@ -75,7 +62,7 @@ namespace AuthenticationApi.Application.Services.Tests
             Assert.That(result.ProviderKey, Is.EqualTo("subject-id"));
 
             httpClientMock.Verify(x => x.ExchangeAuthorizationCodeAsync(code, It.IsAny<string>(), redirectUrl, It.IsAny<CancellationToken>()), Times.Once);
-            googleTokenValidatorMock.Verify(x => x.ValidateAsync("test-id-token", It.IsAny<ValidationSettings>()), Times.Once);
+            googleTokenValidatorMock.Verify(x => x.ValidateAsync("test-id-token"), Times.Once);
             stringVerifierMock.Verify(x => x.GetStringVerifierAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
@@ -95,7 +82,7 @@ namespace AuthenticationApi.Application.Services.Tests
                 .ReturnsAsync(tokenResult);
 
             googleTokenValidatorMock
-                .Setup(x => x.ValidateAsync(tokenResult.IdToken, It.IsAny<ValidationSettings>()))
+                .Setup(x => x.ValidateAsync(tokenResult.IdToken))
                 .ThrowsAsync(new ValidationException("Invalid token"));
 
             // Act & Assert
@@ -103,7 +90,7 @@ namespace AuthenticationApi.Application.Services.Tests
                 await googleOAuthService.GetProviderModelOnCodeAsync(code, redirectUrl, CancellationToken.None));
 
             httpClientMock.Verify(x => x.ExchangeAuthorizationCodeAsync(code, It.IsAny<string>(), redirectUrl, It.IsAny<CancellationToken>()), Times.Once);
-            googleTokenValidatorMock.Verify(x => x.ValidateAsync("invalid-id-token", It.IsAny<ValidationSettings>()), Times.Once);
+            googleTokenValidatorMock.Verify(x => x.ValidateAsync("invalid-id-token"), Times.Once);
             stringVerifierMock.Verify(x => x.GetStringVerifierAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 

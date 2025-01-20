@@ -70,8 +70,7 @@ namespace AuthenticationApi.IntegrationTests
 
                     mockGoogleTokenValidator = new Mock<IGoogleTokenValidator>();
                     mockGoogleTokenValidator.Setup(x => x.ValidateAsync(
-                        It.IsAny<string>(),
-                        It.IsAny<ValidationSettings>()
+                        It.IsAny<string>()
                     ))
                     .ReturnsAsync(new Payload
                     {
@@ -82,7 +81,6 @@ namespace AuthenticationApi.IntegrationTests
                     var mockEmailSender = new Mock<IEmailSender>();
 
                     mockBackgroundJobClient = new Mock<IBackgroundJobClient>();
-
 
                     services.AddScoped(_ => mockGoogleOAuthHttpClient.Object);
                     services.AddScoped(_ => mockGoogleTokenValidator.Object);

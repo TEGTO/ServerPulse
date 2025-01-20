@@ -6,19 +6,22 @@ namespace Authentication.OAuth.Google
 {
     public sealed class GoogleOAuthClient : IGoogleOAuthClient
     {
-        private const string TOKEN_SERVER_ENDPOINT = "https://oauth2.googleapis.com/token";
-        private const string OAUTH_SERVER_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
-        private readonly IHttpHelper httpHelperService;
+        private readonly IGoogleOAuthApi googleOAuthApi;
         private readonly GoogleOAuthSettings oAuthSettings;
 
-        public GoogleOAuthClient(IOptions<GoogleOAuthSettings> options, IHttpHelper httpHelperService)
+        public GoogleOAuthClient(IOptions<GoogleOAuthSettings> options, IGoogleOAuthApi googleOAuthApi)
         {
             oAuthSettings = options.Value;
-            this.httpHelperService = httpHelperService;
+            this.googleOAuthApi = googleOAuthApi;
         }
 
-        public string GenerateOAuthRequestUrl(string scope, string redirectUrl, string codeVerifier)
+        public string GenerateOAuthRequestUrl(string redirectUrl, string codeVerifier, string? scope = null)
         {
+            if (string.IsNullOrEmpty(scope))
+            {
+                scope = oAuthSettings.Scope;
+            }
+
             var codeChallenge = HashHelper.ComputeHash(codeVerifier);
 
             var queryParams = new Dictionary<string, string?>
@@ -32,7 +35,7 @@ namespace Authentication.OAuth.Google
                 {"access_type", "offline" }
             };
 
-            var url = QueryHelpers.AddQueryString(OAUTH_SERVER_ENDPOINT, queryParams);
+            var url = QueryHelpers.AddQueryString(oAuthSettings.GoogleOAuthTokenUrl, queryParams);
             return url;
         }
 
@@ -49,8 +52,7 @@ namespace Authentication.OAuth.Google
                 { "redirect_uri", redirectUrl }
             };
 
-            return await httpHelperService.SendPostRequestAsync<GoogleOAuthTokenResult>(
-                TOKEN_SERVER_ENDPOINT, authParams, cancellationToken: cancellationToken);
+            return await googleOAuthApi.ExchangeAuthorizationCodeAsync(authParams, cancellationToken);
         }
     }
 }

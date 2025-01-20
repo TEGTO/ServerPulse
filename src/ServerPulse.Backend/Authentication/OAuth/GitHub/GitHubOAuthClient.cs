@@ -6,19 +6,22 @@ namespace Authentication.OAuth.GitHub
 {
     public sealed class GitHubOAuthClient : IGitHubOAuthClient
     {
-        private const string TOKEN_SERVER_ENDPOINT = "https://github.com/login/oauth/access_token";
-        private const string OAUTH_SERVER_ENDPOINT = "https://github.com/login/oauth/authorize";
-        private readonly IHttpHelper httpHelperService;
+        private readonly IGitHubOAuthApi gitHubOAuthApi;
         private readonly GitHubOAuthSettings oAuthSettings;
 
-        public GitHubOAuthClient(IOptions<GitHubOAuthSettings> options, IHttpHelper httpHelperService)
+        public GitHubOAuthClient(IOptions<GitHubOAuthSettings> options, IGitHubOAuthApi gitHubOAuthApi)
         {
             oAuthSettings = options.Value;
-            this.httpHelperService = httpHelperService;
+            this.gitHubOAuthApi = gitHubOAuthApi;
         }
 
-        public string GenerateOAuthRequestUrl(string scope, string redirectUrl, string stateVerifier)
+        public string GenerateOAuthRequestUrl(string redirectUrl, string stateVerifier, string? scope = null)
         {
+            if (string.IsNullOrEmpty(scope))
+            {
+                scope = oAuthSettings.Scope;
+            }
+
             var state = HashHelper.ComputeHash(stateVerifier);
 
             var queryParams = new Dictionary<string, string?>
@@ -29,7 +32,7 @@ namespace Authentication.OAuth.GitHub
                 {"state", state },
             };
 
-            var url = QueryHelpers.AddQueryString(OAUTH_SERVER_ENDPOINT, queryParams);
+            var url = QueryHelpers.AddQueryString(oAuthSettings.GitHubOAuthApiUrl, queryParams);
             return url;
         }
 
@@ -44,8 +47,7 @@ namespace Authentication.OAuth.GitHub
                 { "redirect_uri", redirectUrl },
             };
 
-            return await httpHelperService.SendPostRequestAsync<GitHubOAuthTokenResult>(
-                TOKEN_SERVER_ENDPOINT, authParams, cancellationToken: cancellationToken);
+            return await gitHubOAuthApi.ExchangeAuthorizationCodeAsync(authParams, cancellationToken);
         }
     }
 }

@@ -88,7 +88,7 @@ namespace Shared
                                 Id = "Bearer"
                             }
                         },
-                        new string[]{}
+                        Array.Empty<string>()
                     }
                 });
             });

@@ -21,7 +21,6 @@ namespace Authentication
             services.AddScoped<IGoogleOAuthClient, GoogleOAuthClient>();
 
             services.AddScoped<IGitHubOAuthClient, GitHubOAuthClient>();
-            services.AddScoped<IGitHubApiClient, GitHubApiClient>();
 
             return services;
         }

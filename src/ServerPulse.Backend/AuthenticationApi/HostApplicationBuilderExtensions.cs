@@ -1,7 +1,11 @@
-﻿using AuthenticationApi.Application;
+﻿using Authentication.OAuth.GitHub;
+using Authentication.OAuth.Google;
+using AuthenticationApi.Application;
 using AuthenticationApi.Application.Services;
 using AuthenticationApi.Core.Enums;
 using AuthenticationApi.Infrastructure.Services;
+using Microsoft.Extensions.Options;
+using Refit;
 
 namespace AuthenticationApi
 {
@@ -37,6 +41,27 @@ namespace AuthenticationApi
         public static IHostApplicationBuilder AddInfrastructureServices(this IHostApplicationBuilder builder)
         {
             builder.Services.AddScoped<IStringVerifierService, StringVerifierService>();
+
+            builder.Services.AddRefitClient<IGitHubOAuthApi>()
+                .ConfigureHttpClient((sp, httpClient) =>
+                {
+                    var settings = sp.GetRequiredService<IOptions<GitHubOAuthSettings>>().Value;
+                    httpClient.BaseAddress = new Uri(settings.GitHubOAuthApiUrl);
+                }).AddStandardResilienceHandler();
+
+            builder.Services.AddRefitClient<IGitHubApi>()
+            .ConfigureHttpClient((sp, httpClient) =>
+            {
+                var settings = sp.GetRequiredService<IOptions<GitHubOAuthSettings>>().Value;
+                httpClient.BaseAddress = new Uri(settings.GitHubApiUrl);
+            }).AddStandardResilienceHandler();
+
+            builder.Services.AddRefitClient<IGoogleOAuthApi>()
+           .ConfigureHttpClient((sp, httpClient) =>
+           {
+               var settings = sp.GetRequiredService<IOptions<GoogleOAuthSettings>>().Value;
+               httpClient.BaseAddress = new Uri(settings.GoogleOAuthUrl);
+           }).AddStandardResilienceHandler();
 
             return builder;
         }

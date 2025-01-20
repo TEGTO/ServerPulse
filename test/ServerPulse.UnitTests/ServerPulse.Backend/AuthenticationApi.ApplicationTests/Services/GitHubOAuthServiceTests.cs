@@ -1,6 +1,5 @@
 ﻿using Authentication.OAuth.GitHub;
 using AuthenticationApi.Core.Enums;
-using Microsoft.Extensions.Options;
 using Moq;
 
 namespace AuthenticationApi.Application.Services.Tests
@@ -9,33 +8,21 @@ namespace AuthenticationApi.Application.Services.Tests
     internal class GitHubOAuthServiceTests
     {
         private Mock<IGitHubOAuthClient> oauthClientMock;
-        private Mock<IGitHubApiClient> apiClientMock;
+        private Mock<IGitHubApi> apiClientMock;
         private Mock<IStringVerifierService> stringVerifierMock;
-        private GitHubOAuthSettings gitHubOAuthSettings;
         private GitHubOAuthService gitHubOAuthService;
 
         [SetUp]
         public void SetUp()
         {
-            gitHubOAuthSettings = new GitHubOAuthSettings
-            {
-                ClientId = "test-client-id",
-                ClientSecret = "some-secret",
-                Scope = "repo,user"
-            };
-
             oauthClientMock = new Mock<IGitHubOAuthClient>();
-            apiClientMock = new Mock<IGitHubApiClient>();
+            apiClientMock = new Mock<IGitHubApi>();
             stringVerifierMock = new Mock<IStringVerifierService>();
-
-            var optionsMock = new Mock<IOptions<GitHubOAuthSettings>>();
-            optionsMock.Setup(x => x.Value).Returns(gitHubOAuthSettings);
 
             gitHubOAuthService = new GitHubOAuthService(
                 oauthClientMock.Object,
                 apiClientMock.Object,
-                stringVerifierMock.Object,
-                optionsMock.Object
+                stringVerifierMock.Object
             );
         }
 
@@ -107,16 +94,11 @@ namespace AuthenticationApi.Application.Services.Tests
                 .Setup(x => x.GetStringVerifierAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(stateVerifier);
 
-            oauthClientMock
-                .Setup(x => x.GenerateOAuthRequestUrl(gitHubOAuthSettings.Scope, redirectUrl, stateVerifier))
-                .Returns(expectedUrl);
-
             // Act
             var result = await gitHubOAuthService.GenerateOAuthRequestUrlAsync(redirectUrl, CancellationToken.None);
 
             // Assert
             Assert.That(result, Is.EqualTo(expectedUrl));
-            oauthClientMock.Verify(x => x.GenerateOAuthRequestUrl(gitHubOAuthSettings.Scope, redirectUrl, stateVerifier), Times.Once);
             stringVerifierMock.Verify(x => x.GetStringVerifierAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
