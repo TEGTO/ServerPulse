@@ -63,8 +63,8 @@ namespace AuthenticationApi.IntegrationTests
                     var expectedUrl = "https://oauth.example.com/auth?client_id=someClientId&redirect_uri=someurl&response_type=code&scope=email&code_challenge=hashedVerifier&code_challenge_method=S256&access_type=offline";
 
                     mockGoogleOAuthHttpClient.Setup(x => x.GenerateOAuthRequestUrl(
-                        It.IsAny<string>(),
                         "someurl",
+                        It.IsAny<string>(),
                         It.IsAny<string>()
                     )).Returns(expectedUrl);
 

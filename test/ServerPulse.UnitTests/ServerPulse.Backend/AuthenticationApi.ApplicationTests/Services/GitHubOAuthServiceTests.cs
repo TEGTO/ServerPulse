@@ -94,6 +94,10 @@ namespace AuthenticationApi.Application.Services.Tests
                 .Setup(x => x.GetStringVerifierAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(stateVerifier);
 
+            oauthClientMock
+            .Setup(x => x.GenerateOAuthRequestUrl(redirectUrl, stateVerifier, It.IsAny<string>()))
+            .Returns(expectedUrl);
+
             // Act
             var result = await gitHubOAuthService.GenerateOAuthRequestUrlAsync(redirectUrl, CancellationToken.None);
 

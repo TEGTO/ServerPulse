@@ -9,7 +9,7 @@ namespace AuthenticationApi.Application.Services.Tests
     [TestFixture]
     internal class GoogleOAuthServiceTests
     {
-        private Mock<IGoogleOAuthClient> httpClientMock;
+        private Mock<IGoogleOAuthClient> googleClienttMock;
         private Mock<IGoogleTokenValidator> googleTokenValidatorMock;
         private Mock<IStringVerifierService> stringVerifierMock;
         private GoogleOAuthService googleOAuthService;
@@ -17,12 +17,12 @@ namespace AuthenticationApi.Application.Services.Tests
         [SetUp]
         public void SetUp()
         {
-            httpClientMock = new Mock<IGoogleOAuthClient>();
+            googleClienttMock = new Mock<IGoogleOAuthClient>();
             googleTokenValidatorMock = new Mock<IGoogleTokenValidator>();
             stringVerifierMock = new Mock<IStringVerifierService>();
 
             googleOAuthService = new GoogleOAuthService(
-                httpClientMock.Object,
+                googleClienttMock.Object,
                 googleTokenValidatorMock.Object,
                 stringVerifierMock.Object
             );
@@ -44,7 +44,7 @@ namespace AuthenticationApi.Application.Services.Tests
             var code = "test-code";
             var redirectUrl = "http://test-redirect.com";
 
-            httpClientMock
+            googleClienttMock
                 .Setup(x => x.ExchangeAuthorizationCodeAsync(code, It.IsAny<string>(), redirectUrl, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(tokenResult);
 
@@ -61,7 +61,7 @@ namespace AuthenticationApi.Application.Services.Tests
             Assert.That(result.ProviderLogin, Is.EqualTo(nameof(OAuthLoginProvider.Google)));
             Assert.That(result.ProviderKey, Is.EqualTo("subject-id"));
 
-            httpClientMock.Verify(x => x.ExchangeAuthorizationCodeAsync(code, It.IsAny<string>(), redirectUrl, It.IsAny<CancellationToken>()), Times.Once);
+            googleClienttMock.Verify(x => x.ExchangeAuthorizationCodeAsync(code, It.IsAny<string>(), redirectUrl, It.IsAny<CancellationToken>()), Times.Once);
             googleTokenValidatorMock.Verify(x => x.ValidateAsync("test-id-token"), Times.Once);
             stringVerifierMock.Verify(x => x.GetStringVerifierAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
@@ -77,7 +77,7 @@ namespace AuthenticationApi.Application.Services.Tests
             var code = "test-code";
             var redirectUrl = "http://test-redirect.com";
 
-            httpClientMock
+            googleClienttMock
                 .Setup(x => x.ExchangeAuthorizationCodeAsync(code, It.IsAny<string>(), redirectUrl, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(tokenResult);
 
@@ -89,7 +89,7 @@ namespace AuthenticationApi.Application.Services.Tests
             Assert.ThrowsAsync<ValidationException>(async () =>
                 await googleOAuthService.GetProviderModelOnCodeAsync(code, redirectUrl, CancellationToken.None));
 
-            httpClientMock.Verify(x => x.ExchangeAuthorizationCodeAsync(code, It.IsAny<string>(), redirectUrl, It.IsAny<CancellationToken>()), Times.Once);
+            googleClienttMock.Verify(x => x.ExchangeAuthorizationCodeAsync(code, It.IsAny<string>(), redirectUrl, It.IsAny<CancellationToken>()), Times.Once);
             googleTokenValidatorMock.Verify(x => x.ValidateAsync("invalid-id-token"), Times.Once);
             stringVerifierMock.Verify(x => x.GetStringVerifierAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
@@ -100,8 +100,8 @@ namespace AuthenticationApi.Application.Services.Tests
             // Arrange
             var redirectUrl = "http://test-redirect.com";
 
-            httpClientMock
-                .Setup(x => x.GenerateOAuthRequestUrl("test-scope", redirectUrl, It.IsAny<string>()))
+            googleClienttMock
+                .Setup(x => x.GenerateOAuthRequestUrl(redirectUrl, It.IsAny<string>(), It.IsAny<string>()))
                 .Returns("http://generated-url.com");
 
             // Act
@@ -109,7 +109,7 @@ namespace AuthenticationApi.Application.Services.Tests
 
             // Assert
             Assert.That(result, Is.EqualTo("http://generated-url.com"));
-            httpClientMock.Verify(x => x.GenerateOAuthRequestUrl("test-scope", redirectUrl, It.IsAny<string>()), Times.Once);
+            googleClienttMock.Verify(x => x.GenerateOAuthRequestUrl(redirectUrl, It.IsAny<string>(), It.IsAny<string>()), Times.Once);
             stringVerifierMock.Verify(x => x.GetStringVerifierAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
     }

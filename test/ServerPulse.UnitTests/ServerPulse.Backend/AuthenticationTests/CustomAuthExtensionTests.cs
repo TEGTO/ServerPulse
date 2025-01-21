@@ -1,4 +1,5 @@
-﻿using Authentication.OAuth.Google;
+﻿using Authentication.OAuth.GitHub;
+using Authentication.OAuth.Google;
 using Authentication.Token;
 using AuthenticationTests;
 using Helper.Services;
@@ -25,6 +26,8 @@ namespace Authentication.Tests
         public void SetUp()
         {
             var mockHttpHelper = new Mock<IHttpHelper>();
+            var mockGitHubOAuthApi = new Mock<IGitHubOAuthApi>();
+            var mockGoogleOAuthApi = new Mock<IGoogleOAuthApi>();
 
             services = new ServiceCollection();
 
@@ -61,6 +64,9 @@ namespace Authentication.Tests
 
             services.AddSingleton(configuration);
             services.AddSingleton(mockHttpHelper.Object);
+            services.AddSingleton(mockGitHubOAuthApi.Object);
+            services.AddSingleton(mockGoogleOAuthApi.Object);
+
             services.AddAuthentication();
             services.AddAuthorization();
         }
