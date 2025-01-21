@@ -2,7 +2,6 @@
 using Authentication.OAuth.Google;
 using Authentication.Token;
 using AuthenticationTests;
-using Helper.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -25,7 +24,6 @@ namespace Authentication.Tests
         [SetUp]
         public void SetUp()
         {
-            var mockHttpHelper = new Mock<IHttpHelper>();
             var mockGitHubOAuthApi = new Mock<IGitHubOAuthApi>();
             var mockGoogleOAuthApi = new Mock<IGoogleOAuthApi>();
 
@@ -63,7 +61,6 @@ namespace Authentication.Tests
             configuration = new ConfigurationBuilder().AddInMemoryCollection(inMemorySettings!).Build();
 
             services.AddSingleton(configuration);
-            services.AddSingleton(mockHttpHelper.Object);
             services.AddSingleton(mockGitHubOAuthApi.Object);
             services.AddSingleton(mockGoogleOAuthApi.Object);
 

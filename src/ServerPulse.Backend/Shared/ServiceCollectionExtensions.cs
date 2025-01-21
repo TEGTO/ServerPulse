@@ -1,7 +1,5 @@
 ﻿using FluentValidation;
 using FluentValidation.AspNetCore;
-using Helper;
-using Helper.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
@@ -23,13 +21,6 @@ namespace Shared
 
             ValidatorOptions.Global.LanguageManager.Enabled = false;
 
-            return services;
-        }
-
-        public static IServiceCollection AddHttpClientHelperServiceWithResilience(this IServiceCollection services, IConfiguration configuration)
-        {
-            services.AddHttpClient(HelperConfigurationKeys.HTTP_CLIENT_HELPER).AddStandardResilienceHandler();
-            services.AddSingleton<IHttpHelper, HttpHelper>();
             return services;
         }
 

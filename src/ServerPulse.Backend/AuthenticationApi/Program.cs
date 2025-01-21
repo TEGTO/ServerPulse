@@ -24,7 +24,6 @@ builder.Services.AddDbContextFactory<AuthIdentityDbContext>(
     "AuthenticationApi"
 );
 
-builder.Services.AddHttpClientHelperServiceWithResilience(builder.Configuration);
 builder.Services.AddFeatureManagement();
 
 builder.AddApplicationServices();

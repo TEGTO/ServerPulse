@@ -10,7 +10,6 @@
 		<PackageReference Include="Newtonsoft.Json" />
 		<PackageReference Include="IdentityModel" />
 		<PackageReference Include="Refit.HttpClientFactory" />
-		<PackageReference Include="Swashbuckle.AspNetCore" />
 	</ItemGroup>
 
 </Project>

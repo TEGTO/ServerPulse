@@ -1,21 +1,15 @@
-﻿namespace Helper.DelegatingHandlers
+﻿using System.Net.Http.Headers;
+
+namespace Helper.DelegatingHandlers
 {
     public class AuthenticatedHttpClientHandler : DelegatingHandler
     {
-        private readonly Func<Task<string>> getAccessToken;
-
-        public AuthenticatedHttpClientHandler(Func<Task<string>> getAccessToken)
-        {
-            this.getAccessToken = getAccessToken;
-        }
-
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var accessToken = await getAccessToken();
-
-            if (!string.IsNullOrEmpty(accessToken))
+            if (request.Headers.Authorization != null && !request.Headers.Authorization.Scheme.Contains("Bearer"))
             {
-                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+                var token = request.Headers.Authorization.Scheme;
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             }
 
             return await base.SendAsync(request, cancellationToken);

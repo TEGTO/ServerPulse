@@ -33,7 +33,7 @@ namespace AuthenticationApi.Application.Services
 
             if (tokenResult == null || string.IsNullOrEmpty(tokenResult.AccessToken))
             {
-                throw new InvalidOperationException("Can't get the user aceess token!");
+                throw new InvalidOperationException("Can't get the user access token!");
             }
 
             var result = await gitHubApi.GetUserInfoAsync(tokenResult.AccessToken, cancellationToken);

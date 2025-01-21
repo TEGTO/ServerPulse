@@ -1,8 +1,10 @@
 ﻿using Confluent.Kafka;
 using MessageBus;
+using Refit;
+using ServerMonitorApi.Infrastructure;
 using ServerMonitorApi.Infrastructure.Services;
 using ServerMonitorApi.Infrastructure.Settings;
-using Shared;
+using System.Net.Http.Headers;
 
 namespace ServerMonitorApi
 {
@@ -10,8 +12,14 @@ namespace ServerMonitorApi
     {
         public static IHostApplicationBuilder AddInfrastructureServices(this IHostApplicationBuilder builder)
         {
-            builder.Services.AddHttpClientHelperServiceWithResilience(builder.Configuration);
             var kafkaSettings = builder.Configuration.GetSection(KafkaSettings.SETTINGS_SECTION).Get<KafkaSettings>();
+
+            builder.Services.AddRefitClient<IServerSlotApi>()
+              .ConfigureHttpClient((sp, httpClient) =>
+              {
+                  httpClient.BaseAddress = new Uri(builder.Configuration[ConfigurationKeys.SERVER_SLOT_URL]!);
+                  httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+              }).AddStandardResilienceHandler();
 
             ArgumentNullException.ThrowIfNull(kafkaSettings);
 

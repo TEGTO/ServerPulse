@@ -32,7 +32,7 @@ namespace Authentication.OAuth.GitHub
                 {"state", state },
             };
 
-            var url = QueryHelpers.AddQueryString(oAuthSettings.GitHubOAuthApiUrl, queryParams);
+            var url = QueryHelpers.AddQueryString(oAuthSettings.GitHubOAuthApiUrl + "/authorize", queryParams);
             return url;
         }
 

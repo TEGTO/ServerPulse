@@ -4,8 +4,11 @@ using AuthenticationApi.Application;
 using AuthenticationApi.Application.Services;
 using AuthenticationApi.Core.Enums;
 using AuthenticationApi.Infrastructure.Services;
+using Helper.DelegatingHandlers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Refit;
+using System.Net.Http.Headers;
 
 namespace AuthenticationApi
 {
@@ -47,21 +50,32 @@ namespace AuthenticationApi
                 {
                     var settings = sp.GetRequiredService<IOptions<GitHubOAuthSettings>>().Value;
                     httpClient.BaseAddress = new Uri(settings.GitHubOAuthApiUrl);
+
+                    httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 }).AddStandardResilienceHandler();
 
+            builder.Services.AddTransient<AuthenticatedHttpClientHandler>();
             builder.Services.AddRefitClient<IGitHubApi>()
-            .ConfigureHttpClient((sp, httpClient) =>
-            {
-                var settings = sp.GetRequiredService<IOptions<GitHubOAuthSettings>>().Value;
-                httpClient.BaseAddress = new Uri(settings.GitHubApiUrl);
-            }).AddStandardResilienceHandler();
+                .ConfigureHttpClient((sp, httpClient) =>
+                {
+                    var settings = sp.GetRequiredService<IOptions<GitHubOAuthSettings>>().Value;
+                    httpClient.BaseAddress = new Uri(settings.GitHubApiUrl);
+
+                    httpClient.DefaultRequestHeaders.Add("User-Agent", settings.AppName);
+                    httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                })
+                .AddHttpMessageHandler<AuthenticatedHttpClientHandler>()
+                .AddStandardResilienceHandler();
 
             builder.Services.AddRefitClient<IGoogleOAuthApi>()
-           .ConfigureHttpClient((sp, httpClient) =>
-           {
-               var settings = sp.GetRequiredService<IOptions<GoogleOAuthSettings>>().Value;
-               httpClient.BaseAddress = new Uri(settings.GoogleOAuthUrl);
-           }).AddStandardResilienceHandler();
+                .ConfigureHttpClient((sp, httpClient) =>
+                {
+                    var settings = sp.GetRequiredService<IOptions<GoogleOAuthSettings>>().Value;
+                    httpClient.BaseAddress = new Uri(settings.GoogleOAuthUrl);
+
+                    httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                }).AddStandardResilienceHandler();
 
             return builder;
         }

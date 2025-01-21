@@ -102,6 +102,7 @@ namespace AuthenticationApi.IntegrationTests
                 { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.Issuer)}", "https://token.issuer.example.com" },
                 { $"{GitHubOAuthSettings.SETTINGS_SECTION}:{nameof(GitHubOAuthSettings.GitHubOAuthApiUrl)}", "https://api.example.com" },
                 { $"{GitHubOAuthSettings.SETTINGS_SECTION}:{nameof(GitHubOAuthSettings.GitHubApiUrl)}", "https://api.example.com" },
+                { $"{GitHubOAuthSettings.SETTINGS_SECTION}:{nameof(GitHubOAuthSettings.AppName)}", "AppName" },
                 { $"{GoogleOAuthSettings.SETTINGS_SECTION}:{nameof(GoogleOAuthSettings.GoogleOAuthUrl)}", "https://api.example.com" },
                 { $"{GoogleOAuthSettings.SETTINGS_SECTION}:{nameof(GoogleOAuthSettings.GoogleOAuthTokenUrl)}", "https://api.example.com" },
                 { $"{JwtSettings.SETTINGS_SECTION}:{nameof(JwtSettings.ExpiryInMinutes)}", "30" },

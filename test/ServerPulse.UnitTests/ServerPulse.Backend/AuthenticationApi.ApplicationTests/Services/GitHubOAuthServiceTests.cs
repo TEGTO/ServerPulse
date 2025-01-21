@@ -78,7 +78,7 @@ namespace AuthenticationApi.Application.Services.Tests
             var ex = Assert.ThrowsAsync<InvalidOperationException>(async () =>
                 await gitHubOAuthService.GetProviderModelOnCodeAsync(code, redirectUrl, CancellationToken.None));
 
-            Assert.That(ex.Message, Is.EqualTo("Can't get the user aceess token!"));
+            Assert.That(ex.Message, Is.EqualTo("Can't get the user access token!"));
             oauthClientMock.Verify(x => x.ExchangeAuthorizationCodeAsync(code, redirectUrl, It.IsAny<CancellationToken>()), Times.Once);
         }
 

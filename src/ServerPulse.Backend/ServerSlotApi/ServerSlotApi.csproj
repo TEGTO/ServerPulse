@@ -24,7 +24,6 @@
 	  <ProjectReference Include="..\Authentication\Authentication.csproj" />
 	  <ProjectReference Include="..\Caching\Caching.csproj" />
 	  <ProjectReference Include="..\DatabaseControl\DatabaseControl.csproj" />
-	  <ProjectReference Include="..\Helper\Helper.csproj" />
 	  <ProjectReference Include="..\ServerSlotApi.Application\ServerSlotApi.Application.csproj" />
 	  <ProjectReference Include="..\ServerSlotApi.Infrastructure\ServerSlotApi.Infrastructure.csproj" />
 	  <ProjectReference Include="..\Shared\Shared.csproj" />

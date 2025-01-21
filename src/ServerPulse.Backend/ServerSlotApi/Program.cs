@@ -14,8 +14,6 @@ builder.Host.AddLogging();
 
 builder.AddInfrastructureServices();
 
-builder.Services.AddHttpClientHelperServiceWithResilience(builder.Configuration);
-
 builder.Services.ConfigureIdentityServices(builder.Configuration);
 
 builder.Services.AddAutoMapper(AssemblyReference.Assembly);

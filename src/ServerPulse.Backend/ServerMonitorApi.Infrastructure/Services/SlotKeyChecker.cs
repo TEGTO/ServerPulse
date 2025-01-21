@@ -1,19 +1,14 @@
-﻿using Helper.Services;
-using Microsoft.Extensions.Configuration;
-using ServerSlotApi.Core.Dtos.Endpoints.Slot.CheckSlotKey;
-using System.Text.Json;
+﻿using ServerSlotApi.Core.Dtos.Endpoints.Slot.CheckSlotKey;
 
 namespace ServerMonitorApi.Infrastructure.Services
 {
     public class SlotKeyChecker : ISlotKeyChecker
     {
-        private readonly IHttpHelper httpHelper;
-        private readonly string slotCheckerUrl;
+        private readonly IServerSlotApi serverSlotApi;
 
-        public SlotKeyChecker(IHttpHelper httpHelper, IConfiguration configuration)
+        public SlotKeyChecker(IServerSlotApi serverSlotApi)
         {
-            this.httpHelper = httpHelper;
-            slotCheckerUrl = $"{configuration[ConfigurationKeys.SERVER_SLOT_URL]}{configuration[ConfigurationKeys.SERVER_SLOT_ALIVE_CHECKER]}";
+            this.serverSlotApi = serverSlotApi;
         }
 
         public async Task<bool> CheckSlotKeyAsync(string key, CancellationToken cancellationToken)
@@ -23,11 +18,7 @@ namespace ServerMonitorApi.Infrastructure.Services
                 SlotKey = key,
             };
 
-            var response = await httpHelper.SendPostRequestAsync<CheckSlotKeyResponse>(
-                slotCheckerUrl,
-                JsonSerializer.Serialize(checkServerSlotRequest),
-                cancellationToken: cancellationToken
-            );
+            var response = await serverSlotApi.CheckSlotKeyAsync(checkServerSlotRequest, cancellationToken);
 
             if (response != null && response.IsExisting)
             {

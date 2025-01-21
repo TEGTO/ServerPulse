@@ -67,7 +67,6 @@ services:
       - MessageBus__LoadTopicProcess=${MessageBus__LoadTopicProcess}
       - MessageBus__CustomTopic=${MessageBus__CustomTopic}
       - ServerSlotApi__Url=${ServerSlotApi__Url}
-      - ServerSlotApi__Check=${ServerSlotApi__Check}
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
