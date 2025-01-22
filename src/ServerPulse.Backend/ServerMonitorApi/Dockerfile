@@ -10,10 +10,14 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["Directory.Packages.props", "."]
+COPY ["Directory.Build.props", "."]
 COPY ["ServerMonitorApi/ServerMonitorApi.csproj", "ServerMonitorApi/"]
 COPY ["Authentication/Authentication.csproj", "Authentication/"]
 COPY ["Helper/Helper.csproj", "Helper/"]
+COPY ["HttpCommunication/HttpCommunication.csproj", "HttpCommunication/"]
+COPY ["Documentation/Documentation.csproj", "Documentation/"]
 COPY ["MessageBus/MessageBus.csproj", "MessageBus/"]
+COPY ["Proxies/Proxies.csproj", "Proxies/"]
 COPY ["Resilience/Resilience.csproj", "Resilience/"]
 COPY ["ServerMonitorApi.Infrastructure/ServerMonitorApi.Infrastructure.csproj", "ServerMonitorApi.Infrastructure/"]
 COPY ["ServerSlotApi.Core/ServerSlotApi.Core.csproj", "ServerSlotApi.Core/"]

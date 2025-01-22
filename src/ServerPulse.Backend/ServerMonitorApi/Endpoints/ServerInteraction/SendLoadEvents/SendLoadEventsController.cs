@@ -1,9 +1,11 @@
 ﻿using EventCommunication;
+using ExceptionHandling;
 using MessageBus.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using ServerMonitorApi.Infrastructure.Services;
 using ServerMonitorApi.Settings;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Text.Json;
 
 namespace ServerMonitorApi.Endpoints.ServerInteraction.SendLoadEvents
@@ -27,6 +29,14 @@ namespace ServerMonitorApi.Endpoints.ServerInteraction.SendLoadEvents
         }
 
         [HttpPost("load")]
+        [SwaggerOperation(
+            Summary = "Send a load event.",
+            Description = "Validates and sends load event from the user to the system."
+        )]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> SendLoadEvents(LoadEvent[] events, CancellationToken cancellationToken)
         {
             if (events != null && events.Length > 0)

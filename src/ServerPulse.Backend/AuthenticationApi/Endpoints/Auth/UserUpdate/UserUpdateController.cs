@@ -3,8 +3,10 @@ using AuthenticationApi.Application.Services;
 using AuthenticationApi.Core.Dtos.Endpoints.Auth.UserUpdate;
 using AuthenticationApi.Core.Models;
 using AutoMapper;
+using ExceptionHandling;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace AuthenticationApi.Endpoints.Auth.UserUpdate
 {
@@ -23,6 +25,15 @@ namespace AuthenticationApi.Endpoints.Auth.UserUpdate
 
         [Authorize]
         [HttpPut("update")]
+        [SwaggerOperation(
+            Summary = "Update User.",
+            Description = "Updates the user data."
+        )]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string[]), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UserUpdate(UserUpdateRequest request, CancellationToken cancellationToken)
         {
             var updateModel = mapper.Map<UserUpdateModel>(request);

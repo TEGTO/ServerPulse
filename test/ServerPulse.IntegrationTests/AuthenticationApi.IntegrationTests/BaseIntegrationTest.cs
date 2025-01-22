@@ -63,15 +63,14 @@ namespace AuthenticationApi.IntegrationTests
                     var expectedUrl = "https://oauth.example.com/auth?client_id=someClientId&redirect_uri=someurl&response_type=code&scope=email&code_challenge=hashedVerifier&code_challenge_method=S256&access_type=offline";
 
                     mockGoogleOAuthHttpClient.Setup(x => x.GenerateOAuthRequestUrl(
-                        It.IsAny<string>(),
                         "someurl",
+                        It.IsAny<string>(),
                         It.IsAny<string>()
                     )).Returns(expectedUrl);
 
                     mockGoogleTokenValidator = new Mock<IGoogleTokenValidator>();
                     mockGoogleTokenValidator.Setup(x => x.ValidateAsync(
-                        It.IsAny<string>(),
-                        It.IsAny<ValidationSettings>()
+                        It.IsAny<string>()
                     ))
                     .ReturnsAsync(new Payload
                     {
@@ -82,7 +81,6 @@ namespace AuthenticationApi.IntegrationTests
                     var mockEmailSender = new Mock<IEmailSender>();
 
                     mockBackgroundJobClient = new Mock<IBackgroundJobClient>();
-
 
                     services.AddScoped(_ => mockGoogleOAuthHttpClient.Object);
                     services.AddScoped(_ => mockGoogleTokenValidator.Object);

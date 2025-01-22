@@ -8,7 +8,7 @@ namespace AnalyzerApi.Application
 {
     internal static class Extensions
     {
-        public static bool TryDeserializeEventWrapper<T, Y>(this ConsumeResponse response, IMapper mapper, out Y wrapper)
+        public static bool TryDeserializeEventWrapper<T, Y>(this ConsumeResponse response, IMapper mapper, out Y? wrapper)
             where T : BaseEvent
             where Y : BaseEventWrapper
         {

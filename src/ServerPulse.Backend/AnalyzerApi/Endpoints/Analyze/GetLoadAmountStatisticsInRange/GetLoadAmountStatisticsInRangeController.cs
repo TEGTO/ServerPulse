@@ -3,8 +3,10 @@ using AnalyzerApi.Core.Dtos.Endpoints.Analyze.GetLoadAmountStatisticsInRange;
 using AnalyzerApi.Core.Dtos.Responses.Statistics;
 using AnalyzerApi.Core.Models;
 using AutoMapper;
+using ExceptionHandling;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace AnalyzerApi.Endpoints.Analyze.GetLoadAmountStatisticsInRange
 {
@@ -24,6 +26,13 @@ namespace AnalyzerApi.Endpoints.Analyze.GetLoadAmountStatisticsInRange
         [OutputCache(PolicyName = "GetLoadAmountStatisticsInRangePolicy")]
         [Route("amountrange")]
         [HttpPost]
+        [SwaggerOperation(
+            Summary = "Retrieve load event amount in date range.",
+            Description = "Fetches the number of load events recorded in date range."
+        )]
+        [ProducesResponseType(typeof(IEnumerable<LoadAmountStatisticsResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IEnumerable<LoadAmountStatisticsResponse>>> GetLoadAmountStatisticsInRange(
             GetLoadAmountStatisticsInRangeRequest request, CancellationToken cancellationToken)
         {

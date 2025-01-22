@@ -15,9 +15,13 @@ services:
       - AuthSettings__Issuer=${AuthSettings__Issuer}
       - AuthSettings__ExpiryInMinutes=${AuthSettings__ExpiryInMinutes}
       - AuthSettings__RefreshExpiryInDays=${AuthSettings__RefreshExpiryInDays}
+      - AuthSettings__GoogleOAuth__GoogleOAuthUrl=${AuthSettings__GoogleOAuth__GoogleOAuthUrl}
+      - AuthSettings__GoogleOAuth__GoogleOAuthTokenUrl=${AuthSettings__GoogleOAuth__GoogleOAuthTokenUrl}
       - AuthSettings__GoogleOAuth__ClientId=${AuthSettings__GoogleOAuth__ClientId}
       - AuthSettings__GoogleOAuth__ClientSecret=${AuthSettings__GoogleOAuth__ClientSecret}
       - AuthSettings__GoogleOAuth__Scope=${AuthSettings__GoogleOAuth__Scope}
+      - AuthSettings__GitHubOAuth__GitHubOAuthApiUrl=${AuthSettings__GitHubOAuth__GitHubOAuthApiUrl}
+      - AuthSettings__GitHubOAuth__GitHubApiUrl=${AuthSettings__GitHubOAuth__GitHubApiUrl}
       - AuthSettings__GitHubOAuth__ClientId=${AuthSettings__GitHubOAuth__ClientId}
       - AuthSettings__GitHubOAuth__ClientSecret=${AuthSettings__GitHubOAuth__ClientSecret}
       - AuthSettings__GitHubOAuth__Scope=${AuthSettings__GitHubOAuth__Scope}
@@ -63,7 +67,6 @@ services:
       - MessageBus__LoadTopicProcess=${MessageBus__LoadTopicProcess}
       - MessageBus__CustomTopic=${MessageBus__CustomTopic}
       - ServerSlotApi__Url=${ServerSlotApi__Url}
-      - ServerSlotApi__Check=${ServerSlotApi__Check}
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro

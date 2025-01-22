@@ -1,20 +1,20 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Authentication.OAuth.Google
 {
     public class GoogleOAuthTokenResult
     {
-        [JsonProperty("access_token")]
+        [JsonPropertyName("access_token")]
         public string? AccessToken { get; set; }
-        [JsonProperty("expires_in")]
+        [JsonPropertyName("expires_in")]
         public double ExpiresInSeconds { get; set; }
-        [JsonProperty("id_token")]
+        [JsonPropertyName("id_token")]
         public string? IdToken { get; set; }
-        [JsonProperty("refresh_token")]
+        [JsonPropertyName("refresh_token")]
         public string? RefreshToken { get; set; }
-        [JsonProperty("scope")]
+        [JsonPropertyName("scope")]
         public string? Scope { get; set; }
-        [JsonProperty("token_type")]
+        [JsonPropertyName("token_type")]
         public string? TokenType { get; set; }
     }
 }

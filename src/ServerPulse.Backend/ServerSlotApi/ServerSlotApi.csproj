@@ -1,10 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-	<WarningsAsErrors>CS8618;CS8601;CS8602;CS8603;CS8604</WarningsAsErrors>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
     <UserSecretsId>95b93b2f-1968-4ce3-9cbd-409e42ee31f4</UserSecretsId>
@@ -24,7 +20,7 @@
 	  <ProjectReference Include="..\Authentication\Authentication.csproj" />
 	  <ProjectReference Include="..\Caching\Caching.csproj" />
 	  <ProjectReference Include="..\DatabaseControl\DatabaseControl.csproj" />
-	  <ProjectReference Include="..\Helper\Helper.csproj" />
+	  <ProjectReference Include="..\Documentation\Documentation.csproj" />
 	  <ProjectReference Include="..\ServerSlotApi.Application\ServerSlotApi.Application.csproj" />
 	  <ProjectReference Include="..\ServerSlotApi.Infrastructure\ServerSlotApi.Infrastructure.csproj" />
 	  <ProjectReference Include="..\Shared\Shared.csproj" />

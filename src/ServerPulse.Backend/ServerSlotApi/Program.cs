@@ -1,5 +1,6 @@
 using Authentication;
 using DatabaseControl;
+using Documentation;
 using ExceptionHandling;
 using Logging;
 using ServerSlotApi;
@@ -14,8 +15,6 @@ builder.Host.AddLogging();
 
 builder.AddInfrastructureServices();
 
-builder.Services.AddHttpClientHelperServiceWithResilience(builder.Configuration);
-
 builder.Services.ConfigureIdentityServices(builder.Configuration);
 
 builder.Services.AddAutoMapper(AssemblyReference.Assembly);
@@ -27,7 +26,7 @@ builder.Services.AddEndpointsApiExplorer();
 
 if (builder.Environment.IsDevelopment())
 {
-    builder.Services.AddSwagger("Server Slot API");
+    builder.AddDocumentation("Server Slot API");
 }
 
 var app = builder.Build();

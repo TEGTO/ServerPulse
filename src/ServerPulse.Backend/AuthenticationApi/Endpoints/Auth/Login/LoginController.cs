@@ -3,8 +3,10 @@ using AuthenticationApi.Application.Services;
 using AuthenticationApi.Core.Dtos.Endpoints.Auth.Login;
 using AuthenticationApi.Core.Models;
 using AutoMapper;
+using ExceptionHandling;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace AuthenticationApi.Endpoints.Auth.Login
 {
@@ -24,6 +26,14 @@ namespace AuthenticationApi.Endpoints.Auth.Login
         }
 
         [HttpPost("login")]
+        [SwaggerOperation(
+            Summary = "Authentication Login.",
+            Description = "Logns into system by using email and password."
+        )]
+        [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<LoginResponse>> Login(LoginRequest request, CancellationToken cancellationToken)
         {
             if (!await CheckEmailConfirmation(request))
