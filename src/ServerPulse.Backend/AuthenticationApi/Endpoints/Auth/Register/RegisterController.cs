@@ -4,9 +4,11 @@ using AuthenticationApi.Core.Dtos.Endpoints.Auth.Register;
 using AuthenticationApi.Core.Entities;
 using AuthenticationApi.Core.Models;
 using AutoMapper;
+using ExceptionHandling;
 using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace AuthenticationApi.Endpoints.Auth.Register
 {
@@ -35,6 +37,14 @@ namespace AuthenticationApi.Endpoints.Auth.Register
         }
 
         [HttpPost("register")]
+        [SwaggerOperation(
+            Summary = "Authentication Registration.",
+            Description = "Register user by using email and password."
+        )]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string[]), StatusCodes.Status409Conflict)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Register(RegisterRequest request, CancellationToken cancellationToken)
         {
             var user = mapper.Map<User>(request);

@@ -16,7 +16,8 @@ namespace AnalyzerApi.Application.Services.SerializeStrategies
 
         public CustomEventWrapper? SerializeResponse(ConsumeResponse response)
         {
-            if (response.TryDeserializeEventWrapper<CustomEvent, CustomEventWrapper>(mapper, out CustomEventWrapper ev))
+            if (response.TryDeserializeEventWrapper<CustomEvent, CustomEventWrapper>(
+                mapper, out CustomEventWrapper? ev) && ev != null)
             {
                 ev.SerializedMessage = response.Message;
                 return ev;

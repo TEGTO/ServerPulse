@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using ExceptionHandling;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using ServerSlotApi.Core.Dtos.Endpoints.ServerSlot.GetSlotsByEmail;
 using ServerSlotApi.Infrastructure.Repositories;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Security.Claims;
 
 namespace ServerSlotApi.Endpoints.Slot.GetSlotsByEmail
@@ -24,6 +26,15 @@ namespace ServerSlotApi.Endpoints.Slot.GetSlotsByEmail
         [Authorize]
         [HttpGet]
         [OutputCache(PolicyName = "GetSlotsByEmailPolicy")]
+        [SwaggerOperation(
+            Summary = "Get server slots by user email.",
+            Description = "Gets server slots for the user by his email using JWT."
+        )]
+        [ProducesResponseType(typeof(IEnumerable<GetSlotsByEmailResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status409Conflict)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IEnumerable<GetSlotsByEmailResponse>>> GetSlotsByEmail([FromQuery] string contains = "", CancellationToken cancellationToken = default)
         {
             var email = User.FindFirstValue(ClaimTypes.Email);

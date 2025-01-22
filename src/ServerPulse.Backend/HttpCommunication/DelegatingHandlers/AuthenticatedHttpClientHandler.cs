@@ -1,6 +1,6 @@
 ﻿using System.Net.Http.Headers;
 
-namespace Helper.DelegatingHandlers
+namespace HttpCommunication.DelegatingHandlers
 {
     public class AuthenticatedHttpClientHandler : DelegatingHandler
     {

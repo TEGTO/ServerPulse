@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using Swashbuckle.AspNetCore.Swagger;
 
 namespace Shared.Tests
 {
@@ -17,8 +16,9 @@ namespace Shared.Tests
         [SetUp]
         public void SetUp()
         {
-            services = new ServiceCollection();
             configurationMock = new Mock<IConfiguration>();
+
+            services = new ServiceCollection();
         }
 
         [Test]
@@ -81,26 +81,12 @@ namespace Shared.Tests
             Assert.IsNotNull(policy);
             Assert.IsTrue(policy.IsOriginAllowed("http://localhost"));
         }
-
-        [Test]
-        public void AddSwagger_RegistersSwaggerWithSecurityDefinitions()
-        {
-            // Arrange
-            var title = "Test API";
-
-            // Act
-            services.AddSwagger(title);
-
-            services.BuildServiceProvider();
-
-            // Assert
-            Assert.That(services.Any(s => s.ServiceType == typeof(ISwaggerProvider)));
-        }
     }
 
     public class MockValidator : AbstractValidator<MockEntity>
     {
     }
+
     public class MockEntity
     {
         public string? Id { get; set; }

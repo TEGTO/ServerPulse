@@ -1,4 +1,4 @@
-﻿using AnalyzerApi.Application.Application.Services;
+﻿using AnalyzerApi.Application.Services;
 using AnalyzerApi.Core.Dtos.Responses.Statistics;
 using AnalyzerApi.Core.Models.Statistics;
 using AnalyzerApi.Infrastructure.Hubs;

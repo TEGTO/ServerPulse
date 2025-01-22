@@ -4,7 +4,9 @@ using AnalyzerApi.Core.Dtos.Responses.Events;
 using AnalyzerApi.Core.Models;
 using AnalyzerApi.Core.Models.Wrappers;
 using AutoMapper;
+using ExceptionHandling;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace AnalyzerApi.Endpoints.Analyze.GetSomeCustomEvents
 {
@@ -23,6 +25,13 @@ namespace AnalyzerApi.Endpoints.Analyze.GetSomeCustomEvents
 
         [Route("somecustomevents")]
         [HttpPost]
+        [SwaggerOperation(
+            Summary = "Retrieve custom events in date range.",
+            Description = "Fetches the custom events recorded in date range."
+        )]
+        [ProducesResponseType(typeof(IEnumerable<CustomEventResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IEnumerable<CustomEventResponse>>> GetSomeCustomEvents(
             GetSomeCustomEventsRequest request, CancellationToken cancellationToken)
         {

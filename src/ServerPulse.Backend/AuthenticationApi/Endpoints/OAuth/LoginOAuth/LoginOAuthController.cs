@@ -3,8 +3,10 @@ using AuthenticationApi.Application.Services;
 using AuthenticationApi.Core.Dtos.Endpoints.OAuth.LoginOAuth;
 using AuthenticationApi.Core.Enums;
 using AutoMapper;
+using ExceptionHandling;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace AuthenticationApi.Endpoints.OAuth.LoginOAuth
 {
@@ -27,6 +29,14 @@ namespace AuthenticationApi.Endpoints.OAuth.LoginOAuth
         }
 
         [HttpPost]
+        [SwaggerOperation(
+            Summary = "Login by using OAuth.",
+            Description = "Logins in the system using OAuth code."
+        )]
+        [ProducesResponseType(typeof(LoginOAuthResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<LoginOAuthResponse>> LoginOAuth(LoginOAuthRequest request, CancellationToken cancellationToken)
         {
             var loginModel = await oAuthServices[request.OAuthLoginProvider].GetProviderModelOnCodeAsync(

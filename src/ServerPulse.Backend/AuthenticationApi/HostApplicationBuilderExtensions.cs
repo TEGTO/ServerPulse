@@ -4,7 +4,7 @@ using AuthenticationApi.Application;
 using AuthenticationApi.Application.Services;
 using AuthenticationApi.Core.Enums;
 using AuthenticationApi.Infrastructure.Services;
-using Helper.DelegatingHandlers;
+using HttpCommunication.DelegatingHandlers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Refit;

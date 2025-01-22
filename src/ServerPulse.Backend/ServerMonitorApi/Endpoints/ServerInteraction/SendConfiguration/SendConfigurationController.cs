@@ -1,9 +1,11 @@
 ﻿using EventCommunication;
+using ExceptionHandling;
 using MessageBus.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using ServerMonitorApi.Infrastructure.Services;
 using ServerMonitorApi.Settings;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Text.Json;
 
 namespace ServerMonitorApi.Endpoints.ServerInteraction.SendConfiguration
@@ -24,6 +26,14 @@ namespace ServerMonitorApi.Endpoints.ServerInteraction.SendConfiguration
         }
 
         [HttpPost("configuration")]
+        [SwaggerOperation(
+            Summary = "Send a configuration event.",
+            Description = "Validates and sends configuration event from the user to the system."
+        )]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> SendConfiguration(ConfigurationEvent ev, CancellationToken cancellationToken)
         {
             if (await serverSlotChecker.CheckSlotKeyAsync(ev.Key, cancellationToken))

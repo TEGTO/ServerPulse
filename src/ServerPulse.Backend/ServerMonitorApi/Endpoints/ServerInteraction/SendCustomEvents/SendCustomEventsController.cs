@@ -1,9 +1,11 @@
 ﻿using EventCommunication;
+using ExceptionHandling;
 using MessageBus.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using ServerMonitorApi.Infrastructure.Services;
 using ServerMonitorApi.Settings;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Text.Json;
 
 namespace ServerMonitorApi.Endpoints.ServerInteraction.SendCustomEvents
@@ -25,6 +27,15 @@ namespace ServerMonitorApi.Endpoints.ServerInteraction.SendCustomEvents
         }
 
         [HttpPost("custom")]
+        [SwaggerOperation(
+            Summary = "Send a custom event.",
+            Description = "Validates and sends custom event from the user to the system."
+        )]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status409Conflict)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> SendCustomEvents(CustomEventContainer[] wrappers, CancellationToken cancellationToken)
         {
             if (wrappers == null || wrappers.Length == 0)

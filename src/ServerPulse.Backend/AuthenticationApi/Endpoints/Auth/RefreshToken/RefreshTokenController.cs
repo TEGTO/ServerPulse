@@ -2,7 +2,9 @@
 using AuthenticationApi.Application.Services;
 using AuthenticationApi.Core.Dtos.Endpoints.Auth.RefreshToken;
 using AutoMapper;
+using ExceptionHandling;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace AuthenticationApi.Endpoints.Auth.RefreshToken
 {
@@ -20,6 +22,13 @@ namespace AuthenticationApi.Endpoints.Auth.RefreshToken
         }
 
         [HttpPost("refresh")]
+        [SwaggerOperation(
+            Summary = "Authentication Token Refresh.",
+            Description = "Refreshes access token by using the refresh token."
+        )]
+        [ProducesResponseType(typeof(RefreshTokenResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<RefreshTokenResponse>> RefreshToken(RefreshTokenRequest request, CancellationToken cancellationToken)
         {
             var tokenData = mapper.Map<AccessTokenData>(request);

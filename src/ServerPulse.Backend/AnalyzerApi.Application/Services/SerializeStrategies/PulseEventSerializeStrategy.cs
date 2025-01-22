@@ -16,7 +16,7 @@ namespace AnalyzerApi.Application.Services.SerializeStrategies
 
         public PulseEventWrapper? SerializeResponse(ConsumeResponse response)
         {
-            if (response.TryDeserializeEventWrapper<PulseEvent, PulseEventWrapper>(mapper, out PulseEventWrapper ev))
+            if (response.TryDeserializeEventWrapper<PulseEvent, PulseEventWrapper>(mapper, out PulseEventWrapper? ev))
             {
                 return ev;
             }

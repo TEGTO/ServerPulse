@@ -7,7 +7,7 @@ namespace Shared
     {
         private static readonly ILogger logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
 
-        public static bool TryToDeserialize<T>(this string? message, out T? obj, JsonSerializerOptions options = default)
+        public static bool TryToDeserialize<T>(this string? message, out T? obj, JsonSerializerOptions? options = default)
         {
             try
             {

@@ -1,7 +1,6 @@
 ﻿using Authentication.OAuth.Google;
 using AuthenticationApi.Core.Enums;
 using AuthenticationApi.Core.Models;
-using static Google.Apis.Auth.GoogleJsonWebSignature;
 
 namespace AuthenticationApi.Application.Services
 {
@@ -34,9 +33,7 @@ namespace AuthenticationApi.Application.Services
             var tokenResult = await oauthClient.ExchangeAuthorizationCodeAsync(
                 code, codeVerifier, redirectUrl, cancellationToken);
 
-            var payload = new Payload();
-
-            payload = await tokenValidator.ValidateAsync(tokenResult?.IdToken ?? "");
+            var payload = await tokenValidator.ValidateAsync(tokenResult?.IdToken ?? "");
 
             return new ProviderLoginModel
             {

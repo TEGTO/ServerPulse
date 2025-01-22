@@ -1,10 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-	<WarningsAsErrors>CS8618;CS8601;CS8602;CS8603;CS8604</WarningsAsErrors>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
     <UserSecretsId>abcf12f8-187f-4e51-8fd2-9e72d9b3b31f</UserSecretsId>
@@ -25,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\AuthenticationApi.Application\AuthenticationApi.Application.csproj" />
     <ProjectReference Include="..\AuthenticationApi.Infrastructure\AuthenticationApi.Infrastructure.csproj" />
+    <ProjectReference Include="..\Documentation\Documentation.csproj" />
   </ItemGroup>
 
 </Project>

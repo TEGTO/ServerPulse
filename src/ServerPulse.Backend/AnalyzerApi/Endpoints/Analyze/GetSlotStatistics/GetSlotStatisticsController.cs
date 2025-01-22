@@ -8,9 +8,11 @@ using AnalyzerApi.Core.Models;
 using AnalyzerApi.Core.Models.Statistics;
 using AnalyzerApi.Core.Models.Wrappers;
 using AutoMapper;
+using ExceptionHandling;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace AnalyzerApi.Endpoints.Analyze.GetSlotStatistics
 {
@@ -41,6 +43,13 @@ namespace AnalyzerApi.Endpoints.Analyze.GetSlotStatistics
         [OutputCache(PolicyName = "GetSlotStatisticsPolicy")]
         [Route("slotstatistics/{key}")]
         [HttpGet]
+        [SwaggerOperation(
+            Summary = "Retrieve slot statistics.",
+            Description = "Fetches the all statistics about the server slot with the last n events."
+        )]
+        [ProducesResponseType(typeof(GetSlotStatisticsResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<GetSlotStatisticsResponse>> GetSlotStatistics(string key, CancellationToken cancellationToken)
         {
             var options = new GetCertainMessageNumberOptions(key, maxLastEventAmount, DateTime.UtcNow, false);
