@@ -10,12 +10,16 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["Directory.Packages.props", "."]
+COPY ["Directory.Build.props", "."]
 COPY ["ServerSlotApi/ServerSlotApi.csproj", "ServerSlotApi/"]
 COPY ["Authentication/Authentication.csproj", "Authentication/"]
 COPY ["Helper/Helper.csproj", "Helper/"]
+COPY ["HttpCommunication/HttpCommunication.csproj", "HttpCommunication/"]
 COPY ["Caching/Caching.csproj", "Caching/"]
 COPY ["DatabaseControl/DatabaseControl.csproj", "DatabaseControl/"]
+COPY ["Proxies/Proxies.csproj", "Proxies/"]
 COPY ["Resilience/Resilience.csproj", "Resilience/"]
+COPY ["Documentation/Documentation.csproj", "Documentation/"]
 COPY ["ServerSlotApi.Application/ServerSlotApi.Application.csproj", "ServerSlotApi.Application/"]
 COPY ["ServerSlotApi.Core/ServerSlotApi.Core.csproj", "ServerSlotApi.Core/"]
 COPY ["ServerSlotApi.Infrastructure/ServerSlotApi.Infrastructure.csproj", "ServerSlotApi.Infrastructure/"]
