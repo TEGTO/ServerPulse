@@ -1,14 +1,14 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Authentication.OAuth.GitHub
 {
     public class GitHubOAuthTokenResult
     {
-        [JsonProperty("access_token")]
+        [JsonPropertyName("access_token")]
         public string? AccessToken { get; set; }
-        [JsonProperty("scope")]
+        [JsonPropertyName("scope")]
         public string? Scope { get; set; }
-        [JsonProperty("token_type")]
+        [JsonPropertyName("token_type")]
         public string? TokenType { get; set; }
     }
 }

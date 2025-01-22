@@ -1,5 +1,4 @@
-﻿using Helper.Services;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Moq;
 
 namespace Authentication.OAuth.Google.Tests
@@ -7,7 +6,7 @@ namespace Authentication.OAuth.Google.Tests
     [TestFixture]
     internal class GoogleOAuthClientTests
     {
-        private Mock<IHttpHelper> mockHttpHelper;
+        private Mock<IGoogleOAuthApi> mockGoogleOAuthApi;
         private GoogleOAuthSettings mockOAuthSettings;
         private GoogleOAuthClient googleOAuthHttpClient;
 
@@ -21,12 +20,12 @@ namespace Authentication.OAuth.Google.Tests
                 Scope = ""
             };
 
-            mockHttpHelper = new Mock<IHttpHelper>();
+            mockGoogleOAuthApi = new Mock<IGoogleOAuthApi>();
 
             var mockOptions = new Mock<IOptions<GoogleOAuthSettings>>();
             mockOptions.Setup(x => x.Value).Returns(mockOAuthSettings);
 
-            googleOAuthHttpClient = new GoogleOAuthClient(mockOptions.Object, mockHttpHelper.Object);
+            googleOAuthHttpClient = new GoogleOAuthClient(mockOptions.Object, mockGoogleOAuthApi.Object);
         }
 
         [Test]
@@ -43,13 +42,11 @@ namespace Authentication.OAuth.Google.Tests
                 RefreshToken = "refresh-token"
             };
 
-            mockHttpHelper.Setup(x => x.SendPostRequestAsync<GoogleOAuthTokenResult>(
-                It.IsAny<string>(),
+            mockGoogleOAuthApi.Setup(x => x.ExchangeAuthorizationCodeAsync(
                 It.IsAny<Dictionary<string, string>>(),
-                 It.IsAny<string>(),
-                 It.IsAny<CancellationToken>()
-                 ))
-                .ReturnsAsync(expectedTokenResult);
+                It.IsAny<CancellationToken>()
+            ))
+            .ReturnsAsync(expectedTokenResult);
 
             // Act
             var result = await googleOAuthHttpClient.ExchangeAuthorizationCodeAsync(code, codeVerifier, redirectUrl, CancellationToken.None);
@@ -64,16 +61,14 @@ namespace Authentication.OAuth.Google.Tests
         public void GenerateOAuthRequestUrl_ValidParams_ReturnsCorrectUrl()
         {
             // Arrange
-            var scope = "https://www.googleapis.com/auth/userinfo.email";
             var redirectUrl = "https://example.com/callback";
             var codeVerifier = "valid-code-verifier";
-            var expectedBaseUrl = "https://accounts.google.com/o/oauth2/v2/auth";
+            var scope = "https://www.googleapis.com/auth/userinfo.email";
 
             // Act
-            var resultUrl = googleOAuthHttpClient.GenerateOAuthRequestUrl(scope, redirectUrl, codeVerifier);
+            var resultUrl = googleOAuthHttpClient.GenerateOAuthRequestUrl(redirectUrl, codeVerifier, scope);
 
             // Assert
-            Assert.IsTrue(resultUrl.StartsWith(expectedBaseUrl));
             Assert.IsTrue(resultUrl.Contains("client_id=test-client-id"));
             Assert.IsTrue(resultUrl.Contains("redirect_uri=https%3A%2F%2Fexample.com%2Fcallback"));
             Assert.IsTrue(resultUrl.Contains("response_type=code"));

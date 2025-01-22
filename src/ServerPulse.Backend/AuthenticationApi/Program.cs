@@ -6,6 +6,7 @@ using AuthenticationApi.Core.Entities;
 using AuthenticationApi.Infrastructure.Data;
 using BackgroundTask;
 using DatabaseControl;
+using Documentation;
 using EmailControl;
 using ExceptionHandling;
 using Hangfire;
@@ -24,7 +25,6 @@ builder.Services.AddDbContextFactory<AuthIdentityDbContext>(
     "AuthenticationApi"
 );
 
-builder.Services.AddHttpClientHelperServiceWithResilience(builder.Configuration);
 builder.Services.AddFeatureManagement();
 
 builder.AddApplicationServices();
@@ -89,7 +89,7 @@ builder.Services.AddEndpointsApiExplorer();
 
 if (builder.Environment.IsDevelopment())
 {
-    builder.Services.AddSwagger("Authentication API");
+    builder.AddDocumentation("Authentication API");
 }
 
 var app = builder.Build();

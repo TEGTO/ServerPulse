@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using ExceptionHandling;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ServerSlotApi.Core.Dtos.Endpoints.ServerSlot.CreateSlot;
 using ServerSlotApi.Core.Entities;
 using ServerSlotApi.Infrastructure.Repositories;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Security.Claims;
 
 namespace ServerSlotApi.Endpoints.Slot.CreateSlot
@@ -23,6 +25,15 @@ namespace ServerSlotApi.Endpoints.Slot.CreateSlot
 
         [Authorize]
         [HttpPost]
+        [SwaggerOperation(
+            Summary = "Create server slot.",
+            Description = "Creates a server slot for the user."
+        )]
+        [ProducesResponseType(typeof(CreateSlotResponse), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status409Conflict)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<CreateSlotResponse>> CreateSlot(CreateSlotRequest request, CancellationToken cancellationToken)
         {
             var email = User.FindFirstValue(ClaimTypes.Email);

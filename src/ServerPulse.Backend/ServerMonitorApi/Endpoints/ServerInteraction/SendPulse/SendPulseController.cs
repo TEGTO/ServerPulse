@@ -1,9 +1,11 @@
 ﻿using EventCommunication;
+using ExceptionHandling;
 using MessageBus.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using ServerMonitorApi.Infrastructure.Services;
 using ServerMonitorApi.Settings;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Text.Json;
 
 namespace ServerMonitorApi.Endpoints.ServerInteraction.SendPulse
@@ -24,6 +26,14 @@ namespace ServerMonitorApi.Endpoints.ServerInteraction.SendPulse
         }
 
         [HttpPost("pulse")]
+        [SwaggerOperation(
+            Summary = "Send a pulse event.",
+            Description = "Validates and sends pulse event from the user to the system."
+        )]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> SendPulse(PulseEvent ev, CancellationToken cancellationToken)
         {
             if (await serverSlotChecker.CheckSlotKeyAsync(ev.Key, cancellationToken))

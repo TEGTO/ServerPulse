@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+	  <PackageReference Include="coverlet.collector" />
+	  <PackageReference Include="Microsoft.NET.Test.Sdk" />
+	  <PackageReference Include="NUnit" />
+	  <PackageReference Include="NUnit.Analyzers" />
+	  <PackageReference Include="NUnit3TestAdapter" />
+	  <PackageReference Include="RichardSzalay.MockHttp" />
+	  <PackageReference Include="Moq" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\src\ServerPulse.Backend\HttpCommunication\HttpCommunication.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="NUnit.Framework" />
+  </ItemGroup>
+
+</Project>

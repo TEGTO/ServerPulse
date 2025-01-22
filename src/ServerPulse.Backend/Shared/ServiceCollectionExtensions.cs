@@ -1,10 +1,7 @@
 ﻿using FluentValidation;
 using FluentValidation.AspNetCore;
-using Helper;
-using Helper.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
 
 namespace Shared
 {
@@ -23,13 +20,6 @@ namespace Shared
 
             ValidatorOptions.Global.LanguageManager.Enabled = false;
 
-            return services;
-        }
-
-        public static IServiceCollection AddHttpClientHelperServiceWithResilience(this IServiceCollection services, IConfiguration configuration)
-        {
-            services.AddHttpClient(HelperConfigurationKeys.HTTP_CLIENT_HELPER).AddStandardResilienceHandler();
-            services.AddSingleton<IHttpHelper, HttpHelper>();
             return services;
         }
 
@@ -52,47 +42,6 @@ namespace Shared
                     }
                 });
             });
-            return services;
-        }
-
-        public static IServiceCollection AddSwagger(this IServiceCollection services, string title)
-        {
-            services.AddSwaggerGen(c =>
-            {
-                c.DescribeAllParametersInCamelCase();
-
-                c.SwaggerDoc("v1", new OpenApiInfo
-                {
-                    Title = title,
-                    Version = "v1",
-                });
-
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                {
-                    In = ParameterLocation.Header,
-                    Description = "Please enter a valid token",
-                    Name = "Authorization",
-                    Type = SecuritySchemeType.Http,
-                    BearerFormat = "JWT",
-                    Scheme = "Bearer"
-                });
-
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            }
-                        },
-                        new string[]{}
-                    }
-                });
-            });
-
             return services;
         }
     }

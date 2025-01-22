@@ -1,6 +1,6 @@
-﻿using AnalyzerApi.Application.Application.Services;
-using AnalyzerApi.Application.BackgroundServices;
+﻿using AnalyzerApi.Application.BackgroundServices;
 using AnalyzerApi.Application.Configuration;
+using AnalyzerApi.Application.Services;
 using AnalyzerApi.Application.Services.Receivers.Event;
 using AnalyzerApi.Application.Services.Receivers.Statistics;
 using AnalyzerApi.Application.Services.SerializeStrategies;

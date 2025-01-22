@@ -1,3 +1,4 @@
+using Documentation;
 using EventCommunication;
 using ExceptionHandling;
 using Logging;
@@ -36,7 +37,7 @@ builder.Services.AddSharedFluentValidation(typeof(Program), typeof(LoadEvent));
 
 if (builder.Environment.IsDevelopment())
 {
-    builder.Services.AddSwagger("Server Monitor API");
+    builder.AddDocumentation("Server Monitor API");
 }
 
 var app = builder.Build();

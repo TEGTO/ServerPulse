@@ -1,0 +1,10 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<ItemGroup>
+		<PackageReference Include="Swashbuckle.AspNetCore" />
+		<PackageReference Include="MicroElements.Swashbuckle.FluentValidation" />
+		<PackageReference Include="Swashbuckle.AspNetCore.Annotations" />
+		<PackageReference Include="Swashbuckle.AspNetCore.Filters" />
+	</ItemGroup>
+
+</Project>

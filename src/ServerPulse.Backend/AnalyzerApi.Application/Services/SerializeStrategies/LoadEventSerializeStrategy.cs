@@ -16,7 +16,7 @@ namespace AnalyzerApi.Application.Services.SerializeStrategies
 
         public LoadEventWrapper? SerializeResponse(ConsumeResponse response)
         {
-            if (response.TryDeserializeEventWrapper<LoadEvent, LoadEventWrapper>(mapper, out LoadEventWrapper ev))
+            if (response.TryDeserializeEventWrapper<LoadEvent, LoadEventWrapper>(mapper, out LoadEventWrapper? ev))
             {
                 return ev;
             }

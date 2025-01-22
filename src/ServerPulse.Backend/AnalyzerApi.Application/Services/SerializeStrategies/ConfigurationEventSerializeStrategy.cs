@@ -16,7 +16,7 @@ namespace AnalyzerApi.Application.Services.SerializeStrategies
 
         public ConfigurationEventWrapper? SerializeResponse(ConsumeResponse response)
         {
-            if (response.TryDeserializeEventWrapper<ConfigurationEvent, ConfigurationEventWrapper>(mapper, out ConfigurationEventWrapper ev))
+            if (response.TryDeserializeEventWrapper<ConfigurationEvent, ConfigurationEventWrapper>(mapper, out ConfigurationEventWrapper? ev))
             {
                 return ev;
             }

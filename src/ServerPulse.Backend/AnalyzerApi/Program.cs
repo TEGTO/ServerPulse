@@ -1,4 +1,5 @@
 using AnalyzerApi;
+using Documentation;
 using ExceptionHandling;
 using Logging;
 using Shared;
@@ -17,7 +18,7 @@ builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
 
 if (builder.Environment.IsDevelopment())
 {
-    builder.Services.AddSwagger("Analyzer API");
+    builder.AddDocumentation("Analyzer API");
 }
 
 var app = builder.Build();

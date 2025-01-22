@@ -4,6 +4,6 @@ namespace Authentication.OAuth.Google
 {
     public interface IGoogleTokenValidator
     {
-        public Task<GoogleJsonWebSignature.Payload> ValidateAsync(string idToken, GoogleJsonWebSignature.ValidationSettings settings);
+        public Task<GoogleJsonWebSignature.Payload> ValidateAsync(string idToken);
     }
 }

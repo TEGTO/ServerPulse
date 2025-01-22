@@ -1,5 +1,5 @@
-﻿using AnalyzerApi.Application.Application.Services;
-using AnalyzerApi.Application.Configuration;
+﻿using AnalyzerApi.Application.Configuration;
+using AnalyzerApi.Application.Services;
 using AnalyzerApi.Core.Dtos.Responses.Statistics;
 using AnalyzerApi.Core.Models.Statistics;
 using AutoMapper;
