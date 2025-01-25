@@ -1,10 +1,10 @@
 ﻿using Confluent.Kafka;
 using MessageBus;
 using Refit;
-using ServerMonitorApi.Infrastructure;
 using ServerMonitorApi.Infrastructure.Services;
 using ServerMonitorApi.Infrastructure.Settings;
 using System.Net.Http.Headers;
+using InfrastructureKeys = ServerMonitorApi.Infrastructure.ConfigurationKeys;
 
 namespace ServerMonitorApi
 {
@@ -17,7 +17,7 @@ namespace ServerMonitorApi
             builder.Services.AddRefitClient<IServerSlotApi>()
               .ConfigureHttpClient((sp, httpClient) =>
               {
-                  httpClient.BaseAddress = new Uri(builder.Configuration[ConfigurationKeys.SERVER_SLOT_URL]!);
+                  httpClient.BaseAddress = new Uri(builder.Configuration[InfrastructureKeys.SERVER_SLOT_URL]!);
                   httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
               }).AddStandardResilienceHandler();
 

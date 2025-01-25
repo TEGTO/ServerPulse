@@ -14,7 +14,7 @@ builder.Host.AddLogging();
 
 #region Cors
 
-bool.TryParse(builder.Configuration[ConfigurationKeys.USE_CORS], out bool useCors);
+bool.TryParse(builder.Configuration[ApiGateway.ConfigurationKeys.USE_CORS], out bool useCors);
 var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 if (useCors)
@@ -24,7 +24,7 @@ if (useCors)
 
 #endregion
 
-builder.Services.ConfigureIdentityServices(builder.Configuration);
+builder.Services.AddIdentity(builder.Configuration);
 builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHealthChecks();

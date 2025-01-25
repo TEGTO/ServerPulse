@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 
 namespace Authentication.OAuth.GitHub
 {
-    public sealed class GitHubOAuthClient : IGitHubOAuthClient
+    internal sealed class GitHubOAuthClient : IGitHubOAuthClient
     {
         private readonly IGitHubOAuthApi gitHubOAuthApi;
         private readonly GitHubOAuthSettings oAuthSettings;

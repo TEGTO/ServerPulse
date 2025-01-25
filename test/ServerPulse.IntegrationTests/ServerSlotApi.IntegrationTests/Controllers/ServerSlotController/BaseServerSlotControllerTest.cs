@@ -1,6 +1,4 @@
 ﻿using Authentication.Models;
-using Authentication.Token;
-using Microsoft.Extensions.Options;
 using ServerSlotApi.Core.Dtos.Endpoints.ServerSlot.CreateSlot;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -27,10 +25,6 @@ namespace ServerSlotApi.IntegrationTests.Controllers.ServerSlotController
 
         protected AccessTokenData GetAccessTokenData(string userName, string email)
         {
-            var options = Options.Create(settings);
-
-            var jwtHandler = new JwtHandler(options);
-
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Email, email),
@@ -38,7 +32,7 @@ namespace ServerSlotApi.IntegrationTests.Controllers.ServerSlotController
                 new Claim(ClaimTypes.NameIdentifier,  userName + email),
             };
 
-            return jwtHandler.CreateToken(claims);
+            return tokenHandler.CreateToken(claims);
         }
 
         protected async Task<List<CreateSlotResponse>> CreateSamplesSlotsAsync(string accessToken)

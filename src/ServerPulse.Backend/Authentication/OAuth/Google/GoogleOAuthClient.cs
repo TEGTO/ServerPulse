@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 
 namespace Authentication.OAuth.Google
 {
-    public sealed class GoogleOAuthClient : IGoogleOAuthClient
+    internal sealed class GoogleOAuthClient : IGoogleOAuthClient
     {
         private readonly IGoogleOAuthApi googleOAuthApi;
         private readonly GoogleOAuthSettings oAuthSettings;

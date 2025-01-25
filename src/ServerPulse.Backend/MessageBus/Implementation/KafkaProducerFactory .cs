@@ -7,7 +7,7 @@ using Proxies.Interceptors;
 
 namespace MessageBus.Kafka
 {
-    public class KafkaProducerFactory : IKafkaProducerFactory
+    internal sealed class KafkaProducerFactory : IKafkaProducerFactory
     {
         private readonly ProducerBuilder<string, string> producerBuilder;
         private readonly ResiliencePipeline resiliencePipeline;
@@ -16,7 +16,7 @@ namespace MessageBus.Kafka
         public KafkaProducerFactory(ProducerConfig config, ResiliencePipelineProvider<string> resiliencePipelineProvider, IProxyGenerator proxyGenerator)
         {
             producerBuilder = new ProducerBuilder<string, string>(config);
-            resiliencePipeline = resiliencePipelineProvider.GetPipeline(MessageBusConfigurationKeys.MESSAGE_BUS_RESILIENCE_PIPELINE);
+            resiliencePipeline = resiliencePipelineProvider.GetPipeline(ConfigurationKeys.MESSAGE_BUS_RESILIENCE_PIPELINE);
             this.proxyGenerator = proxyGenerator;
         }
 

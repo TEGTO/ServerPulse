@@ -1,5 +1,6 @@
 ﻿using Authentication.OAuth.GitHub;
 using Authentication.OAuth.Google;
+using Authentication.Rsa;
 using Authentication.Token;
 using AuthenticationTests;
 using Microsoft.AspNetCore.Authentication;
@@ -14,7 +15,7 @@ using Moq;
 namespace Authentication.Tests
 {
     [TestFixture]
-    internal class CustomAuthExtensionTests
+    internal class ExtensionTests
     {
         private IServiceCollection services;
         private IConfiguration configuration;
@@ -91,10 +92,10 @@ namespace Authentication.Tests
         }
 
         [Test]
-        public void ConfigureIdentityServices_ShouldAuthSettingsAsSingletons()
+        public void AddIdentity_ShouldAuthSettingsAsSingletons()
         {
             // Act
-            services.ConfigureIdentityServices(configuration);
+            services.AddIdentity(configuration);
 
             //Act
             var serviceProvider = services.BuildServiceProvider();
@@ -109,10 +110,10 @@ namespace Authentication.Tests
         }
 
         [Test]
-        public void ConfigureIdentityServices_ShouldConfigureAuthorization()
+        public void AddIdentity_ShouldConfigureAuthorization()
         {
             // Act
-            services.ConfigureIdentityServices(configuration);
+            services.AddIdentity(configuration);
 
             //Act
             var serviceProvider = services.BuildServiceProvider();
@@ -123,10 +124,10 @@ namespace Authentication.Tests
         }
 
         [Test]
-        public void ConfigureIdentityServices_ShouldConfigureCustomJwtAuthentication()
+        public void AddIdentity_ShouldConfigureJwtAuthentication()
         {
             // Act
-            services.ConfigureIdentityServices(configuration);
+            services.AddIdentity(configuration);
 
             //Act
             var serviceProvider = services.BuildServiceProvider();
@@ -148,6 +149,22 @@ namespace Authentication.Tests
             Assert.IsTrue(tokenValidationParameters.ValidateAudience);
             Assert.IsTrue(tokenValidationParameters.ValidateLifetime);
             Assert.IsTrue(tokenValidationParameters.ValidateIssuerSigningKey);
+        }
+
+        [Test]
+        public void AddIdentity_ShouldAddServices()
+        {
+            // Act
+            services.AddIdentity(configuration);
+
+            //Act
+            var serviceProvider = services.BuildServiceProvider();
+            var rsaKeyManager = serviceProvider.GetRequiredService<IRsaKeyManager>();
+            var tokenHandler = serviceProvider.GetRequiredService<ITokenHandler>();
+
+            // Assert
+            Assert.That(rsaKeyManager, Is.Not.Null);
+            Assert.That(tokenHandler, Is.Not.Null);
         }
     }
 }

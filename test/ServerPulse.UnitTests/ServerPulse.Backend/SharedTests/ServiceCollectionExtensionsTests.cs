@@ -40,7 +40,7 @@ namespace Shared.Tests
         public void AddApplicationCors_RegistersCorsWithCorrectOrigins(string allowedOrigins, bool isDevelopment, int expectedCount)
         {
             // Arrange
-            configurationMock.Setup(c => c[SharedConfigurationKeys.ALLOWED_CORS_ORIGINS]).Returns(allowedOrigins);
+            configurationMock.Setup(c => c[ConfigurationKeys.ALLOWED_CORS_ORIGINS]).Returns(allowedOrigins);
 
             services.AddLogging();
             services.AddRouting();
@@ -65,7 +65,7 @@ namespace Shared.Tests
         public void AddApplicationCors_DevelopmentMode_AllowsLocalhost()
         {
             // Arrange
-            configurationMock.Setup(c => c[SharedConfigurationKeys.ALLOWED_CORS_ORIGINS]).Returns("http://example.com");
+            configurationMock.Setup(c => c[ConfigurationKeys.ALLOWED_CORS_ORIGINS]).Returns("http://example.com");
 
             services.AddLogging();
             services.AddRouting();

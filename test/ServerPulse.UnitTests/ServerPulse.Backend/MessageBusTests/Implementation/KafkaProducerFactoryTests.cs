@@ -51,7 +51,7 @@ namespace MessageBusTests.Implementation
             Assert.IsNotNull(producer);
             Assert.That(producer, Is.EqualTo(mockProducer.Object));
 
-            mockResiliencePipelineProvider.Verify(rp => rp.GetPipeline(MessageBusConfigurationKeys.MESSAGE_BUS_RESILIENCE_PIPELINE), Times.Once);
+            mockResiliencePipelineProvider.Verify(rp => rp.GetPipeline(ConfigurationKeys.MESSAGE_BUS_RESILIENCE_PIPELINE), Times.Once);
             mockProxyGenerator.Verify(rp => rp.CreateInterfaceProxyWithTarget(
                 It.IsAny<IProducer<string, string>>(),
                 It.IsAny<IInterceptor[]>()),

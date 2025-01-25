@@ -1,5 +1,4 @@
 using Authentication;
-using Authentication.Token;
 using AuthenticationApi;
 using AuthenticationApi.Application;
 using AuthenticationApi.Core.Entities;
@@ -64,8 +63,7 @@ if (isOAuthEnabled)
     builder.Services.AddOAuthServices(builder.Configuration);
 }
 
-builder.Services.ConfigureIdentityServices(builder.Configuration);
-builder.Services.AddScoped<ITokenHandler, JwtHandler>();
+builder.Services.AddIdentity(builder.Configuration);
 
 #endregion
 

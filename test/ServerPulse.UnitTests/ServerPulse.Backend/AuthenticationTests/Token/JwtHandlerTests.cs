@@ -1,9 +1,11 @@
-﻿using Authentication.Token;
+﻿using Authentication.Rsa;
+using Authentication.Token;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 
 namespace AuthenticationTests.Token
 {
@@ -11,6 +13,7 @@ namespace AuthenticationTests.Token
     internal class JwtHandlerTests
     {
         private JwtHandler jwtHandler;
+        private RSA rsa;
 
         [SetUp]
         public void Setup()
@@ -24,10 +27,23 @@ namespace AuthenticationTests.Token
                 ExpiryInMinutes = 30
             };
 
+            var rsaKeyManagerMock = new Mock<IRsaKeyManager>();
+
+            rsa = RSA.Create();
+
+            rsaKeyManagerMock.Setup(x => x.PublicKey).Returns(new RsaSecurityKey(rsa));
+            rsaKeyManagerMock.Setup(x => x.PrivateKey).Returns(new RsaSecurityKey(rsa));
+
             var optionsMock = new Mock<IOptions<JwtSettings>>();
             optionsMock.Setup(x => x.Value).Returns(jwtSettings);
 
-            jwtHandler = new JwtHandler(optionsMock.Object);
+            jwtHandler = new JwtHandler(optionsMock.Object, rsaKeyManagerMock.Object);
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            rsa.Dispose();
         }
 
         [Test]

@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace EmailControl
 {
-    public class EmailSender : IEmailSender
+    internal sealed class EmailSender : IEmailSender
     {
         private readonly EmailSettings emailSettings;
         private readonly IEmailClientWrapper emailClient;
@@ -27,7 +27,7 @@ namespace EmailControl
                 },
                 recipients: new EmailRecipients(new List<EmailAddress> { new EmailAddress(toEmail) }));
 
-            await emailClient.SendAsync(WaitUntil.Completed, emailMessage, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await emailClient.SendAsync(WaitUntil.Completed, emailMessage, cancellationToken: cancellationToken);
         }
 
         private static string HtmlToPlainText(string html)

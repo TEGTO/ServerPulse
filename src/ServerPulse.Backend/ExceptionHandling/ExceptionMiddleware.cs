@@ -30,40 +30,40 @@ namespace ExceptionHandling
                 var errors = ex.Errors
                  .Select(e => $"{e.PropertyName}: {e.ErrorMessage}")
                  .ToArray();
-                await SetError(httpContext, HttpStatusCode.BadRequest, ex, errors).ConfigureAwait(false);
+                await SetError(httpContext, HttpStatusCode.BadRequest, ex, errors);
             }
             catch (SecurityTokenMalformedException ex)
             {
-                await SetError(httpContext, HttpStatusCode.Conflict, ex, ["Access Token Exception"]).ConfigureAwait(false);
+                await SetError(httpContext, HttpStatusCode.Conflict, ex, ["Access Token Exception"]);
             }
             catch (InvalidDataException ex)
             {
-                await SetError(httpContext, HttpStatusCode.BadRequest, ex, new[] { ex.Message }).ConfigureAwait(false);
+                await SetError(httpContext, HttpStatusCode.BadRequest, ex, new[] { ex.Message });
             }
             catch (ArgumentException ex)
             {
-                await SetError(httpContext, HttpStatusCode.BadRequest, ex, new[] { ex.Message }).ConfigureAwait(false);
+                await SetError(httpContext, HttpStatusCode.BadRequest, ex, new[] { ex.Message });
             }
             catch (InvalidOperationException ex)
             {
-                await SetError(httpContext, HttpStatusCode.Conflict, ex, [ex.Message]).ConfigureAwait(false);
+                await SetError(httpContext, HttpStatusCode.Conflict, ex, [ex.Message]);
             }
             catch (AuthorizationException ex)
             {
                 var errors = ex.Errors.ToArray();
-                await SetError(httpContext, HttpStatusCode.Conflict, ex, errors).ConfigureAwait(false);
+                await SetError(httpContext, HttpStatusCode.Conflict, ex, errors);
             }
             catch (UniqueConstraintException ex)
             {
-                await SetError(httpContext, HttpStatusCode.Conflict, ex, [$"{ex.Message}: '{ex.Entries.FirstOrDefault()?.Entity.GetType().Name ?? ""}'"]).ConfigureAwait(false);
+                await SetError(httpContext, HttpStatusCode.Conflict, ex, [$"{ex.Message}: '{ex.Entries.FirstOrDefault()?.Entity.GetType().Name ?? ""}'"]);
             }
             catch (UnauthorizedAccessException ex)
             {
-                await SetError(httpContext, HttpStatusCode.Unauthorized, ex, [ex.Message]).ConfigureAwait(false);
+                await SetError(httpContext, HttpStatusCode.Unauthorized, ex, [ex.Message]);
             }
             catch (Exception ex)
             {
-                await SetError(httpContext, HttpStatusCode.InternalServerError, ex, ["Internal server error occurred."]).ConfigureAwait(false);
+                await SetError(httpContext, HttpStatusCode.InternalServerError, ex, ["Internal server error occurred."]);
             }
         }
         private async Task SetError(HttpContext httpContext, HttpStatusCode httpStatusCode, Exception ex, string[] messages)
@@ -76,7 +76,7 @@ namespace ExceptionHandling
                 Messages = messages
             };
             logger.LogError(ex, responseError.ToString());
-            await httpContext.Response.WriteAsync(responseError.ToString()).ConfigureAwait(false);
+            await httpContext.Response.WriteAsync(responseError.ToString());
         }
     }
     public static class ExceptionMiddlewareExtensions

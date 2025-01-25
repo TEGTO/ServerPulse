@@ -15,7 +15,7 @@ builder.Host.AddLogging();
 
 builder.AddInfrastructureServices();
 
-builder.Services.ConfigureIdentityServices(builder.Configuration);
+builder.Services.AddIdentity(builder.Configuration);
 
 builder.Services.AddAutoMapper(AssemblyReference.Assembly);
 
@@ -33,7 +33,7 @@ var app = builder.Build();
 
 app.UseSharedMiddleware();
 
-if (app.Configuration[ConfigurationKeys.EF_CREATE_DATABASE] == "true")
+if (app.Configuration[ServerSlotApi.Infrastructure.ConfigurationKeys.EF_CREATE_DATABASE] == "true")
 {
     await app.ConfigureDatabaseAsync<ServerSlotDbContext>(CancellationToken.None);
 }

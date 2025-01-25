@@ -4,7 +4,7 @@ using static Google.Apis.Auth.GoogleJsonWebSignature;
 
 namespace Authentication.OAuth.Google
 {
-    public sealed class GoogleTokenValidator : IGoogleTokenValidator
+    internal sealed class GoogleTokenValidator : IGoogleTokenValidator
     {
         private readonly GoogleOAuthSettings oAuthSettings;
 

@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 
 namespace EmailControl
 {
-    public class EmailClientWrapper : IEmailClientWrapper
+    internal sealed class EmailClientWrapper : IEmailClientWrapper
     {
         private readonly EmailSettings emailSettings;
         private EmailClient? emailClient;

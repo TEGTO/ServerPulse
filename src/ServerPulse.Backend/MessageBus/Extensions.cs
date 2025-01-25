@@ -10,7 +10,7 @@ using Resilience;
 
 namespace MessageBus
 {
-    public static class KafkaExtensions
+    public static class Extensions
     {
         public static IServiceCollection AddKafkaConsumer(this IServiceCollection services, ConsumerConfig consumerConfig, AdminClientConfig adminConfig)
         {
@@ -41,10 +41,10 @@ namespace MessageBus
             var configuration = serviceProvider.GetRequiredService<IConfiguration>();
 
             var pipelineConfiguration = configuration
-                .GetSection(MessageBusConfigurationKeys.MESSAGE_BUS_RESILIENCE_PIPELINE)?
+                .GetSection(ConfigurationKeys.MESSAGE_BUS_RESILIENCE_PIPELINE)?
                 .Get<ResiliencePipelineSettings>() ?? new ResiliencePipelineSettings();
 
-            services.AddResiliencePipeline(MessageBusConfigurationKeys.MESSAGE_BUS_RESILIENCE_PIPELINE, (builder, context) =>
+            services.AddResiliencePipeline(ConfigurationKeys.MESSAGE_BUS_RESILIENCE_PIPELINE, (builder, context) =>
             {
                 ResilienceHelpers.ConfigureResiliencePipeline(builder, context, pipelineConfiguration, false);
             });

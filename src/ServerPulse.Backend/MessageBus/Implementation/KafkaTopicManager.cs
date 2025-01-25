@@ -4,7 +4,7 @@ using MessageBus.Interfaces;
 
 namespace MessageBus.Kafka
 {
-    public class KafkaTopicManager : ITopicManager
+    internal sealed class KafkaTopicManager : ITopicManager
     {
         private readonly IAdminClient adminClient;
 
@@ -30,7 +30,7 @@ namespace MessageBus.Kafka
             if (topicsToCreate.Any())
             {
                 var options = new CreateTopicsOptions() { OperationTimeout = TimeSpan.FromMilliseconds(timeoutInMilliseconds) };
-                await adminClient.CreateTopicsAsync(topicsToCreate, options).ConfigureAwait(false);
+                await adminClient.CreateTopicsAsync(topicsToCreate, options);
             }
         }
 
@@ -41,7 +41,7 @@ namespace MessageBus.Kafka
             var topicsToDelete = topicList.Where(existingTopics.Contains);
             if (topicsToDelete.Any())
             {
-                await adminClient.DeleteTopicsAsync(topicsToDelete).ConfigureAwait(false);
+                await adminClient.DeleteTopicsAsync(topicsToDelete);
             }
         }
 

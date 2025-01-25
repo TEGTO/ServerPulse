@@ -5,7 +5,7 @@ VisualStudioVersion = 17.10.34928.147
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Microservices", "Microservices", "{C260E3F5-9C36-4648-99F6-6714CF242134}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{055C1BB6-678D-4258-80AC-4816688B1AF6}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{055C1BB6-678D-4258-80AC-4816688B1AF6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Authentication", "Authentication\Authentication.csproj", "{F9C12789-CC5E-4A77-B686-7ABA033FE2C9}"
 EndProject
@@ -172,13 +172,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ServerPulse.Client", "Serve
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProxiesTests", "..\..\test\ServerPulse.UnitTests\ServerPulse.Backend\ProxiesTests\ProxiesTests.csproj", "{07A382AC-7996-4052-98E8-0B07454E6475}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpCommunication", "HttpCommunication\HttpCommunication.csproj", "{EF5FC880-3684-4304-AEA3-E62EFEF3FA13}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpCommunication", "HttpCommunication\HttpCommunication.csproj", "{EF5FC880-3684-4304-AEA3-E62EFEF3FA13}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpCommunicationTests", "..\..\test\ServerPulse.UnitTests\ServerPulse.Backend\HttpCommunicationTests\HttpCommunicationTests.csproj", "{97866188-277F-49E1-B4B4-F8C36D3131A4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpCommunicationTests", "..\..\test\ServerPulse.UnitTests\ServerPulse.Backend\HttpCommunicationTests\HttpCommunicationTests.csproj", "{97866188-277F-49E1-B4B4-F8C36D3131A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Documentation", "Documentation\Documentation.csproj", "{DFED4A48-AB95-40E1-885B-6EF95923B28A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Documentation", "Documentation\Documentation.csproj", "{DFED4A48-AB95-40E1-885B-6EF95923B28A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocumentationTests", "..\..\test\ServerPulse.UnitTests\ServerPulse.Backend\DocumentationTests\DocumentationTests.csproj", "{9297616D-D7D2-43AB-B08E-9E45A188AD40}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocumentationTests", "..\..\test\ServerPulse.UnitTests\ServerPulse.Backend\DocumentationTests\DocumentationTests.csproj", "{9297616D-D7D2-43AB-B08E-9E45A188AD40}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
