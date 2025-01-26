@@ -1,5 +1,6 @@
 ﻿using Authentication.OAuth.Google;
 using AuthenticationApi.Core.Enums;
+using Microsoft.AspNetCore.WebUtilities;
 using Moq;
 using System.ComponentModel.DataAnnotations;
 using static Google.Apis.Auth.GoogleJsonWebSignature;
@@ -43,6 +44,10 @@ namespace AuthenticationApi.Application.Services.Tests
             };
             var code = "test-code";
             var redirectUrl = "http://test-redirect.com";
+            var queryParams = QueryHelpers.AddQueryString("", new Dictionary<string, string?>
+            {
+                { "code", code }
+            });
 
             googleClienttMock
                 .Setup(x => x.ExchangeAuthorizationCodeAsync(code, It.IsAny<string>(), redirectUrl, It.IsAny<CancellationToken>()))
@@ -53,7 +58,7 @@ namespace AuthenticationApi.Application.Services.Tests
                 .ReturnsAsync(payload);
 
             // Act
-            var result = await googleOAuthService.GetProviderModelOnCodeAsync(code, redirectUrl, CancellationToken.None);
+            var result = await googleOAuthService.GetProviderModelOnCodeAsync(queryParams, redirectUrl, CancellationToken.None);
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -76,6 +81,10 @@ namespace AuthenticationApi.Application.Services.Tests
             };
             var code = "test-code";
             var redirectUrl = "http://test-redirect.com";
+            var queryParams = QueryHelpers.AddQueryString("", new Dictionary<string, string?>
+            {
+                { "code", code }
+            });
 
             googleClienttMock
                 .Setup(x => x.ExchangeAuthorizationCodeAsync(code, It.IsAny<string>(), redirectUrl, It.IsAny<CancellationToken>()))
@@ -87,11 +96,29 @@ namespace AuthenticationApi.Application.Services.Tests
 
             // Act & Assert
             Assert.ThrowsAsync<ValidationException>(async () =>
-                await googleOAuthService.GetProviderModelOnCodeAsync(code, redirectUrl, CancellationToken.None));
+                await googleOAuthService.GetProviderModelOnCodeAsync(queryParams, redirectUrl, CancellationToken.None));
 
             googleClienttMock.Verify(x => x.ExchangeAuthorizationCodeAsync(code, It.IsAny<string>(), redirectUrl, It.IsAny<CancellationToken>()), Times.Once);
             googleTokenValidatorMock.Verify(x => x.ValidateAsync("invalid-id-token"), Times.Once);
             stringVerifierMock.Verify(x => x.GetStringVerifierAsync(It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Test]
+        public void GetProviderModelOnCodeAsync_EmptyCode_ThrowsException()
+        {
+            // Arrange
+            var code = "";
+            var queryParams = QueryHelpers.AddQueryString("", new Dictionary<string, string?>
+            {
+                { "code", code }
+            });
+            var redirectUrl = "http://test-redirect.com";
+
+            // Act & Assert
+            var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
+                 await googleOAuthService.GetProviderModelOnCodeAsync(queryParams, redirectUrl, CancellationToken.None));
+
+            Assert.That(ex.Message, Is.EqualTo("Code is null or empty."));
         }
 
         [Test]

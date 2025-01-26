@@ -49,5 +49,10 @@ namespace Authentication.OAuth.GitHub
 
             return await gitHubOAuthApi.ExchangeAuthorizationCodeAsync(authParams, cancellationToken);
         }
+
+        public bool VerifyState(string stateVerifier, string state)
+        {
+            return HashHelper.ComputeHash(stateVerifier).Equals(state);
+        }
     }
 }

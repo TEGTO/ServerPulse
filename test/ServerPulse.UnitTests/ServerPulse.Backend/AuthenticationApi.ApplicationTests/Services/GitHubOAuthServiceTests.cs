@@ -1,5 +1,6 @@
 ﻿using Authentication.OAuth.GitHub;
 using AuthenticationApi.Core.Enums;
+using Microsoft.AspNetCore.WebUtilities;
 using Moq;
 
 namespace AuthenticationApi.Application.Services.Tests
@@ -27,10 +28,17 @@ namespace AuthenticationApi.Application.Services.Tests
         }
 
         [Test]
-        public async Task GetProviderModelOnCodeAsync_ValidCode_ReturnsProviderLoginModel()
+        public async Task GetProviderModelOnCodeAsync_ValidCodeAndState_ReturnsProviderLoginModel()
         {
             // Arrange
             var code = "test-code";
+            var state = "state-verifier";
+
+            var queryParams = QueryHelpers.AddQueryString("", new Dictionary<string, string?>
+            {
+                { "state", state },
+                { "code", code }
+            });
             var redirectUrl = "http://test-redirect.com";
             var tokenResult = new GitHubOAuthTokenResult
             {
@@ -46,20 +54,29 @@ namespace AuthenticationApi.Application.Services.Tests
                 .Setup(x => x.ExchangeAuthorizationCodeAsync(code, redirectUrl, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(tokenResult);
 
+            oauthClientMock
+                .Setup(x => x.VerifyState(state, state))
+                .Returns(true);
+
             apiClientMock
                 .Setup(x => x.GetUserInfoAsync(tokenResult.AccessToken, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(userResult);
 
+            stringVerifierMock
+                .Setup(x => x.GetStringVerifierAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(state);
+
             // Act
-            var result = await gitHubOAuthService.GetProviderModelOnCodeAsync(code, redirectUrl, CancellationToken.None);
+            var result = await gitHubOAuthService.GetProviderModelOnCodeAsync(queryParams, redirectUrl, CancellationToken.None);
 
             // Assert
             Assert.That(result, Is.Not.Null);
             Assert.That(result.Email, Is.EqualTo("user@example.com"));
-            Assert.That(result.ProviderLogin, Is.EqualTo(nameof(OAuthLoginProvider.Google)));
+            Assert.That(result.ProviderLogin, Is.EqualTo(nameof(OAuthLoginProvider.GitHub)));
             Assert.That(result.ProviderKey, Is.EqualTo(userResult.Id.ToString()));
 
             oauthClientMock.Verify(x => x.ExchangeAuthorizationCodeAsync(code, redirectUrl, It.IsAny<CancellationToken>()), Times.Once);
+            oauthClientMock.Verify(x => x.VerifyState(state, state), Times.Once);
             apiClientMock.Verify(x => x.GetUserInfoAsync("valid-access-token", It.IsAny<CancellationToken>()), Times.Once);
         }
 
@@ -69,6 +86,16 @@ namespace AuthenticationApi.Application.Services.Tests
             // Arrange
             var code = "test-code";
             var redirectUrl = "http://test-redirect.com";
+            var state = "verifier";
+            var queryParams = QueryHelpers.AddQueryString("", new Dictionary<string, string?>
+            {
+                { "state", state },
+                { "code", code }
+            });
+
+            oauthClientMock
+                .Setup(x => x.VerifyState(It.IsAny<string>(), state))
+                .Returns(true);
 
             oauthClientMock
                 .Setup(x => x.ExchangeAuthorizationCodeAsync(code, redirectUrl, It.IsAny<CancellationToken>()))
@@ -76,10 +103,87 @@ namespace AuthenticationApi.Application.Services.Tests
 
             // Act & Assert
             var ex = Assert.ThrowsAsync<InvalidOperationException>(async () =>
-                await gitHubOAuthService.GetProviderModelOnCodeAsync(code, redirectUrl, CancellationToken.None));
+                await gitHubOAuthService.GetProviderModelOnCodeAsync(queryParams, redirectUrl, CancellationToken.None));
 
             Assert.That(ex.Message, Is.EqualTo("Can't get the user access token!"));
+
             oauthClientMock.Verify(x => x.ExchangeAuthorizationCodeAsync(code, redirectUrl, It.IsAny<CancellationToken>()), Times.Once);
+            oauthClientMock.Verify(x => x.VerifyState(It.IsAny<string>(), state), Times.Once);
+        }
+
+        [Test]
+        public void GetProviderModelOnCodeAsync_InvalidState_ThrowsException()
+        {
+            // Arrange
+            var code = "test-code";
+            var state = "invalid-verifier";
+            var queryParams = QueryHelpers.AddQueryString("", new Dictionary<string, string?>
+            {
+                { "state", state },
+                { "code", code }
+            });
+            var redirectUrl = "http://test-redirect.com";
+
+            oauthClientMock
+                .Setup(x => x.VerifyState(It.IsAny<string>(), state))
+                .Returns(false);
+
+            // Act & Assert
+            var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
+                 await gitHubOAuthService.GetProviderModelOnCodeAsync(queryParams, redirectUrl, CancellationToken.None));
+
+            Assert.That(ex.Message, Is.EqualTo("State is not valid."));
+
+            oauthClientMock.Verify(x => x.VerifyState(It.IsAny<string>(), state), Times.Once);
+        }
+
+        [Test]
+        public void GetProviderModelOnCodeAsync_EmptyState_ThrowsException()
+        {
+            // Arrange
+            var code = "test-code";
+            var state = "";
+            var queryParams = QueryHelpers.AddQueryString("", new Dictionary<string, string?>
+            {
+                { "state", state },
+                { "code", code }
+            });
+            var redirectUrl = "http://test-redirect.com";
+
+            oauthClientMock
+                .Setup(x => x.VerifyState(It.IsAny<string>(), state))
+                .Returns(false);
+
+            // Act & Assert
+            var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
+                 await gitHubOAuthService.GetProviderModelOnCodeAsync(queryParams, redirectUrl, CancellationToken.None));
+
+            Assert.That(ex.Message, Is.EqualTo("State is not valid."));
+            oauthClientMock.Verify(x => x.VerifyState(It.IsAny<string>(), state), Times.Never);
+        }
+
+        [Test]
+        public void GetProviderModelOnCodeAsync_EmptyCode_ThrowsException()
+        {
+            // Arrange
+            var code = "";
+            var state = "verifier";
+            var queryParams = QueryHelpers.AddQueryString("", new Dictionary<string, string?>
+            {
+                { "state", state },
+                { "code", code }
+            });
+            var redirectUrl = "http://test-redirect.com";
+
+            oauthClientMock
+                .Setup(x => x.VerifyState(It.IsAny<string>(), state))
+                .Returns(true);
+
+            // Act & Assert
+            var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
+                 await gitHubOAuthService.GetProviderModelOnCodeAsync(queryParams, redirectUrl, CancellationToken.None));
+
+            Assert.That(ex.Message, Is.EqualTo("Code is null or empty."));
         }
 
         [Test]
@@ -111,11 +215,21 @@ namespace AuthenticationApi.Application.Services.Tests
         {
             // Arrange
             var code = "test-code";
+            var state = "verifier";
             var redirectUrl = "http://test-redirect.com";
             var tokenResult = new GitHubOAuthTokenResult
             {
                 AccessToken = "valid-access-token"
             };
+            var queryParams = QueryHelpers.AddQueryString("", new Dictionary<string, string?>
+            {
+                { "state", state },
+                { "code", code }
+            });
+
+            oauthClientMock
+                .Setup(x => x.VerifyState(It.IsAny<string>(), state))
+                .Returns(true);
 
             oauthClientMock
                 .Setup(x => x.ExchangeAuthorizationCodeAsync(code, redirectUrl, It.IsAny<CancellationToken>()))
@@ -127,7 +241,7 @@ namespace AuthenticationApi.Application.Services.Tests
 
             // Act & Assert
             var ex = Assert.ThrowsAsync<InvalidOperationException>(async () =>
-                await gitHubOAuthService.GetProviderModelOnCodeAsync(code, redirectUrl, CancellationToken.None));
+                await gitHubOAuthService.GetProviderModelOnCodeAsync(queryParams, redirectUrl, CancellationToken.None));
 
             Assert.That(ex.Message, Is.EqualTo("Can't get the user!"));
             oauthClientMock.Verify(x => x.ExchangeAuthorizationCodeAsync(code, redirectUrl, It.IsAny<CancellationToken>()), Times.Once);

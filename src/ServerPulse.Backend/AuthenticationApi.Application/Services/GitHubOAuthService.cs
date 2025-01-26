@@ -1,6 +1,7 @@
 ﻿using Authentication.OAuth.GitHub;
 using AuthenticationApi.Core.Enums;
 using AuthenticationApi.Core.Models;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace AuthenticationApi.Application.Services
 {
@@ -26,8 +27,24 @@ namespace AuthenticationApi.Application.Services
             return oauthClient.GenerateOAuthRequestUrl(redirectUrl, stateVerifier);
         }
 
-        public async Task<ProviderLoginModel> GetProviderModelOnCodeAsync(string code, string redirectUrl, CancellationToken cancellationToken)
+        public async Task<ProviderLoginModel> GetProviderModelOnCodeAsync(string queryParams, string redirectUrl, CancellationToken cancellationToken)
         {
+            var stateVerifier = await stringVerifier.GetStringVerifierAsync(cancellationToken);
+
+            var state = QueryHelpers.ParseQuery(queryParams)["state"].FirstOrDefault();
+
+            if (string.IsNullOrEmpty(state) || !oauthClient.VerifyState(stateVerifier, state))
+            {
+                throw new ArgumentException("State is not valid.");
+            }
+
+            var code = QueryHelpers.ParseQuery(queryParams)["code"].FirstOrDefault();
+
+            if (string.IsNullOrEmpty(code))
+            {
+                throw new ArgumentException("Code is null or empty.");
+            }
+
             var tokenResult = await oauthClient.ExchangeAuthorizationCodeAsync(
                 code, redirectUrl, cancellationToken);
 
@@ -46,7 +63,7 @@ namespace AuthenticationApi.Application.Services
             return new ProviderLoginModel
             {
                 Email = result.Email,
-                ProviderLogin = nameof(OAuthLoginProvider.Google),
+                ProviderLogin = nameof(OAuthLoginProvider.GitHub),
                 ProviderKey = result.Id.ToString()
             };
         }

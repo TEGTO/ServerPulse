@@ -354,7 +354,7 @@ describe('AuthEffects', () => {
 
     describe('OAuth Login', () => {
         it('should dispatch loginUserSuccess on successful OAuth login', () => {
-            const code = 'sampleCode';
+            const queryParams = 'queryParams';
             const oauthParams = {
                 redirectUrl: 'redirectUrl',
                 oAuthLoginProvider: OAuthLoginProvider.Google,
@@ -367,12 +367,12 @@ describe('AuthEffects', () => {
 
             localStorageSpy.getItem.and.returnValue(JSON.stringify(oauthParams));
             oauthApiServiceSpy.loginUserOAuth.and.returnValue(of(authData));
-            actions$ = of(oauthLogin({ code }));
+            actions$ = of(oauthLogin({ queryParams }));
 
             effects.oauthLogin$.subscribe((action) => {
                 expect(action).toEqual(loginUserSuccess({ authData }));
                 expect(oauthApiServiceSpy.loginUserOAuth).toHaveBeenCalledWith({
-                    code,
+                    queryParams,
                     redirectUrl: oauthParams.redirectUrl,
                     oAuthLoginProvider: oauthParams.oAuthLoginProvider,
                 });
@@ -382,7 +382,7 @@ describe('AuthEffects', () => {
 
         it('should dispatch oauthLoginFailure on missing OAuth params', () => {
             localStorageSpy.getItem.and.returnValue(null);
-            actions$ = of(oauthLogin({ code: 'sampleCode' }));
+            actions$ = of(oauthLogin({ queryParams: 'queryParams' }));
 
             effects.oauthLogin$.subscribe((action) => {
                 expect(action).toEqual(oauthLoginFailure({ error: new Error('Failed to get oauth url params!') }));
@@ -390,7 +390,7 @@ describe('AuthEffects', () => {
         });
 
         it('should dispatch authFailure on API error', () => {
-            const code = 'sampleCode';
+            const queryParams = 'sampleCode';
             const oauthParams = {
                 redirectUrl: 'redirectUrl',
                 oAuthLoginProvider: 'Google',
@@ -399,7 +399,7 @@ describe('AuthEffects', () => {
 
             localStorageSpy.getItem.and.returnValue(JSON.stringify(oauthParams));
             oauthApiServiceSpy.loginUserOAuth.and.returnValue(throwError(() => error));
-            actions$ = of(oauthLogin({ code }));
+            actions$ = of(oauthLogin({ queryParams }));
 
             effects.oauthLogin$.subscribe((action) => {
                 expect(action).toEqual(authFailure({ error: error.message }));

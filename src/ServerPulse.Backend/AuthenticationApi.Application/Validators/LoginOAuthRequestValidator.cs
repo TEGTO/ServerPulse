@@ -7,7 +7,7 @@ namespace AuthenticationApi.Application.Validators
     {
         public LoginOAuthRequestValidator()
         {
-            RuleFor(x => x.Code).NotNull().NotEmpty().MaximumLength(1024);
+            RuleFor(x => x.QueryParams).NotNull().NotEmpty().MaximumLength(1024);
             RuleFor(x => x.RedirectUrl).NotNull().NotEmpty().MaximumLength(1024);
         }
     }

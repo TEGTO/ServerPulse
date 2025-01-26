@@ -39,7 +39,7 @@ namespace AuthenticationApi.Endpoints.OAuth.LoginOAuth.Tests
             // Arrange
             var request = new LoginOAuthRequest
             {
-                Code = "test-code",
+                QueryParams = "code=test-code",
                 RedirectUrl = "https://example.com/callback",
                 OAuthLoginProvider = OAuthLoginProvider.Google
             };
@@ -93,7 +93,7 @@ namespace AuthenticationApi.Endpoints.OAuth.LoginOAuth.Tests
             // Arrange
             var request = new LoginOAuthRequest
             {
-                Code = "test-code",
+                QueryParams = "code=test-code",
                 RedirectUrl = "https://example.com/callback",
                 OAuthLoginProvider = (OAuthLoginProvider)999
             };
@@ -111,7 +111,7 @@ namespace AuthenticationApi.Endpoints.OAuth.LoginOAuth.Tests
             // Arrange
             var request = new LoginOAuthRequest
             {
-                Code = "test-code",
+                QueryParams = "code=test-code",
                 RedirectUrl = "https://example.com/callback",
                 OAuthLoginProvider = OAuthLoginProvider.Google
             };

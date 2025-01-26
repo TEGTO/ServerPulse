@@ -212,7 +212,7 @@ export class AuthEffects {
                     const params: GetOAuthUrlParams = JSON.parse(json);
 
                     const req: LoginOAuthRequest = {
-                        code: action.code,
+                        queryParams: action.queryParams,
                         redirectUrl: params.redirectUrl,
                         oAuthLoginProvider: params.oAuthLoginProvider
                     };

@@ -1,6 +1,7 @@
 ﻿using Authentication.OAuth.Google;
 using AuthenticationApi.Core.Enums;
 using AuthenticationApi.Core.Models;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace AuthenticationApi.Application.Services
 {
@@ -26,9 +27,15 @@ namespace AuthenticationApi.Application.Services
             return oauthClient.GenerateOAuthRequestUrl(redirectUrl, codeVerifier);
         }
 
-        public async Task<ProviderLoginModel> GetProviderModelOnCodeAsync(string code, string redirectUrl, CancellationToken cancellationToken)
+        public async Task<ProviderLoginModel> GetProviderModelOnCodeAsync(string queryParams, string redirectUrl, CancellationToken cancellationToken)
         {
             var codeVerifier = await stringVerifier.GetStringVerifierAsync(cancellationToken);
+            var code = QueryHelpers.ParseQuery(queryParams)["code"].FirstOrDefault();
+
+            if (string.IsNullOrEmpty(code))
+            {
+                throw new ArgumentException("Code is null or empty.");
+            }
 
             var tokenResult = await oauthClient.ExchangeAuthorizationCodeAsync(
                 code, codeVerifier, redirectUrl, cancellationToken);

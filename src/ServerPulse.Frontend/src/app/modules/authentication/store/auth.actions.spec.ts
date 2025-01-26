@@ -168,10 +168,10 @@ describe('Authentication Actions', () => {
 
     describe('OAuth Login Actions', () => {
         it('should create oauthLogin action', () => {
-            const code = 'some-code';
-            const action = oauthLogin({ code: code });
+            const queryParams = 'some-params';
+            const action = oauthLogin({ queryParams: queryParams });
             expect(action.type).toBe('[OAuth] OAuth Login');
-            expect(action.code).toBe(code);
+            expect(action.queryParams).toBe(queryParams);
         });
 
         it('should create oauthLoginFailure action', () => {

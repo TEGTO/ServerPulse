@@ -40,7 +40,7 @@ namespace AuthenticationApi.Endpoints.OAuth.LoginOAuth
         public async Task<ActionResult<LoginOAuthResponse>> LoginOAuth(LoginOAuthRequest request, CancellationToken cancellationToken)
         {
             var loginModel = await oAuthServices[request.OAuthLoginProvider].GetProviderModelOnCodeAsync(
-                request.Code, request.RedirectUrl, cancellationToken);
+                request.QueryParams, request.RedirectUrl, cancellationToken);
 
             if (loginModel == null)
             {

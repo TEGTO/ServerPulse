@@ -31,9 +31,9 @@ export class OAuthCallbackComponent implements OnInit, OnDestroy {
         })
       )
       .subscribe(params => {
-        const code = params['code'];
-        if (code) {
-          this.store.dispatch(oauthLogin({ code: code }));
+        if (Object.keys(params).length > 0) {
+          const queryParams = new URLSearchParams(params).toString();
+          this.store.dispatch(oauthLogin({ queryParams }));
         }
         this.redirector.redirectToHome();
         return of();
@@ -41,7 +41,7 @@ export class OAuthCallbackComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next()
-    this.destroy$.complete()
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

@@ -46,7 +46,7 @@ describe('OAuthCallbackComponent', () => {
     routeSpy.queryParams = of(mockParams);
 
     fixture.detectChanges();
-    expect(storeSpy.dispatch).toHaveBeenCalledWith(oauthLogin({ code: 'mock-code' }));
+    expect(storeSpy.dispatch).toHaveBeenCalledWith(oauthLogin({ queryParams: 'code=mock-code' }));
     expect(redirectorSpy.redirectToHome).toHaveBeenCalled();
   });
 

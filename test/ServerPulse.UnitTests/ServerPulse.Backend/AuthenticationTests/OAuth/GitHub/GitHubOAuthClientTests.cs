@@ -84,5 +84,20 @@ namespace Authentication.OAuth.GitHub.Tests
             Assert.IsTrue(resultUrl.Contains("scope=repo,user"));
             Assert.IsTrue(resultUrl.Contains("state=" + HashHelper.ComputeHash(stateVerifier)));
         }
+
+        [Test]
+        [TestCase("verifier", "verifier", true, Description = "State equals to verifier, must be true.")]
+        [TestCase("verifier", "invalid-verifier", false, Description = "State doesn't equal to verifier, must be false.")]
+        public void VerifyState_TestCases(string stateVerifier, string state, bool result)
+        {
+            // Arrange
+            state = HashHelper.ComputeHash(state);
+
+            // Act
+            var verifyResult = gitHubOAuthClient.VerifyState(stateVerifier, state);
+
+            // Assert
+            Assert.That(verifyResult, Is.EqualTo(result));
+        }
     }
 }
