@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
@@ -27,6 +28,7 @@ namespace Authentication.Tests
         {
             var mockGitHubOAuthApi = new Mock<IGitHubOAuthApi>();
             var mockGoogleOAuthApi = new Mock<IGoogleOAuthApi>();
+            var mockLogger = new Mock<ILogger<RsaKeyManager>>();
 
             services = new ServiceCollection();
 
@@ -64,6 +66,7 @@ namespace Authentication.Tests
             services.AddSingleton(configuration);
             services.AddSingleton(mockGitHubOAuthApi.Object);
             services.AddSingleton(mockGoogleOAuthApi.Object);
+            services.AddSingleton(mockLogger.Object);
 
             services.AddAuthentication();
             services.AddAuthorization();

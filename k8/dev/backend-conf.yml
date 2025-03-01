@@ -78,8 +78,14 @@ data:
   # AuthSettings__GoogleOAuth__ClientSecret:
   # AuthSettings__GoogleOAuth__Scope: aHR0cHM6Ly93d3cuZ29vZ2xlYXBpcy5jb20vYXV0aC91c2VyaW5mby5lbWFpbCBodHRwczovL3d3dy5nb29nbGVhcGlzLmNvbS9hdXRoL3VzZXJpbmZvLnByb2ZpbGU=
 
+  # Azure
   # Email__ConnectionString:
   # Email__SenderAddress:
+  # Aws
+  # Email__SenderAddress:
+  # Email__AccessKey:
+  # Email__SecretKey:
+  # Email__Region:
 
   ConnectionStrings__AuthenticationDb: VXNlciBJRD11c2VyMTtQYXNzd29yZD0xMjM0NTtIb3N0PWRiLXN2YztQb3J0PTU0MzI7RGF0YWJhc2U9c2VydmVycHVsc2UtZGI7UG9vbGluZz10cnVlO01pblBvb2xTaXplPTA7TWF4UG9vbFNpemU9MTAwO0Nvbm5lY3Rpb25MaWZldGltZT0wO1RydXN0U2VydmVyQ2VydGlmaWNhdGU9dHJ1ZQ==
   ConnectionStrings__ServerSlotDb: VXNlciBJRD11c2VyMTtQYXNzd29yZD0xMjM0NTtIb3N0PWRiLXN2YztQb3J0PTU0MzI7RGF0YWJhc2U9c2VydmVycHVsc2UtZGI7UG9vbGluZz10cnVlO01pblBvb2xTaXplPTA7TWF4UG9vbFNpemU9MTAwO0Nvbm5lY3Rpb25MaWZldGltZT0wO1RydXN0U2VydmVyQ2VydGlmaWNhdGU9dHJ1ZQ==

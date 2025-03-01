@@ -67,7 +67,7 @@ builder.Services.AddIdentity(builder.Configuration);
 
 #endregion
 
-#region Hanffire
+#region Hangfire
 
 var connectionString = builder.Configuration.GetConnectionString(InfrastructureKeys.AUTH_DATABASE_CONNECTION_STRING);
 builder.Services.ConfigureHangfireWthPostgreSql(connectionString);

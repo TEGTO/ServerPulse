@@ -6,27 +6,25 @@ using Moq;
 namespace EmailControl.Tests
 {
     [TestFixture]
-    internal class EmailSenderTests
+    internal class AzureEmailSenderTests
     {
-        private Mock<IEmailClientWrapper> mockEmailClient;
-        private IOptions<EmailSettings> mockOptions;
-        private EmailSender emailSender;
-
-        private EmailSettings emailSettings;
+        private Mock<IAzureEmailClientFacade> mockAzureEmailClient;
+        private IOptions<AzureEmailSettings> mockOptions;
+        private AzureEmailSender emailSender;
 
         [SetUp]
         public void SetUp()
         {
-            emailSettings = new EmailSettings
+            var emailSettings = new AzureEmailSettings
             {
                 ConnectionString = "fake-connection-string",
                 SenderAddress = "sender@example.com"
             };
 
             mockOptions = Options.Create(emailSettings);
-            mockEmailClient = new Mock<IEmailClientWrapper>(MockBehavior.Strict);
+            mockAzureEmailClient = new Mock<IAzureEmailClientFacade>();
 
-            emailSender = new EmailSender(mockOptions, mockEmailClient.Object);
+            emailSender = new AzureEmailSender(mockOptions, mockAzureEmailClient.Object);
         }
 
         [TestCase("recipient@example.com", "Test Subject", "<p>Test Body</p>", "Test Body")]
@@ -37,20 +35,13 @@ namespace EmailControl.Tests
             // Arrange
             var cancellationToken = CancellationToken.None;
 
-            mockEmailClient
-                .Setup(client => client.SendAsync(
-                    WaitUntil.Completed,
-                    It.IsAny<EmailMessage>(),
-                    cancellationToken))
-                .Returns(Task.CompletedTask);
-
             // Act
             await emailSender.SendEmailAsync(toEmail, subject, body, cancellationToken);
 
             // Assert
-            mockEmailClient.Verify(client => client.SendAsync(
+            mockAzureEmailClient.Verify(client => client.SendAsync(
                 WaitUntil.Completed,
-                It.IsAny<EmailMessage>(),
+                It.Is<EmailMessage>(x => x.Content.PlainText == expectedPlainText && x.Content.Html == body),
                 cancellationToken), Times.Once);
         }
     }
