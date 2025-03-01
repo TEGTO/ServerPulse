@@ -1,5 +1,8 @@
 ﻿using Authentication.Rsa;
 using Authentication.Token;
+using AutoFixture;
+using AutoFixture.AutoMoq;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using System.Reflection;
@@ -10,6 +13,7 @@ namespace AuthenticationTests.Rsa.Tests
     internal class RsaKeyManagerTests
     {
         private Mock<IOptions<JwtSettings>> mockOptions;
+        private IFixture fixture;
         private JwtSettings jwtSettings;
 
         [SetUp]
@@ -23,13 +27,16 @@ namespace AuthenticationTests.Rsa.Tests
 
             mockOptions = new Mock<IOptions<JwtSettings>>();
             mockOptions.Setup(o => o.Value).Returns(jwtSettings);
+
+            fixture = new Fixture().Customize(new AutoMoqCustomization());
+            fixture.Inject(mockOptions.Object);
         }
 
         [Test]
         public void Constructor_Should_LoadKeys()
         {
             // Act
-            var manager = new RsaKeyManager(mockOptions.Object);
+            var manager = fixture.Create<RsaKeyManager>();
 
             // Assert
             Assert.NotNull(manager.PublicKey);
@@ -40,7 +47,7 @@ namespace AuthenticationTests.Rsa.Tests
         public void ReloadKeys_Should_Dispose_And_Reload()
         {
             // Arrange
-            var manager = new RsaKeyManager(mockOptions.Object);
+            var manager = fixture.Create<RsaKeyManager>();
             var initialPublicKey = manager.PublicKey;
             var initialPrivateKey = manager.PrivateKey;
 
@@ -53,10 +60,43 @@ namespace AuthenticationTests.Rsa.Tests
         }
 
         [Test]
+        public void LoadKeys_NoKeysInConfiguration_ShouldNotLoadKeys_And_LogInfo()
+        {
+            // Arrange
+            jwtSettings = new JwtSettings
+            {
+                PrivateKey = "",
+                PublicKey = "",
+            };
+            mockOptions.Setup(o => o.Value).Returns(jwtSettings);
+            fixture.Inject(mockOptions.Object);
+
+            var loggerMock = fixture.Freeze<Mock<ILogger<RsaKeyManager>>>();
+
+            // Act
+            var manager = fixture.Create<RsaKeyManager>();
+
+            // Assert
+            var publicRsa = manager.GetType().GetField("publicRsa", BindingFlags.NonPublic | BindingFlags.Instance);
+            var privateRsa = manager.GetType().GetField("privateRsa", BindingFlags.NonPublic | BindingFlags.Instance);
+
+            Assert.IsNull(publicRsa!.GetValue(manager));
+            Assert.IsNull(privateRsa!.GetValue(manager));
+
+            loggerMock.Verify(x => x.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.Exactly(2));
+        }
+
+        [Test]
         public void PublicKey_Should_Throw_When_Disposed()
         {
             // Arrange
-            var manager = new RsaKeyManager(mockOptions.Object);
+            var manager = fixture.Create<RsaKeyManager>();
 
             // Act
             var prop = manager.GetType().GetField("publicRsa", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -70,7 +110,7 @@ namespace AuthenticationTests.Rsa.Tests
         public void PrivateKey_Should_Throw_When_Disposed()
         {
             // Arrange
-            var manager = new RsaKeyManager(mockOptions.Object);
+            var manager = fixture.Create<RsaKeyManager>();
 
             // Act
             var prop = manager.GetType().GetField("privateRsa", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -84,7 +124,7 @@ namespace AuthenticationTests.Rsa.Tests
         public void DisposeKeys_Should_Dispose_Keys()
         {
             // Arrange
-            var manager = new RsaKeyManager(mockOptions.Object);
+            var manager = fixture.Create<RsaKeyManager>();
 
             // Act
             var method = manager.GetType().GetMethod("DisposeKeys", BindingFlags.NonPublic | BindingFlags.Instance);

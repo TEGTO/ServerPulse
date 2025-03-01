@@ -91,7 +91,6 @@ else
     });
 }
 
-
 app.UseEndpoints(_ => { });
 app.MapHealthChecks("/health");
 

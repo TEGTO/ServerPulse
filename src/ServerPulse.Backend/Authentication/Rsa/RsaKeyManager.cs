@@ -1,4 +1,5 @@
 ﻿using Authentication.Token;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
@@ -9,6 +10,7 @@ namespace Authentication.Rsa
     {
         private RSA? privateRsa;
         private RSA? publicRsa;
+        private readonly ILogger<RsaKeyManager> logger;
 
         public RsaSecurityKey PublicKey
         {
@@ -36,8 +38,10 @@ namespace Authentication.Rsa
             }
         }
 
-        public RsaKeyManager(IOptions<JwtSettings> options)
+        public RsaKeyManager(IOptions<JwtSettings> options, ILogger<RsaKeyManager> logger)
         {
+            this.logger = logger;
+
             LoadKeys(options.Value);
         }
 
@@ -54,11 +58,25 @@ namespace Authentication.Rsa
 
         private void LoadKeys(JwtSettings jwtSettings)
         {
-            privateRsa = RSA.Create();
-            privateRsa.ImportFromPem(jwtSettings.PrivateKey);
+            if (!jwtSettings.PrivateKey.IsNullOrEmpty())
+            {
+                privateRsa = RSA.Create();
+                privateRsa.ImportFromPem(jwtSettings.PrivateKey);
+            }
+            else
+            {
+                logger.LogInformation("No private key found in configuration.");
+            }
 
-            publicRsa = RSA.Create();
-            publicRsa.ImportFromPem(jwtSettings.PublicKey);
+            if (!jwtSettings.PublicKey.IsNullOrEmpty())
+            {
+                publicRsa = RSA.Create();
+                publicRsa.ImportFromPem(jwtSettings.PublicKey);
+            }
+            else
+            {
+                logger.LogInformation("No public key found in configuration.");
+            }
         }
 
         private void DisposeKeys()
