@@ -28,6 +28,8 @@ if (builder.Environment.IsDevelopment())
     builder.AddDocumentation("Server Slot API");
 }
 
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
 app.UseSharedMiddleware();

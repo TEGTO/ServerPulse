@@ -21,6 +21,8 @@ if (builder.Environment.IsDevelopment())
     builder.AddDocumentation("Analyzer API");
 }
 
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
 app.UseSharedMiddleware();

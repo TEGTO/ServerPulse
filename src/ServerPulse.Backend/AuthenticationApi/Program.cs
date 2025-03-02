@@ -90,6 +90,8 @@ if (builder.Environment.IsDevelopment())
     builder.AddDocumentation("Authentication API");
 }
 
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
 if (app.Configuration[InfrastructureKeys.EF_CREATE_DATABASE] == "true")
