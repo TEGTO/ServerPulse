@@ -170,9 +170,15 @@ namespace Cdk
             var dbConnectionParam = new StringParameter(this, "DbConnectionString", new StringParameterProps
             {
                 ParameterName = "/serverpulse/postgres/connection-string",
-                StringValue = $"User ID={props.PostgresUser};Password={props.PostgresPassword};Host={dbInstance.DbInstanceEndpointAddress};Port=5432;Database={props.PostgresDb};Pooling=true;MinPoolSize=0;MaxPoolSize=100;ConnectionLifetime=0;TrustServerCertificate=true",
+                StringValue = $"User ID={props.PostgresUser};Password={props.PostgresPassword};Host={dbInstance.InstanceEndpoint.Hostname};Port=5432;Database={props.PostgresDb};Pooling=true;MinPoolSize=0;MaxPoolSize=100;ConnectionLifetime=0;TrustServerCertificate=true",
                 Tier = ParameterTier.STANDARD
             });
+
+            dbSecurityGroup.AddIngressRule(
+                Peer.Ipv4(vpc.VpcCidrBlock),
+                Port.Tcp(5432),
+                "Allow VPC-wide access to PostgreSQL Ipv4"
+            );
 
             props.ConnectionStringsAuthenticationDb = dbConnectionParam.StringValue;
             props.ConnectionStringsServerSlotDb = dbConnectionParam.StringValue;
@@ -219,6 +225,12 @@ namespace Cdk
                 StringValue = $"redis://{redisCluster.AttrRedisEndpointAddress}:6379",
                 Tier = ParameterTier.STANDARD
             });
+
+            redisSecurityGroup.AddIngressRule(
+                Peer.Ipv4(vpc.VpcCidrBlock),
+                Port.Tcp(6379),
+                "Allow VPC-wide access to Redis Ipv4"
+            );
 
             props.ConnectionStringsRedisServer = redisConnectionParam.StringValue;
         }
