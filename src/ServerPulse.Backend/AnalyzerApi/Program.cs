@@ -40,6 +40,8 @@ app.UseOutputCache(); //Order after Identity
 
 app.MapHubs();
 
+app.MapHealthChecks("/health");
+
 await app.RunAsync();
 
 public partial class Program { }

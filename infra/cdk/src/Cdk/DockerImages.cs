@@ -7,5 +7,6 @@
         public required string AnalyzerApi { get; set; }
         public required string ServerSlotApi { get; set; }
         public required string ApiGateway { get; set; }
+        public required string Frontend { get; set; }
     }
 }

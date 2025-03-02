@@ -1,0 +1,262 @@
+{
+  "Routes": [
+    {
+      "Key": "Analyzer_GetLoadEventsInDataRange",
+      "UpstreamPathTemplate": "/analyze/daterange",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamPathTemplate": "/analyze/daterange",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "analyzerapi.server-pulse",
+          "Port": 8080
+        }
+      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToRequest": {
+        "Authorization": "Bearer {token}"
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 15
+      },
+      "SwaggerKey": "analyzer"
+    },
+    {
+      "Key": "Analyzer_GetLoadStatisticsPerDay",
+      "UpstreamPathTemplate": "/analyze/perday/{key}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "DownstreamPathTemplate": "/analyze/perday/{key}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "analyzerapi.server-pulse",
+          "Port": 8080
+        }
+      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToRequest": {
+        "Authorization": "Bearer {token}"
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 15
+      },
+      "SwaggerKey": "analyzer"
+    },
+    {
+      "Key": "Analyzer_GetSomeLoadEvents",
+      "UpstreamPathTemplate": "/analyze/someevents",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamPathTemplate": "/analyze/someevents",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "analyzerapi.server-pulse",
+          "Port": 8080
+        }
+      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToRequest": {
+        "Authorization": "Bearer {token}"
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 15
+      },
+      "SwaggerKey": "analyzer"
+    },
+    {
+      "Key": "Analyzer_GetSomeCustomEvents",
+      "UpstreamPathTemplate": "/analyze/somecustomevents",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamPathTemplate": "/analyze/somecustomevents",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "analyzerapi.server-pulse",
+          "Port": 8080
+        }
+      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToRequest": {
+        "Authorization": "Bearer {token}"
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 15
+      },
+      "SwaggerKey": "analyzer"
+    },
+    {
+      "Key": "Analyzer_GetAmountStatisticsInRange",
+      "UpstreamPathTemplate": "/analyze/amountrange",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamPathTemplate": "/analyze/amountrange",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "analyzerapi.server-pulse",
+          "Port": 8080
+        }
+      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToRequest": {
+        "Authorization": "Bearer {token}"
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 15
+      },
+      "SwaggerKey": "analyzer"
+    },
+    {
+      "Key": "Analyzer_GetSlotStatistics",
+      "UpstreamPathTemplate": "/analyze/slotstatistics/{key}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "DownstreamPathTemplate": "/analyze/slotstatistics/{key}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "analyzerapi.server-pulse",
+          "Port": 8080
+        }
+      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToRequest": {
+        "Authorization": "Bearer {token}"
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 15
+      },
+      "SwaggerKey": "analyzer"
+    },
+    {
+      "Key": "Analyzer_GetLifecycleStatistics",
+      "UpstreamPathTemplate": "/lifecyclestatisticshub/{path}",
+      "DownstreamPathTemplate": "/lifecyclestatisticshub/{path}",
+      "DownstreamScheme": "ws",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "analyzerapi.server-pulse",
+          "Port": 8080
+        }
+      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "OPTIONS", "CONNECT" ],
+      "QoSOptions": {
+        "TimeoutValue": 320000
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToRequest": {
+        "Authorization": "Bearer {token}"
+      },
+      "SwaggerKey": "analyzer"
+    },
+    {
+      "Key": "Analyzer_GetLoadStatistics",
+      "UpstreamPathTemplate": "/loadstatisticshub/{path}",
+      "DownstreamPathTemplate": "/loadstatisticshub/{path}",
+      "DownstreamScheme": "ws",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "analyzerapi.server-pulse",
+          "Port": 8080
+        }
+      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "OPTIONS", "CONNECT" ],
+      "QoSOptions": {
+        "TimeoutValue": 320000
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToRequest": {
+        "Authorization": "Bearer {token}"
+      },
+      "SwaggerKey": "analyzer"
+    },
+    {
+      "Key": "Analyzer_GetCustomStatistics",
+      "UpstreamPathTemplate": "/customstatisticshub/{path}",
+      "DownstreamPathTemplate": "/customstatisticshub/{path}",
+      "DownstreamScheme": "ws",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "analyzerapi.server-pulse",
+          "Port": 8080
+        }
+      ],
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "OPTIONS", "CONNECT" ],
+      "QoSOptions": {
+        "TimeoutValue": 320000
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToRequest": {
+        "Authorization": "Bearer {token}"
+      },
+      "SwaggerKey": "analyzer"
+    }
+  ]
+}

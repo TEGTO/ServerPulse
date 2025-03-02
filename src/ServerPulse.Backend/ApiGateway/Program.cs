@@ -92,6 +92,7 @@ else
 }
 
 app.UseEndpoints(_ => { });
+
 app.MapHealthChecks("/health");
 
 app.UseOcelotWebSockets();

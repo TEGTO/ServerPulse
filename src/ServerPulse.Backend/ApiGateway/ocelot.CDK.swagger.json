@@ -1,0 +1,44 @@
+{
+  "SwaggerEndPoints": [
+    {
+      "Key": "analyzer",
+      "Config": [
+        {
+          "Name": "Analyzer API",
+          "Version": "v1",
+          "Url": "http://analyzerapi.server-pulse:8080/swagger/v1/swagger.json"
+        }
+      ]
+    },
+    {
+      "Key": "authentication",
+      "Config": [
+        {
+          "Name": "Authentication API",
+          "Version": "v1",
+          "Url": "http://authenticationapi.server-pulse:8080/swagger/v1/swagger.json"
+        }
+      ]
+    },
+    {
+      "Key": "serverslot",
+      "Config": [
+        {
+          "Name": "Server Slot API",
+          "Version": "v1",
+          "Url": "http://serverslotapi.server-pulse:8080/swagger/v1/swagger.json"
+        }
+      ]
+    },
+    {
+      "Key": "servermonitor",
+      "Config": [
+        {
+          "Name": "Server Monitor API",
+          "Version": "v1",
+          "Url": "http://servermonitorapi.server-pulse:8080/swagger/v1/swagger.json"
+        }
+      ]
+    }
+  ]
+}

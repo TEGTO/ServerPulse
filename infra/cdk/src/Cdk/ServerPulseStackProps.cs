@@ -2,7 +2,7 @@
 
 namespace Cdk
 {
-    public sealed class ServerPulseStackProps : IStackProps
+    public sealed class ServerPulseStackProps : StackProps
     {
         public required string AspCoreEnvironment { get; set; }
 

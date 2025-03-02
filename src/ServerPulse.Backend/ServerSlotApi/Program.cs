@@ -5,7 +5,6 @@ using ExceptionHandling;
 using Logging;
 using ServerSlotApi;
 using ServerSlotApi.Application;
-using ServerSlotApi.Infrastructure;
 using ServerSlotApi.Infrastructure.Data;
 using Shared;
 
@@ -52,6 +51,8 @@ app.UseIdentity();
 app.UseOutputCache(); //Order after Identity
 
 app.MapControllers();
+
+app.MapHealthChecks("/health");
 
 await app.RunAsync();
 

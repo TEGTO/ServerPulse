@@ -2,11 +2,18 @@ using Amazon.CDK;
 using Amazon.CDK.AWS.EC2;
 using Amazon.CDK.AWS.ECS;
 using Amazon.CDK.AWS.ECS.Patterns;
+using Amazon.CDK.AWS.ElastiCache;
 using Amazon.CDK.AWS.IAM;
+using Amazon.CDK.AWS.RDS;
+using Amazon.CDK.AWS.ServiceDiscovery;
+using Amazon.CDK.AWS.SSM;
 using Constructs;
 using System.Collections.Generic;
+using System.Linq;
+using CfnService = Amazon.CDK.AWS.ECS.CfnService;
 using Cluster = Amazon.CDK.AWS.ECS.Cluster;
 using ClusterProps = Amazon.CDK.AWS.ECS.ClusterProps;
+using InstanceType = Amazon.CDK.AWS.EC2.InstanceType;
 
 namespace Cdk
 {
@@ -14,46 +21,213 @@ namespace Cdk
     {
         internal ServerPulseCdkStack(Construct scope, string id, ServerPulseStackProps props, DockerImages images) : base(scope, id, props)
         {
-            #region [Infrastructure]
-
-            AddKafka();
-            AddDb();
-            AddRedis();
-
-            #endregion
-
-            #region [Services]
-
             var vpc = new Vpc(this, "MyVpc", new VpcProps
             {
                 MaxAzs = 2
             });
 
+            var namespaceName = "server-pulse";
             var cluster = new Cluster(this, "MyCluster", new ClusterProps
             {
                 Vpc = vpc,
+                DefaultCloudMapNamespace = new CloudMapNamespaceOptions
+                {
+                    Name = namespaceName,
+                    Type = NamespaceType.DNS_PRIVATE,
+                    Vpc = vpc
+                }
             });
 
-            AddAnalyzerApi(props, cluster, images);
-            AddServerSlotApi(props, cluster, images);
-            AddAuthenticationApi(props, cluster, images);
-            AddServerMonitorApi(props, cluster, images);
-            AddApiGateway(props, cluster, images);
+            #region [Infrastructure]
+
+            AddKafka(vpc, props);
+            AddDb(vpc, props);
+            AddRedis(vpc, props);
+
+            #endregion
+
+            #region [Services]
+
+            var apigatewayName = "apigateway";
+            var serverslotName = "serverslotapi";
+            var analyzerName = "analyzerapi";
+            var authenticationName = "authenticationapi";
+            var servermonitorName = "servermonitorapi";
+
+            props.ApiGateway = $"http://{apigatewayName}.{namespaceName}:8080";
+            props.ServerSlotApiUrl = $"http://{serverslotName}.{namespaceName}:8080";
+
+            AddApiGateway(props, cluster, images, apigatewayName);
+            AddServerSlotApi(props, cluster, images, serverslotName);
+            AddAnalyzerApi(props, cluster, images, analyzerName);
+            AddAuthenticationApi(props, cluster, images, authenticationName);
+            AddServerMonitorApi(props, cluster, images, servermonitorName);
+
+            #endregion
+
+            #region [Frontend]
+
+            var frontendName = "frontend";
+
+            AddFrontend(cluster, images, frontendName);
 
             #endregion
         }
 
         #region [Infrastructure]
 
-        public void AddKafka() { }
-        public void AddDb() { }
-        public void AddRedis() { }
+        public void AddKafka(Vpc vpc, ServerPulseStackProps props)
+        {
+            var kafkaSecurityGroup = new SecurityGroup(this, "KafkaSecurityGroup", new SecurityGroupProps
+            {
+                Vpc = vpc,
+                AllowAllOutbound = true
+            });
+
+            kafkaSecurityGroup.AddIngressRule(
+                kafkaSecurityGroup,
+                Port.Tcp(9092),
+                "Allow internal Kafka broker communication"
+            );
+
+            var kafkaCluster = new Amazon.CDK.AWS.MSK.CfnCluster(this, "KafkaCluster", new Amazon.CDK.AWS.MSK.CfnClusterProps
+            {
+                ClusterName = "ServerPulseKafka",
+                KafkaVersion = "3.3.1",
+                NumberOfBrokerNodes = 2,
+                BrokerNodeGroupInfo = new Amazon.CDK.AWS.MSK.CfnCluster.BrokerNodeGroupInfoProperty
+                {
+                    InstanceType = "kafka.t3.small",
+                    SecurityGroups = [kafkaSecurityGroup.SecurityGroupId],
+                    StorageInfo = new Amazon.CDK.AWS.MSK.CfnCluster.StorageInfoProperty
+                    {
+                        EbsStorageInfo = new Amazon.CDK.AWS.MSK.CfnCluster.EBSStorageInfoProperty
+                        {
+                            VolumeSize = 5
+                        }
+                    },
+                    ClientSubnets = vpc.PrivateSubnets.Select(subnet => subnet.SubnetId).ToArray()
+                },
+                EnhancedMonitoring = "DEFAULT",  // Disables detailed monitoring (reduces cost)
+                ConfigurationInfo = new Amazon.CDK.AWS.MSK.CfnCluster.ConfigurationInfoProperty
+                {
+                    Arn = "arn:aws:kafka:region:account-id:configuration/your-config",
+                    Revision = 1
+                }
+            });
+
+            kafkaCluster.ApplyRemovalPolicy(RemovalPolicy.DESTROY);
+
+            var kafkaBootstrapParam = new StringParameter(this, "KafkaBootstrapServers", new StringParameterProps
+            {
+                ParameterName = "/serverpulse/kafka/bootstrap-servers",
+                StringValue = Fn.GetAtt(kafkaCluster.LogicalId, "BootstrapBrokers").ToString(),
+                Tier = ParameterTier.STANDARD
+            });
+
+            props.KafkaBootstrapServers = kafkaBootstrapParam.StringValue;
+        }
+
+        public void AddDb(Vpc vpc, ServerPulseStackProps props)
+        {
+            var dbSecurityGroup = new SecurityGroup(this, "PostgresSecurityGroup", new SecurityGroupProps
+            {
+                Vpc = vpc,
+                AllowAllOutbound = true
+            });
+
+            dbSecurityGroup.AddIngressRule(
+                dbSecurityGroup,
+                Port.Tcp(5432),
+                "Allow internal access to PostgreSQL"
+            );
+
+            //var dbCredentials = Credentials.FromGeneratedSecret("user1", new CredentialsBaseOptions
+            //{
+            //    SecretName = "serverpulse-db-secret"
+            //});
+
+            var dbInstance = new DatabaseInstance(this, "ServerPulsePostgres", new DatabaseInstanceProps
+            {
+                Engine = DatabaseInstanceEngine.Postgres(new PostgresInstanceEngineProps
+                {
+                    Version = PostgresEngineVersion.VER_14
+                }),
+                InstanceType = InstanceType.Of(InstanceClass.BURSTABLE3, InstanceSize.MICRO),
+                Vpc = vpc,
+                SecurityGroups = [dbSecurityGroup],
+                Credentials = Credentials.FromPassword(props.PostgresUser, new SecretValue(props.PostgresPassword)),
+                MultiAz = false,
+                AllocatedStorage = 20,
+                StorageType = StorageType.GP2,
+                StorageEncrypted = false,
+                BackupRetention = Duration.Days(0),
+                RemovalPolicy = RemovalPolicy.DESTROY,
+                DeletionProtection = false,
+            });
+
+
+            var dbConnectionParam = new StringParameter(this, "DbConnectionString", new StringParameterProps
+            {
+                ParameterName = "/serverpulse/postgres/connection-string",
+                StringValue = $"User ID={props.PostgresUser};Password={props.PostgresPassword};Host={dbInstance.DbInstanceEndpointAddress};Port=5432;Database={props.PostgresDb};Pooling=true;MinPoolSize=0;MaxPoolSize=100;ConnectionLifetime=0;TrustServerCertificate=true",
+                Tier = ParameterTier.STANDARD
+            });
+
+            props.ConnectionStringsAuthenticationDb = dbConnectionParam.StringValue;
+            props.ConnectionStringsServerSlotDb = dbConnectionParam.StringValue;
+        }
+
+        public void AddRedis(Vpc vpc, ServerPulseStackProps props)
+        {
+            var redisSecurityGroup = new SecurityGroup(this, "RedisSecurityGroup", new SecurityGroupProps
+            {
+                Vpc = vpc,
+                AllowAllOutbound = true
+            });
+
+            redisSecurityGroup.AddIngressRule(
+                redisSecurityGroup,
+                Port.Tcp(6379),
+                "Allow internal access to Redis"
+            );
+
+            var redisSubnetGroup = new CfnSubnetGroup(this, "RedisSubnetGroup", new CfnSubnetGroupProps
+            {
+                Description = "Subnet group for Redis cluster",
+                SubnetIds = vpc.PrivateSubnets.Select(subnet => subnet.SubnetId).ToArray()
+            });
+
+            var redisCluster = new CfnCacheCluster(this, "RedisCluster", new CfnCacheClusterProps
+            {
+                ClusterName = "ServerPulseRedis",
+                Engine = "redis",
+                CacheNodeType = "cache.t4g.micro",
+                NumCacheNodes = 1,
+                VpcSecurityGroupIds = [redisSecurityGroup.SecurityGroupId],
+                CacheSubnetGroupName = redisSubnetGroup.Ref,
+                EngineVersion = "7.0",
+                AutoMinorVersionUpgrade = false,
+                SnapshotRetentionLimit = 0,
+            });
+
+            redisCluster.ApplyRemovalPolicy(RemovalPolicy.DESTROY);
+
+            var redisConnectionParam = new StringParameter(this, "RedisConnectionString", new StringParameterProps
+            {
+                ParameterName = "/serverpulse/redis/connection-string",
+                StringValue = $"redis://{redisCluster.AttrRedisEndpointAddress}:6379",
+                Tier = ParameterTier.STANDARD
+            });
+
+            props.ConnectionStringsRedisServer = redisConnectionParam.StringValue;
+        }
 
         #endregion
 
         #region [Services]
 
-        public void AddAuthenticationApi(ServerPulseStackProps props, Cluster cluster, DockerImages images)
+        public void AddAuthenticationApi(ServerPulseStackProps props, Cluster cluster, DockerImages images, string serviceName)
         {
             var environment = new Dictionary<string, string>
             {
@@ -78,29 +252,10 @@ namespace Cdk
                 { EnvironmentVariableKeys.BackgroundServicesUnconfirmedUsersCleanUpInMinutes, props.BackgroundServicesUnconfirmedUsersCleanUpInMinutes.ToString() }
             };
 
-            var fargateService = new ApplicationLoadBalancedFargateService(this, "MyFargateAuthenticationApi", new ApplicationLoadBalancedFargateServiceProps
-            {
-                Cluster = cluster,
-                DesiredCount = 1,
-                TaskImageOptions = new ApplicationLoadBalancedTaskImageOptions
-                {
-                    Image = ContainerImage.FromRegistry(images.AuthenticationApi),
-                    ContainerPort = 8080,
-                    Environment = environment,
-                    LogDriver = LogDriver.AwsLogs(new AwsLogDriverProps
-                    {
-                        StreamPrefix = "MyFargateAuthenticationApiLogs"
-                    })
-                },
-                MemoryLimitMiB = 1024,
-                Cpu = 512,
-            });
-
-            fargateService.TaskDefinition.TaskRole.AddManagedPolicy(
-                ManagedPolicy.FromAwsManagedPolicyName("AmazonEC2ContainerRegistryReadOnly"));
+            AddService(cluster, images.AuthenticationApi, serviceName, environment);
         }
 
-        public void AddServerMonitorApi(ServerPulseStackProps props, Cluster cluster, DockerImages images)
+        public void AddServerMonitorApi(ServerPulseStackProps props, Cluster cluster, DockerImages images, string serviceName)
         {
             var environment = new Dictionary<string, string>
             {
@@ -115,29 +270,10 @@ namespace Cdk
                 { EnvironmentVariableKeys.ServerSlotApiUrl, props.ServerSlotApiUrl }
             };
 
-            var fargateService = new ApplicationLoadBalancedFargateService(this, "MyServerMonitorApi", new ApplicationLoadBalancedFargateServiceProps
-            {
-                Cluster = cluster,
-                DesiredCount = 1,
-                TaskImageOptions = new ApplicationLoadBalancedTaskImageOptions
-                {
-                    Image = ContainerImage.FromRegistry(images.ServerMonitorApi),
-                    ContainerPort = 8080,
-                    Environment = environment,
-                    LogDriver = LogDriver.AwsLogs(new AwsLogDriverProps
-                    {
-                        StreamPrefix = "MyServerMonitorApiLogs"
-                    })
-                },
-                MemoryLimitMiB = 1024,
-                Cpu = 512,
-            });
-
-            fargateService.TaskDefinition.TaskRole.AddManagedPolicy(
-                ManagedPolicy.FromAwsManagedPolicyName("AmazonEC2ContainerRegistryReadOnly"));
+            AddService(cluster, images.ServerMonitorApi, serviceName, environment);
         }
 
-        public void AddAnalyzerApi(ServerPulseStackProps props, Cluster cluster, DockerImages images)
+        public void AddAnalyzerApi(ServerPulseStackProps props, Cluster cluster, DockerImages images, string serviceName)
         {
             var environment = new Dictionary<string, string>
             {
@@ -164,31 +300,10 @@ namespace Cdk
                 { EnvironmentVariableKeys.LoadEventProcessingBatchIntervalInMilliseconds, props.LoadEventProcessingBatchIntervalInMilliseconds.ToString() }
             };
 
-            var fargateService = new ApplicationLoadBalancedFargateService(this, "MyAnalyzerApi", new ApplicationLoadBalancedFargateServiceProps
-            {
-                Cluster = cluster,
-                DesiredCount = 1,
-                TaskImageOptions = new ApplicationLoadBalancedTaskImageOptions
-                {
-                    Image = ContainerImage.FromRegistry(images.AnalyzerApi),
-                    ContainerPort = 8080,
-                    Environment = environment,
-                    LogDriver = LogDriver.AwsLogs(new AwsLogDriverProps
-                    {
-                        StreamPrefix = "MyAnalyzerApiLogs"
-                    })
-                },
-                MemoryLimitMiB = 1024,
-                Cpu = 512,
-            });
-
-            fargateService.TaskDefinition.TaskRole.AddManagedPolicy(
-                ManagedPolicy.FromAwsManagedPolicyName("AmazonEC2ContainerRegistryReadOnly"));
-
-            props.ApiGateway = $"http://{fargateService.LoadBalancer.LoadBalancerDnsName}";
+            AddService(cluster, images.AnalyzerApi, serviceName, environment);
         }
 
-        public void AddServerSlotApi(ServerPulseStackProps props, Cluster cluster, DockerImages images)
+        public void AddServerSlotApi(ServerPulseStackProps props, Cluster cluster, DockerImages images, string serviceName)
         {
             var environment = new Dictionary<string, string>
             {
@@ -205,35 +320,14 @@ namespace Cdk
                 { EnvironmentVariableKeys.CacheServerSlotCheckExpiryInSeconds, props.CacheServerSlotCheckExpiryInSeconds.ToString() }
             };
 
-            var fargateService = new ApplicationLoadBalancedFargateService(this, "MyServerSlotApi", new ApplicationLoadBalancedFargateServiceProps
-            {
-                Cluster = cluster,
-                DesiredCount = 1,
-                TaskImageOptions = new ApplicationLoadBalancedTaskImageOptions
-                {
-                    Image = ContainerImage.FromRegistry(images.ServerSlotApi),
-                    ContainerPort = 8080,
-                    Environment = environment,
-                    LogDriver = LogDriver.AwsLogs(new AwsLogDriverProps
-                    {
-                        StreamPrefix = "MyServerSlotApiLogs"
-                    })
-                },
-                MemoryLimitMiB = 1024,
-                Cpu = 512,
-            });
-
-            fargateService.TaskDefinition.TaskRole.AddManagedPolicy(
-                ManagedPolicy.FromAwsManagedPolicyName("AmazonEC2ContainerRegistryReadOnly"));
-
-            props.ServerSlotApiUrl = $"http://{fargateService.LoadBalancer.LoadBalancerDnsName}";
+            AddService(cluster, images.ServerSlotApi, serviceName, environment);
         }
 
-        public void AddApiGateway(ServerPulseStackProps props, Cluster cluster, DockerImages images)
+        public void AddApiGateway(ServerPulseStackProps props, Cluster cluster, DockerImages images, string serviceName)
         {
             var environment = new Dictionary<string, string>
             {
-                { EnvironmentVariableKeys.AspCoreEnvironment, props.AspCoreEnvironment },
+                { EnvironmentVariableKeys.AspCoreEnvironment, "CDK" },
                 { EnvironmentVariableKeys.AuthSettingsPublicKey, props.AuthSettingsPublicKey },
                 { EnvironmentVariableKeys.AuthSettingsAudience, props.AuthSettingsAudience },
                 { EnvironmentVariableKeys.AuthSettingsIssuer, props.AuthSettingsIssuer },
@@ -242,7 +336,7 @@ namespace Cdk
                 { EnvironmentVariableKeys.UseCORS, props.UseCORS.ToString() }
             };
 
-            var fargateService = new ApplicationLoadBalancedFargateService(this, "MyApiGateway", new ApplicationLoadBalancedFargateServiceProps
+            var fargateService = new ApplicationLoadBalancedFargateService(this, $"{serviceName}Service", new ApplicationLoadBalancedFargateServiceProps
             {
                 Cluster = cluster,
                 DesiredCount = 1,
@@ -253,11 +347,18 @@ namespace Cdk
                     Environment = environment,
                     LogDriver = LogDriver.AwsLogs(new AwsLogDriverProps
                     {
-                        StreamPrefix = "MyApiGatewayLogs"
-                    })
+                        StreamPrefix = $"{serviceName}ServiceLogs"
+                    }),
                 },
                 MemoryLimitMiB = 1024,
                 Cpu = 512,
+                ServiceName = serviceName,
+                CloudMapOptions = new CloudMapOptions
+                {
+                    Name = serviceName,
+                    DnsRecordType = DnsRecordType.A,
+                    DnsTtl = Duration.Seconds(60)
+                },
                 AssignPublicIp = true,
                 PublicLoadBalancer = true,
                 TaskSubnets = new SubnetSelection { SubnetType = SubnetType.PUBLIC },
@@ -290,6 +391,113 @@ namespace Cdk
             fargateService.Service.Connections.SecurityGroups[0].AddIngressRule(
                 Peer.AnyIpv6(),
                 Port.Tcp(8080),
+                "Allow public HTTP access over IPv6"
+            );
+        }
+
+        private void AddService(Cluster cluster, string dockerImage, string serviceName, Dictionary<string, string> environment)
+        {
+            var fargateService = new ApplicationLoadBalancedFargateService(this, $"{serviceName}Service", new ApplicationLoadBalancedFargateServiceProps
+            {
+                Cluster = cluster,
+                DesiredCount = 1,
+                TaskImageOptions = new ApplicationLoadBalancedTaskImageOptions
+                {
+                    Image = ContainerImage.FromRegistry(dockerImage),
+                    ContainerPort = 8080,
+                    Environment = environment,
+                    LogDriver = LogDriver.AwsLogs(new AwsLogDriverProps
+                    {
+                        StreamPrefix = $"{serviceName}ServiceLogs"
+                    }),
+                },
+                MemoryLimitMiB = 1024,
+                Cpu = 512,
+                ServiceName = serviceName,
+                CloudMapOptions = new CloudMapOptions
+                {
+                    Name = serviceName,
+                    DnsRecordType = DnsRecordType.A,
+                    DnsTtl = Duration.Seconds(60)
+                }
+            });
+
+            fargateService.TaskDefinition.TaskRole.AddManagedPolicy(
+                ManagedPolicy.FromAwsManagedPolicyName("AmazonEC2ContainerRegistryReadOnly"));
+
+            fargateService.TargetGroup.ConfigureHealthCheck(new Amazon.CDK.AWS.ElasticLoadBalancingV2.HealthCheck
+            {
+                Path = "/health",
+                Interval = Duration.Seconds(30),
+                Timeout = Duration.Seconds(5),
+                HealthyThresholdCount = 2,
+                UnhealthyThresholdCount = 3
+            });
+
+            fargateService.Service.Connections.SecurityGroups[0].AddIngressRule(
+               Peer.AnyIpv4(),
+               Port.Tcp(8080),
+               "Allow public HTTP access over IPv4"
+           );
+
+            fargateService.Service.Connections.SecurityGroups[0].AddIngressRule(
+                Peer.AnyIpv6(),
+                Port.Tcp(8080),
+                "Allow public HTTP access over IPv6"
+            );
+        }
+
+        #endregion
+
+        #region [Frontend]
+
+        private void AddFrontend(Cluster cluster, DockerImages images, string serviceName)
+        {
+            var fargateService = new ApplicationLoadBalancedFargateService(this, $"{serviceName}Service", new ApplicationLoadBalancedFargateServiceProps
+            {
+                Cluster = cluster,
+                DesiredCount = 1,
+                TaskImageOptions = new ApplicationLoadBalancedTaskImageOptions
+                {
+                    Image = ContainerImage.FromRegistry(images.Frontend),
+                    ContainerPort = 80,
+                    LogDriver = LogDriver.AwsLogs(new AwsLogDriverProps
+                    {
+                        StreamPrefix = $"{serviceName}ServiceLogs"
+                    }),
+                },
+                MemoryLimitMiB = 1024,
+                Cpu = 512,
+                ServiceName = serviceName,
+                CloudMapOptions = new CloudMapOptions
+                {
+                    Name = serviceName,
+                    DnsRecordType = DnsRecordType.A,
+                    DnsTtl = Duration.Seconds(60)
+                },
+                AssignPublicIp = true,
+                PublicLoadBalancer = true,
+                TaskSubnets = new SubnetSelection { SubnetType = SubnetType.PUBLIC },
+            });
+
+            var cfnService = fargateService.Service.Node.DefaultChild as CfnService;
+            if (cfnService != null)
+            {
+                cfnService.AddPropertyOverride("NetworkConfiguration.AwsvpcConfiguration.AssignPublicIp", "ENABLED");
+            }
+
+            fargateService.TaskDefinition.TaskRole.AddManagedPolicy(
+                ManagedPolicy.FromAwsManagedPolicyName("AmazonEC2ContainerRegistryReadOnly"));
+
+            fargateService.Service.Connections.SecurityGroups[0].AddIngressRule(
+                Peer.AnyIpv4(),
+                Port.Tcp(80),
+                "Allow public HTTP access over IPv4"
+            );
+
+            fargateService.Service.Connections.SecurityGroups[0].AddIngressRule(
+                Peer.AnyIpv6(),
+                Port.Tcp(80),
                 "Allow public HTTP access over IPv6"
             );
         }
