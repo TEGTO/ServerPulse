@@ -78,7 +78,9 @@ builder.Services.AddRepositoryWithResilience<AuthIdentityDbContext>(builder.Conf
 
 builder.Services.AddAutoMapper(AssemblyReference.Assembly);
 
-builder.Services.AddEmailService(builder.Configuration);
+var strServiceType = builder.Configuration[InfrastructureKeys.EMAIL_SERVICE_TYPE];
+var serviceType = !string.IsNullOrEmpty(strServiceType) && strServiceType.Equals("azure", StringComparison.CurrentCultureIgnoreCase) ? EmailServiceType.Azure : EmailServiceType.AWS;
+builder.Services.AddEmailService(builder.Configuration, serviceType, requireConfirmedEmail);
 
 builder.Services.AddSharedFluentValidation(typeof(Program), typeof(AssemblyReference));
 
@@ -94,7 +96,7 @@ builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
-if (app.Configuration[InfrastructureKeys.EF_CREATE_DATABASE] == "true")
+if (app.Configuration[InfrastructureKeys.EF_CREATE_DATABASE]?.ToLower() == "true")
 {
     await app.ConfigureDatabaseAsync<AuthIdentityDbContext>(CancellationToken.None);
 }

@@ -30,6 +30,7 @@ namespace Cdk
         public required string AuthSettingsPublicKey { get; set; }
         public required string AuthSettingsPrivateKey { get; set; }
 
+        public string EmailServiceType { get; set; }
         public string EmailConnectionString { get; set; }
         public string EmailSenderAddress { get; set; }
         public string EmailAccessKey { get; set; }

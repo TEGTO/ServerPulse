@@ -28,6 +28,7 @@
         public static string AuthSettingsPublicKey { get; } = "AuthSettings__PublicKey";
         public static string AuthSettingsPrivateKey { get; } = "AuthSettings__PrivateKey";
 
+        public static string EmailServiceType { get; } = "EmailServiceType";
         public static string EmailConnectionString { get; } = "Email__ConnectionString";
         public static string EmailSenderAddress1 { get; } = "Email__SenderAddress1";
         public static string EmailSenderAddress { get; } = "Email__SenderAddress";

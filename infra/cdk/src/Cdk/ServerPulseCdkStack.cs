@@ -40,7 +40,9 @@ namespace Cdk
 
             #region [Infrastructure]
 
+            props.KafkaBootstrapServers = "";
             AddKafka(vpc, props);
+
             AddDb(vpc, props);
             AddRedis(vpc, props);
 
@@ -84,12 +86,6 @@ namespace Cdk
                 AllowAllOutbound = true
             });
 
-            kafkaSecurityGroup.AddIngressRule(
-                kafkaSecurityGroup,
-                Port.Tcp(9092),
-                "Allow internal Kafka broker communication"
-            );
-
             var kafkaCluster = new Amazon.CDK.AWS.MSK.CfnCluster(this, "KafkaCluster", new Amazon.CDK.AWS.MSK.CfnClusterProps
             {
                 ClusterName = "ServerPulseKafka",
@@ -125,6 +121,12 @@ namespace Cdk
                 Tier = ParameterTier.STANDARD
             });
 
+            kafkaSecurityGroup.AddIngressRule(
+                Peer.Ipv4(vpc.VpcCidrBlock),
+                Port.Tcp(9092),
+                "Allow VPC-wide access to Kafka Ipv4"
+            );
+
             props.KafkaBootstrapServers = kafkaBootstrapParam.StringValue;
         }
 
@@ -135,12 +137,6 @@ namespace Cdk
                 Vpc = vpc,
                 AllowAllOutbound = true
             });
-
-            dbSecurityGroup.AddIngressRule(
-                dbSecurityGroup,
-                Port.Tcp(5432),
-                "Allow internal access to PostgreSQL"
-            );
 
             //var dbCredentials = Credentials.FromGeneratedSecret("user1", new CredentialsBaseOptions
             //{
@@ -164,6 +160,7 @@ namespace Cdk
                 BackupRetention = Duration.Days(0),
                 RemovalPolicy = RemovalPolicy.DESTROY,
                 DeletionProtection = false,
+                DatabaseName = props.PostgresDb
             });
 
 
@@ -192,12 +189,6 @@ namespace Cdk
                 AllowAllOutbound = true
             });
 
-            redisSecurityGroup.AddIngressRule(
-                redisSecurityGroup,
-                Port.Tcp(6379),
-                "Allow internal access to Redis"
-            );
-
             var redisSubnetGroup = new CfnSubnetGroup(this, "RedisSubnetGroup", new CfnSubnetGroupProps
             {
                 Description = "Subnet group for Redis cluster",
@@ -222,7 +213,7 @@ namespace Cdk
             var redisConnectionParam = new StringParameter(this, "RedisConnectionString", new StringParameterProps
             {
                 ParameterName = "/serverpulse/redis/connection-string",
-                StringValue = $"redis://{redisCluster.AttrRedisEndpointAddress}:6379",
+                StringValue = $"{redisCluster.AttrRedisEndpointAddress}",
                 Tier = ParameterTier.STANDARD
             });
 
@@ -246,7 +237,7 @@ namespace Cdk
                 { EnvironmentVariableKeys.AspCoreEnvironment, props.AspCoreEnvironment },
                 { EnvironmentVariableKeys.ConnectionStringsAuthenticationDb, props.ConnectionStringsAuthenticationDb },
                 { EnvironmentVariableKeys.ConnectionStringsRedisServer, props.ConnectionStringsRedisServer },
-                { EnvironmentVariableKeys.EFCreateDatabase, props.EFCreateDatabase.ToString() },
+                { EnvironmentVariableKeys.EFCreateDatabase, props.EFCreateDatabase.ToString().ToLower() },
                 { EnvironmentVariableKeys.AuthSettingsPublicKey, props.AuthSettingsPublicKey },
                 { EnvironmentVariableKeys.AuthSettingsPrivateKey, props.AuthSettingsPrivateKey },
                 { EnvironmentVariableKeys.AuthSettingsAudience, props.AuthSettingsAudience },
@@ -255,6 +246,7 @@ namespace Cdk
                 { EnvironmentVariableKeys.AuthSettingsRefreshExpiryInDays, props.AuthSettingsRefreshExpiryInDays.ToString() },
                 { EnvironmentVariableKeys.FeatureManagementOAuth, props.FeatureManagementOAuth.ToString() },
                 { EnvironmentVariableKeys.FeatureManagementEmailConfirmation, props.FeatureManagementEmailConfirmation.ToString() },
+                { EnvironmentVariableKeys.EmailServiceType, props.EmailServiceType },
                 { EnvironmentVariableKeys.EmailConnectionString, props.EmailConnectionString },
                 { EnvironmentVariableKeys.EmailSenderAddress, props.EmailSenderAddress },
                 { EnvironmentVariableKeys.EmailAccessKey, props.EmailAccessKey },
@@ -321,7 +313,7 @@ namespace Cdk
             {
                 { EnvironmentVariableKeys.AspCoreEnvironment, props.AspCoreEnvironment },
                 { EnvironmentVariableKeys.ConnectionStringsServerSlotDb, props.ConnectionStringsServerSlotDb },
-                { EnvironmentVariableKeys.EFCreateDatabase, props.EFCreateDatabase.ToString() },
+                { EnvironmentVariableKeys.EFCreateDatabase, props.EFCreateDatabase.ToString().ToLower()  },
                 { EnvironmentVariableKeys.SlotsPerUser, props.SlotsPerUser.ToString() },
                 { EnvironmentVariableKeys.AuthSettingsPublicKey, props.AuthSettingsPublicKey },
                 { EnvironmentVariableKeys.AuthSettingsAudience, props.AuthSettingsAudience },

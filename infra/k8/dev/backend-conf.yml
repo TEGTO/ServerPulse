@@ -78,6 +78,7 @@ data:
   # AuthSettings__GoogleOAuth__ClientSecret:
   # AuthSettings__GoogleOAuth__Scope: aHR0cHM6Ly93d3cuZ29vZ2xlYXBpcy5jb20vYXV0aC91c2VyaW5mby5lbWFpbCBodHRwczovL3d3dy5nb29nbGVhcGlzLmNvbS9hdXRoL3VzZXJpbmZvLnByb2ZpbGU=
 
+  EmailServiceType: AWS
   # Azure
   # Email__ConnectionString:
   # Email__SenderAddress:

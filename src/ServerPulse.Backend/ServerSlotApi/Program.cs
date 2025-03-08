@@ -34,7 +34,7 @@ var app = builder.Build();
 
 app.UseSharedMiddleware();
 
-if (app.Configuration[ServerSlotApi.Infrastructure.ConfigurationKeys.EF_CREATE_DATABASE] == "true")
+if (app.Configuration[ServerSlotApi.Infrastructure.ConfigurationKeys.EF_CREATE_DATABASE]?.ToLower() == "true")
 {
     await app.ConfigureDatabaseAsync<ServerSlotDbContext>(CancellationToken.None);
 }

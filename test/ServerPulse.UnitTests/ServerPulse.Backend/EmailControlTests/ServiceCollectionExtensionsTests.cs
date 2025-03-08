@@ -1,5 +1,4 @@
-﻿#define AWS
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -9,21 +8,18 @@ namespace EmailControl.Tests
     internal class ServiceCollectionExtensionsTests
     {
         private IServiceCollection services;
-        private IConfiguration configuration;
-#if Azure
-        private AzureEmailSettings expectedSettings;
-#endif
-#if AWS
-        private AwsEmailSettings expectedSettings;
-#endif
 
         [SetUp]
         public void SetUp()
         {
             services = new ServiceCollection();
+        }
 
-#if Azure
-            expectedSettings = new AzureEmailSettings
+        [Test]
+        public void AddEmailService_ShouldRegisterAzureEmail()
+        {
+            // Arrange
+            var azureExpectedSettings = new AzureEmailSettings
             {
                 ConnectionString = "SomeConnectionString",
                 SenderAddress = "some@email.com",
@@ -31,39 +27,16 @@ namespace EmailControl.Tests
 
             var inMemorySettings = new Dictionary<string, string>
             {
-                { $"{AzureEmailSettings.SETTINGS_SECTION}:{nameof(AzureEmailSettings.ConnectionString)}", expectedSettings.ConnectionString },
-                { $"{AzureEmailSettings.SETTINGS_SECTION}:{nameof(AzureEmailSettings.SenderAddress)}", expectedSettings.SenderAddress },
-            };
-#endif
-#if AWS
-            expectedSettings = new AwsEmailSettings
-            {
-                SenderAddress = "some@email.com",
-                AccessKey = "SomeAccess",
-                SecretKey = "SomeSecret",
-                Region = "us-west-1",
+                { $"{AzureEmailSettings.SETTINGS_SECTION}:{nameof(AzureEmailSettings.ConnectionString)}", azureExpectedSettings.ConnectionString },
+                { $"{AzureEmailSettings.SETTINGS_SECTION}:{nameof(AzureEmailSettings.SenderAddress)}", azureExpectedSettings.SenderAddress },
             };
 
-            var inMemorySettings = new Dictionary<string, string>
-            {
-                { $"{AwsEmailSettings.SETTINGS_SECTION}:{nameof(AwsEmailSettings.SenderAddress)}", expectedSettings.SenderAddress },
-                { $"{AwsEmailSettings.SETTINGS_SECTION}:{nameof(AwsEmailSettings.AccessKey)}", expectedSettings.AccessKey },
-                { $"{AwsEmailSettings.SETTINGS_SECTION}:{nameof(AwsEmailSettings.SecretKey)}", expectedSettings.SecretKey },
-                { $"{AwsEmailSettings.SETTINGS_SECTION}:{nameof(AwsEmailSettings.Region)}", expectedSettings.Region },
-            };
-#endif
-
-            configuration = new ConfigurationBuilder().AddInMemoryCollection(inMemorySettings!).Build();
+            var configuration = new ConfigurationBuilder().AddInMemoryCollection(inMemorySettings!).Build();
 
             services.AddSingleton(configuration);
-        }
 
-#if Azure
-        [Test]
-        public void AddEmailService_ShouldRegisterAzureEmail()
-        {
             // Act
-            services.AddEmailService(configuration);
+            services.AddEmailService(configuration, serviceType: EmailServiceType.Azure, enableFeature: true);
 
             var serviceProvider = services.BuildServiceProvider();
 
@@ -81,16 +54,36 @@ namespace EmailControl.Tests
 
             Assert.That(emailSender.GetType(), Is.EqualTo(typeof(AzureEmailSender)));
 
-            Assert.That(emailSettings.ConnectionString, Is.EqualTo(expectedSettings.ConnectionString));
-            Assert.That(emailSettings.SenderAddress, Is.EqualTo(expectedSettings.SenderAddress));
+            Assert.That(emailSettings.ConnectionString, Is.EqualTo(azureExpectedSettings.ConnectionString));
+            Assert.That(emailSettings.SenderAddress, Is.EqualTo(azureExpectedSettings.SenderAddress));
         }
-#endif
-#if AWS
+
         [Test]
         public void AddEmailService_ShouldRegisterAwsEmail()
         {
+            // Arrange
+            var awsExpectedSettings = new AwsEmailSettings
+            {
+                SenderAddress = "some@email.com",
+                AccessKey = "SomeAccess",
+                SecretKey = "SomeSecret",
+                Region = "us-west-1",
+            };
+
+            var inMemorySettings = new Dictionary<string, string>
+            {
+                { $"{AwsEmailSettings.SETTINGS_SECTION}:{nameof(AwsEmailSettings.SenderAddress)}", awsExpectedSettings.SenderAddress },
+                { $"{AwsEmailSettings.SETTINGS_SECTION}:{nameof(AwsEmailSettings.AccessKey)}", awsExpectedSettings.AccessKey },
+                { $"{AwsEmailSettings.SETTINGS_SECTION}:{nameof(AwsEmailSettings.SecretKey)}", awsExpectedSettings.SecretKey },
+                { $"{AwsEmailSettings.SETTINGS_SECTION}:{nameof(AwsEmailSettings.Region)}", awsExpectedSettings.Region },
+            };
+
+            var configuration = new ConfigurationBuilder().AddInMemoryCollection(inMemorySettings!).Build();
+
+            services.AddSingleton(configuration);
+
             // Act
-            services.AddEmailService(configuration);
+            services.AddEmailService(configuration, serviceType: EmailServiceType.AWS, enableFeature: true);
 
             var serviceProvider = services.BuildServiceProvider();
 
@@ -108,8 +101,7 @@ namespace EmailControl.Tests
 
             Assert.That(emailSender.GetType(), Is.EqualTo(typeof(AwsEmailSender)));
 
-            Assert.That(emailSettings.SenderAddress, Is.EqualTo(expectedSettings.SenderAddress));
+            Assert.That(emailSettings.SenderAddress, Is.EqualTo(awsExpectedSettings.SenderAddress));
         }
-#endif
     }
 }
