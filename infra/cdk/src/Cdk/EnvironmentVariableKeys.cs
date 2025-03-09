@@ -48,7 +48,11 @@
 
         public static string CacheGetServerSlotByEmailExpiryInSeconds { get; } = "Cache__GetServerSlotByEmailExpiryInSeconds";
         public static string CacheServerSlotCheckExpiryInSeconds { get; } = "Cache__ServerSlotCheckExpiryInSeconds";
-        public static string CacheServerSlotExpiryInMinutes { get; } = "Cache__ServerSlotExpiryInMinutes";
+
+        public static string CacheGetLoadEventsInDataRangeExpiryInMinutes { get; } = "Cache__GetLoadEventsInDataRangeExpiryInMinutes";
+        public static string CacheGetDailyLoadAmountStatisticsExpiryInMinutes { get; } = "Cache__GetDailyLoadAmountStatisticsExpiryInMinutes";
+        public static string CacheGetLoadAmountStatisticsInRangeExpiryInMinutes { get; } = "Cache__GetLoadAmountStatisticsInRangeExpiryInMinutes";
+        public static string CacheGetSlotStatisticsExpiryInMinutes { get; } = "Cache__GetSlotStatisticsExpiryInMinutes";
 
         public static string ApiGateway { get; } = "ApiGateway";
         public static string ServerSlotApiUrl { get; } = "ServerSlotApi__Url";

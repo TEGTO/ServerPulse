@@ -40,9 +40,7 @@ namespace Cdk
 
             #region [Infrastructure]
 
-            props.KafkaBootstrapServers = "";
             AddKafka(vpc, props);
-
             AddDb(vpc, props);
             AddRedis(vpc, props);
 
@@ -105,19 +103,39 @@ namespace Cdk
                     ClientSubnets = vpc.PrivateSubnets.Select(subnet => subnet.SubnetId).ToArray()
                 },
                 EnhancedMonitoring = "DEFAULT",  // Disables detailed monitoring (reduces cost)
-                ConfigurationInfo = new Amazon.CDK.AWS.MSK.CfnCluster.ConfigurationInfoProperty
+                ClientAuthentication = new Amazon.CDK.AWS.MSK.CfnCluster.ClientAuthenticationProperty
                 {
-                    Arn = "arn:aws:kafka:region:account-id:configuration/your-config",
-                    Revision = 1
+                    Unauthenticated = new Amazon.CDK.AWS.MSK.CfnCluster.UnauthenticatedProperty
+                    {
+                        Enabled = true
+                    }
+                },
+                EncryptionInfo = new Amazon.CDK.AWS.MSK.CfnCluster.EncryptionInfoProperty
+                {
+                    EncryptionInTransit = new Amazon.CDK.AWS.MSK.CfnCluster.EncryptionInTransitProperty
+                    {
+                        ClientBroker = "TLS_PLAINTEXT",  // Allows both TLS and PLAINTEXT
+                        InCluster = true
+                    }
                 }
             });
 
             kafkaCluster.ApplyRemovalPolicy(RemovalPolicy.DESTROY);
 
+            var kafkaBootstrapResource = new KafkaBootstrapResource(this, "KafkaBootstrapResource", new KafkaBootstrapResourceProps
+            {
+                KafkaCluster = kafkaCluster,
+            });
+
+            _ = new CfnOutput(this, "KafkaBoostrapServersOutput", new CfnOutputProps
+            {
+                Value = kafkaBootstrapResource.BootstrapServers
+            });
+
             var kafkaBootstrapParam = new StringParameter(this, "KafkaBootstrapServers", new StringParameterProps
             {
                 ParameterName = "/serverpulse/kafka/bootstrap-servers",
-                StringValue = Fn.GetAtt(kafkaCluster.LogicalId, "BootstrapBrokers").ToString(),
+                StringValue = kafkaBootstrapResource.BootstrapServers,
                 Tier = ParameterTier.STANDARD
             });
 
@@ -125,6 +143,18 @@ namespace Cdk
                 Peer.Ipv4(vpc.VpcCidrBlock),
                 Port.Tcp(9092),
                 "Allow VPC-wide access to Kafka Ipv4"
+            );
+
+            kafkaSecurityGroup.AddIngressRule(
+                Peer.Ipv4(vpc.VpcCidrBlock),
+                Port.Tcp(9094),
+                "Allow VPC-wide access to Kafka TLS (9094)"
+            );
+
+            kafkaSecurityGroup.AddIngressRule(
+                Peer.Ipv4(vpc.VpcCidrBlock),
+                Port.Tcp(9096),
+                "Allow VPC-wide access to Kafka SASL (9096)"
             );
 
             props.KafkaBootstrapServers = kafkaBootstrapParam.StringValue;
@@ -162,7 +192,6 @@ namespace Cdk
                 DeletionProtection = false,
                 DatabaseName = props.PostgresDb
             });
-
 
             var dbConnectionParam = new StringParameter(this, "DbConnectionString", new StringParameterProps
             {
@@ -301,7 +330,11 @@ namespace Cdk
                 { EnvironmentVariableKeys.MaxEventAmountToGetInSlotData, props.MaxEventAmountToGetInSlotData.ToString() },
                 { EnvironmentVariableKeys.MaxEventAmountToReadPerRequest, props.MaxEventAmountToReadPerRequest.ToString() },
                 { EnvironmentVariableKeys.LoadEventProcessingBatchSize, props.LoadEventProcessingBatchSize.ToString() },
-                { EnvironmentVariableKeys.LoadEventProcessingBatchIntervalInMilliseconds, props.LoadEventProcessingBatchIntervalInMilliseconds.ToString() }
+                { EnvironmentVariableKeys.LoadEventProcessingBatchIntervalInMilliseconds, props.LoadEventProcessingBatchIntervalInMilliseconds.ToString() },
+                { EnvironmentVariableKeys.CacheGetLoadEventsInDataRangeExpiryInMinutes, props.CacheGetLoadEventsInDataRangeExpiryInMinutes.ToString() },
+                { EnvironmentVariableKeys.CacheGetDailyLoadAmountStatisticsExpiryInMinutes, props.CacheGetDailyLoadAmountStatisticsExpiryInMinutes.ToString() },
+                { EnvironmentVariableKeys.CacheGetLoadAmountStatisticsInRangeExpiryInMinutes, props.CacheGetLoadAmountStatisticsInRangeExpiryInMinutes.ToString() },
+                { EnvironmentVariableKeys.CacheGetSlotStatisticsExpiryInMinutes, props.CacheGetSlotStatisticsExpiryInMinutes.ToString() }
             };
 
             AddService(cluster, images.AnalyzerApi, serviceName, environment);

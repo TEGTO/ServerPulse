@@ -49,7 +49,6 @@ namespace Cdk
 
         public required double CacheGetServerSlotByEmailExpiryInSeconds { get; set; }
         public required double CacheServerSlotCheckExpiryInSeconds { get; set; }
-        public required double CacheServerSlotExpiryInMinutes { get; set; }
         public required double CacheGetLoadEventsInDataRangeExpiryInMinutes { get; set; }
         public required double CacheGetDailyLoadAmountStatisticsExpiryInMinutes { get; set; }
         public required double CacheGetLoadAmountStatisticsInRangeExpiryInMinutes { get; set; }

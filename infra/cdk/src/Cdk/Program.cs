@@ -60,7 +60,6 @@ namespace Cdk
 
                 CacheGetServerSlotByEmailExpiryInSeconds = 1,
                 CacheServerSlotCheckExpiryInSeconds = 3,
-                CacheServerSlotExpiryInMinutes = 0.5,
                 CacheGetLoadEventsInDataRangeExpiryInMinutes = 0.1,
                 CacheGetDailyLoadAmountStatisticsExpiryInMinutes = 0.1,
                 CacheGetLoadAmountStatisticsInRangeExpiryInMinutes = 0.1,
