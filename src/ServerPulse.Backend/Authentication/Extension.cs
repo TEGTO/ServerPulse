@@ -1,16 +1,15 @@
 ﻿using Authentication.OAuth.GitHub;
 using Authentication.OAuth.Google;
+using Authentication.Rsa;
 using Authentication.Token;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
-using System.Security.Cryptography;
 
 namespace Authentication
 {
-    public static class CustomAuthExtension
+    public static class Extension
     {
         public static IServiceCollection AddOAuthServices(this IServiceCollection services, IConfiguration configuration)
         {
@@ -25,7 +24,7 @@ namespace Authentication
             return services;
         }
 
-        public static IServiceCollection ConfigureIdentityServices(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddIdentity(this IServiceCollection services, IConfiguration configuration)
         {
             var jwtSettings = configuration.GetSection(JwtSettings.SETTINGS_SECTION).Get<JwtSettings>();
 
@@ -33,32 +32,20 @@ namespace Authentication
 
             services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SETTINGS_SECTION));
 
+            services.AddSingleton<IRsaKeyManager, RsaKeyManager>();
+            services.AddSingleton<ITokenHandler, JwtHandler>();
+
             services.AddAuthorization();
-            services.AddCustomAuthentication(jwtSettings);
 
-            return services;
-        }
-
-        public static IServiceCollection AddCustomAuthentication(this IServiceCollection services, JwtSettings jwtSettings)
-        {
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidIssuer = jwtSettings.Issuer,
-                    ValidAudience = jwtSettings.Audience,
-                    IssuerSigningKey = jwtSettings.GetRsaPublicKeyFromSettings(),
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true
-                };
-            });
+            }).AddJwtBearer();
+
+            services.ConfigureOptions<ConfigureJwtBearerOptions>();
+
             return services;
         }
 
@@ -67,22 +54,6 @@ namespace Authentication
             app.UseAuthentication();
             app.UseAuthorization();
             return app;
-        }
-
-        public static RsaSecurityKey? GetRsaPublicKeyFromSettings(this JwtSettings jwtSettings)
-        {
-            var rsa = RSA.Create();
-            rsa.ImportFromPem(jwtSettings.PublicKey.ToCharArray());
-
-            return new RsaSecurityKey(rsa);
-        }
-
-        public static RsaSecurityKey? GetRsaPrivateKeyFromSettings(this JwtSettings jwtSettings)
-        {
-            var rsa = RSA.Create();
-            rsa.ImportFromPem(jwtSettings.PrivateKey.ToCharArray());
-
-            return new RsaSecurityKey(rsa);
         }
     }
 }

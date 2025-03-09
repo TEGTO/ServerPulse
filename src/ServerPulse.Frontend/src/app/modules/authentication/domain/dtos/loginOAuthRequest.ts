@@ -1,7 +1,7 @@
 import { OAuthLoginProvider } from "../..";
 
 export interface LoginOAuthRequest {
-    code: string;
+    queryParams: string;
     redirectUrl: string;
     oAuthLoginProvider: OAuthLoginProvider;
 }

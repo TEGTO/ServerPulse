@@ -1,5 +1,4 @@
 using Authentication;
-using Authentication.Token;
 using AuthenticationApi;
 using AuthenticationApi.Application;
 using AuthenticationApi.Core.Entities;
@@ -64,12 +63,11 @@ if (isOAuthEnabled)
     builder.Services.AddOAuthServices(builder.Configuration);
 }
 
-builder.Services.ConfigureIdentityServices(builder.Configuration);
-builder.Services.AddScoped<ITokenHandler, JwtHandler>();
+builder.Services.AddIdentity(builder.Configuration);
 
 #endregion
 
-#region Hanffire
+#region Hangfire
 
 var connectionString = builder.Configuration.GetConnectionString(InfrastructureKeys.AUTH_DATABASE_CONNECTION_STRING);
 builder.Services.ConfigureHangfireWthPostgreSql(connectionString);
@@ -80,7 +78,9 @@ builder.Services.AddRepositoryWithResilience<AuthIdentityDbContext>(builder.Conf
 
 builder.Services.AddAutoMapper(AssemblyReference.Assembly);
 
-builder.Services.AddEmailService(builder.Configuration);
+var strServiceType = builder.Configuration[InfrastructureKeys.EMAIL_SERVICE_TYPE];
+var serviceType = !string.IsNullOrEmpty(strServiceType) && strServiceType.Equals("azure", StringComparison.CurrentCultureIgnoreCase) ? EmailServiceType.Azure : EmailServiceType.AWS;
+builder.Services.AddEmailService(builder.Configuration, serviceType, requireConfirmedEmail);
 
 builder.Services.AddSharedFluentValidation(typeof(Program), typeof(AssemblyReference));
 
@@ -92,9 +92,11 @@ if (builder.Environment.IsDevelopment())
     builder.AddDocumentation("Authentication API");
 }
 
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
-if (app.Configuration[InfrastructureKeys.EF_CREATE_DATABASE] == "true")
+if (app.Configuration[InfrastructureKeys.EF_CREATE_DATABASE]?.ToLower() == "true")
 {
     await app.ConfigureDatabaseAsync<AuthIdentityDbContext>(CancellationToken.None);
 }
@@ -120,6 +122,8 @@ app.ConfigureRecurringJobs(app.Configuration);
 app.UseIdentity();
 
 app.MapControllers();
+
+app.MapHealthChecks("/health");
 
 await app.RunAsync();
 

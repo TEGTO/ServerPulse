@@ -19,13 +19,13 @@ namespace DatabaseControl.Repositories
         [Resilience]
         public async Task MigrateDatabaseAsync(CancellationToken cancellationToken)
         {
-            using var dbContext = await CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-            await dbContext.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
+            using var dbContext = await CreateDbContextAsync(cancellationToken);
+            await dbContext.Database.MigrateAsync(cancellationToken);
         }
 
         public async Task<TContext> GetDbContextAsync(CancellationToken cancellationToken)
         {
-            return await CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+            return await CreateDbContextAsync(cancellationToken);
         }
 
         public IQueryable<T> Query<T>(TContext dbContext) where T : class
@@ -35,7 +35,7 @@ namespace DatabaseControl.Repositories
 
         public async Task<T> AddAsync<T>(TContext dbContext, T obj, CancellationToken cancellationToken) where T : class
         {
-            var addedEntity = await dbContext.AddAsync(obj, cancellationToken).ConfigureAwait(false);
+            var addedEntity = await dbContext.AddAsync(obj, cancellationToken);
             return addedEntity.Entity;
         }
 
@@ -52,20 +52,20 @@ namespace DatabaseControl.Repositories
         [Resilience]
         public async Task SaveChangesAsync(TContext dbContext, CancellationToken cancellationToken)
         {
-            await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            await dbContext.SaveChangesAsync(cancellationToken);
         }
 
         [Resilience]
         public async Task<IDbContextTransaction> BeginTransactionAsync(TContext dbContext, IsolationLevel isolationLevel, CancellationToken cancellationToken)
         {
-            return await dbContext.Database.BeginTransactionAsync(isolationLevel, cancellationToken).ConfigureAwait(false);
+            return await dbContext.Database.BeginTransactionAsync(isolationLevel, cancellationToken);
         }
 
         #endregion
 
         protected async Task<TContext> CreateDbContextAsync(CancellationToken cancellationToken)
         {
-            return await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+            return await dbContextFactory.CreateDbContextAsync(cancellationToken);
         }
     }
 }

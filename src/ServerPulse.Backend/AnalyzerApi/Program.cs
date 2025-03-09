@@ -21,6 +21,8 @@ if (builder.Environment.IsDevelopment())
     builder.AddDocumentation("Analyzer API");
 }
 
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
 app.UseSharedMiddleware();
@@ -39,6 +41,8 @@ app.MapControllers();
 app.UseOutputCache(); //Order after Identity
 
 app.MapHubs();
+
+app.MapHealthChecks("/health");
 
 await app.RunAsync();
 

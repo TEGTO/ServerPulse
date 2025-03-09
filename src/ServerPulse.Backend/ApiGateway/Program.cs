@@ -14,7 +14,7 @@ builder.Host.AddLogging();
 
 #region Cors
 
-bool.TryParse(builder.Configuration[ConfigurationKeys.USE_CORS], out bool useCors);
+bool.TryParse(builder.Configuration[ApiGateway.ConfigurationKeys.USE_CORS], out bool useCors);
 var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 if (useCors)
@@ -24,7 +24,7 @@ if (useCors)
 
 #endregion
 
-builder.Services.ConfigureIdentityServices(builder.Configuration);
+builder.Services.AddIdentity(builder.Configuration);
 builder.Services.ConfigureCustomInvalidModelStateResponseControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHealthChecks();
@@ -55,7 +55,7 @@ builder.Services.AddOcelot(builder.Configuration).AddPolly();
 
 #endregion
 
-if (builder.Environment.IsDevelopment())
+if (!builder.Environment.IsProduction())
 {
     builder.Services.AddSwaggerForOcelot(builder.Configuration);
 }
@@ -75,7 +75,7 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-if (!app.Environment.IsDevelopment())
+if (builder.Environment.IsProduction())
 {
     app.UseHttpsRedirection();
 }
@@ -91,8 +91,8 @@ else
     });
 }
 
-
 app.UseEndpoints(_ => { });
+
 app.MapHealthChecks("/health");
 
 app.UseOcelotWebSockets();

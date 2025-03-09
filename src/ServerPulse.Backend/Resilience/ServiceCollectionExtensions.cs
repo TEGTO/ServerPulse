@@ -6,9 +6,10 @@ namespace Resilience
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddDefaultResiliencePipeline(this IServiceCollection services, IConfiguration configuration, string defaultName = "Default")
+        public static IServiceCollection AddDefaultResiliencePipeline(this IServiceCollection services,
+            IConfiguration configuration, string defaultName = "Default")
         {
-            var pipelineConfiguration = configuration.GetSection(ResilienceConfigurationKeys.DEFAULT_RESILIENCE_PIPELINE_SECTION)
+            var pipelineConfiguration = configuration.GetSection(ConfigurationKeys.DEFAULT_RESILIENCE_PIPELINE_SECTION)
                                         .Get<ResiliencePipelineSettings>() ?? new ResiliencePipelineSettings();
 
             services.AddResiliencePipeline(defaultName, (builder, context) =>

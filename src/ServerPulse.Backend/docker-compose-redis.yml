@@ -4,11 +4,9 @@ services:
   redis-node-1:
     container_name: serverpulse-redis-node-1
     image: redis:7.4
-    # command: ["redis-server", "/redis/redis.conf"]
     networks:
       - backend-net
-    # volumes:
-    #   - ./redis.conf:/redis/redis.conf
+   
 
   # redis-node-2:
   #   container_name: serverpulse-redis-node-2

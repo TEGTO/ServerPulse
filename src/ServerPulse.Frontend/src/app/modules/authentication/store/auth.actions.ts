@@ -88,7 +88,7 @@ export const startOAuthLoginFailure = createAction(
 
 export const oauthLogin = createAction(
     '[OAuth] OAuth Login',
-    props<{ code: string }>()
+    props<{ queryParams: string }>()
 );
 export const oauthLoginFailure = createAction(
     '[OAuth] OAuth Login Failure',

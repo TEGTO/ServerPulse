@@ -1,5 +1,6 @@
 ﻿using Authentication.OAuth.GitHub;
 using Authentication.OAuth.Google;
+using Authentication.Rsa;
 using Authentication.Token;
 using AuthenticationTests;
 using Microsoft.AspNetCore.Authentication;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
@@ -14,7 +16,7 @@ using Moq;
 namespace Authentication.Tests
 {
     [TestFixture]
-    internal class CustomAuthExtensionTests
+    internal class ExtensionTests
     {
         private IServiceCollection services;
         private IConfiguration configuration;
@@ -26,6 +28,7 @@ namespace Authentication.Tests
         {
             var mockGitHubOAuthApi = new Mock<IGitHubOAuthApi>();
             var mockGoogleOAuthApi = new Mock<IGoogleOAuthApi>();
+            var mockLogger = new Mock<ILogger<RsaKeyManager>>();
 
             services = new ServiceCollection();
 
@@ -63,6 +66,7 @@ namespace Authentication.Tests
             services.AddSingleton(configuration);
             services.AddSingleton(mockGitHubOAuthApi.Object);
             services.AddSingleton(mockGoogleOAuthApi.Object);
+            services.AddSingleton(mockLogger.Object);
 
             services.AddAuthentication();
             services.AddAuthorization();
@@ -91,10 +95,10 @@ namespace Authentication.Tests
         }
 
         [Test]
-        public void ConfigureIdentityServices_ShouldAuthSettingsAsSingletons()
+        public void AddIdentity_ShouldAuthSettingsAsSingletons()
         {
             // Act
-            services.ConfigureIdentityServices(configuration);
+            services.AddIdentity(configuration);
 
             //Act
             var serviceProvider = services.BuildServiceProvider();
@@ -109,10 +113,10 @@ namespace Authentication.Tests
         }
 
         [Test]
-        public void ConfigureIdentityServices_ShouldConfigureAuthorization()
+        public void AddIdentity_ShouldConfigureAuthorization()
         {
             // Act
-            services.ConfigureIdentityServices(configuration);
+            services.AddIdentity(configuration);
 
             //Act
             var serviceProvider = services.BuildServiceProvider();
@@ -123,10 +127,10 @@ namespace Authentication.Tests
         }
 
         [Test]
-        public void ConfigureIdentityServices_ShouldConfigureCustomJwtAuthentication()
+        public void AddIdentity_ShouldConfigureJwtAuthentication()
         {
             // Act
-            services.ConfigureIdentityServices(configuration);
+            services.AddIdentity(configuration);
 
             //Act
             var serviceProvider = services.BuildServiceProvider();
@@ -148,6 +152,22 @@ namespace Authentication.Tests
             Assert.IsTrue(tokenValidationParameters.ValidateAudience);
             Assert.IsTrue(tokenValidationParameters.ValidateLifetime);
             Assert.IsTrue(tokenValidationParameters.ValidateIssuerSigningKey);
+        }
+
+        [Test]
+        public void AddIdentity_ShouldAddServices()
+        {
+            // Act
+            services.AddIdentity(configuration);
+
+            //Act
+            var serviceProvider = services.BuildServiceProvider();
+            var rsaKeyManager = serviceProvider.GetRequiredService<IRsaKeyManager>();
+            var tokenHandler = serviceProvider.GetRequiredService<ITokenHandler>();
+
+            // Assert
+            Assert.That(rsaKeyManager, Is.Not.Null);
+            Assert.That(tokenHandler, Is.Not.Null);
         }
     }
 }

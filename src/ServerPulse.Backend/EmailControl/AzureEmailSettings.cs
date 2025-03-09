@@ -1,6 +1,6 @@
 ﻿namespace EmailControl
 {
-    public class EmailSettings
+    public class AzureEmailSettings
     {
         public const string SETTINGS_SECTION = "Email";
 

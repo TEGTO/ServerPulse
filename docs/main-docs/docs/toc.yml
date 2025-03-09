@@ -6,3 +6,5 @@
   href: event-sending.md
 - name: Local Kubernetes & Minikube Setup
   href: run-locally.md
+- name: AWS CDK
+  href: cdk.md

@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace MessageBus.Kafka
 {
-    public class KafkaConsumer : IMessageConsumer
+    internal sealed class KafkaConsumer : IMessageConsumer
     {
         private readonly IAdminClient adminClient;
         private readonly IKafkaConsumerFactory consumerFactory;
@@ -20,7 +20,7 @@ namespace MessageBus.Kafka
 
         public async IAsyncEnumerable<ConsumeResponse> ConsumeAsync(string topic, int timeoutInMilliseconds, Offset consumeFrom, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            await WaitForTopicAsync(topic, timeoutInMilliseconds, cancellationToken).ConfigureAwait(false);
+            await WaitForTopicAsync(topic, timeoutInMilliseconds, cancellationToken);
 
             consumeFrom = await AdjustOffsetAsync(topic, timeoutInMilliseconds, consumeFrom, cancellationToken);
 
@@ -36,7 +36,7 @@ namespace MessageBus.Kafka
 
                 if (!IsConsumeResultValid(consumeResult))
                 {
-                    await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                    await Task.Delay(100, cancellationToken);
                     continue;
                 }
 
@@ -56,7 +56,7 @@ namespace MessageBus.Kafka
 
             var latestMessages = await Task.WhenAll(topicPartitions.Select(partition =>
                 Task.Run(() => ReadPartitionLatestMessage(partition, timeoutInMilliseconds))
-            )).ConfigureAwait(false);
+            ));
 
             var latestMessage = latestMessages
                 .Where(result => result != null)
@@ -126,7 +126,7 @@ namespace MessageBus.Kafka
                 return Task.Run(() => GetPartitionMessagesInDateRange(startOffset, endOffset, startDate, endDate, options.TimeoutInMilliseconds, cancellationToken));
             });
 
-            var partitionMessages = await Task.WhenAll(partitionTasks).ConfigureAwait(false);
+            var partitionMessages = await Task.WhenAll(partitionTasks);
 
             var result = partitionMessages.SelectMany(x => x).OrderByDescending(x => x.CreationTimeUTC);
 
@@ -216,7 +216,7 @@ namespace MessageBus.Kafka
                 Task.Run(() => GetPartitionMessageAmountPerTimespan(partition, consumer, fromDate, toDate, timeSpan,
                                                 options.TimeoutInMilliseconds, cancellationToken), cancellationToken));
 
-            var partitionMessagePerTimeSPanAmounts = await Task.WhenAll(partitionTasks).ConfigureAwait(false);
+            var partitionMessagePerTimeSPanAmounts = await Task.WhenAll(partitionTasks);
 
             var result = new Dictionary<DateTime, int>();
             foreach (var amountPerTimespan in partitionMessagePerTimeSPanAmounts)
@@ -326,7 +326,7 @@ namespace MessageBus.Kafka
             var partitionTasks = startPartitionOffsets.Select(offset =>
                 Task.Run(() => GetSomePartitionMessagesStartFromDateAsync(offset, options, cancellationToken), cancellationToken));
 
-            var partitionMessages = await Task.WhenAll(partitionTasks).ConfigureAwait(false);
+            var partitionMessages = await Task.WhenAll(partitionTasks);
             var result = partitionMessages.SelectMany(x => x);
 
             if (options.ReadNew)
@@ -419,7 +419,7 @@ namespace MessageBus.Kafka
                     return;
                 }
 
-                await Task.Delay(500, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(500, cancellationToken);
             }
         }
 
@@ -434,7 +434,7 @@ namespace MessageBus.Kafka
         {
             if (consumeFrom == Offset.Stored)
             {
-                var topicMessageAmount = await GetTopicMessageAmountAsync(topic, timeoutInMilliseconds, cancellationToken).ConfigureAwait(false);
+                var topicMessageAmount = await GetTopicMessageAmountAsync(topic, timeoutInMilliseconds, cancellationToken);
                 if (topicMessageAmount == 0)
                 {
                     consumeFrom = Offset.Beginning;

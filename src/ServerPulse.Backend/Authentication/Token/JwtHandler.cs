@@ -1,4 +1,5 @@
 ﻿using Authentication.Models;
+using Authentication.Rsa;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -7,18 +8,15 @@ using System.Security.Cryptography;
 
 namespace Authentication.Token
 {
-    public class JwtHandler : ITokenHandler
+    internal sealed class JwtHandler : ITokenHandler
     {
         private readonly JwtSettings jwtSettings;
-        private readonly RsaSecurityKey? rsaPublicKey;
-        private readonly RsaSecurityKey? rsaPrivateKey;
+        private readonly IRsaKeyManager rsaKeyManager;
 
-        public JwtHandler(IOptions<JwtSettings> options)
+        public JwtHandler(IOptions<JwtSettings> options, IRsaKeyManager rsaKeyManager)
         {
             jwtSettings = options.Value;
-
-            rsaPublicKey = jwtSettings.GetRsaPublicKeyFromSettings();
-            rsaPrivateKey = jwtSettings.GetRsaPrivateKeyFromSettings();
+            this.rsaKeyManager = rsaKeyManager;
         }
 
         #region ITokenHandler Members
@@ -41,7 +39,7 @@ namespace Authentication.Token
             {
                 ValidIssuer = jwtSettings.Issuer,
                 ValidAudience = jwtSettings.Audience,
-                IssuerSigningKey = rsaPublicKey,
+                IssuerSigningKey = rsaKeyManager.PublicKey,
                 ValidateIssuer = true,
                 ValidateAudience = true,
                 ValidateLifetime = false,
@@ -90,7 +88,7 @@ namespace Authentication.Token
 
         private SigningCredentials GetSigningCredentials()
         {
-            return new SigningCredentials(rsaPrivateKey, SecurityAlgorithms.RsaSha256);
+            return new SigningCredentials(rsaKeyManager.PrivateKey, SecurityAlgorithms.RsaSha256);
         }
 
         #endregion

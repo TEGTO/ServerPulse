@@ -1,8 +1,6 @@
 ﻿using Authentication.Models;
-using Authentication.Token;
 using AuthenticationApi.Core.Dtos.Endpoints.Auth.Login;
 using AuthenticationApi.Core.Dtos.Endpoints.Auth.Register;
-using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -27,17 +25,13 @@ namespace AuthenticationApi.IntegrationTests.Controllers.AuthController
 
         protected AccessTokenData GetAccessTokenData()
         {
-            var options = Options.Create(settings);
-
-            var jwtHandler = new JwtHandler(options);
-
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Email, "test@example.com"),
                 new Claim(ClaimTypes.Name,  "testuser"),
             };
 
-            return jwtHandler.CreateToken(claims);
+            return tokenHandler.CreateToken(claims);
         }
 
         protected async Task RegisterSampleUser(RegisterRequest request, bool confirmEmail = true)

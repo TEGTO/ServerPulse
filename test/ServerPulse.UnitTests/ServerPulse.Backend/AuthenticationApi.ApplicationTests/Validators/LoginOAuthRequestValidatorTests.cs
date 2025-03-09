@@ -16,27 +16,27 @@ namespace AuthenticationApi.Application.Validators.Tests
         }
 
         [Test]
-        public void Should_HaveError_When_CodeIsNull()
+        public void Should_HaveError_When_QueryParamsIsNull()
         {
-            var model = new LoginOAuthRequest { Code = null! };
+            var model = new LoginOAuthRequest { QueryParams = null! };
             var result = validator.TestValidate(model);
-            result.ShouldHaveValidationErrorFor(x => x.Code);
+            result.ShouldHaveValidationErrorFor(x => x.QueryParams);
         }
 
         [Test]
-        public void Should_HaveError_When_CodeIsEmpty()
+        public void Should_HaveError_When_QueryParamsIsEmpty()
         {
-            var model = new LoginOAuthRequest { Code = "" };
+            var model = new LoginOAuthRequest { QueryParams = "" };
             var result = validator.TestValidate(model);
-            result.ShouldHaveValidationErrorFor(x => x.Code);
+            result.ShouldHaveValidationErrorFor(x => x.QueryParams);
         }
 
         [Test]
-        public void Should_HaveError_When_CodeExceedsMaxLength()
+        public void Should_HaveError_When_QueryParamsExceedsMaxLength()
         {
-            var model = new LoginOAuthRequest { Code = new string('a', 1025) };
+            var model = new LoginOAuthRequest { QueryParams = new string('a', 1025) };
             var result = validator.TestValidate(model);
-            result.ShouldHaveValidationErrorFor(x => x.Code);
+            result.ShouldHaveValidationErrorFor(x => x.QueryParams);
         }
 
         [Test]
@@ -68,14 +68,14 @@ namespace AuthenticationApi.Application.Validators.Tests
         {
             var model = new LoginOAuthRequest
             {
-                Code = "validCode",
+                QueryParams = "params",
                 RedirectUrl = "http://valid-redirect-url.com",
                 OAuthLoginProvider = OAuthLoginProvider.Google
             };
 
             var result = validator.TestValidate(model);
 
-            result.ShouldNotHaveValidationErrorFor(x => x.Code);
+            result.ShouldNotHaveValidationErrorFor(x => x.QueryParams);
             result.ShouldNotHaveValidationErrorFor(x => x.RedirectUrl);
         }
     }

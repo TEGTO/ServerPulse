@@ -31,7 +31,7 @@ namespace MessageBusTests.Implementation
             mockConsumer = new Mock<IConsumer<string, string>>();
 
             mockResiliencePipelineProvider
-                .Setup(rp => rp.GetPipeline(MessageBusConfigurationKeys.MESSAGE_BUS_RESILIENCE_PIPELINE))
+                .Setup(rp => rp.GetPipeline(ConfigurationKeys.MESSAGE_BUS_RESILIENCE_PIPELINE))
                 .Returns(ResiliencePipeline.Empty);
             mockProxyGenerator
                 .Setup(rp => rp.CreateInterfaceProxyWithTarget(
@@ -52,7 +52,7 @@ namespace MessageBusTests.Implementation
             Assert.IsNotNull(consumer);
             Assert.That(consumer, Is.EqualTo(mockConsumer.Object));
 
-            mockResiliencePipelineProvider.Verify(rp => rp.GetPipeline(MessageBusConfigurationKeys.MESSAGE_BUS_RESILIENCE_PIPELINE), Times.Once);
+            mockResiliencePipelineProvider.Verify(rp => rp.GetPipeline(ConfigurationKeys.MESSAGE_BUS_RESILIENCE_PIPELINE), Times.Once);
             mockProxyGenerator.Verify(rp => rp.CreateInterfaceProxyWithTarget(
                It.IsAny<IConsumer<string, string>>(),
                It.IsAny<IInterceptor[]>()),

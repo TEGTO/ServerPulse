@@ -91,7 +91,7 @@ namespace ServerMonitorApi.IntegrationTests
                  { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.LoadTopic)}", "LoadTopic_" },
                  { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.LoadTopicProcess)}", "LoadEventProcessTopic" },
                  { $"{MessageBusSettings.SETTINGS_SECTION}:{nameof(MessageBusSettings.CustomTopic)}", "CustomEventTopic_" },
-                 { ConfigurationKeys.SERVER_SLOT_URL, "http://apigateway:8080" },
+                 { Infrastructure.ConfigurationKeys.SERVER_SLOT_URL, "http://apigateway:8080" },
             });
 
             return configurationBuilder.Build();

@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
 using Moq;
 using static Google.Apis.Auth.GoogleJsonWebSignature;
 using IEmailSender = EmailControl.IEmailSender;
@@ -19,8 +18,8 @@ namespace AuthenticationApi.IntegrationTests
     internal abstract class BaseIntegrationTest
     {
         protected HttpClient client;
-        protected JwtSettings settings;
         protected UserManager<User> userManager;
+        protected ITokenHandler tokenHandler;
         protected bool isConfirmEmailEnabled;
         protected bool isOAuthEnabled;
         private WebAppFactoryWrapper wrapper;
@@ -106,7 +105,7 @@ namespace AuthenticationApi.IntegrationTests
         {
             scope = factory.Services.CreateScope();
             client = factory.CreateClient();
-            settings = factory.Services.GetRequiredService<IOptions<JwtSettings>>().Value;
+            tokenHandler = factory.Services.GetRequiredService<ITokenHandler>();
 
             var scopedServices = scope.ServiceProvider;
             userManager = scopedServices.GetRequiredService<UserManager<User>>();

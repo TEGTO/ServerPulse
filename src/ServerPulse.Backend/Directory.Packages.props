@@ -3,6 +3,8 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="AWSSDK.SimpleEmail" Version="3.7.402.47" />
+    <PackageVersion Include="AWSSDK.SimpleNotificationService" Version="3.7.400.104" />
     <PackageVersion Include="Azure.Communication.Email" Version="1.0.1" />
     <PackageVersion Include="Castle.Core" Version="5.1.1" />
     <PackageVersion Include="Castle.Core.AsyncInterceptor" Version="2.1.0" />
@@ -14,6 +16,7 @@
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.FeatureManagement" Version="4.0.0" />
     <PackageVersion Include="Microsoft.FeatureManagement.AspNetCore" Version="4.0.0" />
+    <PackageVersion Include="Moq" Version="4.20.72" />
     <PackageVersion Include="Ocelot" Version="23.3.3" />
     <PackageVersion Include="Ocelot.Provider.Consul" Version="21.0.0" />
     <PackageVersion Include="Ocelot.Provider.Polly" Version="23.3.3" />

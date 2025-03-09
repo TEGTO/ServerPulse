@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 
 namespace Authentication.OAuth.GitHub
 {
-    public sealed class GitHubOAuthClient : IGitHubOAuthClient
+    internal sealed class GitHubOAuthClient : IGitHubOAuthClient
     {
         private readonly IGitHubOAuthApi gitHubOAuthApi;
         private readonly GitHubOAuthSettings oAuthSettings;
@@ -48,6 +48,11 @@ namespace Authentication.OAuth.GitHub
             };
 
             return await gitHubOAuthApi.ExchangeAuthorizationCodeAsync(authParams, cancellationToken);
+        }
+
+        public bool VerifyState(string stateVerifier, string state)
+        {
+            return HashHelper.ComputeHash(stateVerifier).Equals(state);
         }
     }
 }

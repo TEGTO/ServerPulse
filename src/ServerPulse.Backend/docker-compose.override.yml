@@ -30,6 +30,9 @@ services:
       - FeatureManagement__EmailConfirmation=${FeatureManagement__EmailConfirmation}
       - Email__ConnectionString=${Email__ConnectionString}
       - Email__SenderAddress=${Email__SenderAddress}
+      - Email__AccessKey=${Email__AccessKey}
+      - Email__SecretKey=${Email__SecretKey}
+      - Email__Region=${Email__Region}
       - BackgroundServices__UseUserUnconfirmedCleanup=${BackgroundServices__UseUserUnconfirmedCleanup}
       - BackgroundServices__UnconfirmedUsersCleanUpInMinutes=${BackgroundServices__UnconfirmedUsersCleanUpInMinutes}
     volumes:

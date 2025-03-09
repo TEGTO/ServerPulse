@@ -3,7 +3,7 @@ using MessageBus.Interfaces;
 
 namespace MessageBus.Kafka
 {
-    public class KafkaProducer : IMessageProducer
+    internal sealed class KafkaProducer : IMessageProducer
     {
         private readonly IKafkaProducerFactory producerFactory;
 
@@ -21,7 +21,7 @@ namespace MessageBus.Kafka
                     Value = value
                 };
 
-                await producer.ProduceAsync(topic, message, cancellationToken).ConfigureAwait(false);
+                await producer.ProduceAsync(topic, message, cancellationToken);
             }
         }
     }

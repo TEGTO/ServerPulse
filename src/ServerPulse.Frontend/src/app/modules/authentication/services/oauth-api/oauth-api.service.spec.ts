@@ -61,7 +61,7 @@ describe('OauthApiService', () => {
   it('should log in the user via OAuth', () => {
     const expectedUrl = `/api/oauth`;
     const request: LoginOAuthRequest = {
-      code: 'auth-code',
+      queryParams: 'queryParams',
       redirectUrl: 'https://redirect-url.com',
       oAuthLoginProvider: OAuthLoginProvider.Google,
     };
@@ -106,7 +106,7 @@ describe('OauthApiService', () => {
   it('should handle error on login via OAuth', () => {
     const expectedUrl = `/api/oauth`;
     const request: LoginOAuthRequest = {
-      code: 'auth-code',
+      queryParams: 'queryParams',
       redirectUrl: 'https://redirect-url.com',
       oAuthLoginProvider: OAuthLoginProvider.Google,
     };

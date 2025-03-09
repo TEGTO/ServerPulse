@@ -25,7 +25,7 @@ namespace AuthenticationApi.IntegrationTests.Controllers.OAuthController
             //Arrange
             var request = new LoginOAuthRequest
             {
-                Code = "somecode",
+                QueryParams = "code=somecode",
                 RedirectUrl = "someurl",
                 OAuthLoginProvider = OAuthLoginProvider.Google,
             };
@@ -52,7 +52,7 @@ namespace AuthenticationApi.IntegrationTests.Controllers.OAuthController
             //Arrange
             var request = new LoginOAuthRequest
             {
-                Code = "someinvalidcode",
+                QueryParams = "code=someinvalidcode",
                 RedirectUrl = "someinvalidurl",
                 OAuthLoginProvider = OAuthLoginProvider.Google,
             };
@@ -73,7 +73,7 @@ namespace AuthenticationApi.IntegrationTests.Controllers.OAuthController
             //Arrange
             var request = new LoginOAuthRequest
             {
-                Code = "",
+                QueryParams = "",
                 RedirectUrl = "",
             };
 
