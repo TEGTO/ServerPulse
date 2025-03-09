@@ -55,7 +55,7 @@ builder.Services.AddOcelot(builder.Configuration).AddPolly();
 
 #endregion
 
-if (builder.Environment.IsDevelopment())
+if (!builder.Environment.IsProduction())
 {
     builder.Services.AddSwaggerForOcelot(builder.Configuration);
 }
@@ -75,7 +75,7 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-if (!app.Environment.IsDevelopment())
+if (builder.Environment.IsProduction())
 {
     app.UseHttpsRedirection();
 }
@@ -92,6 +92,7 @@ else
 }
 
 app.UseEndpoints(_ => { });
+
 app.MapHealthChecks("/health");
 
 app.UseOcelotWebSockets();

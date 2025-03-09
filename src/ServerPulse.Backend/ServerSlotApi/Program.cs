@@ -5,7 +5,6 @@ using ExceptionHandling;
 using Logging;
 using ServerSlotApi;
 using ServerSlotApi.Application;
-using ServerSlotApi.Infrastructure;
 using ServerSlotApi.Infrastructure.Data;
 using Shared;
 
@@ -29,11 +28,13 @@ if (builder.Environment.IsDevelopment())
     builder.AddDocumentation("Server Slot API");
 }
 
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
 app.UseSharedMiddleware();
 
-if (app.Configuration[ServerSlotApi.Infrastructure.ConfigurationKeys.EF_CREATE_DATABASE] == "true")
+if (app.Configuration[ServerSlotApi.Infrastructure.ConfigurationKeys.EF_CREATE_DATABASE]?.ToLower() == "true")
 {
     await app.ConfigureDatabaseAsync<ServerSlotDbContext>(CancellationToken.None);
 }
@@ -52,6 +53,8 @@ app.UseIdentity();
 app.UseOutputCache(); //Order after Identity
 
 app.MapControllers();
+
+app.MapHealthChecks("/health");
 
 await app.RunAsync();
 

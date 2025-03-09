@@ -13,7 +13,7 @@ git clone https://github.com/TEGTO/ServerPulse.git
 
 **2. Navigate into the Kubernetes folder**:
 ```
-cd ServerPulse/k8/dev
+cd ServerPulse/infra/k8/dev
 ```
 
 **3. Start Minikube**:

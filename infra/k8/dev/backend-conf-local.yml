@@ -7,21 +7,19 @@ metadata:
 data:
   ASPNETCORE_ENVIRONMENT: "Development"
 
-  Kafka__BootstrapServers: broker-1:9092
-  Kafka__ClientId__Analyzer: nalyzer
-  Kafka__ClientId__MonitorApi: server-interaction
-  Kafka__GroupId: analyzer-group
-  Kafka__PartitionsAmount: 3
-
-  MessageBus__ReceiveTimeoutInMilliseconds: 5000
-  MessageBus__AliveTopic: AliveTopic_
-  MessageBus__ConfigurationTopic: ConfigurationTopic_
-  MessageBus__LoadTopic: LoadTopic_
-  MessageBus__LoadTopicProcess: LoadEventProcessTopic
-  MessageBus__ServerStatisticsTopic: ServerStatisticsTopic_
-  MessageBus__LoadMethodStatisticsTopic: LoadMethodStatisticsTopic_
-  MessageBus__CustomTopic: CustomEventTopic_
-  MessageBus__TopicDataSaveInDays: 365
+  Kafka__BootstrapServers: "kafka-svc:9092"
+  Kafka__ClientId__Analyzer: "analyzer"
+  Kafka__ClientId__MonitorApi: "server-interaction"
+  Kafka__GroupId: "analyzer-group"
+  Kafka__ReceiveTimeoutInMilliseconds: "5000"
+  Kafka__AliveTopic: "AliveTopic_"
+  Kafka__ConfigurationTopic: "ConfigurationTopic_"
+  Kafka__LoadTopic: "LoadTopic_"
+  Kafka__LoadTopicProcess: "LoadEventProcessTopic"
+  Kafka__ServerStatisticsTopic: "ServerStatisticsTopic_"
+  Kafka__LoadMethodStatisticsTopic: "LoadMethodStatisticsTopic_"
+  Kafka__CustomTopic: "CustomEventTopic_"
+  Kafka__TopicDataSaveInDays: "365"
 
   Cache__GetServerSlotByEmailExpiryInSeconds: "1"
   Cache__ServerSlotCheckExpiryInSeconds: "3"
@@ -38,7 +36,7 @@ data:
   BackgroundServices__UseUserUnconfirmedCleanup: "false"
   # BackgroundServices__UnconfirmedUsersCleanUpInMinutes: "60"
 
-  FeatureManagement__OAuth: "false"
+  FeatureManagement__OAuth: "true"
   FeatureManagement__EmailConfirmation: "false"
 
   UseCORS: "true"
@@ -74,18 +72,12 @@ data:
   AuthSettings__RefreshExpiryInDays: MTA=
   AuthSettings__PublicKey: LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0gTUZzd0RRWUpLb1pJaHZjTkFRRUJCUUFEU2dBd1J3SkFYVHB1MjJvVlRaZTdMMk9MZ092bXVvdWczeHZKdlRqNiAxdEdFSHhhVlRyM1lyN2pkK0s4OTN4T040V050MGZzMFJVZysrd1gvb0dtN3JaeFRyelNQN1FJREFRQUIgLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0t
   AuthSettings__PrivateKey: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLSBNSUlCT0FJQkFBSkFYVHB1MjJvVlRaZTdMMk9MZ092bXVvdWczeHZKdlRqNjF0R0VIeGFWVHIzWXI3amQrSzg5IDN4T040V050MGZzMFJVZysrd1gvb0dtN3JaeFRyelNQN1FJREFRQUJBa0FyWEM4Tks5VEdwdWh2alB2b05VKzEgdVpWVHoyZlA4ejF2UmprT0FJSG5BZ040N1pQTjQ3eElWM0c2emg2ZVE4WjJLTGtUOGlMWnJnYlE1VXY4NVgxQiBBaUVBb2FDZzUzOFhHYmdyVVhYU0YrZHErUjVMYkNjN29pYkFwTE9WSXZNVFZQMENJUUNUcWNuUzRzaDlybU56IHpxNkduZkJob3JUNGpHelcxbTdzdllvMTdwb1JzUUlnQmI4S09YREJSMzdPdTNTdTVYNnF4UFNZeGQyWE55cWQgaXIxL3ZlQmFmWmtDSURJNkNxQms2M1Ywbi9lQVVmVVFPL2U1OUh5bXAwN2NXWmJGVWdIT1N6SEJBaUIyMitPWiB1bVBsT1dVQW5CdWxzRWlpQ05rVVFvdk5aSHFEZXZ2Q2xtNEFJUT09IC0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0t
-  # AuthSettings__GoogleOAuth__ClientId:
-  # AuthSettings__GoogleOAuth__ClientSecret:
-  # AuthSettings__GoogleOAuth__Scope: aHR0cHM6Ly93d3cuZ29vZ2xlYXBpcy5jb20vYXV0aC91c2VyaW5mby5lbWFpbCBodHRwczovL3d3dy5nb29nbGVhcGlzLmNvbS9hdXRoL3VzZXJpbmZvLnByb2ZpbGU=
+  AuthSettings__GoogleOAuth__ClientId: ODYwOTg0MDQ3MTA5LWlubWEzbXM3bWtjaGZodDZvaHVuOWZzMjkzbmpuaGE4LmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29t
+  AuthSettings__GoogleOAuth__ClientSecret: R09DU1BYLWQ5QndCcTNWeE1SMGQ5Y3g0X1dDYzZ5NUkxc3I=
+  AuthSettings__GoogleOAuth__Scope: aHR0cHM6Ly93d3cuZ29vZ2xlYXBpcy5jb20vYXV0aC91c2VyaW5mby5lbWFpbCBodHRwczovL3d3dy5nb29nbGVhcGlzLmNvbS9hdXRoL3VzZXJpbmZvLnByb2ZpbGU=
 
-  # Azure
-  # Email__ConnectionString:
-  # Email__SenderAddress:
-  # Aws
-  # Email__SenderAddress:
-  # Email__AccessKey:
-  # Email__SecretKey:
-  # Email__Region:
+  # Email__ConnectionString: ZW5kcG9pbnQ9aHR0cHM6Ly9jb21tdW5pY2F0aW9uLWdlcm1hbnktMDAxLmdlcm1hbnkuY29tbXVuaWNhdGlvbi5henVyZS5jb20vO2FjY2Vzc2tleT16SHVLUlJaTjNzcFF6Y0thVnJXNjEyT1RzNGhTQ1BYNGVQTkhUMkdRdVBRdlBadXBVemd2SlFRSjk5QUxBQ1VMeUNwU2FqMzRBQUFBQVpDU2dVRng=
+  # Email__SenderAddress: RG9Ob3RSZXBseUBhZmQxMjA2MC01ZjQ2LTQ5ZGItODdhMS01ZTgxNmViOGJjYTQuYXp1cmVjb21tLm5ldA==
 
   ConnectionStrings__AuthenticationDb: VXNlciBJRD11c2VyMTtQYXNzd29yZD0xMjM0NTtIb3N0PWRiLXN2YztQb3J0PTU0MzI7RGF0YWJhc2U9c2VydmVycHVsc2UtZGI7UG9vbGluZz10cnVlO01pblBvb2xTaXplPTA7TWF4UG9vbFNpemU9MTAwO0Nvbm5lY3Rpb25MaWZldGltZT0wO1RydXN0U2VydmVyQ2VydGlmaWNhdGU9dHJ1ZQ==
   ConnectionStrings__ServerSlotDb: VXNlciBJRD11c2VyMTtQYXNzd29yZD0xMjM0NTtIb3N0PWRiLXN2YztQb3J0PTU0MzI7RGF0YWJhc2U9c2VydmVycHVsc2UtZGI7UG9vbGluZz10cnVlO01pblBvb2xTaXplPTA7TWF4UG9vbFNpemU9MTAwO0Nvbm5lY3Rpb25MaWZldGltZT0wO1RydXN0U2VydmVyQ2VydGlmaWNhdGU9dHJ1ZQ==

@@ -40,6 +40,8 @@ if (builder.Environment.IsDevelopment())
     builder.AddDocumentation("Server Monitor API");
 }
 
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
 app.UseSharedMiddleware();
@@ -54,6 +56,8 @@ else
 }
 
 app.MapControllers();
+
+app.MapHealthChecks("/health");
 
 await app.RunAsync();
 
