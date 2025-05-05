@@ -5,7 +5,7 @@ namespace ServerMonitorApi.Infrastructure.Services
 {
     public interface IServerSlotApi
     {
-        [Get(ExternalEndpoints.SERVER_SLOT_CHECK)]
+        [Post(ExternalEndpoints.SERVER_SLOT_CHECK)]
         public Task<CheckSlotKeyResponse> CheckSlotKeyAsync(CheckSlotKeyRequest request, CancellationToken cancellationToken);
     }
 }
