@@ -36,6 +36,7 @@ namespace DatabaseControl.Tests
             }.AsQueryable().BuildMockDbSet();
 
             mockDbContext.Setup(x => x.Set<TestEntity>()).Returns(dbSetMock.Object);
+            mockDbContext.Setup(x => x.Set<TestEntity>(It.IsAny<string>())).Returns(dbSetMock.Object);
             mockDbContext.Setup(x => x.Database).Returns(mockDatabase.Object);
             mockDbContext.Setup(x => x.Update(It.IsAny<TestEntity>()))
                 .Returns((TestEntity entity) =>
@@ -100,6 +101,18 @@ namespace DatabaseControl.Tests
             // Act
             var dbContext = mockDbContext.Object;
             var queryable = repository.Query<TestEntity>(dbContext);
+
+            // Assert
+            Assert.IsInstanceOf<IQueryable<TestEntity>>(queryable);
+            Assert.That(await queryable.CountAsync(), Is.EqualTo(2));
+        }
+
+        [Test]
+        public async Task QueryWithSetName_ValidCall_ReturnsQueryable()
+        {
+            // Act
+            var dbContext = mockDbContext.Object;
+            var queryable = repository.Query<TestEntity>(dbContext, "TestEntities");
 
             // Assert
             Assert.IsInstanceOf<IQueryable<TestEntity>>(queryable);
