@@ -33,6 +33,11 @@ namespace DatabaseControl.Repositories
             return dbContext.Set<T>().AsQueryable();
         }
 
+        public IQueryable<T> Query<T>(TContext dbContext, string setName) where T : class
+        {
+            return dbContext.Set<T>(setName).AsQueryable();
+        }
+
         public async Task<T> AddAsync<T>(TContext dbContext, T obj, CancellationToken cancellationToken) where T : class
         {
             var addedEntity = await dbContext.AddAsync(obj, cancellationToken);

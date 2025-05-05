@@ -180,6 +180,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Documentation", "Documentat
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocumentationTests", "..\..\test\ServerPulse.UnitTests\ServerPulse.Backend\DocumentationTests\DocumentationTests.csproj", "{9297616D-D7D2-43AB-B08E-9E45A188AD40}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerPulse.Client", "..\ServerPulse.Client\ServerPulse.Client\ServerPulse.Client.csproj", "{2FE472BA-2F22-CC2B-9FD9-1796CB8C4C7E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -437,6 +441,10 @@ Global
 		{9297616D-D7D2-43AB-B08E-9E45A188AD40}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9297616D-D7D2-43AB-B08E-9E45A188AD40}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9297616D-D7D2-43AB-B08E-9E45A188AD40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FE472BA-2F22-CC2B-9FD9-1796CB8C4C7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FE472BA-2F22-CC2B-9FD9-1796CB8C4C7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FE472BA-2F22-CC2B-9FD9-1796CB8C4C7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FE472BA-2F22-CC2B-9FD9-1796CB8C4C7E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -520,6 +528,8 @@ Global
 		{97866188-277F-49E1-B4B4-F8C36D3131A4} = {3FD1096F-9947-407F-80BA-121AE0E5A917}
 		{DFED4A48-AB95-40E1-885B-6EF95923B28A} = {162C3C6C-DFC8-4DD4-814D-B22D53C463ED}
 		{9297616D-D7D2-43AB-B08E-9E45A188AD40} = {3FD1096F-9947-407F-80BA-121AE0E5A917}
+		{2FE472BA-2F22-CC2B-9FD9-1796CB8C4C7E} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {055C1BB6-678D-4258-80AC-4816688B1AF6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {89B7B374-29A5-4E5B-A21F-6FC2B0DE9918}

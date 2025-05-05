@@ -1,6 +1,7 @@
 ﻿using EventCommunication;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace ServerPulse.Client.Services
 {
@@ -34,7 +35,7 @@ namespace ServerPulse.Client.Services
             try
             {
                 var cnfEvent = new ConfigurationEvent(configurationSettings.Key, TimeSpan.FromSeconds(configurationSettings.SendingInterval));
-                await messageSender.SendJsonAsync(cnfEvent.ToString(), configurationSettings.SendingEndpoint, stoppingToken);
+                await messageSender.SendJsonAsync(JsonSerializer.Serialize<BaseEvent>(cnfEvent), configurationSettings.SendingEndpoint, stoppingToken);
             }
             catch (Exception ex)
             {
@@ -51,7 +52,7 @@ namespace ServerPulse.Client.Services
                 try
                 {
                     var ev = new PulseEvent(pulseSettings.Key, true);
-                    await messageSender.SendJsonAsync(ev.ToString(), pulseSettings.SendingEndpoint, stoppingToken);
+                    await messageSender.SendJsonAsync(JsonSerializer.Serialize<BaseEvent>(ev), pulseSettings.SendingEndpoint, stoppingToken);
                 }
                 catch (Exception ex)
                 {
