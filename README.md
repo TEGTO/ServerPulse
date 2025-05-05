@@ -338,15 +338,19 @@ http://<public-ip>:8080
 </a>
 
 ## Screenshots 
-![image](https://github.com/user-attachments/assets/554449c4-72b6-4d63-9afc-d6dba98a128c)
+![image](https://github.com/user-attachments/assets/094388f0-9d4c-431c-a279-a1354df565d5)
 
 ----
 
-![image](https://github.com/user-attachments/assets/bb9136c8-586f-4dfd-ad72-c4ff0535fabb)
+![image](https://github.com/user-attachments/assets/a48f9119-4392-46d5-8e1c-98da5b3ae74a)
 
 ----
 
-![image](https://github.com/user-attachments/assets/277fdf68-b74a-4401-9df3-7f183aec7199)
+![image](https://github.com/user-attachments/assets/b3f2327e-1b6b-4691-8667-f4a8f252ea5b)
+
+----
+
+![image](https://github.com/user-attachments/assets/a0b6f797-6fdc-48db-b4fa-7cb74d99e919)
 
 ----
 
